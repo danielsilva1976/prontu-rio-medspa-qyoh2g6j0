@@ -37,15 +37,15 @@ export default function Layout() {
 
   const SidebarContent = () => (
     <>
-      <div className="flex h-16 shrink-0 items-center justify-center px-6 mb-4">
+      <div className="flex h-28 shrink-0 items-center justify-center px-6 mb-2 mt-4 border-b border-border/50 pb-6">
         <img
           src={logoMarca}
-          alt="MEDSPA Logo"
-          className="h-12 w-auto object-contain mix-blend-multiply"
+          alt="Clínica MEDSPA - Dra. Fabíola Kleinert"
+          className="h-[4.5rem] w-auto object-contain mix-blend-multiply transition-transform hover:scale-105 duration-300"
         />
       </div>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <nav className="flex-1 space-y-1 px-2 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4">
           {navigation.map((item) => {
             const isActive =
               location.pathname === item.href ||
@@ -57,9 +57,9 @@ export default function Layout() {
                 to={item.href}
                 className={cn(
                   isActive
-                    ? 'bg-primary/10 text-primary border-r-4 border-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground border-r-4 border-transparent',
-                  'group flex items-center px-4 py-3 text-sm font-medium transition-colors',
+                    ? 'bg-primary/10 text-primary border-primary font-semibold'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground border-transparent font-medium',
+                  'group flex items-center px-4 py-3 text-sm rounded-lg border-l-4 transition-all duration-200',
                 )}
               >
                 <item.icon
@@ -87,18 +87,18 @@ export default function Layout() {
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0 bg-sidebar">
+        <SheetContent side="left" className="w-72 p-0 bg-sidebar">
           <SidebarContent />
         </SheetContent>
       </Sheet>
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-border shadow-sm z-30">
+      <div className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
         <SidebarContent />
       </div>
 
       {/* Main content */}
-      <div className="md:pl-64 flex flex-col flex-1 min-w-0">
+      <div className="md:pl-72 flex flex-col flex-1 min-w-0">
         <header className="sticky top-0 z-20 flex h-16 flex-shrink-0 items-center gap-x-4 border-b border-border bg-background/95 backdrop-blur px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <form className="relative flex flex-1" action="#" method="GET">
@@ -112,7 +112,7 @@ export default function Layout() {
                 />
                 <Input
                   id="search-field"
-                  className="pl-9 bg-muted/50 border-transparent focus-visible:bg-background focus-visible:border-primary"
+                  className="pl-9 bg-muted/50 border-transparent focus-visible:bg-background focus-visible:border-primary transition-colors"
                   placeholder="Buscar pacientes, prontuários..."
                   type="search"
                   name="search"
@@ -123,7 +123,7 @@ export default function Layout() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-muted-foreground hover:text-primary"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <span className="sr-only">Notificações</span>
                 <Bell className="h-5 w-5" aria-hidden="true" />
@@ -133,30 +133,41 @@ export default function Layout() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8 border border-primary/20">
+                  <Button
+                    variant="ghost"
+                    className="relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
+                  >
+                    <Avatar className="h-9 w-9 border border-primary/20 shadow-sm">
                       <AvatarImage
                         src="https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1"
                         alt="Dra. Fabíola"
                       />
-                      <AvatarFallback className="bg-primary/10 text-primary">FK</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                        FK
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-primary">
+                <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal p-3 bg-muted/30">
+                    <div className="flex flex-col space-y-1.5">
+                      <p className="text-sm font-semibold leading-none text-primary">
                         Dra. Fabíola Kleinert
                       </p>
-                      <p className="text-xs leading-none text-muted-foreground">CRM-SP 123456</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        Médica Dermatologista • CRM-SP 123456
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem>Configurações da Clínica</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Configurações da Clínica
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">Sair</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10">
+                    Sair
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
