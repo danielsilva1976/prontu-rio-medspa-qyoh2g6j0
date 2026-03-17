@@ -58,13 +58,13 @@ const allTabs: TabItem[] = [
 
 export default function Settings() {
   const { currentUser } = useUserStore()
+  const [activeTab, setActiveTab] = useState<string>(allTabs[0]?.id || 'procedures')
 
   // Strict RBAC: Only Médico has access to settings
   if (currentUser.role !== 'Médico') {
     return <Navigate to="/" replace />
   }
 
-  const [activeTab, setActiveTab] = useState<string>(allTabs[0]?.id || 'procedures')
   const activeData = allTabs.find((t) => t.id === activeTab)!
 
   return (

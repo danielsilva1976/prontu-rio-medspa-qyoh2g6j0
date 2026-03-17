@@ -43152,13 +43152,13 @@ var allTabs = [
 ];
 function Settings() {
 	const { currentUser } = useUserStore();
+	const [activeTab, setActiveTab] = (0, import_react.useState)(allTabs[0]?.id || "procedures");
 	if (currentUser.role !== "Médico") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Navigate, {
-		"data-uid": "src/pages/Settings.tsx:64:12",
+		"data-uid": "src/pages/Settings.tsx:65:12",
 		"data-prohibitions": "[editContent]",
 		to: "/",
 		replace: true
 	});
-	const [activeTab, setActiveTab] = (0, import_react.useState)(allTabs[0]?.id || "procedures");
 	const activeData = allTabs.find((t) => t.id === activeTab);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		"data-uid": "src/pages/Settings.tsx:71:5",
@@ -43375,4 +43375,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-C5RNWaGQ.js.map
+//# sourceMappingURL=index-CsMtpFtS.js.map
