@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Search, RefreshCw, Calendar, Clock, FileText } from 'lucide-react'
+import { Search, RefreshCw, Calendar, Clock, FileText, Plus } from 'lucide-react'
 import { patients } from '@/lib/mock-data'
 
 export default function Patients() {
@@ -69,9 +69,9 @@ export default function Patients() {
               filteredPatients.map((patient) => (
                 <div
                   key={patient.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group"
+                  className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group gap-4"
                 >
-                  <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
+                  <div className="flex items-center gap-4 w-full xl:w-auto">
                     <Avatar className="h-12 w-12 border border-border">
                       <AvatarFallback className="bg-primary text-primary-foreground font-serif text-lg">
                         {patient.name.charAt(0)}
@@ -91,29 +91,47 @@ export default function Patients() {
                     </div>
                   </div>
 
-                  <div className="flex items-center w-full sm:w-auto justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-4 sm:pt-0">
-                    <div className="text-sm text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center w-full xl:w-auto justify-between gap-4 xl:gap-8 border-t xl:border-t-0 pt-4 xl:pt-0">
+                    <div className="flex justify-between sm:flex-col w-full sm:w-auto text-sm text-muted-foreground gap-1">
                       <p className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" /> Última:{' '}
+                        <Calendar className="w-3.5 h-3.5 shrink-0" />{' '}
+                        <span className="hidden sm:inline">Última:</span>{' '}
                         {new Date(patient.lastVisit).toLocaleDateString('pt-BR')}
                       </p>
-                      {patient.nextAppointment && (
-                        <p className="flex items-center gap-1 mt-1 text-primary font-medium">
-                          <Clock className="w-3.5 h-3.5 text-primary" /> Próxima:{' '}
+                      {patient.nextAppointment ? (
+                        <p className="flex items-center gap-1 text-primary font-medium">
+                          <Clock className="w-3.5 h-3.5 text-primary shrink-0" />{' '}
+                          <span className="hidden sm:inline">Próxima:</span>{' '}
                           {new Date(patient.nextAppointment).toLocaleDateString('pt-BR')}
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-1 text-muted-foreground/60 italic">
+                          Sem agendamento
                         </p>
                       )}
                     </div>
 
-                    <Button
-                      asChild
-                      className="rounded-full shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                    >
-                      <Link to={`/prontuario/${patient.id}`}>
-                        <FileText className="w-4 h-4 mr-2" />
-                        Prontuário
-                      </Link>
-                    </Button>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full sm:w-auto rounded-full shrink-0 group-hover:border-primary/40 bg-white transition-colors"
+                      >
+                        <Link to={`/prontuario/${patient.id}`}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Prontuário
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        className="w-full sm:w-auto rounded-full shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all sm:hover:scale-[1.02]"
+                      >
+                        <Link to={`/prontuario/${patient.id}?tab=evolucao`}>
+                          <Plus className="w-4 h-4 mr-1.5" />
+                          Novo Atendimento
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))

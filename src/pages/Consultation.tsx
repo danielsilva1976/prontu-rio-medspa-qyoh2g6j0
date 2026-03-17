@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { Clock, FileText, Activity, Syringe, ClipboardList, ShieldCheck } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PatientHeader from '@/components/consultation/PatientHeader'
@@ -16,6 +16,7 @@ import { patients } from '@/lib/mock-data'
 
 export default function Consultation() {
   const { id } = useParams()
+  const location = useLocation()
   const patientId = id || 'p-001'
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
@@ -25,7 +26,11 @@ export default function Consultation() {
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
 
-  const defaultTab = showAnamneseExame ? 'anamnese' : 'planejamento'
+  // Check URL for specific tab request (e.g. ?tab=evolucao for Novo Atendimento)
+  const searchParams = new URLSearchParams(location.search)
+  const tabParam = searchParams.get('tab')
+
+  const defaultTab = tabParam || (showAnamneseExame ? 'anamnese' : 'planejamento')
   const [activeTab, setActiveTab] = useState(defaultTab)
 
   useEffect(() => {

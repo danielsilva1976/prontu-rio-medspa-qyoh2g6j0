@@ -31,6 +31,7 @@ export default function EvolutionTab({
       </CardHeader>
       <CardContent className="space-y-6">
         <Textarea
+          autoFocus
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Registre o retorno do paciente, queixas atuais, evolução do tratamento ou orientações dadas..."
