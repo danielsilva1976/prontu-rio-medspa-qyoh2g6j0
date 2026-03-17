@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
+import {
+  ArrowLeft,
+  Clock,
+  MapPin,
+  Briefcase,
+  CreditCard,
+  Edit2,
+  Phone,
+  History,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import CompleteHistoryModal from './CompleteHistoryModal'
 
 export default function PatientHeader({ patient, id }: { patient: any; id: string | undefined }) {
   const [patientInfo, setPatientInfo] = useState({
@@ -28,6 +38,7 @@ export default function PatientHeader({ patient, id }: { patient: any; id: strin
 
   const [editInfo, setEditInfo] = useState(patientInfo)
   const [isOpen, setIsOpen] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const handleSave = () => {
     setPatientInfo(editInfo)
@@ -171,13 +182,20 @@ export default function PatientHeader({ patient, id }: { patient: any; id: strin
         </div>
       </div>
       <div className="flex gap-2 shrink-0">
-        <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/5">
+        <Button
+          variant="outline"
+          className="border-primary/50 text-primary hover:bg-primary/5"
+          onClick={() => setIsHistoryOpen(true)}
+        >
+          <History className="w-4 h-4 mr-2" />
           Histórico Completo
         </Button>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
           Finalizar Atendimento
         </Button>
       </div>
+
+      <CompleteHistoryModal isOpen={isHistoryOpen} onClose={setIsHistoryOpen} patient={patient} />
     </div>
   )
 }
