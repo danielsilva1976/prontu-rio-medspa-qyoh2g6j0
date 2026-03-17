@@ -33886,7 +33886,7 @@ function EvolutionTab({ isSigned, patientId }) {
 						"data-uid": "src/components/consultation/EvolutionTab.tsx:30:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5"
-					}), " Histórico do Paciente & Evolução"]
+					}), " Evolução"]
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
@@ -46160,4 +46160,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-9_haoZrH.js.map
+//# sourceMappingURL=index-2zPtMP2F.js.map

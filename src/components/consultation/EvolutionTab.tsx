@@ -27,7 +27,7 @@ export default function EvolutionTab({
       <div className="h-1 w-full bg-gradient-to-r from-muted to-muted-foreground/30"></div>
       <CardHeader>
         <CardTitle className="font-serif text-xl text-primary flex items-center gap-2">
-          <History className="w-5 h-5" /> Histórico do Paciente & Evolução
+          <History className="w-5 h-5" /> Evolução
         </CardTitle>
       </CardHeader>
       <CardContent>
