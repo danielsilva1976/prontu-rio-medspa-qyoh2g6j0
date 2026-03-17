@@ -9,8 +9,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { Trash2 } from 'lucide-react'
 import useSettingsStore from '@/stores/useSettingsStore'
+import ApplicationMarker, { type PointMark, type VectorMark } from './ApplicationMarker'
 
 export type ProcedureEntry = {
   id: string
@@ -21,13 +23,17 @@ export type ProcedureEntry = {
   brand: string
   batch: string
   dose: string
+  enableMarking?: boolean
+  markingArea?: string
+  points?: PointMark[]
+  vectors?: VectorMark[]
 }
 
 type Props = {
   entry: ProcedureEntry
   index: number
   isSigned: boolean
-  onUpdate: (id: string, field: keyof ProcedureEntry, value: string) => void
+  onUpdate: (id: string, field: keyof ProcedureEntry, value: any) => void
   onRemove: (id: string) => void
 }
 
@@ -173,6 +179,63 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
               disabled={isSigned}
             />
           </div>
+        </div>
+
+        {/* Application Marking Module */}
+        <div className="pt-6 mt-6 border-t border-border/60">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-base font-semibold text-foreground">
+                Módulo de Marcação de Aplicação
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Adicione esquemas visuais para detalhar pontos e vetores no corpo do paciente.
+              </p>
+            </div>
+            <Switch
+              disabled={isSigned}
+              checked={entry.enableMarking || false}
+              onCheckedChange={(val) => onUpdate(entry.id, 'enableMarking', val)}
+            />
+          </div>
+
+          {entry.enableMarking && (
+            <div className="mt-6 p-5 bg-white rounded-xl border border-border/50 shadow-sm animate-in fade-in slide-in-from-top-2">
+              <div className="space-y-2 max-w-xs mb-6">
+                <Label className="text-foreground">Área Anatômica do Diagrama</Label>
+                <Select
+                  disabled={isSigned}
+                  value={entry.markingArea}
+                  onValueChange={(val) => onUpdate(entry.id, 'markingArea', val)}
+                >
+                  <SelectTrigger className="bg-muted/10 border-border rounded-xl">
+                    <SelectValue placeholder="Selecione a área..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Face">Face</SelectItem>
+                    <SelectItem value="Pescoço">Pescoço</SelectItem>
+                    <SelectItem value="Braço">Braço</SelectItem>
+                    <SelectItem value="Abdome">Abdome</SelectItem>
+                    <SelectItem value="Coxas">Coxas</SelectItem>
+                    <SelectItem value="Pernas">Pernas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {entry.markingArea && (
+                <ApplicationMarker
+                  area={entry.markingArea}
+                  points={entry.points || []}
+                  vectors={entry.vectors || []}
+                  onChange={(points, vectors) => {
+                    onUpdate(entry.id, 'points', points)
+                    onUpdate(entry.id, 'vectors', vectors)
+                  }}
+                  isSigned={isSigned}
+                />
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

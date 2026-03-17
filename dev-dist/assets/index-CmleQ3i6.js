@@ -18138,7 +18138,7 @@ function handleAndDispatchCustomEvent$1(name, handler, detail, { discrete }) {
 	if (discrete) dispatchDiscreteCustomEvent(target, event);
 	else target.dispatchEvent(event);
 }
-var Root$9 = DismissableLayer;
+var Root$10 = DismissableLayer;
 var Branch = DismissableLayerBranch;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-use-layout-effect@1.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
@@ -18338,7 +18338,7 @@ var VisuallyHidden = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 VisuallyHidden.displayName = NAME$3;
-var Root$8 = VisuallyHidden;
+var Root$9 = VisuallyHidden;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_4581e89c6ba13e4159ce65546c8b2a16/node_modules/@radix-ui/react-toast/dist/index.mjs
 var PROVIDER_NAME$1 = "ToastProvider";
@@ -18638,7 +18638,7 @@ var ToastImpl = import_react.forwardRef((props, forwardedRef) => {
 		onClose: handleClose,
 		children: import_react_dom.createPortal(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Collection$4.ItemSlot, {
 			scope: __scopeToast,
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$9, {
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$10, {
 				asChild: true,
 				onEscapeKeyDown: composeEventHandlers(onEscapeKeyDown, () => {
 					if (!context.isFocusedToastEscapeKeyDownRef.current) handleClose();
@@ -19061,6 +19061,13 @@ var ArrowLeft = createLucideIcon("arrow-left", [["path", {
 	d: "M19 12H5",
 	key: "x3x0zl"
 }]]);
+var ArrowUpRight = createLucideIcon("arrow-up-right", [["path", {
+	d: "M7 7h10v10",
+	key: "1tivn9"
+}], ["path", {
+	d: "M7 17 17 7",
+	key: "1vkiza"
+}]]);
 var Bell = createLucideIcon("bell", [["path", {
 	d: "M10.268 21a2 2 0 0 0 3.464 0",
 	key: "vwvbt9"
@@ -19353,6 +19360,13 @@ var Download = createLucideIcon("download", [
 		key: "brsn70"
 	}]
 ]);
+var Eraser = createLucideIcon("eraser", [["path", {
+	d: "M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21",
+	key: "g5wo59"
+}], ["path", {
+	d: "m5.082 11.09 8.828 8.828",
+	key: "1wx5vj"
+}]]);
 var FilePenLine = createLucideIcon("file-pen-line", [
 	["path", {
 		d: "M14.364 13.634a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506l4.013-4.009a1 1 0 0 0-3.004-3.004z",
@@ -23940,7 +23954,7 @@ var Arrow$1 = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 Arrow$1.displayName = NAME$2;
-var Root$7 = Arrow$1;
+var Root$8 = Arrow$1;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-use-size@1.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-use-size/dist/index.mjs
 function useSize(element) {
@@ -24161,7 +24175,7 @@ var PopperArrow = import_react.forwardRef(function PopperArrow2(props, forwarded
 			}[contentContext.placedSide],
 			visibility: contentContext.shouldHideArrow ? "hidden" : void 0
 		},
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$7, {
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$8, {
 			...arrowProps,
 			ref: forwardedRef,
 			style: {
@@ -24545,7 +24559,7 @@ var TooltipContentImpl = import_react.forwardRef((props, forwardedRef) => {
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Slottable, { children }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VisuallyHiddenContentContextProvider, {
 				scope: __scopeTooltip,
 				isInside: true,
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$8, {
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$9, {
 					id: context.contentId,
 					role: "tooltip",
 					children: ariaLabel || children
@@ -25352,19 +25366,19 @@ function useImageLoadingStatus(src, { referrerPolicy, crossOrigin }) {
 	]);
 	return loadingStatus;
 }
-var Root$6 = Avatar$1;
+var Root$7 = Avatar$1;
 var Image = AvatarImage$1;
 var Fallback = AvatarFallback$1;
 //#endregion
 //#region src/components/ui/avatar.tsx
-var Avatar = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$6, {
+var Avatar = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$7, {
 	"data-uid": "src/components/ui/avatar.tsx:11:3",
 	"data-prohibitions": "[editContent]",
 	ref,
 	className: cn$1("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
 	...props
 }));
-Avatar.displayName = Root$6.displayName;
+Avatar.displayName = Root$7.displayName;
 var AvatarImage = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Image, {
 	"data-uid": "src/components/ui/avatar.tsx:23:3",
 	"data-prohibitions": "[editContent]",
@@ -25784,7 +25798,7 @@ function focusFirst$1(candidates, preventScroll = false) {
 function wrapArray$2(array, startIndex) {
 	return array.map((_, index) => array[(startIndex + index) % array.length]);
 }
-var Root$5 = RovingFocusGroup;
+var Root$6 = RovingFocusGroup;
 var Item$2 = RovingFocusGroupItem;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/aria-hidden@1.2.6/node_modules/aria-hidden/dist/es2015/index.js
@@ -26847,7 +26861,7 @@ var MenuContentImpl = import_react.forwardRef((props, forwardedRef) => {
 					onFocusOutside,
 					onInteractOutside,
 					onDismiss,
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$5, {
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$6, {
 						asChild: true,
 						...rovingFocusGroupScope,
 						dir: rootContext.dir,
@@ -27779,7 +27793,7 @@ var DialogTrigger$1 = import_react.forwardRef((props, forwardedRef) => {
 		"aria-haspopup": "dialog",
 		"aria-expanded": context.open,
 		"aria-controls": context.contentId,
-		"data-state": getState$3(context.open),
+		"data-state": getState$4(context.open),
 		...triggerProps,
 		ref: composedTriggerRef,
 		onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
@@ -27828,7 +27842,7 @@ var DialogOverlayImpl = import_react.forwardRef((props, forwardedRef) => {
 		allowPinchZoom: true,
 		shards: [context.contentRef],
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			"data-state": getState$3(context.open),
+			"data-state": getState$4(context.open),
 			...overlayProps,
 			ref: forwardedRef,
 			style: {
@@ -27927,7 +27941,7 @@ var DialogContentImpl = import_react.forwardRef((props, forwardedRef) => {
 			id: context.contentId,
 			"aria-describedby": context.descriptionId,
 			"aria-labelledby": context.titleId,
-			"data-state": getState$3(context.open),
+			"data-state": getState$4(context.open),
 			...contentProps,
 			ref: composedRefs,
 			onDismiss: () => context.onOpenChange(false)
@@ -27971,7 +27985,7 @@ var DialogClose$1 = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 DialogClose$1.displayName = CLOSE_NAME$1;
-function getState$3(open) {
+function getState$4(open) {
 	return open ? "open" : "closed";
 }
 var TITLE_WARNING_NAME = "DialogTitleWarning";
@@ -28009,7 +28023,7 @@ var DescriptionWarning = ({ contentRef, descriptionId }) => {
 	]);
 	return null;
 };
-var Root$4 = Dialog$1;
+var Root$5 = Dialog$1;
 var Trigger$4 = DialogTrigger$1;
 var Portal$2 = DialogPortal$1;
 var Overlay = DialogOverlay$1;
@@ -28019,7 +28033,7 @@ var Description = DialogDescription$1;
 var Close = DialogClose$1;
 //#endregion
 //#region src/components/ui/sheet.tsx
-var Sheet = Root$4;
+var Sheet = Root$5;
 var SheetTrigger = Trigger$4;
 var SheetPortal = Portal$2;
 var SheetOverlay = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Overlay, {
@@ -28554,7 +28568,7 @@ var mockDashboardStats = {
 };
 //#endregion
 //#region src/components/ui/dialog.tsx
-var Dialog = Root$4;
+var Dialog = Root$5;
 var DialogTrigger = Trigger$4;
 var DialogPortal = Portal$2;
 var DialogOverlay = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Overlay, {
@@ -29369,7 +29383,7 @@ var TabsList$1 = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeTabs, loop = true, ...listProps } = props;
 	const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
 	const rovingFocusGroupScope = useRovingFocusGroupScope$1(__scopeTabs);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$5, {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$6, {
 		asChild: true,
 		...rovingFocusGroupScope,
 		orientation: context.orientation,
@@ -29508,18 +29522,18 @@ var Label$2 = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 Label$2.displayName = NAME$1;
-var Root$3 = Label$2;
+var Root$4 = Label$2;
 //#endregion
 //#region src/components/ui/label.tsx
 var labelVariants = cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70");
-var Label$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$3, {
+var Label$1 = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$4, {
 	"data-uid": "src/components/ui/label.tsx:16:3",
 	"data-prohibitions": "[editContent]",
 	ref,
 	className: cn$1(labelVariants(), className),
 	...props
 }));
-Label$1.displayName = Root$3.displayName;
+Label$1.displayName = Root$4.displayName;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+number@1.1.1/node_modules/@radix-ui/number/dist/index.mjs
 function clamp(value, [min, max]) {
@@ -29985,10 +29999,10 @@ var ScrollAreaScrollbarImpl = import_react.forwardRef((props, forwardedRef) => {
 		})
 	});
 });
-var THUMB_NAME = "ScrollAreaThumb";
+var THUMB_NAME$1 = "ScrollAreaThumb";
 var ScrollAreaThumb = import_react.forwardRef((props, forwardedRef) => {
 	const { forceMount, ...thumbProps } = props;
-	const scrollbarContext = useScrollbarContext(THUMB_NAME, props.__scopeScrollArea);
+	const scrollbarContext = useScrollbarContext(THUMB_NAME$1, props.__scopeScrollArea);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Presence, {
 		present: forceMount || scrollbarContext.hasThumb,
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollAreaThumbImpl, {
@@ -29999,8 +30013,8 @@ var ScrollAreaThumb = import_react.forwardRef((props, forwardedRef) => {
 });
 var ScrollAreaThumbImpl = import_react.forwardRef((props, forwardedRef) => {
 	const { __scopeScrollArea, style, ...thumbProps } = props;
-	const scrollAreaContext = useScrollAreaContext(THUMB_NAME, __scopeScrollArea);
-	const scrollbarContext = useScrollbarContext(THUMB_NAME, __scopeScrollArea);
+	const scrollAreaContext = useScrollAreaContext(THUMB_NAME$1, __scopeScrollArea);
+	const scrollbarContext = useScrollbarContext(THUMB_NAME$1, __scopeScrollArea);
 	const { onThumbPositionChange } = scrollbarContext;
 	const composedRef = useComposedRefs(forwardedRef, (node) => scrollbarContext.onThumbChange(node));
 	const removeUnlinkedScrollListenerRef = import_react.useRef(void 0);
@@ -30050,7 +30064,7 @@ var ScrollAreaThumbImpl = import_react.forwardRef((props, forwardedRef) => {
 		onPointerUp: composeEventHandlers(props.onPointerUp, scrollbarContext.onThumbPointerUp)
 	});
 });
-ScrollAreaThumb.displayName = THUMB_NAME;
+ScrollAreaThumb.displayName = THUMB_NAME$1;
 var CORNER_NAME = "ScrollAreaCorner";
 var ScrollAreaCorner = import_react.forwardRef((props, forwardedRef) => {
 	const context = useScrollAreaContext(CORNER_NAME, props.__scopeScrollArea);
@@ -30179,12 +30193,12 @@ function useResizeObserver(element, onResize) {
 		}
 	}, [element, handleResize]);
 }
-var Root$2 = ScrollArea$1;
+var Root$3 = ScrollArea$1;
 var Viewport$1 = ScrollAreaViewport;
 var Corner = ScrollAreaCorner;
 //#endregion
 //#region src/components/ui/scroll-area.tsx
-var ScrollArea = import_react.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Root$2, {
+var ScrollArea = import_react.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Root$3, {
 	"data-uid": "src/components/ui/scroll-area.tsx:11:3",
 	"data-prohibitions": "[editContent]",
 	ref,
@@ -30207,7 +30221,7 @@ var ScrollArea = import_react.forwardRef(({ className, children, ...props }, ref
 		})
 	]
 }));
-ScrollArea.displayName = Root$2.displayName;
+ScrollArea.displayName = Root$3.displayName;
 var ScrollBar = import_react.forwardRef(({ className, orientation = "vertical", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollAreaScrollbar, {
 	"data-uid": "src/components/ui/scroll-area.tsx:29:3",
 	"data-prohibitions": "[editContent]",
@@ -30965,7 +30979,7 @@ var Collapsible = import_react.forwardRef((props, forwardedRef) => {
 		open,
 		onOpenToggle: import_react.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen]),
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			"data-state": getState$2(open),
+			"data-state": getState$3(open),
 			"data-disabled": disabled ? "" : void 0,
 			...collapsibleProps,
 			ref: forwardedRef
@@ -30981,7 +30995,7 @@ var CollapsibleTrigger = import_react.forwardRef((props, forwardedRef) => {
 		type: "button",
 		"aria-controls": context.contentId,
 		"aria-expanded": context.open || false,
-		"data-state": getState$2(context.open),
+		"data-state": getState$3(context.open),
 		"data-disabled": context.disabled ? "" : void 0,
 		disabled: context.disabled,
 		...triggerProps,
@@ -31041,7 +31055,7 @@ var CollapsibleContentImpl = import_react.forwardRef((props, forwardedRef) => {
 		}
 	}, [context.open, present]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-		"data-state": getState$2(context.open),
+		"data-state": getState$3(context.open),
 		"data-disabled": context.disabled ? "" : void 0,
 		id: context.contentId,
 		hidden: !isOpen,
@@ -31055,10 +31069,10 @@ var CollapsibleContentImpl = import_react.forwardRef((props, forwardedRef) => {
 		children: isOpen && children
 	});
 });
-function getState$2(open) {
+function getState$3(open) {
 	return open ? "open" : "closed";
 }
-var Root$1 = Collapsible;
+var Root$2 = Collapsible;
 var Trigger$2 = CollapsibleTrigger;
 var Content = CollapsibleContent;
 //#endregion
@@ -31221,9 +31235,9 @@ var AccordionItem$1 = import_react.forwardRef((props, forwardedRef) => {
 		open,
 		disabled,
 		triggerId,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$1, {
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$2, {
 			"data-orientation": accordionContext.orientation,
-			"data-state": getState$1(open),
+			"data-state": getState$2(open),
 			...collapsibleScope,
 			...accordionItemProps,
 			ref: forwardedRef,
@@ -31244,7 +31258,7 @@ var AccordionHeader = import_react.forwardRef((props, forwardedRef) => {
 	const itemContext = useAccordionItemContext(HEADER_NAME, __scopeAccordion);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.h3, {
 		"data-orientation": accordionContext.orientation,
-		"data-state": getState$1(itemContext.open),
+		"data-state": getState$2(itemContext.open),
 		"data-disabled": itemContext.disabled ? "" : void 0,
 		...headerProps,
 		ref: forwardedRef
@@ -31292,7 +31306,7 @@ var AccordionContent$1 = import_react.forwardRef((props, forwardedRef) => {
 	});
 });
 AccordionContent$1.displayName = CONTENT_NAME$2;
-function getState$1(open) {
+function getState$2(open) {
 	return open ? "open" : "closed";
 }
 var Root2$3 = Accordion$1;
@@ -32549,7 +32563,7 @@ var SelectArrow = import_react.forwardRef((props, forwardedRef) => {
 	}) : null;
 });
 SelectArrow.displayName = ARROW_NAME$1;
-var BUBBLE_INPUT_NAME = "SelectBubbleInput";
+var BUBBLE_INPUT_NAME$1 = "SelectBubbleInput";
 var SelectBubbleInput = import_react.forwardRef(({ __scopeSelect, value, ...props }, forwardedRef) => {
 	const ref = import_react.useRef(null);
 	const composedRefs = useComposedRefs(forwardedRef, ref);
@@ -32575,7 +32589,7 @@ var SelectBubbleInput = import_react.forwardRef(({ __scopeSelect, value, ...prop
 		defaultValue: value
 	});
 });
-SelectBubbleInput.displayName = BUBBLE_INPUT_NAME;
+SelectBubbleInput.displayName = BUBBLE_INPUT_NAME$1;
 function shouldShowPlaceholder(value) {
 	return value === "" || value === void 0;
 }
@@ -33493,71 +33507,864 @@ function PhysicalExamTab({ isSigned, patientId }) {
 	});
 }
 //#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-switch@1.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_e3738c514c10df2ef7e24af5ee461853/node_modules/@radix-ui/react-switch/dist/index.mjs
+var SWITCH_NAME = "Switch";
+var [createSwitchContext, createSwitchScope] = createContextScope$1(SWITCH_NAME);
+var [SwitchProvider, useSwitchContext] = createSwitchContext(SWITCH_NAME);
+var Switch$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeSwitch, name, checked: checkedProp, defaultChecked, required, disabled, value = "on", onCheckedChange, form, ...switchProps } = props;
+	const [button, setButton] = import_react.useState(null);
+	const composedRefs = useComposedRefs(forwardedRef, (node) => setButton(node));
+	const hasConsumerStoppedPropagationRef = import_react.useRef(false);
+	const isFormControl = button ? form || !!button.closest("form") : true;
+	const [checked, setChecked] = useControllableState({
+		prop: checkedProp,
+		defaultProp: defaultChecked ?? false,
+		onChange: onCheckedChange,
+		caller: SWITCH_NAME
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SwitchProvider, {
+		scope: __scopeSwitch,
+		checked,
+		disabled,
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.button, {
+			type: "button",
+			role: "switch",
+			"aria-checked": checked,
+			"aria-required": required,
+			"data-state": getState$1(checked),
+			"data-disabled": disabled ? "" : void 0,
+			disabled,
+			value,
+			...switchProps,
+			ref: composedRefs,
+			onClick: composeEventHandlers(props.onClick, (event) => {
+				setChecked((prevChecked) => !prevChecked);
+				if (isFormControl) {
+					hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
+					if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
+				}
+			})
+		}), isFormControl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SwitchBubbleInput, {
+			control: button,
+			bubbles: !hasConsumerStoppedPropagationRef.current,
+			name,
+			value,
+			checked,
+			required,
+			disabled,
+			form,
+			style: { transform: "translateX(-100%)" }
+		})]
+	});
+});
+Switch$1.displayName = SWITCH_NAME;
+var THUMB_NAME = "SwitchThumb";
+var SwitchThumb = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeSwitch, ...thumbProps } = props;
+	const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.span, {
+		"data-state": getState$1(context.checked),
+		"data-disabled": context.disabled ? "" : void 0,
+		...thumbProps,
+		ref: forwardedRef
+	});
+});
+SwitchThumb.displayName = THUMB_NAME;
+var BUBBLE_INPUT_NAME = "SwitchBubbleInput";
+var SwitchBubbleInput = import_react.forwardRef(({ __scopeSwitch, control, checked, bubbles = true, ...props }, forwardedRef) => {
+	const ref = import_react.useRef(null);
+	const composedRefs = useComposedRefs(ref, forwardedRef);
+	const prevChecked = usePrevious(checked);
+	const controlSize = useSize(control);
+	import_react.useEffect(() => {
+		const input = ref.current;
+		if (!input) return;
+		const inputProto = window.HTMLInputElement.prototype;
+		const setChecked = Object.getOwnPropertyDescriptor(inputProto, "checked").set;
+		if (prevChecked !== checked && setChecked) {
+			const event = new Event("click", { bubbles });
+			setChecked.call(input, checked);
+			input.dispatchEvent(event);
+		}
+	}, [
+		prevChecked,
+		checked,
+		bubbles
+	]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+		type: "checkbox",
+		"aria-hidden": true,
+		defaultChecked: checked,
+		...props,
+		tabIndex: -1,
+		ref: composedRefs,
+		style: {
+			...props.style,
+			...controlSize,
+			position: "absolute",
+			pointerEvents: "none",
+			opacity: 0,
+			margin: 0
+		}
+	});
+});
+SwitchBubbleInput.displayName = BUBBLE_INPUT_NAME;
+function getState$1(checked) {
+	return checked ? "checked" : "unchecked";
+}
+var Root$1 = Switch$1;
+var Thumb = SwitchThumb;
+//#endregion
+//#region src/components/ui/switch.tsx
+var Switch = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$1, {
+	"data-uid": "src/components/ui/switch.tsx:11:3",
+	"data-prohibitions": "[editContent]",
+	className: cn$1("peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input", className),
+	...props,
+	ref,
+	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Thumb, {
+		"data-uid": "src/components/ui/switch.tsx:19:5",
+		"data-prohibitions": "[editContent]",
+		className: cn$1("pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0")
+	})
+}));
+Switch.displayName = Root$1.displayName;
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-toggle@1.1.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_63d136f11f5f79b42c1373b9162ffc86/node_modules/@radix-ui/react-toggle/dist/index.mjs
+var NAME = "Toggle";
+var Toggle$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { pressed: pressedProp, defaultPressed, onPressedChange, ...buttonProps } = props;
+	const [pressed, setPressed] = useControllableState({
+		prop: pressedProp,
+		onChange: onPressedChange,
+		defaultProp: defaultPressed ?? false,
+		caller: NAME
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.button, {
+		type: "button",
+		"aria-pressed": pressed,
+		"data-state": pressed ? "on" : "off",
+		"data-disabled": props.disabled ? "" : void 0,
+		...buttonProps,
+		ref: forwardedRef,
+		onClick: composeEventHandlers(props.onClick, () => {
+			if (!props.disabled) setPressed(!pressed);
+		})
+	});
+});
+Toggle$1.displayName = NAME;
+var Root = Toggle$1;
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-toggle-group@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@type_0c124bdbaa351e80a671757a596f81ce/node_modules/@radix-ui/react-toggle-group/dist/index.mjs
+var TOGGLE_GROUP_NAME = "ToggleGroup";
+var [createToggleGroupContext, createToggleGroupScope] = createContextScope$1(TOGGLE_GROUP_NAME, [createRovingFocusGroupScope]);
+var useRovingFocusGroupScope = createRovingFocusGroupScope();
+var ToggleGroup$1 = import_react.forwardRef((props, forwardedRef) => {
+	const { type, ...toggleGroupProps } = props;
+	if (type === "single") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImplSingle, {
+		...toggleGroupProps,
+		ref: forwardedRef
+	});
+	if (type === "multiple") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImplMultiple, {
+		...toggleGroupProps,
+		ref: forwardedRef
+	});
+	throw new Error(`Missing prop \`type\` expected on \`${TOGGLE_GROUP_NAME}\``);
+});
+ToggleGroup$1.displayName = TOGGLE_GROUP_NAME;
+var [ToggleGroupValueProvider, useToggleGroupValueContext] = createToggleGroupContext(TOGGLE_GROUP_NAME);
+var ToggleGroupImplSingle = import_react.forwardRef((props, forwardedRef) => {
+	const { value: valueProp, defaultValue, onValueChange = () => {}, ...toggleGroupSingleProps } = props;
+	const [value, setValue] = useControllableState({
+		prop: valueProp,
+		defaultProp: defaultValue ?? "",
+		onChange: onValueChange,
+		caller: TOGGLE_GROUP_NAME
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupValueProvider, {
+		scope: props.__scopeToggleGroup,
+		type: "single",
+		value: import_react.useMemo(() => value ? [value] : [], [value]),
+		onItemActivate: setValue,
+		onItemDeactivate: import_react.useCallback(() => setValue(""), [setValue]),
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImpl, {
+			...toggleGroupSingleProps,
+			ref: forwardedRef
+		})
+	});
+});
+var ToggleGroupImplMultiple = import_react.forwardRef((props, forwardedRef) => {
+	const { value: valueProp, defaultValue, onValueChange = () => {}, ...toggleGroupMultipleProps } = props;
+	const [value, setValue] = useControllableState({
+		prop: valueProp,
+		defaultProp: defaultValue ?? [],
+		onChange: onValueChange,
+		caller: TOGGLE_GROUP_NAME
+	});
+	const handleButtonActivate = import_react.useCallback((itemValue) => setValue((prevValue = []) => [...prevValue, itemValue]), [setValue]);
+	const handleButtonDeactivate = import_react.useCallback((itemValue) => setValue((prevValue = []) => prevValue.filter((value2) => value2 !== itemValue)), [setValue]);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupValueProvider, {
+		scope: props.__scopeToggleGroup,
+		type: "multiple",
+		value,
+		onItemActivate: handleButtonActivate,
+		onItemDeactivate: handleButtonDeactivate,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImpl, {
+			...toggleGroupMultipleProps,
+			ref: forwardedRef
+		})
+	});
+});
+ToggleGroup$1.displayName = TOGGLE_GROUP_NAME;
+var [ToggleGroupContext$1, useToggleGroupContext] = createToggleGroupContext(TOGGLE_GROUP_NAME);
+var ToggleGroupImpl = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeToggleGroup, disabled = false, rovingFocus = true, orientation, dir, loop = true, ...toggleGroupProps } = props;
+	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeToggleGroup);
+	const direction = useDirection(dir);
+	const commonProps = {
+		role: "group",
+		dir: direction,
+		...toggleGroupProps
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupContext$1, {
+		scope: __scopeToggleGroup,
+		rovingFocus,
+		disabled,
+		children: rovingFocus ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$6, {
+			asChild: true,
+			...rovingFocusGroupScope,
+			orientation,
+			dir: direction,
+			loop,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
+				...commonProps,
+				ref: forwardedRef
+			})
+		}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
+			...commonProps,
+			ref: forwardedRef
+		})
+	});
+});
+var ITEM_NAME = "ToggleGroupItem";
+var ToggleGroupItem$1 = import_react.forwardRef((props, forwardedRef) => {
+	const valueContext = useToggleGroupValueContext(ITEM_NAME, props.__scopeToggleGroup);
+	const context = useToggleGroupContext(ITEM_NAME, props.__scopeToggleGroup);
+	const rovingFocusGroupScope = useRovingFocusGroupScope(props.__scopeToggleGroup);
+	const pressed = valueContext.value.includes(props.value);
+	const disabled = context.disabled || props.disabled;
+	const commonProps = {
+		...props,
+		pressed,
+		disabled
+	};
+	const ref = import_react.useRef(null);
+	return context.rovingFocus ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item$2, {
+		asChild: true,
+		...rovingFocusGroupScope,
+		focusable: !disabled,
+		active: pressed,
+		ref,
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItemImpl, {
+			...commonProps,
+			ref: forwardedRef
+		})
+	}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItemImpl, {
+		...commonProps,
+		ref: forwardedRef
+	});
+});
+ToggleGroupItem$1.displayName = ITEM_NAME;
+var ToggleGroupItemImpl = import_react.forwardRef((props, forwardedRef) => {
+	const { __scopeToggleGroup, value, ...itemProps } = props;
+	const valueContext = useToggleGroupValueContext(ITEM_NAME, __scopeToggleGroup);
+	const singleProps = {
+		role: "radio",
+		"aria-checked": props.pressed,
+		"aria-pressed": void 0
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toggle$1, {
+		...valueContext.type === "single" ? singleProps : void 0,
+		...itemProps,
+		ref: forwardedRef,
+		onPressedChange: (pressed) => {
+			if (pressed) valueContext.onItemActivate(value);
+			else valueContext.onItemDeactivate(value);
+		}
+	});
+});
+var Root2$1 = ToggleGroup$1;
+var Item2 = ToggleGroupItem$1;
+//#endregion
+//#region src/components/ui/toggle.tsx
+var toggleVariants = cva("inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 gap-2", {
+	variants: {
+		variant: {
+			default: "bg-transparent",
+			outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground"
+		},
+		size: {
+			default: "h-10 px-3 min-w-10",
+			sm: "h-9 px-2.5 min-w-9",
+			lg: "h-11 px-5 min-w-11"
+		}
+	},
+	defaultVariants: {
+		variant: "default",
+		size: "default"
+	}
+});
+var Toggle = import_react.forwardRef(({ className, variant, size, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root, {
+	"data-uid": "src/components/ui/toggle.tsx:33:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1(toggleVariants({
+		variant,
+		size,
+		className
+	})),
+	...props
+}));
+Toggle.displayName = Root.displayName;
+//#endregion
+//#region src/components/ui/toggle-group.tsx
+var ToggleGroupContext = import_react.createContext({
+	size: "default",
+	variant: "default"
+});
+var ToggleGroup = import_react.forwardRef(({ className, variant, size, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root2$1, {
+	"data-uid": "src/components/ui/toggle-group.tsx:19:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("flex items-center justify-center gap-1", className),
+	...props,
+	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupContext.Provider, {
+		"data-uid": "src/components/ui/toggle-group.tsx:24:5",
+		"data-prohibitions": "[editContent]",
+		value: {
+			variant,
+			size
+		},
+		children
+	})
+}));
+ToggleGroup.displayName = Root2$1.displayName;
+var ToggleGroupItem = import_react.forwardRef(({ className, children, variant, size, ...props }, ref) => {
+	const context = import_react.useContext(ToggleGroupContext);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item2, {
+		"data-uid": "src/components/ui/toggle-group.tsx:38:5",
+		"data-prohibitions": "[editContent]",
+		ref,
+		className: cn$1(toggleVariants({
+			variant: context.variant || variant,
+			size: context.size || size
+		}), className),
+		...props,
+		children
+	});
+});
+ToggleGroupItem.displayName = Item2.displayName;
+//#endregion
+//#region src/components/consultation/ApplicationMarker.tsx
+var DIAGRAMS = {
+	Face: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:12:7",
+			"data-prohibitions": "[editContent]",
+			d: "M150 150 C150 50 350 50 350 150 C350 300 280 400 250 420 C220 400 150 300 150 150 Z",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:19:7",
+			"data-prohibitions": "[editContent]",
+			d: "M200 220 Q220 200 240 220 M260 220 Q280 200 300 220",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:26:7",
+			"data-prohibitions": "[editContent]",
+			d: "M250 240 L250 310 L235 310 M210 350 Q250 370 290 350",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		})
+	] }),
+	Pescoço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:37:7",
+			"data-prohibitions": "[editContent]",
+			d: "M180 50 L180 180 C180 230 100 260 50 280 L50 400 M320 50 L320 180 C320 230 400 260 450 280 L450 400",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:44:7",
+			"data-prohibitions": "[editContent]",
+			d: "M220 130 Q250 150 280 130 M200 230 Q250 260 300 230 M130 350 Q250 390 370 350",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:52:7",
+			"data-prohibitions": "[editContent]",
+			d: "M250 160 L250 220",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "2 6"
+		})
+	] }),
+	Braço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:64:7",
+			"data-prohibitions": "[editContent]",
+			d: "M200 50 C150 100 130 250 150 400 C160 450 180 480 250 480 C320 480 340 450 350 400 C370 250 350 100 300 50",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:71:7",
+			"data-prohibitions": "[editContent]",
+			d: "M180 150 Q220 220 250 150 M170 300 Q250 370 330 300",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:79:7",
+			"data-prohibitions": "[editContent]",
+			d: "M250 200 L250 280",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "2 6"
+		})
+	] }),
+	Abdome: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:91:7",
+			"data-prohibitions": "[editContent]",
+			d: "M130 50 C140 150 110 300 140 450 M370 50 C360 150 390 300 360 450",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:98:7",
+			"data-prohibitions": "[editContent]",
+			cx: "250",
+			cy: "270",
+			r: "10",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:99:7",
+			"data-prohibitions": "[editContent]",
+			d: "M250 80 L250 240 M250 300 L250 450",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:107:7",
+			"data-prohibitions": "[editContent]",
+			d: "M180 120 Q250 150 320 120 M160 180 Q250 210 340 180 M150 350 Q250 380 350 350",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		})
+	] }),
+	Coxas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:119:7",
+			"data-prohibitions": "[editContent]",
+			d: "M100 50 C80 200 120 400 150 480 M240 50 C250 200 230 400 230 480 M260 50 C250 200 270 400 270 480 M400 50 C420 200 380 400 350 480",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:126:7",
+			"data-prohibitions": "[editContent]",
+			d: "M100 50 Q170 90 240 50 M260 50 Q330 90 400 50",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:134:7",
+			"data-prohibitions": "[editContent]",
+			d: "M170 150 Q200 180 240 130 M330 150 Q300 180 260 130",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		})
+	] }),
+	Pernas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:146:7",
+			"data-prohibitions": "[editContent]",
+			d: "M150 50 C110 200 100 350 120 450 M230 50 C250 200 200 350 180 450 M270 50 C250 200 300 350 320 450 M350 50 C390 200 400 350 380 450",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:153:7",
+			"data-prohibitions": "[editContent]",
+			d: "M150 50 Q190 70 230 50 M270 50 Q310 70 350 50",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			strokeDasharray: "4 4"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:161:7",
+			"data-prohibitions": "[editContent]",
+			d: "M120 450 Q140 480 180 450 M380 450 Q360 480 320 450",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
+		})
+	] })
+};
+function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
+	const [tool, setTool] = (0, import_react.useState)("point");
+	const svgRef = (0, import_react.useRef)(null);
+	const [drawV, setDrawV] = (0, import_react.useState)(null);
+	const getCoords = (e) => {
+		if (!svgRef.current) return {
+			x: 0,
+			y: 0
+		};
+		const rect = svgRef.current.getBoundingClientRect();
+		return {
+			x: (e.clientX - rect.left) / rect.width * 500,
+			y: (e.clientY - rect.top) / rect.height * 500
+		};
+	};
+	const onDown = (e) => {
+		if (isSigned) return;
+		const { x, y } = getCoords(e);
+		if (tool === "point") onChange([...points, {
+			id: Math.random().toString(36).slice(2),
+			x,
+			y,
+			units: ""
+		}], vectors);
+		else if (tool === "vector") setDrawV({
+			sX: x,
+			sY: y,
+			eX: x,
+			eY: y
+		});
+		else eraseNearest(x, y);
+	};
+	const onMove = (e) => {
+		if (isSigned || !drawV || tool !== "vector") return;
+		const { x, y } = getCoords(e);
+		setDrawV({
+			...drawV,
+			eX: x,
+			eY: y
+		});
+	};
+	const onUp = () => {
+		if (isSigned || tool !== "vector" || !drawV) return;
+		if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 10) onChange(points, [...vectors, {
+			id: Math.random().toString(36).slice(2),
+			startX: drawV.sX,
+			startY: drawV.sY,
+			endX: drawV.eX,
+			endY: drawV.eY
+		}]);
+		setDrawV(null);
+	};
+	const eraseNearest = (x, y) => {
+		const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 25);
+		if (pt) return onChange(points.filter((p) => p.id !== pt.id), vectors);
+		const vec = vectors.find((v) => {
+			const l2 = (v.endX - v.startX) ** 2 + (v.endY - v.startY) ** 2;
+			if (l2 === 0) return Math.hypot(x - v.startX, y - v.startY) < 25;
+			const t = Math.max(0, Math.min(1, ((x - v.startX) * (v.endX - v.startX) + (y - v.startY) * (v.endY - v.startY)) / l2));
+			return Math.hypot(x - (v.startX + t * (v.endX - v.startX)), y - (v.startY + t * (v.endY - v.startY))) < 25;
+		});
+		if (vec) onChange(points, vectors.filter((v) => v.id !== vec.id));
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		"data-uid": "src/components/consultation/ApplicationMarker.tsx:260:5",
+		"data-prohibitions": "[editContent]",
+		className: "space-y-4",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:261:7",
+			"data-prohibitions": "[editContent]",
+			className: "flex flex-wrap items-center justify-between gap-2 bg-muted/40 p-1.5 rounded-lg border border-border/50",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroup, {
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:262:9",
+				"data-prohibitions": "[]",
+				type: "single",
+				value: tool,
+				onValueChange: (v) => v && setTool(v),
+				disabled: isSigned,
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:268:11",
+						"data-prohibitions": "[]",
+						value: "point",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:272:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:273:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
+							children: "Ponto"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:275:11",
+						"data-prohibitions": "[]",
+						value: "vector",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:279:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:280:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
+							children: "Vetor"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:282:11",
+						"data-prohibitions": "[]",
+						value: "erase",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eraser, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:286:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:287:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
+							children: "Borracha"
+						})]
+					})
+				]
+			}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:291:11",
+				"data-prohibitions": "[]",
+				variant: "ghost",
+				size: "sm",
+				onClick: () => onChange([], []),
+				className: "text-destructive h-8 px-3 hover:bg-destructive/10",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:297:13",
+					"data-prohibitions": "[editContent]",
+					className: "h-4 w-4 mr-1.5"
+				}), " Limpar"]
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:301:7",
+			"data-prohibitions": "[editContent]",
+			className: "relative aspect-square w-full max-w-sm mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:302:9",
+				"data-prohibitions": "[editContent]",
+				ref: svgRef,
+				viewBox: "0 0 500 500",
+				className: `w-full h-full text-foreground/15 ${tool === "point" ? "cursor-crosshair" : tool === "erase" ? "cursor-no-drop" : "cursor-default"}`,
+				onPointerDown: onDown,
+				onPointerMove: onMove,
+				onPointerUp: onUp,
+				onPointerLeave: onUp,
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("defs", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:311:11",
+						"data-prohibitions": "[]",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("marker", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:312:13",
+							"data-prohibitions": "[]",
+							id: "arr",
+							markerWidth: "6",
+							markerHeight: "6",
+							refX: "5",
+							refY: "3",
+							orient: "auto",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
+								"data-uid": "src/components/consultation/ApplicationMarker.tsx:313:15",
+								"data-prohibitions": "[editContent]",
+								points: "0 0, 6 3, 0 6",
+								fill: "hsl(var(--primary))"
+							})
+						})
+					}),
+					DIAGRAMS[area],
+					vectors.map((v) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:318:13",
+						"data-prohibitions": "[editContent]",
+						x1: v.startX,
+						y1: v.startY,
+						x2: v.endX,
+						y2: v.endY,
+						stroke: "hsl(var(--primary))",
+						strokeWidth: "4",
+						markerEnd: "url(#arr)",
+						strokeLinecap: "round"
+					}, v.id)),
+					drawV && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:331:13",
+						"data-prohibitions": "[editContent]",
+						x1: drawV.sX,
+						y1: drawV.sY,
+						x2: drawV.eX,
+						y2: drawV.eY,
+						stroke: "hsl(var(--primary))",
+						strokeWidth: "4",
+						markerEnd: "url(#arr)",
+						opacity: .5,
+						strokeLinecap: "round"
+					}),
+					points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:344:13",
+						"data-prohibitions": "[editContent]",
+						cx: p.x,
+						cy: p.y,
+						r: "7",
+						fill: "hsl(var(--primary))",
+						className: "drop-shadow-sm"
+					}, p.id))
+				]
+			}), points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:355:11",
+				"data-prohibitions": "[]",
+				style: {
+					left: `${p.x / 500 * 100}%`,
+					top: `${p.y / 500 * 100}%`
+				},
+				className: "absolute -translate-x-1/2 -translate-y-9 z-10",
+				onPointerDown: (e) => e.stopPropagation(),
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:361:13",
+					"data-prohibitions": "[editContent]",
+					value: p.units,
+					onChange: (e) => onChange(points.map((pt) => pt.id === p.id ? {
+						...pt,
+						units: e.target.value
+					} : pt), vectors),
+					disabled: isSigned,
+					className: "w-10 h-6 text-[10px] font-bold text-center text-primary-foreground border-none bg-primary/90 rounded shadow focus:ring-2 focus:ring-primary focus:bg-primary placeholder:text-primary-foreground/50 transition-colors",
+					placeholder: "Un"
+				})
+			}, p.id))]
+		})]
+	});
+}
+//#endregion
 //#region src/components/consultation/ProcedureEntryCard.tsx
 function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 	const { procedures, areas, products, brands, technologies } = useSettingsStore();
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:38:5",
+		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:44:5",
 		"data-prohibitions": "[editContent]",
 		className: "relative border border-border bg-muted/5 shadow-sm animate-fade-in",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:39:7",
+			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:45:7",
 			"data-prohibitions": "[editContent]",
 			className: "p-6 pt-8",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:40:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:46:9",
 					"data-prohibitions": "[editContent]",
 					className: "absolute top-0 left-0 bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg",
 					children: ["Procedimento ", index + 1]
 				}),
 				!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:44:11",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:50:11",
 					"data-prohibitions": "[]",
 					variant: "ghost",
 					size: "icon",
 					className: "absolute top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors",
 					onClick: () => onRemove(entry.id),
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:50:13",
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:56:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4"
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:54:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:60:9",
 					"data-prohibitions": "[editContent]",
 					className: "grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:55:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:61:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2 md:col-span-2 lg:col-span-3",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:56:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:62:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Tipo de Procedimento"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:57:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:63:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.type,
 								onValueChange: (val) => onUpdate(entry.id, "type", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:62:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:68:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:63:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:69:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o procedimento..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:65:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:71:15",
 									"data-prohibitions": "[editContent]",
 									children: procedures.map((proc) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:67:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:73:19",
 										"data-prohibitions": "[editContent]",
 										value: proc,
 										children: proc
@@ -33566,34 +34373,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:75:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:81:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:76:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:82:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Área Aplicada"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:77:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:83:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.area,
 								onValueChange: (val) => onUpdate(entry.id, "area", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:82:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:88:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:83:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:89:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a área..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:85:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:91:15",
 									"data-prohibitions": "[editContent]",
 									children: areas.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:87:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:93:19",
 										"data-prohibitions": "[editContent]",
 										value: a,
 										children: a
@@ -33602,34 +34409,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:95:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:101:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:96:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:102:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Tecnologia"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:97:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:103:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.technology,
 								onValueChange: (val) => onUpdate(entry.id, "technology", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:102:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:108:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:103:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:109:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a tecnologia..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:105:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:111:15",
 									"data-prohibitions": "[editContent]",
 									children: technologies.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:107:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:113:19",
 										"data-prohibitions": "[editContent]",
 										value: t,
 										children: t
@@ -33638,34 +34445,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:115:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:121:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:116:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:122:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Produto"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:117:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:123:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.product,
 								onValueChange: (val) => onUpdate(entry.id, "product", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:122:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:128:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:123:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:129:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o produto..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:125:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:131:15",
 									"data-prohibitions": "[editContent]",
 									children: products.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:127:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:133:19",
 										"data-prohibitions": "[editContent]",
 										value: p,
 										children: p
@@ -33674,34 +34481,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:135:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:141:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:136:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:142:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Marca"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:137:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:143:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.brand,
 								onValueChange: (val) => onUpdate(entry.id, "brand", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:142:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:148:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:143:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:149:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a marca..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:145:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:151:15",
 									"data-prohibitions": "[editContent]",
 									children: brands.map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:147:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:153:19",
 										"data-prohibitions": "[editContent]",
 										value: b,
 										children: b
@@ -33710,16 +34517,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:155:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:161:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:156:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:162:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Lote"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:157:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:163:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: AB12345",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -33729,16 +34536,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:166:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:172:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:167:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:173:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Dose / Volume / Parâmetros"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:168:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:174:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: 50U, 1mL, 20J/cm²",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -33748,6 +34555,121 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						})
 					]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:185:9",
+					"data-prohibitions": "[editContent]",
+					className: "pt-6 mt-6 border-t border-border/60",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:186:11",
+						"data-prohibitions": "[]",
+						className: "flex items-center justify-between",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:187:13",
+							"data-prohibitions": "[]",
+							className: "space-y-1",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:188:15",
+								"data-prohibitions": "[]",
+								className: "text-base font-semibold text-foreground",
+								children: "Módulo de Marcação de Aplicação"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:191:15",
+								"data-prohibitions": "[]",
+								className: "text-sm text-muted-foreground",
+								children: "Adicione esquemas visuais para detalhar pontos e vetores no corpo do paciente."
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch, {
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:195:13",
+							"data-prohibitions": "[editContent]",
+							disabled: isSigned,
+							checked: entry.enableMarking || false,
+							onCheckedChange: (val) => onUpdate(entry.id, "enableMarking", val)
+						})]
+					}), entry.enableMarking && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:203:13",
+						"data-prohibitions": "[editContent]",
+						className: "mt-6 p-5 bg-white rounded-xl border border-border/50 shadow-sm animate-in fade-in slide-in-from-top-2",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:204:15",
+							"data-prohibitions": "[]",
+							className: "space-y-2 max-w-xs mb-6",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:205:17",
+								"data-prohibitions": "[]",
+								className: "text-foreground",
+								children: "Área Anatômica do Diagrama"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:206:17",
+								"data-prohibitions": "[]",
+								disabled: isSigned,
+								value: entry.markingArea,
+								onValueChange: (val) => onUpdate(entry.id, "markingArea", val),
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:211:19",
+									"data-prohibitions": "[]",
+									className: "bg-muted/10 border-border rounded-xl",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:212:21",
+										"data-prohibitions": "[editContent]",
+										placeholder: "Selecione a área..."
+									})
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:214:19",
+									"data-prohibitions": "[]",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:215:21",
+											"data-prohibitions": "[]",
+											value: "Face",
+											children: "Face"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:216:21",
+											"data-prohibitions": "[]",
+											value: "Pescoço",
+											children: "Pescoço"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:217:21",
+											"data-prohibitions": "[]",
+											value: "Braço",
+											children: "Braço"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:218:21",
+											"data-prohibitions": "[]",
+											value: "Abdome",
+											children: "Abdome"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:219:21",
+											"data-prohibitions": "[]",
+											value: "Coxas",
+											children: "Coxas"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:220:21",
+											"data-prohibitions": "[]",
+											value: "Pernas",
+											children: "Pernas"
+										})
+									]
+								})]
+							})]
+						}), entry.markingArea && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ApplicationMarker, {
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:226:17",
+							"data-prohibitions": "[editContent]",
+							area: entry.markingArea,
+							points: entry.points || [],
+							vectors: entry.vectors || [],
+							onChange: (points, vectors) => {
+								onUpdate(entry.id, "points", points);
+								onUpdate(entry.id, "vectors", vectors);
+							},
+							isSigned
+						})]
+					})]
 				})
 			]
 		})
@@ -33765,7 +34687,11 @@ function ProcedureTab({ isSigned, patientId }) {
 		product: "",
 		brand: "",
 		batch: "",
-		dose: ""
+		dose: "",
+		enableMarking: false,
+		markingArea: "",
+		points: [],
+		vectors: []
 	}]);
 	const [generalNotes, setGeneralNotes] = (0, import_react.useState)("");
 	const addEntry = () => {
@@ -33777,7 +34703,11 @@ function ProcedureTab({ isSigned, patientId }) {
 			product: "",
 			brand: "",
 			batch: "",
-			dose: ""
+			dose: "",
+			enableMarking: false,
+			markingArea: "",
+			points: [],
+			vectors: []
 		}]);
 	};
 	const removeEntry = (id) => {
@@ -33793,44 +34723,44 @@ function ProcedureTab({ isSigned, patientId }) {
 		addLog("Procedimentos atualizados", patientId);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/ProcedureTab.tsx:61:5",
+		"data-uid": "src/components/consultation/ProcedureTab.tsx:69:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:62:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:70:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:63:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:71:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:64:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:72:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:65:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:73:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Registro Técnico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:67:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:75:9",
 					"data-prohibitions": "[]",
 					children: "Detalhes dos materiais utilizados e técnicas aplicadas."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:69:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:77:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6",
 				children: [
 					entries.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:71:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:79:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4",
 						children: entries.map((entry, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProcedureEntryCard, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:73:15",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:81:15",
 							"data-prohibitions": "[editContent]",
 							entry,
 							index,
@@ -33840,27 +34770,27 @@ function ProcedureTab({ isSigned, patientId }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:86:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:94:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:91:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:99:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-5 h-5 mr-2"
 						}), "Adicionar Novo Procedimento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:96:9",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:104:9",
 						"data-prohibitions": "[]",
 						className: "space-y-2 pt-4 border-t border-border",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:97:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:105:11",
 							"data-prohibitions": "[]",
 							children: "Técnica de Aplicação e Observações Gerais"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:98:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:106:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas...",
 							className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
@@ -33870,16 +34800,16 @@ function ProcedureTab({ isSigned, patientId }) {
 						})]
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:108:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:116:11",
 						"data-prohibitions": "[]",
 						className: "flex justify-end pt-4 mt-6 border-t border-border/50",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:109:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:117:13",
 							"data-prohibitions": "[]",
 							onClick: handleSave,
 							className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-								"data-uid": "src/components/consultation/ProcedureTab.tsx:113:15",
+								"data-uid": "src/components/consultation/ProcedureTab.tsx:121:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 mr-2"
 							}), " Salvar Registro"]
@@ -34558,241 +35488,6 @@ function DocumentsTab({ isSigned, patientId }) {
 	});
 }
 //#endregion
-//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-toggle@1.1.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_63d136f11f5f79b42c1373b9162ffc86/node_modules/@radix-ui/react-toggle/dist/index.mjs
-var NAME = "Toggle";
-var Toggle$1 = import_react.forwardRef((props, forwardedRef) => {
-	const { pressed: pressedProp, defaultPressed, onPressedChange, ...buttonProps } = props;
-	const [pressed, setPressed] = useControllableState({
-		prop: pressedProp,
-		onChange: onPressedChange,
-		defaultProp: defaultPressed ?? false,
-		caller: NAME
-	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.button, {
-		type: "button",
-		"aria-pressed": pressed,
-		"data-state": pressed ? "on" : "off",
-		"data-disabled": props.disabled ? "" : void 0,
-		...buttonProps,
-		ref: forwardedRef,
-		onClick: composeEventHandlers(props.onClick, () => {
-			if (!props.disabled) setPressed(!pressed);
-		})
-	});
-});
-Toggle$1.displayName = NAME;
-var Root = Toggle$1;
-//#endregion
-//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-toggle-group@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@type_0c124bdbaa351e80a671757a596f81ce/node_modules/@radix-ui/react-toggle-group/dist/index.mjs
-var TOGGLE_GROUP_NAME = "ToggleGroup";
-var [createToggleGroupContext, createToggleGroupScope] = createContextScope$1(TOGGLE_GROUP_NAME, [createRovingFocusGroupScope]);
-var useRovingFocusGroupScope = createRovingFocusGroupScope();
-var ToggleGroup$1 = import_react.forwardRef((props, forwardedRef) => {
-	const { type, ...toggleGroupProps } = props;
-	if (type === "single") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImplSingle, {
-		...toggleGroupProps,
-		ref: forwardedRef
-	});
-	if (type === "multiple") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImplMultiple, {
-		...toggleGroupProps,
-		ref: forwardedRef
-	});
-	throw new Error(`Missing prop \`type\` expected on \`${TOGGLE_GROUP_NAME}\``);
-});
-ToggleGroup$1.displayName = TOGGLE_GROUP_NAME;
-var [ToggleGroupValueProvider, useToggleGroupValueContext] = createToggleGroupContext(TOGGLE_GROUP_NAME);
-var ToggleGroupImplSingle = import_react.forwardRef((props, forwardedRef) => {
-	const { value: valueProp, defaultValue, onValueChange = () => {}, ...toggleGroupSingleProps } = props;
-	const [value, setValue] = useControllableState({
-		prop: valueProp,
-		defaultProp: defaultValue ?? "",
-		onChange: onValueChange,
-		caller: TOGGLE_GROUP_NAME
-	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupValueProvider, {
-		scope: props.__scopeToggleGroup,
-		type: "single",
-		value: import_react.useMemo(() => value ? [value] : [], [value]),
-		onItemActivate: setValue,
-		onItemDeactivate: import_react.useCallback(() => setValue(""), [setValue]),
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImpl, {
-			...toggleGroupSingleProps,
-			ref: forwardedRef
-		})
-	});
-});
-var ToggleGroupImplMultiple = import_react.forwardRef((props, forwardedRef) => {
-	const { value: valueProp, defaultValue, onValueChange = () => {}, ...toggleGroupMultipleProps } = props;
-	const [value, setValue] = useControllableState({
-		prop: valueProp,
-		defaultProp: defaultValue ?? [],
-		onChange: onValueChange,
-		caller: TOGGLE_GROUP_NAME
-	});
-	const handleButtonActivate = import_react.useCallback((itemValue) => setValue((prevValue = []) => [...prevValue, itemValue]), [setValue]);
-	const handleButtonDeactivate = import_react.useCallback((itemValue) => setValue((prevValue = []) => prevValue.filter((value2) => value2 !== itemValue)), [setValue]);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupValueProvider, {
-		scope: props.__scopeToggleGroup,
-		type: "multiple",
-		value,
-		onItemActivate: handleButtonActivate,
-		onItemDeactivate: handleButtonDeactivate,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupImpl, {
-			...toggleGroupMultipleProps,
-			ref: forwardedRef
-		})
-	});
-});
-ToggleGroup$1.displayName = TOGGLE_GROUP_NAME;
-var [ToggleGroupContext$1, useToggleGroupContext] = createToggleGroupContext(TOGGLE_GROUP_NAME);
-var ToggleGroupImpl = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeToggleGroup, disabled = false, rovingFocus = true, orientation, dir, loop = true, ...toggleGroupProps } = props;
-	const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeToggleGroup);
-	const direction = useDirection(dir);
-	const commonProps = {
-		role: "group",
-		dir: direction,
-		...toggleGroupProps
-	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupContext$1, {
-		scope: __scopeToggleGroup,
-		rovingFocus,
-		disabled,
-		children: rovingFocus ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root$5, {
-			asChild: true,
-			...rovingFocusGroupScope,
-			orientation,
-			dir: direction,
-			loop,
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-				...commonProps,
-				ref: forwardedRef
-			})
-		}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Primitive$1.div, {
-			...commonProps,
-			ref: forwardedRef
-		})
-	});
-});
-var ITEM_NAME = "ToggleGroupItem";
-var ToggleGroupItem$1 = import_react.forwardRef((props, forwardedRef) => {
-	const valueContext = useToggleGroupValueContext(ITEM_NAME, props.__scopeToggleGroup);
-	const context = useToggleGroupContext(ITEM_NAME, props.__scopeToggleGroup);
-	const rovingFocusGroupScope = useRovingFocusGroupScope(props.__scopeToggleGroup);
-	const pressed = valueContext.value.includes(props.value);
-	const disabled = context.disabled || props.disabled;
-	const commonProps = {
-		...props,
-		pressed,
-		disabled
-	};
-	const ref = import_react.useRef(null);
-	return context.rovingFocus ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item$2, {
-		asChild: true,
-		...rovingFocusGroupScope,
-		focusable: !disabled,
-		active: pressed,
-		ref,
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItemImpl, {
-			...commonProps,
-			ref: forwardedRef
-		})
-	}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItemImpl, {
-		...commonProps,
-		ref: forwardedRef
-	});
-});
-ToggleGroupItem$1.displayName = ITEM_NAME;
-var ToggleGroupItemImpl = import_react.forwardRef((props, forwardedRef) => {
-	const { __scopeToggleGroup, value, ...itemProps } = props;
-	const valueContext = useToggleGroupValueContext(ITEM_NAME, __scopeToggleGroup);
-	const singleProps = {
-		role: "radio",
-		"aria-checked": props.pressed,
-		"aria-pressed": void 0
-	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toggle$1, {
-		...valueContext.type === "single" ? singleProps : void 0,
-		...itemProps,
-		ref: forwardedRef,
-		onPressedChange: (pressed) => {
-			if (pressed) valueContext.onItemActivate(value);
-			else valueContext.onItemDeactivate(value);
-		}
-	});
-});
-var Root2$1 = ToggleGroup$1;
-var Item2 = ToggleGroupItem$1;
-//#endregion
-//#region src/components/ui/toggle.tsx
-var toggleVariants = cva("inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 gap-2", {
-	variants: {
-		variant: {
-			default: "bg-transparent",
-			outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground"
-		},
-		size: {
-			default: "h-10 px-3 min-w-10",
-			sm: "h-9 px-2.5 min-w-9",
-			lg: "h-11 px-5 min-w-11"
-		}
-	},
-	defaultVariants: {
-		variant: "default",
-		size: "default"
-	}
-});
-var Toggle = import_react.forwardRef(({ className, variant, size, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root, {
-	"data-uid": "src/components/ui/toggle.tsx:33:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1(toggleVariants({
-		variant,
-		size,
-		className
-	})),
-	...props
-}));
-Toggle.displayName = Root.displayName;
-//#endregion
-//#region src/components/ui/toggle-group.tsx
-var ToggleGroupContext = import_react.createContext({
-	size: "default",
-	variant: "default"
-});
-var ToggleGroup = import_react.forwardRef(({ className, variant, size, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Root2$1, {
-	"data-uid": "src/components/ui/toggle-group.tsx:19:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("flex items-center justify-center gap-1", className),
-	...props,
-	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupContext.Provider, {
-		"data-uid": "src/components/ui/toggle-group.tsx:24:5",
-		"data-prohibitions": "[editContent]",
-		value: {
-			variant,
-			size
-		},
-		children
-	})
-}));
-ToggleGroup.displayName = Root2$1.displayName;
-var ToggleGroupItem = import_react.forwardRef(({ className, children, variant, size, ...props }, ref) => {
-	const context = import_react.useContext(ToggleGroupContext);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Item2, {
-		"data-uid": "src/components/ui/toggle-group.tsx:38:5",
-		"data-prohibitions": "[editContent]",
-		ref,
-		className: cn$1(toggleVariants({
-			variant: context.variant || variant,
-			size: context.size || size
-		}), className),
-		...props,
-		children
-	});
-});
-ToggleGroupItem.displayName = Item2.displayName;
-//#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-popover@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_8b5332f8e883134e9d9ab2856fc4395d/node_modules/@radix-ui/react-popover/dist/index.mjs
 var POPOVER_NAME = "Popover";
 var [createPopoverContext, createPopoverScope] = createContextScope$1(POPOVER_NAME, [createPopperScope]);
@@ -35406,7 +36101,7 @@ var N = "[cmdk-group=\"\"]", Y = "[cmdk-group-items=\"\"]", be = "[cmdk-group-he
 	}, m)));
 }), xe = import_react.forwardRef((r, o) => {
 	let { open: n, onOpenChange: u, overlayClassName: c, contentClassName: d, container: f, ...p } = r;
-	return import_react.createElement(Root$4, {
+	return import_react.createElement(Root$5, {
 		open: n,
 		onOpenChange: u
 	}, import_react.createElement(Portal$2, { container: f }, import_react.createElement(Overlay, {
@@ -46103,4 +46798,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Cjjt_bOp.js.map
+//# sourceMappingURL=index-CmleQ3i6.js.map

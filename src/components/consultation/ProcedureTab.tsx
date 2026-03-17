@@ -25,6 +25,10 @@ export default function ProcedureTab({
       brand: '',
       batch: '',
       dose: '',
+      enableMarking: false,
+      markingArea: '',
+      points: [],
+      vectors: [],
     },
   ])
   const [generalNotes, setGeneralNotes] = useState('')
@@ -41,6 +45,10 @@ export default function ProcedureTab({
         brand: '',
         batch: '',
         dose: '',
+        enableMarking: false,
+        markingArea: '',
+        points: [],
+        vectors: [],
       },
     ])
   }
@@ -49,7 +57,7 @@ export default function ProcedureTab({
     setEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const updateEntry = (id: string, field: keyof ProcedureEntry, value: string) => {
+  const updateEntry = (id: string, field: keyof ProcedureEntry, value: any) => {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
   }
 
