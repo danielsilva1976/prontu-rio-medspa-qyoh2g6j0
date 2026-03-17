@@ -28502,6 +28502,79 @@ var mockDashboardStats = {
 	newPatients: 2
 };
 //#endregion
+//#region src/components/ui/dialog.tsx
+var Dialog = Root$4;
+var DialogTrigger = Trigger$4;
+var DialogPortal = Portal$2;
+var DialogOverlay = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Overlay, {
+	"data-uid": "src/components/ui/dialog.tsx:20:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className),
+	...props
+}));
+DialogOverlay.displayName = Overlay.displayName;
+var DialogContent = import_react.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogPortal, {
+	"data-uid": "src/components/ui/dialog.tsx:35:3",
+	"data-prohibitions": "[editContent]",
+	children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogOverlay, {
+		"data-uid": "src/components/ui/dialog.tsx:36:5",
+		"data-prohibitions": "[editContent]"
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Content$2, {
+		"data-uid": "src/components/ui/dialog.tsx:37:5",
+		"data-prohibitions": "[editContent]",
+		ref,
+		className: cn$1("fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg overflow-y-auto max-h-screen", className),
+		...props,
+		children: [children, /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Close, {
+			"data-uid": "src/components/ui/dialog.tsx:46:7",
+			"data-prohibitions": "[]",
+			className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
+				"data-uid": "src/components/ui/dialog.tsx:47:9",
+				"data-prohibitions": "[editContent]",
+				className: "h-4 w-4"
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+				"data-uid": "src/components/ui/dialog.tsx:48:9",
+				"data-prohibitions": "[]",
+				className: "sr-only",
+				children: "Close"
+			})]
+		})]
+	})]
+}));
+DialogContent.displayName = Content$2.displayName;
+var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	"data-uid": "src/components/ui/dialog.tsx:56:3",
+	"data-prohibitions": "[editContent]",
+	className: cn$1("flex flex-col space-y-1.5 text-center sm:text-left", className),
+	...props
+});
+DialogHeader.displayName = "DialogHeader";
+var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	"data-uid": "src/components/ui/dialog.tsx:61:3",
+	"data-prohibitions": "[editContent]",
+	className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+	...props
+});
+DialogFooter.displayName = "DialogFooter";
+var DialogTitle = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Title, {
+	"data-uid": "src/components/ui/dialog.tsx:72:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("text-lg font-semibold leading-none tracking-tight", className),
+	...props
+}));
+DialogTitle.displayName = Title.displayName;
+var DialogDescription = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Description, {
+	"data-uid": "src/components/ui/dialog.tsx:84:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("text-sm text-muted-foreground", className),
+	...props
+}));
+DialogDescription.displayName = Description.displayName;
+//#endregion
 //#region src/pages/Index.tsx
 function Index() {
 	const { currentUser } = useUserStore();
@@ -28512,66 +28585,78 @@ function Index() {
 	const totalAppointments = mockDashboardStats.scheduledToday;
 	const finalizedRecords = mockDashboardStats.completedRecords;
 	const pendingRecords = totalAppointments - finalizedRecords;
+	const pendingPatients = patients.filter((p) => p.status === "scheduled");
+	const formatDateTime = (dateString) => {
+		if (!dateString) return "Data não definida";
+		const date = new Date(dateString);
+		return new Intl.DateTimeFormat("pt-BR", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit"
+		}).format(date);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Index.tsx:27:5",
+		"data-uid": "src/pages/Index.tsx:52:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:29:7",
+			"data-uid": "src/pages/Index.tsx:54:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col gap-2",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-				"data-uid": "src/pages/Index.tsx:30:9",
+				"data-uid": "src/pages/Index.tsx:55:9",
 				"data-prohibitions": "[editContent]",
 				className: "text-3xl md:text-4xl text-primary",
 				children: [
 					isMedico ? "Bom dia," : "Olá,",
 					" ",
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						"data-uid": "src/pages/Index.tsx:32:11",
+						"data-uid": "src/pages/Index.tsx:57:11",
 						"data-prohibitions": "[editContent]",
 						className: "font-serif italic text-primary/80",
 						children: currentUser.name.split(" ")[0]
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/Index.tsx:36:9",
+				"data-uid": "src/pages/Index.tsx:61:9",
 				"data-prohibitions": "[]",
 				className: "text-muted-foreground",
 				children: "Aqui está o resumo da sua agenda para hoje."
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:40:7",
+			"data-uid": "src/pages/Index.tsx:65:7",
 			"data-prohibitions": "[editContent]",
 			className: "grid gap-4 md:grid-cols-3",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:41:9",
+					"data-uid": "src/pages/Index.tsx:66:9",
 					"data-prohibitions": "[editContent]",
 					className: "border-none shadow-subtle bg-white",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:42:11",
+						"data-uid": "src/pages/Index.tsx:67:11",
 						"data-prohibitions": "[editContent]",
 						className: "p-6 flex items-center gap-4",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:43:13",
+							"data-uid": "src/pages/Index.tsx:68:13",
 							"data-prohibitions": "[]",
 							className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-								"data-uid": "src/pages/Index.tsx:44:15",
+								"data-uid": "src/pages/Index.tsx:69:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-6 h-6"
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:46:13",
+							"data-uid": "src/pages/Index.tsx:71:13",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:47:15",
+								"data-uid": "src/pages/Index.tsx:72:15",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium text-muted-foreground",
 								children: "Agendamentos do Dia"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:48:15",
+								"data-uid": "src/pages/Index.tsx:73:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-2xl font-bold font-serif",
 								children: todaysAppointments
@@ -28580,32 +28665,32 @@ function Index() {
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:53:9",
+					"data-uid": "src/pages/Index.tsx:78:9",
 					"data-prohibitions": "[editContent]",
 					className: "border-none shadow-subtle bg-white",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:54:11",
+						"data-uid": "src/pages/Index.tsx:79:11",
 						"data-prohibitions": "[editContent]",
 						className: "p-6 flex items-center gap-4",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:55:13",
+							"data-uid": "src/pages/Index.tsx:80:13",
 							"data-prohibitions": "[]",
 							className: "p-3 bg-green-50 text-green-600 rounded-2xl",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/Index.tsx:56:15",
+								"data-uid": "src/pages/Index.tsx:81:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-6 h-6"
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:58:13",
+							"data-uid": "src/pages/Index.tsx:83:13",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:59:15",
+								"data-uid": "src/pages/Index.tsx:84:15",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium text-muted-foreground",
 								children: "Prontuários Finalizados"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:60:15",
+								"data-uid": "src/pages/Index.tsx:85:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-2xl font-bold font-serif",
 								children: finalizedRecords
@@ -28613,39 +28698,113 @@ function Index() {
 						})]
 					})
 				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:65:9",
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
+					"data-uid": "src/pages/Index.tsx:90:9",
 					"data-prohibitions": "[editContent]",
-					className: "border-none shadow-subtle bg-white",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:66:11",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
+						"data-uid": "src/pages/Index.tsx:91:11",
 						"data-prohibitions": "[editContent]",
-						className: "p-6 flex items-center gap-4",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:67:13",
-							"data-prohibitions": "[]",
-							className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-								"data-uid": "src/pages/Index.tsx:68:15",
-								"data-prohibitions": "[editContent]",
-								className: "w-6 h-6"
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:70:13",
+						asChild: true,
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+							"data-uid": "src/pages/Index.tsx:92:13",
 							"data-prohibitions": "[editContent]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:71:15",
-								"data-prohibitions": "[]",
-								className: "text-sm font-medium text-muted-foreground",
-								children: "Prontuários Pendentes"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:72:15",
+							className: "border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+								"data-uid": "src/pages/Index.tsx:93:15",
 								"data-prohibitions": "[editContent]",
-								className: "text-2xl font-bold font-serif",
-								children: pendingRecords
-							})]
+								className: "p-6 flex items-center gap-4",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-uid": "src/pages/Index.tsx:94:17",
+									"data-prohibitions": "[]",
+									className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+										"data-uid": "src/pages/Index.tsx:95:19",
+										"data-prohibitions": "[editContent]",
+										className: "w-6 h-6"
+									})
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/pages/Index.tsx:97:17",
+									"data-prohibitions": "[editContent]",
+									className: "text-left",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/pages/Index.tsx:98:19",
+										"data-prohibitions": "[]",
+										className: "text-sm font-medium text-muted-foreground",
+										children: "Prontuários Pendentes"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+										"data-uid": "src/pages/Index.tsx:99:19",
+										"data-prohibitions": "[editContent]",
+										className: "text-2xl font-bold font-serif",
+										children: pendingRecords
+									})]
+								})]
+							})
+						})
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
+						"data-uid": "src/pages/Index.tsx:104:11",
+						"data-prohibitions": "[editContent]",
+						className: "sm:max-w-md md:max-w-2xl rounded-xl",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
+							"data-uid": "src/pages/Index.tsx:105:13",
+							"data-prohibitions": "[]",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
+								"data-uid": "src/pages/Index.tsx:106:15",
+								"data-prohibitions": "[]",
+								className: "font-serif text-xl text-primary",
+								children: "Prontuários Pendentes"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/pages/Index.tsx:110:13",
+							"data-prohibitions": "[editContent]",
+							className: "space-y-3 mt-2 max-h-[60vh] overflow-y-auto pr-2",
+							children: pendingPatients.length > 0 ? pendingPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/pages/Index.tsx:113:19",
+								"data-prohibitions": "[editContent]",
+								className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-border/50 rounded-xl bg-card hover:border-primary/30 hover:shadow-sm transition-all",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/pages/Index.tsx:117:21",
+									"data-prohibitions": "[editContent]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/pages/Index.tsx:118:23",
+										"data-prohibitions": "[editContent]",
+										className: "font-semibold text-foreground",
+										children: patient.name
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+										"data-uid": "src/pages/Index.tsx:119:23",
+										"data-prohibitions": "[editContent]",
+										className: "text-sm text-muted-foreground",
+										children: ["Agendado para: ", formatDateTime(patient.nextAppointment)]
+									})]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+									"data-uid": "src/pages/Index.tsx:123:21",
+									"data-prohibitions": "[]",
+									asChild: true,
+									variant: "outline",
+									className: "shrink-0 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
+										"data-uid": "src/pages/Index.tsx:128:23",
+										"data-prohibitions": "[]",
+										to: `/prontuario/${patient.id}`,
+										children: ["Abrir Prontuário", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, {
+											"data-uid": "src/pages/Index.tsx:130:25",
+											"data-prohibitions": "[editContent]",
+											className: "w-4 h-4 ml-1"
+										})]
+									})
+								})]
+							}, patient.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Index.tsx:136:17",
+								"data-prohibitions": "[]",
+								className: "text-center py-8",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-uid": "src/pages/Index.tsx:137:19",
+									"data-prohibitions": "[]",
+									className: "text-muted-foreground",
+									children: "Nenhum prontuário pendente."
+								})
+							})
 						})]
-					})
+					})]
 				})
 			]
 		})]
@@ -29048,79 +29207,6 @@ var TabsContent = import_react.forwardRef(({ className, ...props }, ref) => /* @
 	...props
 }));
 TabsContent.displayName = Content$1.displayName;
-//#endregion
-//#region src/components/ui/dialog.tsx
-var Dialog = Root$4;
-var DialogTrigger = Trigger$4;
-var DialogPortal = Portal$2;
-var DialogOverlay = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Overlay, {
-	"data-uid": "src/components/ui/dialog.tsx:20:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", className),
-	...props
-}));
-DialogOverlay.displayName = Overlay.displayName;
-var DialogContent = import_react.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogPortal, {
-	"data-uid": "src/components/ui/dialog.tsx:35:3",
-	"data-prohibitions": "[editContent]",
-	children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogOverlay, {
-		"data-uid": "src/components/ui/dialog.tsx:36:5",
-		"data-prohibitions": "[editContent]"
-	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Content$2, {
-		"data-uid": "src/components/ui/dialog.tsx:37:5",
-		"data-prohibitions": "[editContent]",
-		ref,
-		className: cn$1("fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg overflow-y-auto max-h-screen", className),
-		...props,
-		children: [children, /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Close, {
-			"data-uid": "src/components/ui/dialog.tsx:46:7",
-			"data-prohibitions": "[]",
-			className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
-				"data-uid": "src/components/ui/dialog.tsx:47:9",
-				"data-prohibitions": "[editContent]",
-				className: "h-4 w-4"
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				"data-uid": "src/components/ui/dialog.tsx:48:9",
-				"data-prohibitions": "[]",
-				className: "sr-only",
-				children: "Close"
-			})]
-		})]
-	})]
-}));
-DialogContent.displayName = Content$2.displayName;
-var DialogHeader = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-	"data-uid": "src/components/ui/dialog.tsx:56:3",
-	"data-prohibitions": "[editContent]",
-	className: cn$1("flex flex-col space-y-1.5 text-center sm:text-left", className),
-	...props
-});
-DialogHeader.displayName = "DialogHeader";
-var DialogFooter = ({ className, ...props }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-	"data-uid": "src/components/ui/dialog.tsx:61:3",
-	"data-prohibitions": "[editContent]",
-	className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
-	...props
-});
-DialogFooter.displayName = "DialogFooter";
-var DialogTitle = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Title, {
-	"data-uid": "src/components/ui/dialog.tsx:72:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("text-lg font-semibold leading-none tracking-tight", className),
-	...props
-}));
-DialogTitle.displayName = Title.displayName;
-var DialogDescription = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Description, {
-	"data-uid": "src/components/ui/dialog.tsx:84:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("text-sm text-muted-foreground", className),
-	...props
-}));
-DialogDescription.displayName = Description.displayName;
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-label@2.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_55fa612a976b7bdfbf4dcdd93d861aab/node_modules/@radix-ui/react-label/dist/index.mjs
 var NAME$1 = "Label";
@@ -43120,4 +43206,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CJfLc0dZ.js.map
+//# sourceMappingURL=index-BHMaJJ5a.js.map
