@@ -4,6 +4,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { SettingsProvider } from '@/stores/useSettingsStore'
 import { UserProvider } from '@/stores/useUserStore'
+import { AuditProvider } from '@/stores/useAuditStore'
 import Layout from './components/Layout'
 
 // Pages
@@ -16,24 +17,26 @@ import NotFound from './pages/NotFound'
 
 const App = () => (
   <UserProvider>
-    <SettingsProvider>
-      <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/pacientes" element={<Patients />} />
-              <Route path="/prontuario/:id" element={<Consultation />} />
-              <Route path="/documentos" element={<Documents />} />
-              <Route path="/configuracoes" element={<Settings />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
-    </SettingsProvider>
+    <AuditProvider>
+      <SettingsProvider>
+        <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/pacientes" element={<Patients />} />
+                <Route path="/prontuario/:id" element={<Consultation />} />
+                <Route path="/documentos" element={<Documents />} />
+                <Route path="/configuracoes" element={<Settings />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      </SettingsProvider>
+    </AuditProvider>
   </UserProvider>
 )
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Clock, FileText, Activity, Syringe, ClipboardList } from 'lucide-react'
+import { Clock, FileText, Activity, Syringe, ClipboardList, ShieldCheck } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PatientHeader from '@/components/consultation/PatientHeader'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
@@ -9,18 +9,28 @@ import ProcedureTab from '@/components/consultation/ProcedureTab'
 import EvolutionTab from '@/components/consultation/EvolutionTab'
 import DocumentsTab from '@/components/consultation/DocumentsTab'
 import PlanningTab from '@/components/consultation/PlanningTab'
+import AuditLogTab from '@/components/consultation/AuditLogTab'
 import useUserStore from '@/stores/useUserStore'
+import useAuditStore from '@/stores/useAuditStore'
 import { patients } from '@/lib/mock-data'
 
 export default function Consultation() {
   const { id } = useParams()
+  const patientId = id || 'p-001'
   const { currentUser } = useUserStore()
+  const { addLog } = useAuditStore()
+
+  const [isFinalized, setIsFinalized] = useState(false)
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
 
   const defaultTab = showAnamneseExame ? 'anamnese' : 'planejamento'
   const [activeTab, setActiveTab] = useState(defaultTab)
+
+  useEffect(() => {
+    addLog('Prontuário visualizado', patientId)
+  }, [patientId, addLog])
 
   // Ensure active tab updates if user switches role and loses access to current tab
   useEffect(() => {
@@ -32,14 +42,24 @@ export default function Consultation() {
     }
   }, [showAnamneseExame, showDocs, activeTab])
 
+  const handleFinalize = () => {
+    setIsFinalized(true)
+    addLog('Status alterado: Consulta Finalizada', patientId)
+  }
+
   // In a real app, we would fetch patient data based on ID
-  const patient = patients[0]
+  const patient = patients.find((p) => p.id === patientId) || patients[0]
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Patient Header */}
       <div className="bg-white border-b border-border shadow-sm z-10">
-        <PatientHeader patient={patient} id={id} />
+        <PatientHeader
+          patient={patient}
+          id={patientId}
+          isFinalized={isFinalized}
+          onFinalize={handleFinalize}
+        />
 
         {/* Custom Branded Tabs Navigation */}
         <div className="px-6 overflow-x-auto">
@@ -93,6 +113,13 @@ export default function Consultation() {
                   Receitas & Laudos
                 </TabsTrigger>
               )}
+              <TabsTrigger
+                value="auditoria"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+              >
+                <ShieldCheck className="h-4 w-4 mr-2 inline-block" />
+                Auditoria
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -108,13 +135,13 @@ export default function Consultation() {
                   value="anamnese"
                   className="m-0 focus-visible:outline-none focus-visible:ring-0"
                 >
-                  <AnamnesisTab isSigned={false} />
+                  <AnamnesisTab isSigned={isFinalized} patientId={patientId} />
                 </TabsContent>
                 <TabsContent
                   value="exame"
                   className="m-0 focus-visible:outline-none focus-visible:ring-0"
                 >
-                  <PhysicalExamTab isSigned={false} />
+                  <PhysicalExamTab isSigned={isFinalized} patientId={patientId} />
                 </TabsContent>
               </>
             )}
@@ -122,28 +149,34 @@ export default function Consultation() {
               value="planejamento"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <PlanningTab isSigned={false} />
+              <PlanningTab isSigned={isFinalized} patientId={patientId} />
             </TabsContent>
             <TabsContent
               value="procedimentos"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <ProcedureTab isSigned={false} />
+              <ProcedureTab isSigned={isFinalized} patientId={patientId} />
             </TabsContent>
             <TabsContent
               value="evolucao"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <EvolutionTab isSigned={false} />
+              <EvolutionTab isSigned={isFinalized} patientId={patientId} />
             </TabsContent>
             {showDocs && (
               <TabsContent
                 value="documentos"
                 className="m-0 focus-visible:outline-none focus-visible:ring-0"
               >
-                <DocumentsTab />
+                <DocumentsTab isSigned={isFinalized} patientId={patientId} />
               </TabsContent>
             )}
+            <TabsContent
+              value="auditoria"
+              className="m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <AuditLogTab patientId={patientId} />
+            </TabsContent>
           </Tabs>
         </div>
       </div>

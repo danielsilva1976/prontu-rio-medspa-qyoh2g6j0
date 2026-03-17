@@ -3,10 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Syringe, Plus } from 'lucide-react'
+import { Syringe, Plus, Save } from 'lucide-react'
 import ProcedureEntryCard, { type ProcedureEntry } from './ProcedureEntryCard'
+import useAuditStore from '@/stores/useAuditStore'
 
-export default function ProcedureTab({ isSigned }: { isSigned: boolean }) {
+export default function ProcedureTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
+  const { addLog } = useAuditStore()
   const [entries, setEntries] = useState<ProcedureEntry[]>(() => [
     {
       id: Math.random().toString(36).slice(2),
@@ -43,6 +51,10 @@ export default function ProcedureTab({ isSigned }: { isSigned: boolean }) {
 
   const updateEntry = (id: string, field: keyof ProcedureEntry, value: string) => {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
+  }
+
+  const handleSave = () => {
+    addLog('Procedimentos atualizados', patientId)
   }
 
   return (
@@ -91,6 +103,17 @@ export default function ProcedureTab({ isSigned }: { isSigned: boolean }) {
             disabled={isSigned}
           />
         </div>
+
+        {!isSigned && (
+          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+            <Button
+              onClick={handleSave}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            >
+              <Save className="w-4 h-4 mr-2" /> Salvar Registro
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

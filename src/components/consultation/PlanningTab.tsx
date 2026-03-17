@@ -4,7 +4,13 @@ import { ClipboardList } from 'lucide-react'
 import PlanningForm, { type SavedPlan } from './PlanningForm'
 import PlanningList from './PlanningList'
 
-export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
+export default function PlanningTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
   const [isCreating, setIsCreating] = useState(false)
 
   // Starting with mock data to showcase the end-to-end functionality
@@ -65,6 +71,7 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
         {isCreating ? (
           <PlanningForm
             isSigned={isSigned}
+            patientId={patientId}
             onSave={handleSavePlan}
             onCancel={() => setIsCreating(false)}
           />

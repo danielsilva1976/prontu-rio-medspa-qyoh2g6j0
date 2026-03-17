@@ -19448,6 +19448,18 @@ var LayoutDashboard = createLucideIcon("layout-dashboard", [
 		key: "ldoo1y"
 	}]
 ]);
+var Lock = createLucideIcon("lock", [["rect", {
+	width: "18",
+	height: "11",
+	x: "3",
+	y: "11",
+	rx: "2",
+	ry: "2",
+	key: "1w4ew1"
+}], ["path", {
+	d: "M7 11V7a5 5 0 0 1 10 0v4",
+	key: "fwvmzm"
+}]]);
 var MapPin = createLucideIcon("map-pin", [["path", {
 	d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",
 	key: "1r0f0z"
@@ -19586,6 +19598,13 @@ var ShieldAlert = createLucideIcon("shield-alert", [
 		key: "1drbdi"
 	}]
 ]);
+var ShieldCheck = createLucideIcon("shield-check", [["path", {
+	d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+	key: "oel41y"
+}], ["path", {
+	d: "m9 12 2 2 4-4",
+	key: "dzmm74"
+}]]);
 var Shield = createLucideIcon("shield", [["path", {
 	d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
 	key: "oel41y"
@@ -24887,6 +24906,40 @@ var UserProvider = ({ children }) => {
 };
 function useUserStore() {
 	return (0, import_react.useContext)(UserContext);
+}
+//#endregion
+//#region src/stores/useAuditStore.ts
+var defaultLogs = [{
+	id: "log-1",
+	timestamp: (/* @__PURE__ */ new Date(Date.now() - 864e5)).toISOString(),
+	action: "Agendamento confirmado",
+	patientId: "p-001",
+	userId: "usr-3",
+	userName: "Mariana Costa",
+	userRole: "Secretária"
+}];
+var AuditContext = (0, import_react.createContext)({});
+var AuditProvider = ({ children }) => {
+	const [logs, setLogs] = (0, import_react.useState)(defaultLogs);
+	const { currentUser } = useUserStore();
+	const addLog = (0, import_react.useCallback)((action, patientId) => {
+		setLogs((prev) => [{
+			id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+			timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+			action,
+			patientId,
+			userId: currentUser.id,
+			userName: currentUser.name,
+			userRole: currentUser.role
+		}, ...prev]);
+	}, [currentUser]);
+	return (0, import_react.createElement)(AuditContext.Provider, { value: {
+		logs,
+		addLog
+	} }, children);
+};
+function useAuditStore() {
+	return (0, import_react.useContext)(AuditContext);
 }
 //#endregion
 //#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/@radix-ui+react-slot@1.2.4_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-slot/dist/index.mjs
@@ -30430,7 +30483,8 @@ function CompleteHistoryModal({ isOpen, onClose, patient }) {
 }
 //#endregion
 //#region src/components/consultation/PatientHeader.tsx
-function PatientHeader({ patient, id }) {
+function PatientHeader({ patient, id, isFinalized, onFinalize }) {
+	const { addLog } = useAuditStore();
 	const [patientInfo, setPatientInfo] = (0, import_react.useState)({
 		cpf: "123.456.789-00",
 		rg: "12.345.678-9",
@@ -30446,124 +30500,135 @@ function PatientHeader({ patient, id }) {
 	const handleSave = () => {
 		setPatientInfo(editInfo);
 		setIsOpen(false);
+		addLog("Dados do paciente editados", id);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/PatientHeader.tsx:49:5",
+		"data-uid": "src/components/consultation/PatientHeader.tsx:61:5",
 		"data-prohibitions": "[editContent]",
 		className: "px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:50:7",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:62:7",
 				"data-prohibitions": "[editContent]",
 				className: "flex items-start gap-4",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:51:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:63:9",
 						"data-prohibitions": "[]",
 						to: "/pacientes",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:52:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:64:11",
 							"data-prohibitions": "[]",
 							variant: "ghost",
 							size: "icon",
 							className: "text-muted-foreground hover:text-primary mt-1",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowLeft, {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:57:13",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:69:13",
 								"data-prohibitions": "[editContent]",
 								className: "h-5 w-5"
 							})
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Avatar, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:60:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:72:9",
 						"data-prohibitions": "[editContent]",
 						className: "h-14 w-14 border-2 border-primary/20 mt-1",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarImage, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:61:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:73:11",
 							"data-prohibitions": "[editContent]",
 							src: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${id || 1}`
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:64:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:76:11",
 							"data-prohibitions": "[editContent]",
 							children: patient.name.substring(0, 2)
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:66:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:78:9",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-col gap-1.5",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:67:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:79:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex items-center gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:68:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:80:13",
 										"data-prohibitions": "[editContent]",
 										className: "text-xl font-bold text-foreground flex items-center gap-2",
 										children: patient.name
 									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:71:13",
+									isFinalized ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:85:15",
+										"data-prohibitions": "[]",
+										variant: "outline",
+										className: "text-destructive border-destructive bg-destructive/5 flex items-center gap-1.5 px-3 py-0.5",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Lock, {
+											"data-uid": "src/components/consultation/PatientHeader.tsx:89:17",
+											"data-prohibitions": "[editContent]",
+											className: "w-3.5 h-3.5"
+										}), "Consulta Finalizada - Edição Desabilitada"]
+									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:93:15",
 										"data-prohibitions": "[]",
 										variant: "outline",
 										className: "text-primary border-primary bg-primary/5",
 										children: "Atendimento em curso"
 									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:74:13",
+									!isFinalized && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:99:15",
 										"data-prohibitions": "[]",
 										open: isOpen,
 										onOpenChange: setIsOpen,
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-											"data-uid": "src/components/consultation/PatientHeader.tsx:75:15",
+											"data-uid": "src/components/consultation/PatientHeader.tsx:100:17",
 											"data-prohibitions": "[]",
 											asChild: true,
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:76:17",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:101:19",
 												"data-prohibitions": "[]",
 												variant: "ghost",
 												size: "icon",
 												className: "h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted",
 												onClick: () => setEditInfo(patientInfo),
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:82:19",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:107:21",
 													"data-prohibitions": "[editContent]",
 													className: "h-3.5 w-3.5"
 												})
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-											"data-uid": "src/components/consultation/PatientHeader.tsx:85:15",
+											"data-uid": "src/components/consultation/PatientHeader.tsx:110:17",
 											"data-prohibitions": "[]",
 											className: "sm:max-w-[600px] rounded-xl",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:86:17",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:111:19",
 													"data-prohibitions": "[]",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:87:19",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:112:21",
 														"data-prohibitions": "[]",
 														className: "font-serif text-xl text-primary",
 														children: "Editar Dados de Identificação"
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:91:17",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:116:19",
 													"data-prohibitions": "[]",
 													className: "grid grid-cols-1 md:grid-cols-2 gap-4 py-4",
 													children: [
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:92:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:117:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:93:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:118:23",
 																"data-prohibitions": "[]",
 																htmlFor: "cpf",
 																children: "CPF"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:94:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:119:23",
 																"data-prohibitions": "[editContent]",
 																id: "cpf",
 																value: editInfo.cpf,
@@ -30574,16 +30639,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:100:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:125:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:101:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:126:23",
 																"data-prohibitions": "[]",
 																htmlFor: "rg",
 																children: "RG"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:102:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:127:23",
 																"data-prohibitions": "[editContent]",
 																id: "rg",
 																value: editInfo.rg,
@@ -30594,16 +30659,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:108:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:133:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:109:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:134:23",
 																"data-prohibitions": "[]",
 																htmlFor: "profissao",
 																children: "Profissão"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:110:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:135:23",
 																"data-prohibitions": "[editContent]",
 																id: "profissao",
 																value: editInfo.profissao,
@@ -30614,16 +30679,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:116:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:141:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:117:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:142:23",
 																"data-prohibitions": "[]",
 																htmlFor: "estado_civil",
 																children: "Estado Civil"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:118:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:143:23",
 																"data-prohibitions": "[editContent]",
 																id: "estado_civil",
 																value: editInfo.estado_civil,
@@ -30634,16 +30699,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:124:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:149:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:125:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:150:23",
 																"data-prohibitions": "[]",
 																htmlFor: "telefone",
 																children: "Telefone"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:126:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:151:23",
 																"data-prohibitions": "[editContent]",
 																id: "telefone",
 																value: editInfo.telefone,
@@ -30654,16 +30719,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:132:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:157:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:133:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:158:23",
 																"data-prohibitions": "[]",
 																htmlFor: "email",
 																children: "E-mail"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:134:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:159:23",
 																"data-prohibitions": "[editContent]",
 																id: "email",
 																value: editInfo.email,
@@ -30674,16 +30739,16 @@ function PatientHeader({ patient, id }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:140:19",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:165:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2 md:col-span-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:141:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:166:23",
 																"data-prohibitions": "[]",
 																htmlFor: "endereco",
 																children: "Endereço Completo"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:142:21",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:167:23",
 																"data-prohibitions": "[editContent]",
 																id: "endereco",
 																value: editInfo.endereco,
@@ -30696,16 +30761,16 @@ function PatientHeader({ patient, id }) {
 													]
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogFooter, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:149:17",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:174:19",
 													"data-prohibitions": "[]",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:150:19",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:175:21",
 														"data-prohibitions": "[]",
 														variant: "outline",
 														onClick: () => setIsOpen(false),
 														children: "Cancelar"
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:153:19",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:178:21",
 														"data-prohibitions": "[]",
 														onClick: handleSave,
 														className: "bg-primary hover:bg-primary/90 text-primary-foreground",
@@ -30718,17 +30783,17 @@ function PatientHeader({ patient, id }) {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:164:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:190:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:165:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:191:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5 font-medium text-foreground/80",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:166:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:192:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30738,12 +30803,12 @@ function PatientHeader({ patient, id }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:168:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:194:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CreditCard, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:169:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:195:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30752,12 +30817,12 @@ function PatientHeader({ patient, id }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:171:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:197:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Briefcase, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:172:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:198:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30766,12 +30831,12 @@ function PatientHeader({ patient, id }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:174:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:200:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:175:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:201:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30782,15 +30847,15 @@ function PatientHeader({ patient, id }) {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:178:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:204:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex items-center gap-1.5 text-sm text-muted-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-									"data-uid": "src/components/consultation/PatientHeader.tsx:179:13",
+									"data-uid": "src/components/consultation/PatientHeader.tsx:205:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-3.5 w-3.5 shrink-0 text-primary/70"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/consultation/PatientHeader.tsx:180:13",
+									"data-uid": "src/components/consultation/PatientHeader.tsx:206:13",
 									"data-prohibitions": "[editContent]",
 									className: "truncate",
 									children: patientInfo.endereco
@@ -30801,29 +30866,30 @@ function PatientHeader({ patient, id }) {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:184:7",
-				"data-prohibitions": "[]",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:210:7",
+				"data-prohibitions": "[editContent]",
 				className: "flex gap-2 shrink-0",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/consultation/PatientHeader.tsx:185:9",
+					"data-uid": "src/components/consultation/PatientHeader.tsx:211:9",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					className: "border-primary/50 text-primary hover:bg-primary/5",
 					onClick: () => setIsHistoryOpen(true),
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(History, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:190:11",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:216:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 mr-2"
 					}), "Histórico Completo"]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/PatientHeader.tsx:193:9",
+				}), !isFinalized && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+					"data-uid": "src/components/consultation/PatientHeader.tsx:220:11",
 					"data-prohibitions": "[]",
+					onClick: onFinalize,
 					className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
 					children: "Finalizar Atendimento"
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompleteHistoryModal, {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:198:7",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:229:7",
 				"data-prohibitions": "[editContent]",
 				isOpen: isHistoryOpen,
 				onClose: setIsHistoryOpen,
@@ -31433,109 +31499,132 @@ var SECTIONS = [
 		]
 	}
 ];
-function AnamnesisTab({ isSigned }) {
+function AnamnesisTab({ isSigned, patientId }) {
 	const [formData, setFormData] = (0, import_react.useState)(MOCK_DATA);
+	const { addLog } = useAuditStore();
 	const handleChange = (id, value) => {
 		setFormData((prev) => ({
 			...prev,
 			[id]: value
 		}));
 	};
+	const handleSave = () => {
+		addLog("Anamnese atualizada", patientId);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/AnamnesisTab.tsx:120:5",
+		"data-uid": "src/components/consultation/AnamnesisTab.tsx:133:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:121:7",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:134:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:122:7",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:135:7",
 				"data-prohibitions": "[]",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/AnamnesisTab.tsx:123:9",
+					"data-uid": "src/components/consultation/AnamnesisTab.tsx:136:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-2 text-primary font-serif text-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:124:11",
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:137:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " História Clínica"]
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:127:7",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:140:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-8",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/AnamnesisTab.tsx:128:9",
-					"data-prohibitions": "[]",
-					className: "space-y-2",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:129:11",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:141:9",
 						"data-prohibitions": "[]",
-						htmlFor: "queixa",
-						className: "text-base text-foreground font-semibold",
-						children: "Queixa Principal"
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:132:11",
-						"data-prohibitions": "[editContent]",
-						id: "queixa",
-						placeholder: "Descreva o motivo da consulta com as palavras do paciente...",
-						className: "min-h-[100px] resize-y bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-xl",
-						disabled: isSigned,
-						value: formData.queixa || "",
-						onChange: (e) => handleChange("queixa", e.target.value)
-					})]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Accordion, {
-					"data-uid": "src/components/consultation/AnamnesisTab.tsx:142:9",
-					"data-prohibitions": "[editContent]",
-					type: "multiple",
-					className: "w-full space-y-4",
-					children: SECTIONS.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AccordionItem, {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:144:13",
-						"data-prohibitions": "[editContent]",
-						value: section.id,
-						className: "border border-border/50 bg-white rounded-xl px-5 shadow-sm data-[state=open]:border-primary/30 transition-colors",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionTrigger, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:149:15",
+						className: "space-y-2",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+							"data-uid": "src/components/consultation/AnamnesisTab.tsx:142:11",
+							"data-prohibitions": "[]",
+							htmlFor: "queixa",
+							className: "text-base text-foreground font-semibold",
+							children: "Queixa Principal"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
+							"data-uid": "src/components/consultation/AnamnesisTab.tsx:145:11",
 							"data-prohibitions": "[editContent]",
-							className: "text-sm font-bold uppercase tracking-wider text-muted-foreground hover:no-underline hover:text-primary py-4",
-							children: section.title
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionContent, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:152:15",
-							"data-prohibitions": "[editContent]",
-							className: "pt-2 pb-5",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/AnamnesisTab.tsx:153:17",
-								"data-prohibitions": "[editContent]",
-								className: "grid grid-cols-1 md:grid-cols-2 gap-5",
-								children: section.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/AnamnesisTab.tsx:155:21",
-									"data-prohibitions": "[editContent]",
-									className: cn$1("space-y-1.5", field.full && "md:col-span-2"),
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/consultation/AnamnesisTab.tsx:159:23",
-										"data-prohibitions": "[editContent]",
-										htmlFor: field.id,
-										className: "text-foreground/80 font-medium",
-										children: field.label
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/consultation/AnamnesisTab.tsx:162:23",
-										"data-prohibitions": "[editContent]",
-										id: field.id,
-										className: "bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-lg h-9",
-										disabled: isSigned,
-										value: formData[field.id] || "",
-										onChange: (e) => handleChange(field.id, e.target.value)
-									})]
-								}, field.id))
-							})
+							id: "queixa",
+							placeholder: "Descreva o motivo da consulta com as palavras do paciente...",
+							className: "min-h-[100px] resize-y bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-xl",
+							disabled: isSigned,
+							value: formData.queixa || "",
+							onChange: (e) => handleChange("queixa", e.target.value)
 						})]
-					}, section.id))
-				})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Accordion, {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:155:9",
+						"data-prohibitions": "[editContent]",
+						type: "multiple",
+						className: "w-full space-y-4",
+						children: SECTIONS.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AccordionItem, {
+							"data-uid": "src/components/consultation/AnamnesisTab.tsx:157:13",
+							"data-prohibitions": "[editContent]",
+							value: section.id,
+							className: "border border-border/50 bg-white rounded-xl px-5 shadow-sm data-[state=open]:border-primary/30 transition-colors",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionTrigger, {
+								"data-uid": "src/components/consultation/AnamnesisTab.tsx:162:15",
+								"data-prohibitions": "[editContent]",
+								className: "text-sm font-bold uppercase tracking-wider text-muted-foreground hover:no-underline hover:text-primary py-4",
+								children: section.title
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionContent, {
+								"data-uid": "src/components/consultation/AnamnesisTab.tsx:165:15",
+								"data-prohibitions": "[editContent]",
+								className: "pt-2 pb-5",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-uid": "src/components/consultation/AnamnesisTab.tsx:166:17",
+									"data-prohibitions": "[editContent]",
+									className: "grid grid-cols-1 md:grid-cols-2 gap-5",
+									children: section.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/AnamnesisTab.tsx:168:21",
+										"data-prohibitions": "[editContent]",
+										className: cn$1("space-y-1.5", field.full && "md:col-span-2"),
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/consultation/AnamnesisTab.tsx:172:23",
+											"data-prohibitions": "[editContent]",
+											htmlFor: field.id,
+											className: "text-foreground/80 font-medium",
+											children: field.label
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+											"data-uid": "src/components/consultation/AnamnesisTab.tsx:175:23",
+											"data-prohibitions": "[editContent]",
+											id: field.id,
+											className: "bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-lg h-9",
+											disabled: isSigned,
+											value: formData[field.id] || "",
+											onChange: (e) => handleChange(field.id, e.target.value)
+										})]
+									}, field.id))
+								})
+							})]
+						}, section.id))
+					}),
+					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:191:11",
+						"data-prohibitions": "[]",
+						className: "flex justify-end pt-4 mt-6 border-t border-border/50",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+							"data-uid": "src/components/consultation/AnamnesisTab.tsx:192:13",
+							"data-prohibitions": "[]",
+							onClick: handleSave,
+							className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+								"data-uid": "src/components/consultation/AnamnesisTab.tsx:196:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-4 h-4 mr-2"
+							}), " Salvar Anamnese"]
+						})
+					})
+				]
 			})
 		]
 	});
@@ -32627,7 +32716,8 @@ var SelectSeparator = import_react.forwardRef(({ className, ...props }, ref) => 
 SelectSeparator.displayName = Separator.displayName;
 //#endregion
 //#region src/components/consultation/PhysicalExamTab.tsx
-function PhysicalExamTab({ isSigned }) {
+function PhysicalExamTab({ isSigned, patientId }) {
+	const { addLog } = useAuditStore();
 	const [examData, setExamData] = (0, import_react.useState)({
 		fototipo: "",
 		glogau: "",
@@ -32649,61 +32739,64 @@ function PhysicalExamTab({ isSigned }) {
 			[field]: value
 		}));
 	};
+	const handleSave = () => {
+		addLog("Exame Físico atualizado", patientId);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/PhysicalExamTab.tsx:39:5",
-		"data-prohibitions": "[]",
+		"data-uid": "src/components/consultation/PhysicalExamTab.tsx:53:5",
+		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:40:7",
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:54:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:41:7",
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:55:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:42:9",
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:56:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary",
 					children: "Exame Físico"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:43:9",
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:57:9",
 					"data-prohibitions": "[]",
 					children: "Mapeamento e classificação clínica por região anatômica."
 				})]
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:45:7",
-				"data-prohibitions": "[]",
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:59:7",
+				"data-prohibitions": "[editContent]",
 				className: "space-y-6",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:46:9",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:60:9",
 					"data-prohibitions": "[]",
 					defaultValue: "facial",
 					className: "w-full",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:47:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:61:11",
 							"data-prohibitions": "[]",
 							className: "grid w-full grid-cols-3 mb-6 bg-muted/50 p-1 rounded-xl h-auto",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:48:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:62:13",
 									"data-prohibitions": "[]",
 									value: "facial",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
 									children: "Facial"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:54:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:68:13",
 									"data-prohibitions": "[]",
 									value: "cabelo",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
 									children: "Cabelo"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:60:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:74:13",
 									"data-prohibitions": "[]",
 									value: "corporal",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
@@ -32712,74 +32805,74 @@ function PhysicalExamTab({ isSigned }) {
 							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:68:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:82:11",
 							"data-prohibitions": "[]",
 							value: "facial",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:72:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:86:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-3 gap-6",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:73:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:87:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:74:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:88:17",
 											"data-prohibitions": "[]",
 											children: "Fototipo (Fitzpatrick)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:75:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:89:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.fototipo,
 											onValueChange: (v) => handleChange("fototipo", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:80:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:94:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:81:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:95:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:83:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:97:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:84:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:98:21",
 														"data-prohibitions": "[]",
 														value: "I",
 														children: "I - Pele Branca (Sempre queima)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:85:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:99:21",
 														"data-prohibitions": "[]",
 														value: "II",
 														children: "II - Pele Branca (Queima fácil)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:86:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:100:21",
 														"data-prohibitions": "[]",
 														value: "III",
 														children: "III - Pele Morena Clara"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:87:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:101:21",
 														"data-prohibitions": "[]",
 														value: "IV",
 														children: "IV - Pele Morena Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:88:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:102:21",
 														"data-prohibitions": "[]",
 														value: "V",
 														children: "V - Pele Morena Escura"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:89:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:103:21",
 														"data-prohibitions": "[]",
 														value: "VI",
 														children: "VI - Pele Negra"
@@ -32789,52 +32882,52 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:93:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:107:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:94:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:108:17",
 											"data-prohibitions": "[]",
 											children: "Grau de Envelhecimento (Glogau)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:95:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:109:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.glogau,
 											onValueChange: (v) => handleChange("glogau", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:100:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:114:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:101:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:115:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:103:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:117:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:104:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:118:21",
 														"data-prohibitions": "[]",
 														value: "1",
 														children: "Tipo I (Sem rugas)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:105:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:119:21",
 														"data-prohibitions": "[]",
 														value: "2",
 														children: "Tipo II (Rugas em movimento)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:106:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:120:21",
 														"data-prohibitions": "[]",
 														value: "3",
 														children: "Tipo III (Rugas em repouso)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:107:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:121:21",
 														"data-prohibitions": "[]",
 														value: "4",
 														children: "Tipo IV (Apenas rugas)"
@@ -32844,58 +32937,58 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:111:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:125:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:112:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:126:17",
 											"data-prohibitions": "[]",
 											children: "Tipo de Pele"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:113:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:127:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.tipoPele,
 											onValueChange: (v) => handleChange("tipoPele", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:118:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:132:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:119:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:133:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:121:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:135:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:122:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:136:21",
 														"data-prohibitions": "[]",
 														value: "normal",
 														children: "Normal"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:123:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:137:21",
 														"data-prohibitions": "[]",
 														value: "seca",
 														children: "Seca"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:124:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:138:21",
 														"data-prohibitions": "[]",
 														value: "oleosa",
 														children: "Oleosa"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:125:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:139:21",
 														"data-prohibitions": "[]",
 														value: "mista",
 														children: "Mista"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:126:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:140:21",
 														"data-prohibitions": "[]",
 														value: "sensivel",
 														children: "Sensível/Reativa"
@@ -32906,15 +32999,15 @@ function PhysicalExamTab({ isSigned }) {
 									})
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:132:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:146:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:133:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:147:15",
 									"data-prohibitions": "[]",
 									children: "Inspeção Visual, Marcações e Achados - Facial"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:134:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:148:15",
 									"data-prohibitions": "[editContent]",
 									value: examData.inspecaoFacial,
 									onChange: (e) => handleChange("inspecaoFacial", e.target.value),
@@ -32925,68 +33018,68 @@ function PhysicalExamTab({ isSigned }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:144:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:158:11",
 							"data-prohibitions": "[]",
 							value: "cabelo",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:148:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:162:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-2 gap-6",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:149:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:163:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:150:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:164:17",
 											"data-prohibitions": "[]",
 											children: "Padrão de Queda"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:151:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:165:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.padraoQueda,
 											onValueChange: (v) => handleChange("padraoQueda", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:156:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:170:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:157:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:171:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:159:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:173:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:160:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:174:21",
 														"data-prohibitions": "[]",
 														value: "androgenetica",
 														children: "Alopécia Androgenética"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:161:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:175:21",
 														"data-prohibitions": "[]",
 														value: "areata",
 														children: "Alopécia Areata"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:162:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:176:21",
 														"data-prohibitions": "[]",
 														value: "efluvio",
 														children: "Eflúvio Telógeno"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:163:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:177:21",
 														"data-prohibitions": "[]",
 														value: "frontal",
 														children: "Alopécia Frontal Fibrosante"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:164:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:178:21",
 														"data-prohibitions": "[]",
 														value: "outros",
 														children: "Outros"
@@ -32996,38 +33089,38 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:168:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:182:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:169:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:183:17",
 											"data-prohibitions": "[]",
 											children: "Teste de Tração"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:170:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:184:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.testeTracao,
 											onValueChange: (v) => handleChange("testeTracao", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:175:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:189:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:176:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:190:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:178:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:192:19",
 												"data-prohibitions": "[]",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:179:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:193:21",
 													"data-prohibitions": "[]",
 													value: "positivo",
 													children: "Positivo"
 												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:180:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:194:21",
 													"data-prohibitions": "[]",
 													value: "negativo",
 													children: "Negativo"
@@ -33036,46 +33129,46 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:184:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:198:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:185:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:199:17",
 											"data-prohibitions": "[]",
 											children: "Textura do Fio"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:186:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:200:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.textura,
 											onValueChange: (v) => handleChange("textura", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:191:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:205:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:192:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:206:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:194:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:208:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:195:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:209:21",
 														"data-prohibitions": "[]",
 														value: "fina",
 														children: "Fina"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:196:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:210:21",
 														"data-prohibitions": "[]",
 														value: "media",
 														children: "Média"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:197:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:211:21",
 														"data-prohibitions": "[]",
 														value: "grossa",
 														children: "Grossa"
@@ -33085,46 +33178,46 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:201:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:215:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:202:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:216:17",
 											"data-prohibitions": "[]",
 											children: "Densidade"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:203:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:217:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.densidade,
 											onValueChange: (v) => handleChange("densidade", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:208:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:222:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:209:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:223:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:211:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:225:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:212:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:226:21",
 														"data-prohibitions": "[]",
 														value: "normal",
 														children: "Normal"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:213:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:227:21",
 														"data-prohibitions": "[]",
 														value: "reduzida",
 														children: "Reduzida"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:214:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:228:21",
 														"data-prohibitions": "[]",
 														value: "rarefacao",
 														children: "Rarefação Acentuada"
@@ -33135,16 +33228,16 @@ function PhysicalExamTab({ isSigned }) {
 									})
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:220:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:234:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:221:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:235:15",
 									"data-prohibitions": "[]",
 									className: "uppercase font-bold text-foreground",
 									children: "Tricoscopia"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:222:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:236:15",
 									"data-prohibitions": "[editContent]",
 									value: examData.tricoscopia,
 									onChange: (e) => handleChange("tricoscopia", e.target.value),
@@ -33155,62 +33248,62 @@ function PhysicalExamTab({ isSigned }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:232:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:246:11",
 							"data-prohibitions": "[]",
 							value: "corporal",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:236:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:250:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-3 gap-6",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:237:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:251:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:238:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:252:17",
 											"data-prohibitions": "[]",
 											children: "Grau de Celulite (FEG)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:239:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:253:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.grauCelulite,
 											onValueChange: (v) => handleChange("grauCelulite", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:244:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:258:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:245:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:259:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:247:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:261:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:248:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:262:21",
 														"data-prohibitions": "[]",
 														value: "0",
 														children: "Grau 0 (Sem alterações)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:249:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:263:21",
 														"data-prohibitions": "[]",
 														value: "1",
 														children: "Grau 1 (Apenas à compressão)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:250:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:264:21",
 														"data-prohibitions": "[]",
 														value: "2",
 														children: "Grau 2 (Visível em repouso)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:251:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:265:21",
 														"data-prohibitions": "[]",
 														value: "3",
 														children: "Grau 3 (Nódulos e dor)"
@@ -33220,46 +33313,46 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:255:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:269:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:256:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:270:17",
 											"data-prohibitions": "[]",
 											children: "Flacidez Tissular"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:257:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:271:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.flacidez,
 											onValueChange: (v) => handleChange("flacidez", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:262:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:276:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:263:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:277:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:265:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:279:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:266:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:280:21",
 														"data-prohibitions": "[]",
 														value: "leve",
 														children: "Leve"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:267:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:281:21",
 														"data-prohibitions": "[]",
 														value: "moderada",
 														children: "Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:268:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:282:21",
 														"data-prohibitions": "[]",
 														value: "intensa",
 														children: "Intensa"
@@ -33269,52 +33362,52 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:272:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:286:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:273:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:287:17",
 											"data-prohibitions": "[]",
 											children: "Gordura Localizada"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:274:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:288:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
 											value: examData.gordura,
 											onValueChange: (v) => handleChange("gordura", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:279:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:293:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:280:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:294:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:282:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:296:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:283:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:297:21",
 														"data-prohibitions": "[]",
 														value: "ausente",
 														children: "Ausente"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:284:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:298:21",
 														"data-prohibitions": "[]",
 														value: "leve",
 														children: "Leve"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:285:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:299:21",
 														"data-prohibitions": "[]",
 														value: "moderada",
 														children: "Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:286:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:300:21",
 														"data-prohibitions": "[]",
 														value: "acentuada",
 														children: "Acentuada"
@@ -33325,15 +33418,15 @@ function PhysicalExamTab({ isSigned }) {
 									})
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:292:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:306:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:293:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:307:15",
 									"data-prohibitions": "[]",
 									children: "Inspeção Visual e Marcações - Corporal"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:294:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:308:15",
 									"data-prohibitions": "[editContent]",
 									value: examData.inspecaoCorporal,
 									onChange: (e) => handleChange("inspecaoCorporal", e.target.value),
@@ -33344,7 +33437,22 @@ function PhysicalExamTab({ isSigned }) {
 							})]
 						})
 					]
-				})
+				}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:320:11",
+					"data-prohibitions": "[]",
+					className: "flex justify-end pt-4 mt-6 border-t border-border/50",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/components/consultation/PhysicalExamTab.tsx:321:13",
+						"data-prohibitions": "[]",
+						onClick: handleSave,
+						className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:325:15",
+							"data-prohibitions": "[editContent]",
+							className: "w-4 h-4 mr-2"
+						}), " Salvar Exames"]
+					})
+				})]
 			})
 		]
 	});
@@ -33612,7 +33720,8 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 }
 //#endregion
 //#region src/components/consultation/ProcedureTab.tsx
-function ProcedureTab({ isSigned }) {
+function ProcedureTab({ isSigned, patientId }) {
+	const { addLog } = useAuditStore();
 	const [entries, setEntries] = (0, import_react.useState)(() => [{
 		id: Math.random().toString(36).slice(2),
 		type: "",
@@ -33645,45 +33754,48 @@ function ProcedureTab({ isSigned }) {
 			[field]: value
 		} : e));
 	};
+	const handleSave = () => {
+		addLog("Procedimentos atualizados", patientId);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/ProcedureTab.tsx:49:5",
+		"data-uid": "src/components/consultation/ProcedureTab.tsx:61:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:50:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:62:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:51:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:63:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:52:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:64:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:53:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:65:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Registro Técnico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:55:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:67:9",
 					"data-prohibitions": "[]",
 					children: "Detalhes dos materiais utilizados e técnicas aplicadas."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:57:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:69:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6",
 				children: [
 					entries.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:59:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:71:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4",
 						children: entries.map((entry, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProcedureEntryCard, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:61:15",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:73:15",
 							"data-prohibitions": "[editContent]",
 							entry,
 							index,
@@ -33693,27 +33805,27 @@ function ProcedureTab({ isSigned }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:74:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:86:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:79:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:91:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-5 h-5 mr-2"
 						}), "Adicionar Novo Procedimento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:84:9",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:96:9",
 						"data-prohibitions": "[]",
 						className: "space-y-2 pt-4 border-t border-border",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:85:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:97:11",
 							"data-prohibitions": "[]",
 							children: "Técnica de Aplicação e Observações Gerais"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:86:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:98:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas...",
 							className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
@@ -33721,6 +33833,22 @@ function ProcedureTab({ isSigned }) {
 							onChange: (e) => setGeneralNotes(e.target.value),
 							disabled: isSigned
 						})]
+					}),
+					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:108:11",
+						"data-prohibitions": "[]",
+						className: "flex justify-end pt-4 mt-6 border-t border-border/50",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:109:13",
+							"data-prohibitions": "[]",
+							onClick: handleSave,
+							className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+								"data-uid": "src/components/consultation/ProcedureTab.tsx:113:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-4 h-4 mr-2"
+							}), " Salvar Registro"]
+						})
 					})
 				]
 			})
@@ -33729,63 +33857,72 @@ function ProcedureTab({ isSigned }) {
 }
 //#endregion
 //#region src/components/consultation/EvolutionTab.tsx
-function EvolutionTab({ isSigned }) {
+function EvolutionTab({ isSigned, patientId }) {
+	const { addLog } = useAuditStore();
+	const [note, setNote] = (0, import_react.useState)("");
+	const handleAddNote = () => {
+		if (!note.trim()) return;
+		addLog("Evolução adicionada", patientId);
+		setNote("");
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/EvolutionTab.tsx:9:5",
-		"data-prohibitions": "[]",
+		"data-uid": "src/components/consultation/EvolutionTab.tsx:26:5",
+		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:10:7",
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:27:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-muted to-muted-foreground/30"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:11:7",
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:28:7",
 				"data-prohibitions": "[]",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:12:9",
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:29:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(History, {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:13:11",
+						"data-uid": "src/components/consultation/EvolutionTab.tsx:30:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5"
 					}), " Histórico do Paciente & Evolução"]
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:16:7",
-				"data-prohibitions": "[]",
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:33:7",
+				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:17:9",
-					"data-prohibitions": "[]",
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:34:9",
+					"data-prohibitions": "[editContent]",
 					className: "bg-muted/20 p-5 rounded-xl border border-border space-y-4 mb-8",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:18:11",
+							"data-uid": "src/components/consultation/EvolutionTab.tsx:35:11",
 							"data-prohibitions": "[]",
 							className: "text-base text-foreground",
 							children: "Nova Evolução Clínica"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:19:11",
+							"data-uid": "src/components/consultation/EvolutionTab.tsx:36:11",
 							"data-prohibitions": "[editContent]",
+							value: note,
+							onChange: (e) => setNote(e.target.value),
 							placeholder: "Registre a evolução, retorno do paciente, queixas atuais ou orientações dadas...",
 							className: "bg-white border-border rounded-xl focus-visible:ring-primary min-h-[100px]",
 							disabled: isSigned
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:24:11",
-							"data-prohibitions": "[]",
+							"data-uid": "src/components/consultation/EvolutionTab.tsx:43:11",
+							"data-prohibitions": "[editContent]",
 							className: "flex justify-end",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:25:13",
+							children: !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:45:15",
 								"data-prohibitions": "[]",
-								disabled: isSigned,
+								onClick: handleAddNote,
 								className: "bg-primary text-white shadow-sm hover:bg-primary/90",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:29:15",
+									"data-uid": "src/components/consultation/EvolutionTab.tsx:49:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), " Adicionar Nota"]
@@ -33793,48 +33930,48 @@ function EvolutionTab({ isSigned }) {
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:34:9",
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:55:9",
 					"data-prohibitions": "[]",
 					className: "relative border-l-2 border-muted ml-4 md:ml-6 space-y-8 pb-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:35:11",
+						"data-uid": "src/components/consultation/EvolutionTab.tsx:56:11",
 						"data-prohibitions": "[]",
 						className: "relative pl-6",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:36:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:57:13",
 								"data-prohibitions": "[]",
 								className: "absolute w-4 h-4 bg-background border-2 border-primary rounded-full -left-[9px] top-1"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:37:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:58:13",
 								"data-prohibitions": "[]",
 								className: "text-sm font-bold text-primary mb-1",
 								children: "15 de Setembro, 2023"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:38:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:59:13",
 								"data-prohibitions": "[]",
 								className: "bg-white border border-border/50 rounded-xl p-4 shadow-sm",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:39:15",
+										"data-uid": "src/components/consultation/EvolutionTab.tsx:60:15",
 										"data-prohibitions": "[]",
 										className: "font-medium text-primary mb-2",
 										children: "Toxina Botulínica (Terço Superior)"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:40:15",
+										"data-uid": "src/components/consultation/EvolutionTab.tsx:61:15",
 										"data-prohibitions": "[]",
 										className: "text-sm text-muted-foreground",
 										children: "Aplicação de 45U de Dysport. Paciente queixava-se de vincos glabelares fortes. Sem intercorrências. Orientada sobre cuidados pós."
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:44:15",
+										"data-uid": "src/components/consultation/EvolutionTab.tsx:65:15",
 										"data-prohibitions": "[]",
 										className: "mt-3 flex items-center gap-2 text-xs font-medium text-success",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheckBig, {
-											"data-uid": "src/components/consultation/EvolutionTab.tsx:45:17",
+											"data-uid": "src/components/consultation/EvolutionTab.tsx:66:17",
 											"data-prohibitions": "[editContent]",
 											className: "w-3 h-3"
 										}), " Assinado por Dra. Sofia Alencar"]
@@ -33843,32 +33980,32 @@ function EvolutionTab({ isSigned }) {
 							})
 						]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:50:11",
+						"data-uid": "src/components/consultation/EvolutionTab.tsx:71:11",
 						"data-prohibitions": "[]",
 						className: "relative pl-6",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:51:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:72:13",
 								"data-prohibitions": "[]",
 								className: "absolute w-4 h-4 bg-background border-2 border-muted-foreground rounded-full -left-[9px] top-1"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:52:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:73:13",
 								"data-prohibitions": "[]",
 								className: "text-sm font-bold text-muted-foreground mb-1",
 								children: "10 de Março, 2023"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:53:13",
+								"data-uid": "src/components/consultation/EvolutionTab.tsx:74:13",
 								"data-prohibitions": "[]",
 								className: "bg-white border border-border/50 rounded-xl p-4 shadow-sm opacity-80",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:54:15",
+									"data-uid": "src/components/consultation/EvolutionTab.tsx:75:15",
 									"data-prohibitions": "[]",
 									className: "font-medium text-primary mb-2",
 									children: "Primeira Consulta - Avaliação Global"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:55:15",
+									"data-uid": "src/components/consultation/EvolutionTab.tsx:76:15",
 									"data-prohibitions": "[]",
 									className: "text-sm text-muted-foreground",
 									children: "Mapeamento facial realizado. Indicado plano de tratamento anual focando em prevenção de rugas dinâmicas e melhora de textura da pele."
@@ -33898,98 +34035,105 @@ var generatedDocuments = [{
 	status: "Rascunho",
 	content: "Atesto para os devidos fins que a paciente supramencionada submeteu-se, nesta data, a procedimento dermatológico estético minimamente invasivo (Aplicação de Toxina Botulínica tipo A) nas regiões frontal, glabelar e periorbicular.\n\nProcedimento transcorreu sem intercorrências.\n\nRecomendações pós-procedimento fornecidas por escrito à paciente."
 }];
-function DocumentsTab() {
+function DocumentsTab({ isSigned, patientId }) {
+	const { addLog } = useAuditStore();
 	const [docType, setDocType] = (0, import_react.useState)("prescription");
 	const [previewOpen, setPreviewOpen] = (0, import_react.useState)(false);
 	const [selectedDoc, setSelectedDoc] = (0, import_react.useState)(null);
+	const [isSignDialogOpen, setIsSignDialogOpen] = (0, import_react.useState)(false);
 	const handlePreview = (doc) => {
 		setSelectedDoc(doc);
 		setPreviewOpen(true);
 	};
+	const handleConfirmAndSign = () => {
+		addLog("Documento gerado e assinado", patientId);
+		setIsSignDialogOpen(false);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/DocumentsTab.tsx:58:5",
+		"data-uid": "src/components/consultation/DocumentsTab.tsx:81:5",
 		"data-prohibitions": "[editContent]",
 		className: "grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:60:7",
-				"data-prohibitions": "[]",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:83:7",
+				"data-prohibitions": "[editContent]",
 				className: "lg:col-span-2 border-t-[6px] border-t-primary shadow-subtle rounded-xl",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:61:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:84:9",
 					"data-prohibitions": "[]",
 					className: "pb-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:62:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:85:11",
 						"data-prohibitions": "[]",
 						className: "text-2xl font-serif text-primary flex items-center gap-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:63:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:86:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-6 w-6 text-primary/80"
 						}), "Gerar Novo Documento"]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:66:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:89:11",
 						"data-prohibitions": "[]",
 						className: "text-base",
 						children: "Crie receitas, laudos e atestados com a identidade visual da Clínica MEDSPA."
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:70:9",
-					"data-prohibitions": "[]",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:93:9",
+					"data-prohibitions": "[editContent]",
 					className: "space-y-6",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:71:11",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:94:11",
 							"data-prohibitions": "[]",
 							className: "grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/10 p-5 rounded-xl border border-border/50",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:72:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:95:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:73:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:96:15",
 									"data-prohibitions": "[]",
 									className: "text-foreground/80",
 									children: "Tipo de Documento"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:74:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:97:15",
 									"data-prohibitions": "[]",
+									disabled: isSigned,
 									value: docType,
 									onValueChange: setDocType,
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:75:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:98:17",
 										"data-prohibitions": "[]",
 										className: "bg-white border-border focus:ring-primary rounded-lg",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:76:19",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:99:19",
 											"data-prohibitions": "[editContent]",
 											placeholder: "Selecione..."
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:78:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:101:17",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:79:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:102:19",
 												"data-prohibitions": "[]",
 												value: "prescription",
 												children: "Receituário"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:80:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:103:19",
 												"data-prohibitions": "[]",
 												value: "report",
 												children: "Laudo Médico"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:81:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:104:19",
 												"data-prohibitions": "[]",
 												value: "certificate",
 												children: "Atestado"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:82:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:105:19",
 												"data-prohibitions": "[]",
 												value: "consent",
 												children: "Termo de Consentimento"
@@ -33998,109 +34142,113 @@ function DocumentsTab() {
 									})]
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:86:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:109:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:87:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:110:15",
 									"data-prohibitions": "[]",
 									className: "text-foreground/80",
 									children: "Título / Referência"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:88:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:111:15",
 									"data-prohibitions": "[editContent]",
+									disabled: isSigned,
 									placeholder: "Ex: Receita Rotina Noturna",
 									className: "bg-white focus-visible:ring-primary rounded-lg"
 								})]
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:95:11",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:119:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:96:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:120:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground/80 flex justify-between items-center",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:97:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:121:15",
 									"data-prohibitions": "[]",
 									children: "Conteúdo do Documento"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:98:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:122:15",
 									"data-prohibitions": "[]",
 									className: "text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded",
 									children: "Formato livre"
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:102:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:126:13",
 								"data-prohibitions": "[editContent]",
+								disabled: isSigned,
 								placeholder: "Digite o conteúdo aqui...",
 								className: "min-h-[300px] resize-y focus-visible:ring-primary font-serif text-[15px] leading-loose p-5 rounded-xl border-border/80 shadow-inner bg-card"
 							})]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:108:11",
+						!isSigned ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:134:13",
 							"data-prohibitions": "[]",
 							className: "flex justify-end gap-3 pt-6 border-t border-border/50",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:109:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:135:15",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								className: "rounded-lg border-primary/20 text-primary hover:bg-primary/5",
 								children: "Salvar Rascunho"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:115:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:141:15",
 								"data-prohibitions": "[]",
+								open: isSignDialogOpen,
+								onOpenChange: setIsSignDialogOpen,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:116:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:142:17",
 									"data-prohibitions": "[]",
 									asChild: true,
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:117:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:143:19",
 										"data-prohibitions": "[]",
 										className: "bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:118:19",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:144:21",
 											"data-prohibitions": "[editContent]",
 											className: "h-4 w-4"
 										}), "Gerar e Assinar"]
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:122:15",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:148:17",
 									"data-prohibitions": "[]",
 									className: "sm:max-w-md rounded-xl",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:123:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:149:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:124:19",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:150:21",
 											"data-prohibitions": "[]",
 											className: "font-serif text-xl text-primary",
 											children: "Assinatura Digital"
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:128:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:154:19",
 										"data-prohibitions": "[]",
 										className: "space-y-6 py-4",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:129:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:155:21",
 												"data-prohibitions": "[]",
 												className: "text-sm text-muted-foreground leading-relaxed",
 												children: "Insira seu PIN para aplicar sua assinatura digital e gerar o documento oficial em PDF com o timbre da clínica."
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:133:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:159:21",
 												"data-prohibitions": "[]",
 												className: "space-y-3 bg-muted/20 p-4 rounded-lg border border-border",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:134:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:160:23",
 													"data-prohibitions": "[]",
 													className: "text-center block text-foreground/80",
 													children: "PIN de Assinatura"
 												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:137:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:163:23",
 													"data-prohibitions": "[editContent]",
 													type: "password",
 													placeholder: "••••",
@@ -34109,8 +34257,9 @@ function DocumentsTab() {
 												})]
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:144:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:170:21",
 												"data-prohibitions": "[]",
+												onClick: handleConfirmAndSign,
 												className: "w-full bg-primary hover:bg-primary/90 h-11 text-base",
 												children: "Confirmar e Assinar"
 											})
@@ -34118,59 +34267,87 @@ function DocumentsTab() {
 									})]
 								})]
 							})]
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:181:13",
+							"data-prohibitions": "[]",
+							className: "pt-6 border-t border-border/50",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:182:15",
+								"data-prohibitions": "[]",
+								className: "bg-amber-50/80 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, {
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:183:17",
+									"data-prohibitions": "[editContent]",
+									className: "w-5 h-5 text-amber-600 mt-0.5 shrink-0"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:184:17",
+									"data-prohibitions": "[]",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:185:19",
+										"data-prohibitions": "[]",
+										className: "font-semibold text-sm",
+										children: "Edição Bloqueada"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:186:19",
+										"data-prohibitions": "[]",
+										className: "text-sm mt-1 opacity-90 leading-relaxed",
+										children: "A consulta foi finalizada. A emissão e edição de documentos está desabilitada para garantir a integridade e segurança do prontuário médico."
+									})]
+								})]
+							})
 						})
 					]
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:155:7",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:198:7",
 				"data-prohibitions": "[editContent]",
 				className: "shadow-subtle border-t-4 border-t-muted rounded-xl bg-gradient-to-b from-white to-muted/10",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:156:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:199:9",
 					"data-prohibitions": "[]",
 					className: "pb-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:157:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:200:11",
 						"data-prohibitions": "[]",
 						className: "text-lg font-serif",
 						children: "Documentos Gerados"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:158:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:201:11",
 						"data-prohibitions": "[]",
 						children: "Histórico de emissões desta consulta."
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:160:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:203:9",
 					"data-prohibitions": "[editContent]",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:161:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:204:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4",
 						children: generatedDocuments.map((doc) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:163:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:206:15",
 							"data-prohibitions": "[editContent]",
 							className: "p-4 rounded-xl border border-border/80 bg-white hover:border-primary/50 hover:shadow-sm transition-all group relative overflow-hidden",
 							children: [
 								doc.status === "Assinado" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:168:19",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:211:19",
 									"data-prohibitions": "[]",
 									className: "absolute top-0 left-0 w-1 h-full bg-success/80"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:170:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:213:17",
 									"data-prohibitions": "[editContent]",
 									className: "flex justify-between items-start mb-3",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:171:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:214:19",
 										"data-prohibitions": "[editContent]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:172:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:215:21",
 											"data-prohibitions": "[editContent]",
 											className: "font-semibold text-sm text-foreground group-hover:text-primary transition-colors",
 											children: doc.title
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:175:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:218:21",
 											"data-prohibitions": "[editContent]",
 											className: "text-xs text-muted-foreground font-medium",
 											children: [
@@ -34180,40 +34357,40 @@ function DocumentsTab() {
 											]
 										})]
 									}), doc.status === "Assinado" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:180:21",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:223:21",
 										"data-prohibitions": "[editContent]",
 										className: "h-5 w-5 text-success drop-shadow-sm"
 									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:182:21",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:225:21",
 										"data-prohibitions": "[]",
 										className: "text-[10px] uppercase font-bold tracking-wider text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-200",
 										children: "Rascunho"
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:187:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:230:17",
 									"data-prohibitions": "[]",
 									className: "flex gap-2 mt-4 pt-3 border-t border-border/40",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:188:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:231:19",
 										"data-prohibitions": "[]",
 										variant: "ghost",
 										size: "sm",
 										className: "w-full text-xs bg-muted/30 hover:bg-primary/10 hover:text-primary",
 										onClick: () => handlePreview(doc),
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:194:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:237:21",
 											"data-prohibitions": "[editContent]",
 											className: "h-3.5 w-3.5 mr-1.5"
 										}), "Visualizar"]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:197:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:240:19",
 										"data-prohibitions": "[]",
 										variant: "ghost",
 										size: "sm",
 										className: "w-full text-xs bg-muted/30 hover:bg-primary/10 hover:text-primary",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:202:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:245:21",
 											"data-prohibitions": "[editContent]",
 											className: "h-3.5 w-3.5 mr-1.5"
 										}), "PDF"]
@@ -34225,44 +34402,44 @@ function DocumentsTab() {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:213:7",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:256:7",
 				"data-prohibitions": "[editContent]",
 				open: previewOpen,
 				onOpenChange: setPreviewOpen,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:214:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:257:9",
 					"data-prohibitions": "[editContent]",
 					className: "max-w-4xl h-[90vh] p-0 overflow-hidden bg-gray-100/95 flex flex-col border-none shadow-elevation backdrop-blur-sm sm:rounded-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:215:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:258:11",
 						"data-prohibitions": "[]",
 						className: "p-4 px-6 bg-white border-b border-border/50 flex flex-row items-center justify-between shadow-sm sticky top-0 z-10 shrink-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:216:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:259:13",
 							"data-prohibitions": "[]",
 							className: "text-primary font-serif text-xl flex items-center gap-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:217:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:260:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-5 h-5"
 							}), "Pré-visualização do Documento"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:220:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:263:13",
 							"data-prohibitions": "[]",
 							className: "flex gap-3",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:221:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:264:15",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								size: "sm",
 								className: "border-primary/20 hover:bg-primary/5 hover:text-primary",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:226:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:269:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2"
 								}), " Baixar PDF"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:228:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:271:15",
 								"data-prohibitions": "[]",
 								className: "bg-primary hover:bg-primary/90 shadow-sm",
 								size: "sm",
@@ -34270,94 +34447,94 @@ function DocumentsTab() {
 									setTimeout(() => window.print(), 500);
 								},
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:235:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:278:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2"
 								}), " Imprimir Documento"]
 							})]
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollArea, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:240:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:283:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex-1 p-8 flex justify-center w-full",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:242:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:285:13",
 							"data-prohibitions": "[editContent]",
 							className: "bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] mx-auto rounded-sm min-h-[1056px] w-[816px] p-0 flex flex-col relative shrink-0 mb-8 border border-gray-200",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:244:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:287:15",
 								"data-prohibitions": "[]",
 								className: "h-2.5 w-full bg-gradient-to-r from-primary to-primary/80"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:246:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:289:15",
 								"data-prohibitions": "[editContent]",
 								className: "p-16 flex-1 flex flex-col pt-12",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:248:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:291:17",
 										"data-prohibitions": "[]",
 										className: "flex flex-col items-center mb-12",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:249:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:292:19",
 												"data-prohibitions": "[editContent]",
 												src: marca_principal_page_0001_2e968_default,
 												alt: "MEDSPA Logo",
 												className: "h-28 w-auto object-contain mb-8 mix-blend-multiply drop-shadow-sm"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:254:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:297:19",
 												"data-prohibitions": "[]",
 												className: "w-full max-w-[80%] h-[1px] bg-primary/20"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:255:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:298:19",
 												"data-prohibitions": "[]",
 												className: "w-full max-w-[80%] h-[2px] bg-primary mt-1"
 											})
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:259:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:302:17",
 										"data-prohibitions": "[editContent]",
 										className: "flex-1",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:260:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:303:19",
 												"data-prohibitions": "[editContent]",
 												className: "text-2xl font-serif text-center mb-12 uppercase tracking-[0.25em] text-primary/90",
 												children: selectedDoc?.type || "Documento Médico"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:265:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:308:19",
 												"data-prohibitions": "[editContent]",
 												className: "mb-10 text-sm text-gray-700 bg-muted/5 p-4 rounded border border-border/50",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:266:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:309:21",
 													"data-prohibitions": "[]",
 													className: "flex items-center gap-2 mb-1",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
-														"data-uid": "src/components/consultation/DocumentsTab.tsx:267:23",
+														"data-uid": "src/components/consultation/DocumentsTab.tsx:310:23",
 														"data-prohibitions": "[]",
 														className: "text-primary font-semibold uppercase tracking-wider text-xs w-20",
 														children: "Paciente:"
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-														"data-uid": "src/components/consultation/DocumentsTab.tsx:270:23",
+														"data-uid": "src/components/consultation/DocumentsTab.tsx:313:23",
 														"data-prohibitions": "[]",
 														className: "text-base text-foreground",
 														children: "Maria da Silva Santos"
 													})]
 												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:272:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:315:21",
 													"data-prohibitions": "[editContent]",
 													className: "flex items-center gap-2",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
-														"data-uid": "src/components/consultation/DocumentsTab.tsx:273:23",
+														"data-uid": "src/components/consultation/DocumentsTab.tsx:316:23",
 														"data-prohibitions": "[]",
 														className: "text-primary font-semibold uppercase tracking-wider text-xs w-20",
 														children: "Data:"
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-														"data-uid": "src/components/consultation/DocumentsTab.tsx:276:23",
+														"data-uid": "src/components/consultation/DocumentsTab.tsx:319:23",
 														"data-prohibitions": "[editContent]",
 														className: "text-base text-foreground",
 														children: selectedDoc?.date
@@ -34365,7 +34542,7 @@ function DocumentsTab() {
 												})]
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:280:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:323:19",
 												"data-prohibitions": "[editContent]",
 												className: "text-gray-800 text-[16px] leading-loose whitespace-pre-wrap font-serif px-2",
 												children: selectedDoc?.content
@@ -34373,54 +34550,54 @@ function DocumentsTab() {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:286:17",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:329:17",
 										"data-prohibitions": "[editContent]",
 										className: "mt-24 pt-8 flex flex-col items-center justify-end",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:287:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:330:19",
 												"data-prohibitions": "[editContent]",
 												className: "w-80 border-t-[1.5px] border-primary/40 mb-4 relative flex justify-center",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:289:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:332:21",
 													"data-prohibitions": "[]",
 													className: "absolute -top-14 flex flex-col items-center opacity-70",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
-														"data-uid": "src/components/consultation/DocumentsTab.tsx:290:23",
+														"data-uid": "src/components/consultation/DocumentsTab.tsx:333:23",
 														"data-prohibitions": "[editContent]",
 														className: "w-12 h-12 text-primary"
 													})
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:293:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:336:19",
 												"data-prohibitions": "[]",
 												className: "font-serif font-bold text-gray-900 tracking-wide text-xl text-primary",
 												children: "Dra. Fabíola Kleinert"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:296:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:339:19",
 												"data-prohibitions": "[]",
 												className: "text-[15px] text-gray-500 font-medium mt-1",
 												children: "Médica Dermatologista • CRM-SP 123456"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:301:19",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:344:19",
 												"data-prohibitions": "[]",
 												className: "w-full mt-16 pt-6 border-t border-primary/20",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:302:21",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:345:21",
 													"data-prohibitions": "[]",
 													className: "text-[11px] text-primary/70 text-center uppercase tracking-[0.15em] leading-loose",
 													children: [
 														"Clínica MEDSPA Dermatologia Avançada",
 														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {
-															"data-uid": "src/components/consultation/DocumentsTab.tsx:304:23",
+															"data-uid": "src/components/consultation/DocumentsTab.tsx:347:23",
 															"data-prohibitions": "[editContent]"
 														}),
 														"Av. Paulista, 1000, Conjunto 101 - Bela Vista, São Paulo - SP",
 														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {
-															"data-uid": "src/components/consultation/DocumentsTab.tsx:306:23",
+															"data-uid": "src/components/consultation/DocumentsTab.tsx:349:23",
 															"data-prohibitions": "[editContent]"
 														}),
 														"(11) 99999-9999 • contato@medspa.com.br"
@@ -35768,8 +35945,9 @@ var PAYMENT_METHODS = [
 	}
 ];
 var getPaymentMethodLabel = (id) => PAYMENT_METHODS.find((m) => m.id === id)?.label || "Não informado";
-function PlanningForm({ isSigned, onSave, onCancel }) {
+function PlanningForm({ isSigned, patientId, onSave, onCancel }) {
 	const { procedures, technologies, prices } = useSettingsStore();
+	const { addLog } = useAuditStore();
 	const [objective, setObjective] = (0, import_react.useState)("");
 	const [planName, setPlanName] = (0, import_react.useState)("");
 	const [downPayment, setDownPayment] = (0, import_react.useState)("");
@@ -35828,6 +36006,7 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 		currency: "BRL"
 	}).format(v);
 	const handleSave = () => {
+		addLog("Planejamento salvo", patientId);
 		onSave({
 			id: Math.random().toString(36).slice(2),
 			date: new Intl.DateTimeFormat("pt-BR", {
@@ -35846,25 +36025,25 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/PlanningForm.tsx:129:5",
+		"data-uid": "src/components/consultation/PlanningForm.tsx:134:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-fade-in",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:130:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:135:7",
 				"data-prohibitions": "[]",
 				className: "space-y-3",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:131:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:136:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-1.5 text-base",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Target, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:132:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:137:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 text-primary/70"
 					}), " Objetivo principal do paciente"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:134:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:139:9",
 					"data-prohibitions": "[editContent]",
 					value: objective,
 					onChange: (e) => setObjective(e.target.value),
@@ -35873,20 +36052,20 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:142:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:147:7",
 				"data-prohibitions": "[]",
 				className: "space-y-3 pt-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:143:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:148:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-1.5 text-base",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:144:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:149:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 text-primary/70"
 					}), " Nome do Plano Personalizado"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:146:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:151:9",
 					"data-prohibitions": "[editContent]",
 					value: planName,
 					onChange: (e) => setPlanName(e.target.value),
@@ -35895,26 +36074,26 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:154:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:159:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-4 pt-1",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:155:9",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:160:9",
 						"data-prohibitions": "[]",
 						className: "flex items-center gap-1.5 text-base",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:156:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:161:11",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 text-primary/70"
 						}), " Cronograma de Tratamento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:158:9",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:163:9",
 						"data-prohibitions": "[editContent]",
 						className: "relative border-l-2 border-primary/20 ml-3 md:ml-4 space-y-4 py-2",
 						children: entries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningEntryItem, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:160:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:165:13",
 							"data-prohibitions": "[editContent]",
 							entry,
 							isSigned,
@@ -35924,13 +36103,13 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:171:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:176:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full mt-2 border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:176:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:181:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), " Adicionar Procedimento/Sessão"]
@@ -35938,44 +36117,44 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:181:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:186:7",
 				"data-prohibitions": "[editContent]",
 				className: "bg-muted/10 rounded-xl p-5 border border-border/50 space-y-5 mt-4",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:182:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:187:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-5",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:183:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:188:11",
 						"data-prohibitions": "[]",
 						className: "text-base font-semibold flex items-center gap-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Calculator, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:184:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:189:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 text-primary"
 						}), " Investimento"]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:186:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:191:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-3xl font-bold text-primary tracking-tight",
 						children: formatCurr(totalInvestment)
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:191:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:196:9",
 					"data-prohibitions": "[editContent]",
 					className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-1",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:192:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:197:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:193:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:198:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Entrada (R$)"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:196:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:201:13",
 								"data-prohibitions": "[editContent]",
 								type: "number",
 								value: downPayment,
@@ -35985,34 +36164,34 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:204:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:209:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:205:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:210:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Forma de pgto. Entrada"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:208:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:213:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: downPaymentMethod,
 								onValueChange: setDownPaymentMethod,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:213:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:218:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:214:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:219:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:216:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:221:15",
 									"data-prohibitions": "[editContent]",
 									children: PAYMENT_METHODS.map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:218:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:223:19",
 										"data-prohibitions": "[editContent]",
 										value: m.id,
 										children: m.label
@@ -36021,31 +36200,31 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:225:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:230:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:226:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:231:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Número de parcelas"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:229:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:234:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: installments,
 								onValueChange: setInstallments,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:230:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:235:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:231:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:236:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:233:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:238:15",
 									"data-prohibitions": "[editContent]",
 									children: [
 										1,
@@ -36057,7 +36236,7 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 										10,
 										12
 									].map((n) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:235:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:240:19",
 										"data-prohibitions": "[editContent]",
 										value: n.toString(),
 										children: [n, "x"]
@@ -36066,16 +36245,16 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:242:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:247:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:243:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:248:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-primary",
 								children: "Valor da Parcela"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:244:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:249:13",
 								"data-prohibitions": "[editContent]",
 								readOnly: true,
 								value: formatCurr(installmentValue),
@@ -36083,38 +36262,38 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:250:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:255:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:251:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:256:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground flex items-center gap-1",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CreditCard, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:252:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:257:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-3 h-3"
 								}), " Forma de pgto. Saldo"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:254:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:259:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: paymentMethod,
 								onValueChange: setPaymentMethod,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:255:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:260:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:256:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:261:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:258:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:263:15",
 									"data-prohibitions": "[editContent]",
 									children: PAYMENT_METHODS.map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:260:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:265:19",
 										"data-prohibitions": "[editContent]",
 										value: m.id,
 										children: m.label
@@ -36126,24 +36305,23 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:270:7",
-				"data-prohibitions": "[]",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:275:7",
+				"data-prohibitions": "[editContent]",
 				className: "flex justify-end gap-3 pt-4 border-t border-border/50",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:271:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:276:9",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					onClick: onCancel,
 					className: "rounded-xl",
 					children: "Cancelar"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:274:9",
+				}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+					"data-uid": "src/components/consultation/PlanningForm.tsx:280:11",
 					"data-prohibitions": "[]",
 					onClick: handleSave,
-					disabled: isSigned,
 					className: "rounded-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:275:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:281:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 mr-2"
 					}), " Salvar plano"]
@@ -36534,7 +36712,7 @@ function PlanningList({ plans, onCreate, isSigned }) {
 }
 //#endregion
 //#region src/components/consultation/PlanningTab.tsx
-function PlanningTab({ isSigned }) {
+function PlanningTab({ isSigned, patientId }) {
 	const [isCreating, setIsCreating] = (0, import_react.useState)(false);
 	const [savedPlans, setSavedPlans] = (0, import_react.useState)([{
 		id: "mock-1",
@@ -36572,45 +36750,46 @@ function PlanningTab({ isSigned }) {
 		setIsCreating(false);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/PlanningTab.tsx:54:5",
+		"data-uid": "src/components/consultation/PlanningTab.tsx:60:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:55:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:61:7",
 				"data-prohibitions": "[editContent]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:56:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:62:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:57:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:63:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipboardList, {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:58:11",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:64:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Planejamento Terapêutico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:60:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:66:9",
 					"data-prohibitions": "[]",
 					children: "Estratégia clínica estruturada, histórico de planos e previsões de investimento."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:64:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:70:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-8",
 				children: isCreating ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningForm, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:66:11",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:72:11",
 					"data-prohibitions": "[editContent]",
 					isSigned,
+					patientId,
 					onSave: handleSavePlan,
 					onCancel: () => setIsCreating(false)
 				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningList, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:72:11",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:79:11",
 					"data-prohibitions": "[editContent]",
 					plans: savedPlans,
 					onCreate: () => setIsCreating(true),
@@ -36621,13 +36800,2313 @@ function PlanningTab({ isSigned }) {
 	});
 }
 //#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/constants.js
+/**
+* @constant
+* @name daysInYear
+* @summary Days in 1 year.
+*
+* @description
+* How many days in a year.
+*
+* One years equals 365.2425 days according to the formula:
+*
+* > Leap year occurs every 4 years, except for years that are divisible by 100 and not divisible by 400.
+* > 1 mean year = (365+1/4-1/100+1/400) days = 365.2425 days
+*/
+var daysInYear = 365.2425;
+Math.pow(10, 8) * 24 * 60 * 60 * 1e3;
+/**
+* @constant
+* @name millisecondsInWeek
+* @summary Milliseconds in 1 week.
+*/
+var millisecondsInWeek = 6048e5;
+/**
+* @constant
+* @name millisecondsInDay
+* @summary Milliseconds in 1 day.
+*/
+var millisecondsInDay = 864e5;
+/**
+* @constant
+* @name secondsInDay
+* @summary Seconds in 1 day.
+*/
+var secondsInDay = 3600 * 24;
+secondsInDay * 7;
+secondsInDay * daysInYear / 12 * 3;
+/**
+* @constant
+* @name constructFromSymbol
+* @summary Symbol enabling Date extensions to inherit properties from the reference date.
+*
+* The symbol is used to enable the `constructFrom` function to construct a date
+* using a reference date and a value. It allows to transfer extra properties
+* from the reference date to the new date. It's useful for extensions like
+* [`TZDate`](https://github.com/date-fns/tz) that accept a time zone as
+* a constructor argument.
+*/
+var constructFromSymbol = Symbol.for("constructDateFrom");
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/constructFrom.js
+/**
+* @name constructFrom
+* @category Generic Helpers
+* @summary Constructs a date using the reference date and the value
+*
+* @description
+* The function constructs a new date using the constructor from the reference
+* date and the given value. It helps to build generic functions that accept
+* date extensions.
+*
+* It defaults to `Date` if the passed reference date is a number or a string.
+*
+* Starting from v3.7.0, it allows to construct a date using `[Symbol.for("constructDateFrom")]`
+* enabling to transfer extra properties from the reference date to the new date.
+* It's useful for extensions like [`TZDate`](https://github.com/date-fns/tz)
+* that accept a time zone as a constructor argument.
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+*
+* @param date - The reference date to take constructor from
+* @param value - The value to create the date
+*
+* @returns Date initialized using the given date and value
+*
+* @example
+* import { constructFrom } from "./constructFrom/date-fns";
+*
+* // A function that clones a date preserving the original type
+* function cloneDate<DateType extends Date>(date: DateType): DateType {
+*   return constructFrom(
+*     date, // Use constructor from the given date
+*     date.getTime() // Use the date value to create a new date
+*   );
+* }
+*/
+function constructFrom(date, value) {
+	if (typeof date === "function") return date(value);
+	if (date && typeof date === "object" && constructFromSymbol in date) return date[constructFromSymbol](value);
+	if (date instanceof Date) return new date.constructor(value);
+	return new Date(value);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/toDate.js
+/**
+* @name toDate
+* @category Common Helpers
+* @summary Convert the given argument to an instance of Date.
+*
+* @description
+* Convert the given argument to an instance of Date.
+*
+* If the argument is an instance of Date, the function returns its clone.
+*
+* If the argument is a number, it is treated as a timestamp.
+*
+* If the argument is none of the above, the function returns Invalid Date.
+*
+* Starting from v3.7.0, it clones a date using `[Symbol.for("constructDateFrom")]`
+* enabling to transfer extra properties from the reference date to the new date.
+* It's useful for extensions like [`TZDate`](https://github.com/date-fns/tz)
+* that accept a time zone as a constructor argument.
+*
+* **Note**: *all* Date arguments passed to any *date-fns* function is processed by `toDate`.
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param argument - The value to convert
+*
+* @returns The parsed date in the local time zone
+*
+* @example
+* // Clone the date:
+* const result = toDate(new Date(2014, 1, 11, 11, 30, 30))
+* //=> Tue Feb 11 2014 11:30:30
+*
+* @example
+* // Convert the timestamp to date:
+* const result = toDate(1392098430000)
+* //=> Tue Feb 11 2014 11:30:30
+*/
+function toDate(argument, context) {
+	return constructFrom(context || argument, argument);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/defaultOptions.js
+var defaultOptions$1 = {};
+function getDefaultOptions() {
+	return defaultOptions$1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfWeek.js
+/**
+* The {@link startOfWeek} function options.
+*/
+/**
+* @name startOfWeek
+* @category Week Helpers
+* @summary Return the start of a week for the given date.
+*
+* @description
+* Return the start of a week for the given date.
+* The result will be in the local timezone.
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param date - The original date
+* @param options - An object with options
+*
+* @returns The start of a week
+*
+* @example
+* // The start of a week for 2 September 2014 11:55:00:
+* const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0))
+* //=> Sun Aug 31 2014 00:00:00
+*
+* @example
+* // If the week starts on Monday, the start of the week for 2 September 2014 11:55:00:
+* const result = startOfWeek(new Date(2014, 8, 2, 11, 55, 0), { weekStartsOn: 1 })
+* //=> Mon Sep 01 2014 00:00:00
+*/
+function startOfWeek(date, options) {
+	const defaultOptions = getDefaultOptions();
+	const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions.weekStartsOn ?? defaultOptions.locale?.options?.weekStartsOn ?? 0;
+	const _date = toDate(date, options?.in);
+	const day = _date.getDay();
+	const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
+	_date.setDate(_date.getDate() - diff);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfISOWeek.js
+/**
+* The {@link startOfISOWeek} function options.
+*/
+/**
+* @name startOfISOWeek
+* @category ISO Week Helpers
+* @summary Return the start of an ISO week for the given date.
+*
+* @description
+* Return the start of an ISO week for the given date.
+* The result will be in the local timezone.
+*
+* ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param date - The original date
+* @param options - An object with options
+*
+* @returns The start of an ISO week
+*
+* @example
+* // The start of an ISO week for 2 September 2014 11:55:00:
+* const result = startOfISOWeek(new Date(2014, 8, 2, 11, 55, 0))
+* //=> Mon Sep 01 2014 00:00:00
+*/
+function startOfISOWeek(date, options) {
+	return startOfWeek(date, {
+		...options,
+		weekStartsOn: 1
+	});
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getISOWeekYear.js
+/**
+* The {@link getISOWeekYear} function options.
+*/
+/**
+* @name getISOWeekYear
+* @category ISO Week-Numbering Year Helpers
+* @summary Get the ISO week-numbering year of the given date.
+*
+* @description
+* Get the ISO week-numbering year of the given date,
+* which always starts 3 days before the year's first Thursday.
+*
+* ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+*
+* @param date - The given date
+*
+* @returns The ISO week-numbering year
+*
+* @example
+* // Which ISO-week numbering year is 2 January 2005?
+* const result = getISOWeekYear(new Date(2005, 0, 2))
+* //=> 2004
+*/
+function getISOWeekYear(date, options) {
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	const fourthOfJanuaryOfNextYear = constructFrom(_date, 0);
+	fourthOfJanuaryOfNextYear.setFullYear(year + 1, 0, 4);
+	fourthOfJanuaryOfNextYear.setHours(0, 0, 0, 0);
+	const startOfNextYear = startOfISOWeek(fourthOfJanuaryOfNextYear);
+	const fourthOfJanuaryOfThisYear = constructFrom(_date, 0);
+	fourthOfJanuaryOfThisYear.setFullYear(year, 0, 4);
+	fourthOfJanuaryOfThisYear.setHours(0, 0, 0, 0);
+	const startOfThisYear = startOfISOWeek(fourthOfJanuaryOfThisYear);
+	if (_date.getTime() >= startOfNextYear.getTime()) return year + 1;
+	else if (_date.getTime() >= startOfThisYear.getTime()) return year;
+	else return year - 1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/getTimezoneOffsetInMilliseconds.js
+/**
+* Google Chrome as of 67.0.3396.87 introduced timezones with offset that includes seconds.
+* They usually appear for dates that denote time before the timezones were introduced
+* (e.g. for 'Europe/Prague' timezone the offset is GMT+00:57:44 before 1 October 1891
+* and GMT+01:00:00 after that date)
+*
+* Date#getTimezoneOffset returns the offset in minutes and would return 57 for the example above,
+* which would lead to incorrect calculations.
+*
+* This function returns the timezone offset in milliseconds that takes seconds in account.
+*/
+function getTimezoneOffsetInMilliseconds(date) {
+	const _date = toDate(date);
+	const utcDate = new Date(Date.UTC(_date.getFullYear(), _date.getMonth(), _date.getDate(), _date.getHours(), _date.getMinutes(), _date.getSeconds(), _date.getMilliseconds()));
+	utcDate.setUTCFullYear(_date.getFullYear());
+	return +date - +utcDate;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/normalizeDates.js
+function normalizeDates(context, ...dates) {
+	const normalize = constructFrom.bind(null, context || dates.find((date) => typeof date === "object"));
+	return dates.map(normalize);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfDay.js
+/**
+* The {@link startOfDay} function options.
+*/
+/**
+* @name startOfDay
+* @category Day Helpers
+* @summary Return the start of a day for the given date.
+*
+* @description
+* Return the start of a day for the given date.
+* The result will be in the local timezone.
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param date - The original date
+* @param options - The options
+*
+* @returns The start of a day
+*
+* @example
+* // The start of a day for 2 September 2014 11:55:00:
+* const result = startOfDay(new Date(2014, 8, 2, 11, 55, 0))
+* //=> Tue Sep 02 2014 00:00:00
+*/
+function startOfDay(date, options) {
+	const _date = toDate(date, options?.in);
+	_date.setHours(0, 0, 0, 0);
+	return _date;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/differenceInCalendarDays.js
+/**
+* The {@link differenceInCalendarDays} function options.
+*/
+/**
+* @name differenceInCalendarDays
+* @category Day Helpers
+* @summary Get the number of calendar days between the given dates.
+*
+* @description
+* Get the number of calendar days between the given dates. This means that the times are removed
+* from the dates and then the difference in days is calculated.
+*
+* @param laterDate - The later date
+* @param earlierDate - The earlier date
+* @param options - The options object
+*
+* @returns The number of calendar days
+*
+* @example
+* // How many calendar days are between
+* // 2 July 2011 23:00:00 and 2 July 2012 00:00:00?
+* const result = differenceInCalendarDays(
+*   new Date(2012, 6, 2, 0, 0),
+*   new Date(2011, 6, 2, 23, 0)
+* )
+* //=> 366
+* // How many calendar days are between
+* // 2 July 2011 23:59:00 and 3 July 2011 00:01:00?
+* const result = differenceInCalendarDays(
+*   new Date(2011, 6, 3, 0, 1),
+*   new Date(2011, 6, 2, 23, 59)
+* )
+* //=> 1
+*/
+function differenceInCalendarDays(laterDate, earlierDate, options) {
+	const [laterDate_, earlierDate_] = normalizeDates(options?.in, laterDate, earlierDate);
+	const laterStartOfDay = startOfDay(laterDate_);
+	const earlierStartOfDay = startOfDay(earlierDate_);
+	const laterTimestamp = +laterStartOfDay - getTimezoneOffsetInMilliseconds(laterStartOfDay);
+	const earlierTimestamp = +earlierStartOfDay - getTimezoneOffsetInMilliseconds(earlierStartOfDay);
+	return Math.round((laterTimestamp - earlierTimestamp) / millisecondsInDay);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfISOWeekYear.js
+/**
+* The {@link startOfISOWeekYear} function options.
+*/
+/**
+* @name startOfISOWeekYear
+* @category ISO Week-Numbering Year Helpers
+* @summary Return the start of an ISO week-numbering year for the given date.
+*
+* @description
+* Return the start of an ISO week-numbering year,
+* which always starts 3 days before the year's first Thursday.
+* The result will be in the local timezone.
+*
+* ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param date - The original date
+* @param options - An object with options
+*
+* @returns The start of an ISO week-numbering year
+*
+* @example
+* // The start of an ISO week-numbering year for 2 July 2005:
+* const result = startOfISOWeekYear(new Date(2005, 6, 2))
+* //=> Mon Jan 03 2005 00:00:00
+*/
+function startOfISOWeekYear(date, options) {
+	const year = getISOWeekYear(date, options);
+	const fourthOfJanuary = constructFrom(options?.in || date, 0);
+	fourthOfJanuary.setFullYear(year, 0, 4);
+	fourthOfJanuary.setHours(0, 0, 0, 0);
+	return startOfISOWeek(fourthOfJanuary);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isDate.js
+/**
+* @name isDate
+* @category Common Helpers
+* @summary Is the given value a date?
+*
+* @description
+* Returns true if the given value is an instance of Date. The function works for dates transferred across iframes.
+*
+* @param value - The value to check
+*
+* @returns True if the given value is a date
+*
+* @example
+* // For a valid date:
+* const result = isDate(new Date())
+* //=> true
+*
+* @example
+* // For an invalid date:
+* const result = isDate(new Date(NaN))
+* //=> true
+*
+* @example
+* // For some value:
+* const result = isDate('2014-02-31')
+* //=> false
+*
+* @example
+* // For an object:
+* const result = isDate({})
+* //=> false
+*/
+function isDate(value) {
+	return value instanceof Date || typeof value === "object" && Object.prototype.toString.call(value) === "[object Date]";
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/isValid.js
+/**
+* @name isValid
+* @category Common Helpers
+* @summary Is the given date valid?
+*
+* @description
+* Returns false if argument is Invalid Date and true otherwise.
+* Argument is converted to Date using `toDate`. See [toDate](https://date-fns.org/docs/toDate)
+* Invalid Date is a Date, whose time value is NaN.
+*
+* Time value of Date: http://es5.github.io/#x15.9.1.1
+*
+* @param date - The date to check
+*
+* @returns The date is valid
+*
+* @example
+* // For the valid date:
+* const result = isValid(new Date(2014, 1, 31))
+* //=> true
+*
+* @example
+* // For the value, convertible into a date:
+* const result = isValid(1393804800000)
+* //=> true
+*
+* @example
+* // For the invalid date:
+* const result = isValid(new Date(''))
+* //=> false
+*/
+function isValid(date) {
+	return !(!isDate(date) && typeof date !== "number" || isNaN(+toDate(date)));
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfYear.js
+/**
+* The {@link startOfYear} function options.
+*/
+/**
+* @name startOfYear
+* @category Year Helpers
+* @summary Return the start of a year for the given date.
+*
+* @description
+* Return the start of a year for the given date.
+* The result will be in the local timezone.
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type, it is the type returned from the context function if it is passed, or inferred from the arguments.
+*
+* @param date - The original date
+* @param options - The options
+*
+* @returns The start of a year
+*
+* @example
+* // The start of a year for 2 September 2014 11:55:00:
+* const result = startOfYear(new Date(2014, 8, 2, 11, 55, 00))
+* //=> Wed Jan 01 2014 00:00:00
+*/
+function startOfYear(date, options) {
+	const date_ = toDate(date, options?.in);
+	date_.setFullYear(date_.getFullYear(), 0, 1);
+	date_.setHours(0, 0, 0, 0);
+	return date_;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/formatDistance.js
+var formatDistanceLocale = {
+	lessThanXSeconds: {
+		one: "less than a second",
+		other: "less than {{count}} seconds"
+	},
+	xSeconds: {
+		one: "1 second",
+		other: "{{count}} seconds"
+	},
+	halfAMinute: "half a minute",
+	lessThanXMinutes: {
+		one: "less than a minute",
+		other: "less than {{count}} minutes"
+	},
+	xMinutes: {
+		one: "1 minute",
+		other: "{{count}} minutes"
+	},
+	aboutXHours: {
+		one: "about 1 hour",
+		other: "about {{count}} hours"
+	},
+	xHours: {
+		one: "1 hour",
+		other: "{{count}} hours"
+	},
+	xDays: {
+		one: "1 day",
+		other: "{{count}} days"
+	},
+	aboutXWeeks: {
+		one: "about 1 week",
+		other: "about {{count}} weeks"
+	},
+	xWeeks: {
+		one: "1 week",
+		other: "{{count}} weeks"
+	},
+	aboutXMonths: {
+		one: "about 1 month",
+		other: "about {{count}} months"
+	},
+	xMonths: {
+		one: "1 month",
+		other: "{{count}} months"
+	},
+	aboutXYears: {
+		one: "about 1 year",
+		other: "about {{count}} years"
+	},
+	xYears: {
+		one: "1 year",
+		other: "{{count}} years"
+	},
+	overXYears: {
+		one: "over 1 year",
+		other: "over {{count}} years"
+	},
+	almostXYears: {
+		one: "almost 1 year",
+		other: "almost {{count}} years"
+	}
+};
+var formatDistance = (token, count, options) => {
+	let result;
+	const tokenValue = formatDistanceLocale[token];
+	if (typeof tokenValue === "string") result = tokenValue;
+	else if (count === 1) result = tokenValue.one;
+	else result = tokenValue.other.replace("{{count}}", count.toString());
+	if (options?.addSuffix) if (options.comparison && options.comparison > 0) return "in " + result;
+	else return result + " ago";
+	return result;
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildFormatLongFn.js
+function buildFormatLongFn(args) {
+	return (options = {}) => {
+		const width = options.width ? String(options.width) : args.defaultWidth;
+		return args.formats[width] || args.formats[args.defaultWidth];
+	};
+}
+var formatLong = {
+	date: buildFormatLongFn({
+		formats: {
+			full: "EEEE, MMMM do, y",
+			long: "MMMM do, y",
+			medium: "MMM d, y",
+			short: "MM/dd/yyyy"
+		},
+		defaultWidth: "full"
+	}),
+	time: buildFormatLongFn({
+		formats: {
+			full: "h:mm:ss a zzzz",
+			long: "h:mm:ss a z",
+			medium: "h:mm:ss a",
+			short: "h:mm a"
+		},
+		defaultWidth: "full"
+	}),
+	dateTime: buildFormatLongFn({
+		formats: {
+			full: "{{date}} 'at' {{time}}",
+			long: "{{date}} 'at' {{time}}",
+			medium: "{{date}}, {{time}}",
+			short: "{{date}}, {{time}}"
+		},
+		defaultWidth: "full"
+	})
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/formatRelative.js
+var formatRelativeLocale = {
+	lastWeek: "'last' eeee 'at' p",
+	yesterday: "'yesterday at' p",
+	today: "'today at' p",
+	tomorrow: "'tomorrow at' p",
+	nextWeek: "eeee 'at' p",
+	other: "P"
+};
+var formatRelative = (token, _date, _baseDate, _options) => formatRelativeLocale[token];
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildLocalizeFn.js
+/**
+* The localize function argument callback which allows to convert raw value to
+* the actual type.
+*
+* @param value - The value to convert
+*
+* @returns The converted value
+*/
+/**
+* The map of localized values for each width.
+*/
+/**
+* The index type of the locale unit value. It types conversion of units of
+* values that don't start at 0 (i.e. quarters).
+*/
+/**
+* Converts the unit value to the tuple of values.
+*/
+/**
+* The tuple of localized era values. The first element represents BC,
+* the second element represents AD.
+*/
+/**
+* The tuple of localized quarter values. The first element represents Q1.
+*/
+/**
+* The tuple of localized day values. The first element represents Sunday.
+*/
+/**
+* The tuple of localized month values. The first element represents January.
+*/
+function buildLocalizeFn(args) {
+	return (value, options) => {
+		const context = options?.context ? String(options.context) : "standalone";
+		let valuesArray;
+		if (context === "formatting" && args.formattingValues) {
+			const defaultWidth = args.defaultFormattingWidth || args.defaultWidth;
+			const width = options?.width ? String(options.width) : defaultWidth;
+			valuesArray = args.formattingValues[width] || args.formattingValues[defaultWidth];
+		} else {
+			const defaultWidth = args.defaultWidth;
+			const width = options?.width ? String(options.width) : args.defaultWidth;
+			valuesArray = args.values[width] || args.values[defaultWidth];
+		}
+		const index = args.argumentCallback ? args.argumentCallback(value) : value;
+		return valuesArray[index];
+	};
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US/_lib/localize.js
+var eraValues = {
+	narrow: ["B", "A"],
+	abbreviated: ["BC", "AD"],
+	wide: ["Before Christ", "Anno Domini"]
+};
+var quarterValues = {
+	narrow: [
+		"1",
+		"2",
+		"3",
+		"4"
+	],
+	abbreviated: [
+		"Q1",
+		"Q2",
+		"Q3",
+		"Q4"
+	],
+	wide: [
+		"1st quarter",
+		"2nd quarter",
+		"3rd quarter",
+		"4th quarter"
+	]
+};
+var monthValues = {
+	narrow: [
+		"J",
+		"F",
+		"M",
+		"A",
+		"M",
+		"J",
+		"J",
+		"A",
+		"S",
+		"O",
+		"N",
+		"D"
+	],
+	abbreviated: [
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec"
+	],
+	wide: [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December"
+	]
+};
+var dayValues = {
+	narrow: [
+		"S",
+		"M",
+		"T",
+		"W",
+		"T",
+		"F",
+		"S"
+	],
+	short: [
+		"Su",
+		"Mo",
+		"Tu",
+		"We",
+		"Th",
+		"Fr",
+		"Sa"
+	],
+	abbreviated: [
+		"Sun",
+		"Mon",
+		"Tue",
+		"Wed",
+		"Thu",
+		"Fri",
+		"Sat"
+	],
+	wide: [
+		"Sunday",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday"
+	]
+};
+var dayPeriodValues = {
+	narrow: {
+		am: "a",
+		pm: "p",
+		midnight: "mi",
+		noon: "n",
+		morning: "morning",
+		afternoon: "afternoon",
+		evening: "evening",
+		night: "night"
+	},
+	abbreviated: {
+		am: "AM",
+		pm: "PM",
+		midnight: "midnight",
+		noon: "noon",
+		morning: "morning",
+		afternoon: "afternoon",
+		evening: "evening",
+		night: "night"
+	},
+	wide: {
+		am: "a.m.",
+		pm: "p.m.",
+		midnight: "midnight",
+		noon: "noon",
+		morning: "morning",
+		afternoon: "afternoon",
+		evening: "evening",
+		night: "night"
+	}
+};
+var formattingDayPeriodValues = {
+	narrow: {
+		am: "a",
+		pm: "p",
+		midnight: "mi",
+		noon: "n",
+		morning: "in the morning",
+		afternoon: "in the afternoon",
+		evening: "in the evening",
+		night: "at night"
+	},
+	abbreviated: {
+		am: "AM",
+		pm: "PM",
+		midnight: "midnight",
+		noon: "noon",
+		morning: "in the morning",
+		afternoon: "in the afternoon",
+		evening: "in the evening",
+		night: "at night"
+	},
+	wide: {
+		am: "a.m.",
+		pm: "p.m.",
+		midnight: "midnight",
+		noon: "noon",
+		morning: "in the morning",
+		afternoon: "in the afternoon",
+		evening: "in the evening",
+		night: "at night"
+	}
+};
+var ordinalNumber = (dirtyNumber, _options) => {
+	const number = Number(dirtyNumber);
+	const rem100 = number % 100;
+	if (rem100 > 20 || rem100 < 10) switch (rem100 % 10) {
+		case 1: return number + "st";
+		case 2: return number + "nd";
+		case 3: return number + "rd";
+	}
+	return number + "th";
+};
+var localize = {
+	ordinalNumber,
+	era: buildLocalizeFn({
+		values: eraValues,
+		defaultWidth: "wide"
+	}),
+	quarter: buildLocalizeFn({
+		values: quarterValues,
+		defaultWidth: "wide",
+		argumentCallback: (quarter) => quarter - 1
+	}),
+	month: buildLocalizeFn({
+		values: monthValues,
+		defaultWidth: "wide"
+	}),
+	day: buildLocalizeFn({
+		values: dayValues,
+		defaultWidth: "wide"
+	}),
+	dayPeriod: buildLocalizeFn({
+		values: dayPeriodValues,
+		defaultWidth: "wide",
+		formattingValues: formattingDayPeriodValues,
+		defaultFormattingWidth: "wide"
+	})
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildMatchFn.js
+function buildMatchFn(args) {
+	return (string, options = {}) => {
+		const width = options.width;
+		const matchPattern = width && args.matchPatterns[width] || args.matchPatterns[args.defaultMatchWidth];
+		const matchResult = string.match(matchPattern);
+		if (!matchResult) return null;
+		const matchedString = matchResult[0];
+		const parsePatterns = width && args.parsePatterns[width] || args.parsePatterns[args.defaultParseWidth];
+		const key = Array.isArray(parsePatterns) ? findIndex(parsePatterns, (pattern) => pattern.test(matchedString)) : findKey(parsePatterns, (pattern) => pattern.test(matchedString));
+		let value;
+		value = args.valueCallback ? args.valueCallback(key) : key;
+		value = options.valueCallback ? options.valueCallback(value) : value;
+		const rest = string.slice(matchedString.length);
+		return {
+			value,
+			rest
+		};
+	};
+}
+function findKey(object, predicate) {
+	for (const key in object) if (Object.prototype.hasOwnProperty.call(object, key) && predicate(object[key])) return key;
+}
+function findIndex(array, predicate) {
+	for (let key = 0; key < array.length; key++) if (predicate(array[key])) return key;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/_lib/buildMatchPatternFn.js
+function buildMatchPatternFn(args) {
+	return (string, options = {}) => {
+		const matchResult = string.match(args.matchPattern);
+		if (!matchResult) return null;
+		const matchedString = matchResult[0];
+		const parseResult = string.match(args.parsePattern);
+		if (!parseResult) return null;
+		let value = args.valueCallback ? args.valueCallback(parseResult[0]) : parseResult[0];
+		value = options.valueCallback ? options.valueCallback(value) : value;
+		const rest = string.slice(matchedString.length);
+		return {
+			value,
+			rest
+		};
+	};
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/locale/en-US.js
+/**
+* @category Locales
+* @summary English locale (United States).
+* @language English
+* @iso-639-2 eng
+* @author Sasha Koss [@kossnocorp](https://github.com/kossnocorp)
+* @author Lesha Koss [@leshakoss](https://github.com/leshakoss)
+*/
+var enUS = {
+	code: "en-US",
+	formatDistance,
+	formatLong,
+	formatRelative,
+	localize,
+	match: {
+		ordinalNumber: buildMatchPatternFn({
+			matchPattern: /^(\d+)(th|st|nd|rd)?/i,
+			parsePattern: /\d+/i,
+			valueCallback: (value) => parseInt(value, 10)
+		}),
+		era: buildMatchFn({
+			matchPatterns: {
+				narrow: /^(b|a)/i,
+				abbreviated: /^(b\.?\s?c\.?|b\.?\s?c\.?\s?e\.?|a\.?\s?d\.?|c\.?\s?e\.?)/i,
+				wide: /^(before christ|before common era|anno domini|common era)/i
+			},
+			defaultMatchWidth: "wide",
+			parsePatterns: { any: [/^b/i, /^(a|c)/i] },
+			defaultParseWidth: "any"
+		}),
+		quarter: buildMatchFn({
+			matchPatterns: {
+				narrow: /^[1234]/i,
+				abbreviated: /^q[1234]/i,
+				wide: /^[1234](th|st|nd|rd)? quarter/i
+			},
+			defaultMatchWidth: "wide",
+			parsePatterns: { any: [
+				/1/i,
+				/2/i,
+				/3/i,
+				/4/i
+			] },
+			defaultParseWidth: "any",
+			valueCallback: (index) => index + 1
+		}),
+		month: buildMatchFn({
+			matchPatterns: {
+				narrow: /^[jfmasond]/i,
+				abbreviated: /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
+				wide: /^(january|february|march|april|may|june|july|august|september|october|november|december)/i
+			},
+			defaultMatchWidth: "wide",
+			parsePatterns: {
+				narrow: [
+					/^j/i,
+					/^f/i,
+					/^m/i,
+					/^a/i,
+					/^m/i,
+					/^j/i,
+					/^j/i,
+					/^a/i,
+					/^s/i,
+					/^o/i,
+					/^n/i,
+					/^d/i
+				],
+				any: [
+					/^ja/i,
+					/^f/i,
+					/^mar/i,
+					/^ap/i,
+					/^may/i,
+					/^jun/i,
+					/^jul/i,
+					/^au/i,
+					/^s/i,
+					/^o/i,
+					/^n/i,
+					/^d/i
+				]
+			},
+			defaultParseWidth: "any"
+		}),
+		day: buildMatchFn({
+			matchPatterns: {
+				narrow: /^[smtwf]/i,
+				short: /^(su|mo|tu|we|th|fr|sa)/i,
+				abbreviated: /^(sun|mon|tue|wed|thu|fri|sat)/i,
+				wide: /^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i
+			},
+			defaultMatchWidth: "wide",
+			parsePatterns: {
+				narrow: [
+					/^s/i,
+					/^m/i,
+					/^t/i,
+					/^w/i,
+					/^t/i,
+					/^f/i,
+					/^s/i
+				],
+				any: [
+					/^su/i,
+					/^m/i,
+					/^tu/i,
+					/^w/i,
+					/^th/i,
+					/^f/i,
+					/^sa/i
+				]
+			},
+			defaultParseWidth: "any"
+		}),
+		dayPeriod: buildMatchFn({
+			matchPatterns: {
+				narrow: /^(a|p|mi|n|(in the|at) (morning|afternoon|evening|night))/i,
+				any: /^([ap]\.?\s?m\.?|midnight|noon|(in the|at) (morning|afternoon|evening|night))/i
+			},
+			defaultMatchWidth: "any",
+			parsePatterns: { any: {
+				am: /^a/i,
+				pm: /^p/i,
+				midnight: /^mi/i,
+				noon: /^no/i,
+				morning: /morning/i,
+				afternoon: /afternoon/i,
+				evening: /evening/i,
+				night: /night/i
+			} },
+			defaultParseWidth: "any"
+		})
+	},
+	options: {
+		weekStartsOn: 0,
+		firstWeekContainsDate: 1
+	}
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getDayOfYear.js
+/**
+* The {@link getDayOfYear} function options.
+*/
+/**
+* @name getDayOfYear
+* @category Day Helpers
+* @summary Get the day of the year of the given date.
+*
+* @description
+* Get the day of the year of the given date.
+*
+* @param date - The given date
+* @param options - The options
+*
+* @returns The day of year
+*
+* @example
+* // Which day of the year is 2 July 2014?
+* const result = getDayOfYear(new Date(2014, 6, 2))
+* //=> 183
+*/
+function getDayOfYear(date, options) {
+	const _date = toDate(date, options?.in);
+	return differenceInCalendarDays(_date, startOfYear(_date)) + 1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getISOWeek.js
+/**
+* The {@link getISOWeek} function options.
+*/
+/**
+* @name getISOWeek
+* @category ISO Week Helpers
+* @summary Get the ISO week of the given date.
+*
+* @description
+* Get the ISO week of the given date.
+*
+* ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
+*
+* @param date - The given date
+* @param options - The options
+*
+* @returns The ISO week
+*
+* @example
+* // Which week of the ISO-week numbering year is 2 January 2005?
+* const result = getISOWeek(new Date(2005, 0, 2))
+* //=> 53
+*/
+function getISOWeek(date, options) {
+	const _date = toDate(date, options?.in);
+	const diff = +startOfISOWeek(_date) - +startOfISOWeekYear(_date);
+	return Math.round(diff / millisecondsInWeek) + 1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getWeekYear.js
+/**
+* The {@link getWeekYear} function options.
+*/
+/**
+* @name getWeekYear
+* @category Week-Numbering Year Helpers
+* @summary Get the local week-numbering year of the given date.
+*
+* @description
+* Get the local week-numbering year of the given date.
+* The exact calculation depends on the values of
+* `options.weekStartsOn` (which is the index of the first day of the week)
+* and `options.firstWeekContainsDate` (which is the day of January, which is always in
+* the first week of the week-numbering year)
+*
+* Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
+*
+* @param date - The given date
+* @param options - An object with options.
+*
+* @returns The local week-numbering year
+*
+* @example
+* // Which week numbering year is 26 December 2004 with the default settings?
+* const result = getWeekYear(new Date(2004, 11, 26))
+* //=> 2005
+*
+* @example
+* // Which week numbering year is 26 December 2004 if week starts on Saturday?
+* const result = getWeekYear(new Date(2004, 11, 26), { weekStartsOn: 6 })
+* //=> 2004
+*
+* @example
+* // Which week numbering year is 26 December 2004 if the first week contains 4 January?
+* const result = getWeekYear(new Date(2004, 11, 26), { firstWeekContainsDate: 4 })
+* //=> 2004
+*/
+function getWeekYear(date, options) {
+	const _date = toDate(date, options?.in);
+	const year = _date.getFullYear();
+	const defaultOptions = getDefaultOptions();
+	const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions.firstWeekContainsDate ?? defaultOptions.locale?.options?.firstWeekContainsDate ?? 1;
+	const firstWeekOfNextYear = constructFrom(options?.in || date, 0);
+	firstWeekOfNextYear.setFullYear(year + 1, 0, firstWeekContainsDate);
+	firstWeekOfNextYear.setHours(0, 0, 0, 0);
+	const startOfNextYear = startOfWeek(firstWeekOfNextYear, options);
+	const firstWeekOfThisYear = constructFrom(options?.in || date, 0);
+	firstWeekOfThisYear.setFullYear(year, 0, firstWeekContainsDate);
+	firstWeekOfThisYear.setHours(0, 0, 0, 0);
+	const startOfThisYear = startOfWeek(firstWeekOfThisYear, options);
+	if (+_date >= +startOfNextYear) return year + 1;
+	else if (+_date >= +startOfThisYear) return year;
+	else return year - 1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/startOfWeekYear.js
+/**
+* The {@link startOfWeekYear} function options.
+*/
+/**
+* @name startOfWeekYear
+* @category Week-Numbering Year Helpers
+* @summary Return the start of a local week-numbering year for the given date.
+*
+* @description
+* Return the start of a local week-numbering year.
+* The exact calculation depends on the values of
+* `options.weekStartsOn` (which is the index of the first day of the week)
+* and `options.firstWeekContainsDate` (which is the day of January, which is always in
+* the first week of the week-numbering year)
+*
+* Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
+*
+* @typeParam DateType - The `Date` type, the function operates on. Gets inferred from passed arguments. Allows to use extensions like [`UTCDate`](https://github.com/date-fns/utc).
+* @typeParam ResultDate - The result `Date` type.
+*
+* @param date - The original date
+* @param options - An object with options
+*
+* @returns The start of a week-numbering year
+*
+* @example
+* // The start of an a week-numbering year for 2 July 2005 with default settings:
+* const result = startOfWeekYear(new Date(2005, 6, 2))
+* //=> Sun Dec 26 2004 00:00:00
+*
+* @example
+* // The start of a week-numbering year for 2 July 2005
+* // if Monday is the first day of week
+* // and 4 January is always in the first week of the year:
+* const result = startOfWeekYear(new Date(2005, 6, 2), {
+*   weekStartsOn: 1,
+*   firstWeekContainsDate: 4
+* })
+* //=> Mon Jan 03 2005 00:00:00
+*/
+function startOfWeekYear(date, options) {
+	const defaultOptions = getDefaultOptions();
+	const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions.firstWeekContainsDate ?? defaultOptions.locale?.options?.firstWeekContainsDate ?? 1;
+	const year = getWeekYear(date, options);
+	const firstWeek = constructFrom(options?.in || date, 0);
+	firstWeek.setFullYear(year, 0, firstWeekContainsDate);
+	firstWeek.setHours(0, 0, 0, 0);
+	return startOfWeek(firstWeek, options);
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/getWeek.js
+/**
+* The {@link getWeek} function options.
+*/
+/**
+* @name getWeek
+* @category Week Helpers
+* @summary Get the local week index of the given date.
+*
+* @description
+* Get the local week index of the given date.
+* The exact calculation depends on the values of
+* `options.weekStartsOn` (which is the index of the first day of the week)
+* and `options.firstWeekContainsDate` (which is the day of January, which is always in
+* the first week of the week-numbering year)
+*
+* Week numbering: https://en.wikipedia.org/wiki/Week#The_ISO_week_date_system
+*
+* @param date - The given date
+* @param options - An object with options
+*
+* @returns The week
+*
+* @example
+* // Which week of the local week numbering year is 2 January 2005 with default options?
+* const result = getWeek(new Date(2005, 0, 2))
+* //=> 2
+*
+* @example
+* // Which week of the local week numbering year is 2 January 2005,
+* // if Monday is the first day of the week,
+* // and the first week of the year always contains 4 January?
+* const result = getWeek(new Date(2005, 0, 2), {
+*   weekStartsOn: 1,
+*   firstWeekContainsDate: 4
+* })
+* //=> 53
+*/
+function getWeek(date, options) {
+	const _date = toDate(date, options?.in);
+	const diff = +startOfWeek(_date, options) - +startOfWeekYear(_date, options);
+	return Math.round(diff / millisecondsInWeek) + 1;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/addLeadingZeros.js
+function addLeadingZeros(number, targetLength) {
+	return (number < 0 ? "-" : "") + Math.abs(number).toString().padStart(targetLength, "0");
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/lightFormatters.js
+var lightFormatters = {
+	y(date, token) {
+		const signedYear = date.getFullYear();
+		const year = signedYear > 0 ? signedYear : 1 - signedYear;
+		return addLeadingZeros(token === "yy" ? year % 100 : year, token.length);
+	},
+	M(date, token) {
+		const month = date.getMonth();
+		return token === "M" ? String(month + 1) : addLeadingZeros(month + 1, 2);
+	},
+	d(date, token) {
+		return addLeadingZeros(date.getDate(), token.length);
+	},
+	a(date, token) {
+		const dayPeriodEnumValue = date.getHours() / 12 >= 1 ? "pm" : "am";
+		switch (token) {
+			case "a":
+			case "aa": return dayPeriodEnumValue.toUpperCase();
+			case "aaa": return dayPeriodEnumValue;
+			case "aaaaa": return dayPeriodEnumValue[0];
+			default: return dayPeriodEnumValue === "am" ? "a.m." : "p.m.";
+		}
+	},
+	h(date, token) {
+		return addLeadingZeros(date.getHours() % 12 || 12, token.length);
+	},
+	H(date, token) {
+		return addLeadingZeros(date.getHours(), token.length);
+	},
+	m(date, token) {
+		return addLeadingZeros(date.getMinutes(), token.length);
+	},
+	s(date, token) {
+		return addLeadingZeros(date.getSeconds(), token.length);
+	},
+	S(date, token) {
+		const numberOfDigits = token.length;
+		const milliseconds = date.getMilliseconds();
+		return addLeadingZeros(Math.trunc(milliseconds * Math.pow(10, numberOfDigits - 3)), token.length);
+	}
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/formatters.js
+var dayPeriodEnum = {
+	am: "am",
+	pm: "pm",
+	midnight: "midnight",
+	noon: "noon",
+	morning: "morning",
+	afternoon: "afternoon",
+	evening: "evening",
+	night: "night"
+};
+var formatters = {
+	G: function(date, token, localize) {
+		const era = date.getFullYear() > 0 ? 1 : 0;
+		switch (token) {
+			case "G":
+			case "GG":
+			case "GGG": return localize.era(era, { width: "abbreviated" });
+			case "GGGGG": return localize.era(era, { width: "narrow" });
+			default: return localize.era(era, { width: "wide" });
+		}
+	},
+	y: function(date, token, localize) {
+		if (token === "yo") {
+			const signedYear = date.getFullYear();
+			const year = signedYear > 0 ? signedYear : 1 - signedYear;
+			return localize.ordinalNumber(year, { unit: "year" });
+		}
+		return lightFormatters.y(date, token);
+	},
+	Y: function(date, token, localize, options) {
+		const signedWeekYear = getWeekYear(date, options);
+		const weekYear = signedWeekYear > 0 ? signedWeekYear : 1 - signedWeekYear;
+		if (token === "YY") return addLeadingZeros(weekYear % 100, 2);
+		if (token === "Yo") return localize.ordinalNumber(weekYear, { unit: "year" });
+		return addLeadingZeros(weekYear, token.length);
+	},
+	R: function(date, token) {
+		return addLeadingZeros(getISOWeekYear(date), token.length);
+	},
+	u: function(date, token) {
+		return addLeadingZeros(date.getFullYear(), token.length);
+	},
+	Q: function(date, token, localize) {
+		const quarter = Math.ceil((date.getMonth() + 1) / 3);
+		switch (token) {
+			case "Q": return String(quarter);
+			case "QQ": return addLeadingZeros(quarter, 2);
+			case "Qo": return localize.ordinalNumber(quarter, { unit: "quarter" });
+			case "QQQ": return localize.quarter(quarter, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "QQQQQ": return localize.quarter(quarter, {
+				width: "narrow",
+				context: "formatting"
+			});
+			default: return localize.quarter(quarter, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	q: function(date, token, localize) {
+		const quarter = Math.ceil((date.getMonth() + 1) / 3);
+		switch (token) {
+			case "q": return String(quarter);
+			case "qq": return addLeadingZeros(quarter, 2);
+			case "qo": return localize.ordinalNumber(quarter, { unit: "quarter" });
+			case "qqq": return localize.quarter(quarter, {
+				width: "abbreviated",
+				context: "standalone"
+			});
+			case "qqqqq": return localize.quarter(quarter, {
+				width: "narrow",
+				context: "standalone"
+			});
+			default: return localize.quarter(quarter, {
+				width: "wide",
+				context: "standalone"
+			});
+		}
+	},
+	M: function(date, token, localize) {
+		const month = date.getMonth();
+		switch (token) {
+			case "M":
+			case "MM": return lightFormatters.M(date, token);
+			case "Mo": return localize.ordinalNumber(month + 1, { unit: "month" });
+			case "MMM": return localize.month(month, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "MMMMM": return localize.month(month, {
+				width: "narrow",
+				context: "formatting"
+			});
+			default: return localize.month(month, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	L: function(date, token, localize) {
+		const month = date.getMonth();
+		switch (token) {
+			case "L": return String(month + 1);
+			case "LL": return addLeadingZeros(month + 1, 2);
+			case "Lo": return localize.ordinalNumber(month + 1, { unit: "month" });
+			case "LLL": return localize.month(month, {
+				width: "abbreviated",
+				context: "standalone"
+			});
+			case "LLLLL": return localize.month(month, {
+				width: "narrow",
+				context: "standalone"
+			});
+			default: return localize.month(month, {
+				width: "wide",
+				context: "standalone"
+			});
+		}
+	},
+	w: function(date, token, localize, options) {
+		const week = getWeek(date, options);
+		if (token === "wo") return localize.ordinalNumber(week, { unit: "week" });
+		return addLeadingZeros(week, token.length);
+	},
+	I: function(date, token, localize) {
+		const isoWeek = getISOWeek(date);
+		if (token === "Io") return localize.ordinalNumber(isoWeek, { unit: "week" });
+		return addLeadingZeros(isoWeek, token.length);
+	},
+	d: function(date, token, localize) {
+		if (token === "do") return localize.ordinalNumber(date.getDate(), { unit: "date" });
+		return lightFormatters.d(date, token);
+	},
+	D: function(date, token, localize) {
+		const dayOfYear = getDayOfYear(date);
+		if (token === "Do") return localize.ordinalNumber(dayOfYear, { unit: "dayOfYear" });
+		return addLeadingZeros(dayOfYear, token.length);
+	},
+	E: function(date, token, localize) {
+		const dayOfWeek = date.getDay();
+		switch (token) {
+			case "E":
+			case "EE":
+			case "EEE": return localize.day(dayOfWeek, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "EEEEE": return localize.day(dayOfWeek, {
+				width: "narrow",
+				context: "formatting"
+			});
+			case "EEEEEE": return localize.day(dayOfWeek, {
+				width: "short",
+				context: "formatting"
+			});
+			default: return localize.day(dayOfWeek, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	e: function(date, token, localize, options) {
+		const dayOfWeek = date.getDay();
+		const localDayOfWeek = (dayOfWeek - options.weekStartsOn + 8) % 7 || 7;
+		switch (token) {
+			case "e": return String(localDayOfWeek);
+			case "ee": return addLeadingZeros(localDayOfWeek, 2);
+			case "eo": return localize.ordinalNumber(localDayOfWeek, { unit: "day" });
+			case "eee": return localize.day(dayOfWeek, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "eeeee": return localize.day(dayOfWeek, {
+				width: "narrow",
+				context: "formatting"
+			});
+			case "eeeeee": return localize.day(dayOfWeek, {
+				width: "short",
+				context: "formatting"
+			});
+			default: return localize.day(dayOfWeek, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	c: function(date, token, localize, options) {
+		const dayOfWeek = date.getDay();
+		const localDayOfWeek = (dayOfWeek - options.weekStartsOn + 8) % 7 || 7;
+		switch (token) {
+			case "c": return String(localDayOfWeek);
+			case "cc": return addLeadingZeros(localDayOfWeek, token.length);
+			case "co": return localize.ordinalNumber(localDayOfWeek, { unit: "day" });
+			case "ccc": return localize.day(dayOfWeek, {
+				width: "abbreviated",
+				context: "standalone"
+			});
+			case "ccccc": return localize.day(dayOfWeek, {
+				width: "narrow",
+				context: "standalone"
+			});
+			case "cccccc": return localize.day(dayOfWeek, {
+				width: "short",
+				context: "standalone"
+			});
+			default: return localize.day(dayOfWeek, {
+				width: "wide",
+				context: "standalone"
+			});
+		}
+	},
+	i: function(date, token, localize) {
+		const dayOfWeek = date.getDay();
+		const isoDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+		switch (token) {
+			case "i": return String(isoDayOfWeek);
+			case "ii": return addLeadingZeros(isoDayOfWeek, token.length);
+			case "io": return localize.ordinalNumber(isoDayOfWeek, { unit: "day" });
+			case "iii": return localize.day(dayOfWeek, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "iiiii": return localize.day(dayOfWeek, {
+				width: "narrow",
+				context: "formatting"
+			});
+			case "iiiiii": return localize.day(dayOfWeek, {
+				width: "short",
+				context: "formatting"
+			});
+			default: return localize.day(dayOfWeek, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	a: function(date, token, localize) {
+		const dayPeriodEnumValue = date.getHours() / 12 >= 1 ? "pm" : "am";
+		switch (token) {
+			case "a":
+			case "aa": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "aaa": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "abbreviated",
+				context: "formatting"
+			}).toLowerCase();
+			case "aaaaa": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "narrow",
+				context: "formatting"
+			});
+			default: return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	b: function(date, token, localize) {
+		const hours = date.getHours();
+		let dayPeriodEnumValue;
+		if (hours === 12) dayPeriodEnumValue = dayPeriodEnum.noon;
+		else if (hours === 0) dayPeriodEnumValue = dayPeriodEnum.midnight;
+		else dayPeriodEnumValue = hours / 12 >= 1 ? "pm" : "am";
+		switch (token) {
+			case "b":
+			case "bb": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "bbb": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "abbreviated",
+				context: "formatting"
+			}).toLowerCase();
+			case "bbbbb": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "narrow",
+				context: "formatting"
+			});
+			default: return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	B: function(date, token, localize) {
+		const hours = date.getHours();
+		let dayPeriodEnumValue;
+		if (hours >= 17) dayPeriodEnumValue = dayPeriodEnum.evening;
+		else if (hours >= 12) dayPeriodEnumValue = dayPeriodEnum.afternoon;
+		else if (hours >= 4) dayPeriodEnumValue = dayPeriodEnum.morning;
+		else dayPeriodEnumValue = dayPeriodEnum.night;
+		switch (token) {
+			case "B":
+			case "BB":
+			case "BBB": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "abbreviated",
+				context: "formatting"
+			});
+			case "BBBBB": return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "narrow",
+				context: "formatting"
+			});
+			default: return localize.dayPeriod(dayPeriodEnumValue, {
+				width: "wide",
+				context: "formatting"
+			});
+		}
+	},
+	h: function(date, token, localize) {
+		if (token === "ho") {
+			let hours = date.getHours() % 12;
+			if (hours === 0) hours = 12;
+			return localize.ordinalNumber(hours, { unit: "hour" });
+		}
+		return lightFormatters.h(date, token);
+	},
+	H: function(date, token, localize) {
+		if (token === "Ho") return localize.ordinalNumber(date.getHours(), { unit: "hour" });
+		return lightFormatters.H(date, token);
+	},
+	K: function(date, token, localize) {
+		const hours = date.getHours() % 12;
+		if (token === "Ko") return localize.ordinalNumber(hours, { unit: "hour" });
+		return addLeadingZeros(hours, token.length);
+	},
+	k: function(date, token, localize) {
+		let hours = date.getHours();
+		if (hours === 0) hours = 24;
+		if (token === "ko") return localize.ordinalNumber(hours, { unit: "hour" });
+		return addLeadingZeros(hours, token.length);
+	},
+	m: function(date, token, localize) {
+		if (token === "mo") return localize.ordinalNumber(date.getMinutes(), { unit: "minute" });
+		return lightFormatters.m(date, token);
+	},
+	s: function(date, token, localize) {
+		if (token === "so") return localize.ordinalNumber(date.getSeconds(), { unit: "second" });
+		return lightFormatters.s(date, token);
+	},
+	S: function(date, token) {
+		return lightFormatters.S(date, token);
+	},
+	X: function(date, token, _localize) {
+		const timezoneOffset = date.getTimezoneOffset();
+		if (timezoneOffset === 0) return "Z";
+		switch (token) {
+			case "X": return formatTimezoneWithOptionalMinutes(timezoneOffset);
+			case "XXXX":
+			case "XX": return formatTimezone(timezoneOffset);
+			default: return formatTimezone(timezoneOffset, ":");
+		}
+	},
+	x: function(date, token, _localize) {
+		const timezoneOffset = date.getTimezoneOffset();
+		switch (token) {
+			case "x": return formatTimezoneWithOptionalMinutes(timezoneOffset);
+			case "xxxx":
+			case "xx": return formatTimezone(timezoneOffset);
+			default: return formatTimezone(timezoneOffset, ":");
+		}
+	},
+	O: function(date, token, _localize) {
+		const timezoneOffset = date.getTimezoneOffset();
+		switch (token) {
+			case "O":
+			case "OO":
+			case "OOO": return "GMT" + formatTimezoneShort(timezoneOffset, ":");
+			default: return "GMT" + formatTimezone(timezoneOffset, ":");
+		}
+	},
+	z: function(date, token, _localize) {
+		const timezoneOffset = date.getTimezoneOffset();
+		switch (token) {
+			case "z":
+			case "zz":
+			case "zzz": return "GMT" + formatTimezoneShort(timezoneOffset, ":");
+			default: return "GMT" + formatTimezone(timezoneOffset, ":");
+		}
+	},
+	t: function(date, token, _localize) {
+		return addLeadingZeros(Math.trunc(+date / 1e3), token.length);
+	},
+	T: function(date, token, _localize) {
+		return addLeadingZeros(+date, token.length);
+	}
+};
+function formatTimezoneShort(offset, delimiter = "") {
+	const sign = offset > 0 ? "-" : "+";
+	const absOffset = Math.abs(offset);
+	const hours = Math.trunc(absOffset / 60);
+	const minutes = absOffset % 60;
+	if (minutes === 0) return sign + String(hours);
+	return sign + String(hours) + delimiter + addLeadingZeros(minutes, 2);
+}
+function formatTimezoneWithOptionalMinutes(offset, delimiter) {
+	if (offset % 60 === 0) return (offset > 0 ? "-" : "+") + addLeadingZeros(Math.abs(offset) / 60, 2);
+	return formatTimezone(offset, delimiter);
+}
+function formatTimezone(offset, delimiter = "") {
+	const sign = offset > 0 ? "-" : "+";
+	const absOffset = Math.abs(offset);
+	const hours = addLeadingZeros(Math.trunc(absOffset / 60), 2);
+	const minutes = addLeadingZeros(absOffset % 60, 2);
+	return sign + hours + delimiter + minutes;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/format/longFormatters.js
+var dateLongFormatter = (pattern, formatLong) => {
+	switch (pattern) {
+		case "P": return formatLong.date({ width: "short" });
+		case "PP": return formatLong.date({ width: "medium" });
+		case "PPP": return formatLong.date({ width: "long" });
+		default: return formatLong.date({ width: "full" });
+	}
+};
+var timeLongFormatter = (pattern, formatLong) => {
+	switch (pattern) {
+		case "p": return formatLong.time({ width: "short" });
+		case "pp": return formatLong.time({ width: "medium" });
+		case "ppp": return formatLong.time({ width: "long" });
+		default: return formatLong.time({ width: "full" });
+	}
+};
+var dateTimeLongFormatter = (pattern, formatLong) => {
+	const matchResult = pattern.match(/(P+)(p+)?/) || [];
+	const datePattern = matchResult[1];
+	const timePattern = matchResult[2];
+	if (!timePattern) return dateLongFormatter(pattern, formatLong);
+	let dateTimeFormat;
+	switch (datePattern) {
+		case "P":
+			dateTimeFormat = formatLong.dateTime({ width: "short" });
+			break;
+		case "PP":
+			dateTimeFormat = formatLong.dateTime({ width: "medium" });
+			break;
+		case "PPP":
+			dateTimeFormat = formatLong.dateTime({ width: "long" });
+			break;
+		default:
+			dateTimeFormat = formatLong.dateTime({ width: "full" });
+			break;
+	}
+	return dateTimeFormat.replace("{{date}}", dateLongFormatter(datePattern, formatLong)).replace("{{time}}", timeLongFormatter(timePattern, formatLong));
+};
+var longFormatters = {
+	p: timeLongFormatter,
+	P: dateTimeLongFormatter
+};
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/_lib/protectedTokens.js
+var dayOfYearTokenRE = /^D+$/;
+var weekYearTokenRE = /^Y+$/;
+var throwTokens = [
+	"D",
+	"DD",
+	"YY",
+	"YYYY"
+];
+function isProtectedDayOfYearToken(token) {
+	return dayOfYearTokenRE.test(token);
+}
+function isProtectedWeekYearToken(token) {
+	return weekYearTokenRE.test(token);
+}
+function warnOrThrowProtectedError(token, format, input) {
+	const _message = message(token, format, input);
+	console.warn(_message);
+	if (throwTokens.includes(token)) throw new RangeError(_message);
+}
+function message(token, format, input) {
+	const subject = token[0] === "Y" ? "years" : "days of the month";
+	return `Use \`${token.toLowerCase()}\` instead of \`${token}\` (in \`${format}\`) for formatting ${subject} to the input \`${input}\`; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md`;
+}
+//#endregion
+//#region ../../cache/modules/prontuario-medspa-39b68/node_modules/.pnpm/date-fns@4.1.0/node_modules/date-fns/format.js
+var formattingTokensRegExp = /[yYQqMLwIdDecihHKkms]o|(\w)\1*|''|'(''|[^'])+('|$)|./g;
+var longFormattingTokensRegExp = /P+p+|P+|p+|''|'(''|[^'])+('|$)|./g;
+var escapedStringRegExp = /^'([^]*?)'?$/;
+var doubleQuoteRegExp = /''/g;
+var unescapedLatinCharacterRegExp = /[a-zA-Z]/;
+/**
+* The {@link format} function options.
+*/
+/**
+* @name format
+* @alias formatDate
+* @category Common Helpers
+* @summary Format the date.
+*
+* @description
+* Return the formatted date string in the given format. The result may vary by locale.
+*
+* > ⚠️ Please note that the `format` tokens differ from Moment.js and other libraries.
+* > See: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+*
+* The characters wrapped between two single quotes characters (') are escaped.
+* Two single quotes in a row, whether inside or outside a quoted sequence, represent a 'real' single quote.
+* (see the last example)
+*
+* Format of the string is based on Unicode Technical Standard #35:
+* https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
+* with a few additions (see note 7 below the table).
+*
+* Accepted patterns:
+* | Unit                            | Pattern | Result examples                   | Notes |
+* |---------------------------------|---------|-----------------------------------|-------|
+* | Era                             | G..GGG  | AD, BC                            |       |
+* |                                 | GGGG    | Anno Domini, Before Christ        | 2     |
+* |                                 | GGGGG   | A, B                              |       |
+* | Calendar year                   | y       | 44, 1, 1900, 2017                 | 5     |
+* |                                 | yo      | 44th, 1st, 0th, 17th              | 5,7   |
+* |                                 | yy      | 44, 01, 00, 17                    | 5     |
+* |                                 | yyy     | 044, 001, 1900, 2017              | 5     |
+* |                                 | yyyy    | 0044, 0001, 1900, 2017            | 5     |
+* |                                 | yyyyy   | ...                               | 3,5   |
+* | Local week-numbering year       | Y       | 44, 1, 1900, 2017                 | 5     |
+* |                                 | Yo      | 44th, 1st, 1900th, 2017th         | 5,7   |
+* |                                 | YY      | 44, 01, 00, 17                    | 5,8   |
+* |                                 | YYY     | 044, 001, 1900, 2017              | 5     |
+* |                                 | YYYY    | 0044, 0001, 1900, 2017            | 5,8   |
+* |                                 | YYYYY   | ...                               | 3,5   |
+* | ISO week-numbering year         | R       | -43, 0, 1, 1900, 2017             | 5,7   |
+* |                                 | RR      | -43, 00, 01, 1900, 2017           | 5,7   |
+* |                                 | RRR     | -043, 000, 001, 1900, 2017        | 5,7   |
+* |                                 | RRRR    | -0043, 0000, 0001, 1900, 2017     | 5,7   |
+* |                                 | RRRRR   | ...                               | 3,5,7 |
+* | Extended year                   | u       | -43, 0, 1, 1900, 2017             | 5     |
+* |                                 | uu      | -43, 01, 1900, 2017               | 5     |
+* |                                 | uuu     | -043, 001, 1900, 2017             | 5     |
+* |                                 | uuuu    | -0043, 0001, 1900, 2017           | 5     |
+* |                                 | uuuuu   | ...                               | 3,5   |
+* | Quarter (formatting)            | Q       | 1, 2, 3, 4                        |       |
+* |                                 | Qo      | 1st, 2nd, 3rd, 4th                | 7     |
+* |                                 | QQ      | 01, 02, 03, 04                    |       |
+* |                                 | QQQ     | Q1, Q2, Q3, Q4                    |       |
+* |                                 | QQQQ    | 1st quarter, 2nd quarter, ...     | 2     |
+* |                                 | QQQQQ   | 1, 2, 3, 4                        | 4     |
+* | Quarter (stand-alone)           | q       | 1, 2, 3, 4                        |       |
+* |                                 | qo      | 1st, 2nd, 3rd, 4th                | 7     |
+* |                                 | qq      | 01, 02, 03, 04                    |       |
+* |                                 | qqq     | Q1, Q2, Q3, Q4                    |       |
+* |                                 | qqqq    | 1st quarter, 2nd quarter, ...     | 2     |
+* |                                 | qqqqq   | 1, 2, 3, 4                        | 4     |
+* | Month (formatting)              | M       | 1, 2, ..., 12                     |       |
+* |                                 | Mo      | 1st, 2nd, ..., 12th               | 7     |
+* |                                 | MM      | 01, 02, ..., 12                   |       |
+* |                                 | MMM     | Jan, Feb, ..., Dec                |       |
+* |                                 | MMMM    | January, February, ..., December  | 2     |
+* |                                 | MMMMM   | J, F, ..., D                      |       |
+* | Month (stand-alone)             | L       | 1, 2, ..., 12                     |       |
+* |                                 | Lo      | 1st, 2nd, ..., 12th               | 7     |
+* |                                 | LL      | 01, 02, ..., 12                   |       |
+* |                                 | LLL     | Jan, Feb, ..., Dec                |       |
+* |                                 | LLLL    | January, February, ..., December  | 2     |
+* |                                 | LLLLL   | J, F, ..., D                      |       |
+* | Local week of year              | w       | 1, 2, ..., 53                     |       |
+* |                                 | wo      | 1st, 2nd, ..., 53th               | 7     |
+* |                                 | ww      | 01, 02, ..., 53                   |       |
+* | ISO week of year                | I       | 1, 2, ..., 53                     | 7     |
+* |                                 | Io      | 1st, 2nd, ..., 53th               | 7     |
+* |                                 | II      | 01, 02, ..., 53                   | 7     |
+* | Day of month                    | d       | 1, 2, ..., 31                     |       |
+* |                                 | do      | 1st, 2nd, ..., 31st               | 7     |
+* |                                 | dd      | 01, 02, ..., 31                   |       |
+* | Day of year                     | D       | 1, 2, ..., 365, 366               | 9     |
+* |                                 | Do      | 1st, 2nd, ..., 365th, 366th       | 7     |
+* |                                 | DD      | 01, 02, ..., 365, 366             | 9     |
+* |                                 | DDD     | 001, 002, ..., 365, 366           |       |
+* |                                 | DDDD    | ...                               | 3     |
+* | Day of week (formatting)        | E..EEE  | Mon, Tue, Wed, ..., Sun           |       |
+* |                                 | EEEE    | Monday, Tuesday, ..., Sunday      | 2     |
+* |                                 | EEEEE   | M, T, W, T, F, S, S               |       |
+* |                                 | EEEEEE  | Mo, Tu, We, Th, Fr, Sa, Su        |       |
+* | ISO day of week (formatting)    | i       | 1, 2, 3, ..., 7                   | 7     |
+* |                                 | io      | 1st, 2nd, ..., 7th                | 7     |
+* |                                 | ii      | 01, 02, ..., 07                   | 7     |
+* |                                 | iii     | Mon, Tue, Wed, ..., Sun           | 7     |
+* |                                 | iiii    | Monday, Tuesday, ..., Sunday      | 2,7   |
+* |                                 | iiiii   | M, T, W, T, F, S, S               | 7     |
+* |                                 | iiiiii  | Mo, Tu, We, Th, Fr, Sa, Su        | 7     |
+* | Local day of week (formatting)  | e       | 2, 3, 4, ..., 1                   |       |
+* |                                 | eo      | 2nd, 3rd, ..., 1st                | 7     |
+* |                                 | ee      | 02, 03, ..., 01                   |       |
+* |                                 | eee     | Mon, Tue, Wed, ..., Sun           |       |
+* |                                 | eeee    | Monday, Tuesday, ..., Sunday      | 2     |
+* |                                 | eeeee   | M, T, W, T, F, S, S               |       |
+* |                                 | eeeeee  | Mo, Tu, We, Th, Fr, Sa, Su        |       |
+* | Local day of week (stand-alone) | c       | 2, 3, 4, ..., 1                   |       |
+* |                                 | co      | 2nd, 3rd, ..., 1st                | 7     |
+* |                                 | cc      | 02, 03, ..., 01                   |       |
+* |                                 | ccc     | Mon, Tue, Wed, ..., Sun           |       |
+* |                                 | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
+* |                                 | ccccc   | M, T, W, T, F, S, S               |       |
+* |                                 | cccccc  | Mo, Tu, We, Th, Fr, Sa, Su        |       |
+* | AM, PM                          | a..aa   | AM, PM                            |       |
+* |                                 | aaa     | am, pm                            |       |
+* |                                 | aaaa    | a.m., p.m.                        | 2     |
+* |                                 | aaaaa   | a, p                              |       |
+* | AM, PM, noon, midnight          | b..bb   | AM, PM, noon, midnight            |       |
+* |                                 | bbb     | am, pm, noon, midnight            |       |
+* |                                 | bbbb    | a.m., p.m., noon, midnight        | 2     |
+* |                                 | bbbbb   | a, p, n, mi                       |       |
+* | Flexible day period             | B..BBB  | at night, in the morning, ...     |       |
+* |                                 | BBBB    | at night, in the morning, ...     | 2     |
+* |                                 | BBBBB   | at night, in the morning, ...     |       |
+* | Hour [1-12]                     | h       | 1, 2, ..., 11, 12                 |       |
+* |                                 | ho      | 1st, 2nd, ..., 11th, 12th         | 7     |
+* |                                 | hh      | 01, 02, ..., 11, 12               |       |
+* | Hour [0-23]                     | H       | 0, 1, 2, ..., 23                  |       |
+* |                                 | Ho      | 0th, 1st, 2nd, ..., 23rd          | 7     |
+* |                                 | HH      | 00, 01, 02, ..., 23               |       |
+* | Hour [0-11]                     | K       | 1, 2, ..., 11, 0                  |       |
+* |                                 | Ko      | 1st, 2nd, ..., 11th, 0th          | 7     |
+* |                                 | KK      | 01, 02, ..., 11, 00               |       |
+* | Hour [1-24]                     | k       | 24, 1, 2, ..., 23                 |       |
+* |                                 | ko      | 24th, 1st, 2nd, ..., 23rd         | 7     |
+* |                                 | kk      | 24, 01, 02, ..., 23               |       |
+* | Minute                          | m       | 0, 1, ..., 59                     |       |
+* |                                 | mo      | 0th, 1st, ..., 59th               | 7     |
+* |                                 | mm      | 00, 01, ..., 59                   |       |
+* | Second                          | s       | 0, 1, ..., 59                     |       |
+* |                                 | so      | 0th, 1st, ..., 59th               | 7     |
+* |                                 | ss      | 00, 01, ..., 59                   |       |
+* | Fraction of second              | S       | 0, 1, ..., 9                      |       |
+* |                                 | SS      | 00, 01, ..., 99                   |       |
+* |                                 | SSS     | 000, 001, ..., 999                |       |
+* |                                 | SSSS    | ...                               | 3     |
+* | Timezone (ISO-8601 w/ Z)        | X       | -08, +0530, Z                     |       |
+* |                                 | XX      | -0800, +0530, Z                   |       |
+* |                                 | XXX     | -08:00, +05:30, Z                 |       |
+* |                                 | XXXX    | -0800, +0530, Z, +123456          | 2     |
+* |                                 | XXXXX   | -08:00, +05:30, Z, +12:34:56      |       |
+* | Timezone (ISO-8601 w/o Z)       | x       | -08, +0530, +00                   |       |
+* |                                 | xx      | -0800, +0530, +0000               |       |
+* |                                 | xxx     | -08:00, +05:30, +00:00            | 2     |
+* |                                 | xxxx    | -0800, +0530, +0000, +123456      |       |
+* |                                 | xxxxx   | -08:00, +05:30, +00:00, +12:34:56 |       |
+* | Timezone (GMT)                  | O...OOO | GMT-8, GMT+5:30, GMT+0            |       |
+* |                                 | OOOO    | GMT-08:00, GMT+05:30, GMT+00:00   | 2     |
+* | Timezone (specific non-locat.)  | z...zzz | GMT-8, GMT+5:30, GMT+0            | 6     |
+* |                                 | zzzz    | GMT-08:00, GMT+05:30, GMT+00:00   | 2,6   |
+* | Seconds timestamp               | t       | 512969520                         | 7     |
+* |                                 | tt      | ...                               | 3,7   |
+* | Milliseconds timestamp          | T       | 512969520900                      | 7     |
+* |                                 | TT      | ...                               | 3,7   |
+* | Long localized date             | P       | 04/29/1453                        | 7     |
+* |                                 | PP      | Apr 29, 1453                      | 7     |
+* |                                 | PPP     | April 29th, 1453                  | 7     |
+* |                                 | PPPP    | Friday, April 29th, 1453          | 2,7   |
+* | Long localized time             | p       | 12:00 AM                          | 7     |
+* |                                 | pp      | 12:00:00 AM                       | 7     |
+* |                                 | ppp     | 12:00:00 AM GMT+2                 | 7     |
+* |                                 | pppp    | 12:00:00 AM GMT+02:00             | 2,7   |
+* | Combination of date and time    | Pp      | 04/29/1453, 12:00 AM              | 7     |
+* |                                 | PPpp    | Apr 29, 1453, 12:00:00 AM         | 7     |
+* |                                 | PPPppp  | April 29th, 1453 at ...           | 7     |
+* |                                 | PPPPpppp| Friday, April 29th, 1453 at ...   | 2,7   |
+* Notes:
+* 1. "Formatting" units (e.g. formatting quarter) in the default en-US locale
+*    are the same as "stand-alone" units, but are different in some languages.
+*    "Formatting" units are declined according to the rules of the language
+*    in the context of a date. "Stand-alone" units are always nominative singular:
+*
+*    `format(new Date(2017, 10, 6), 'do LLLL', {locale: cs}) //=> '6. listopad'`
+*
+*    `format(new Date(2017, 10, 6), 'do MMMM', {locale: cs}) //=> '6. listopadu'`
+*
+* 2. Any sequence of the identical letters is a pattern, unless it is escaped by
+*    the single quote characters (see below).
+*    If the sequence is longer than listed in table (e.g. `EEEEEEEEEEE`)
+*    the output will be the same as default pattern for this unit, usually
+*    the longest one (in case of ISO weekdays, `EEEE`). Default patterns for units
+*    are marked with "2" in the last column of the table.
+*
+*    `format(new Date(2017, 10, 6), 'MMM') //=> 'Nov'`
+*
+*    `format(new Date(2017, 10, 6), 'MMMM') //=> 'November'`
+*
+*    `format(new Date(2017, 10, 6), 'MMMMM') //=> 'N'`
+*
+*    `format(new Date(2017, 10, 6), 'MMMMMM') //=> 'November'`
+*
+*    `format(new Date(2017, 10, 6), 'MMMMMMM') //=> 'November'`
+*
+* 3. Some patterns could be unlimited length (such as `yyyyyyyy`).
+*    The output will be padded with zeros to match the length of the pattern.
+*
+*    `format(new Date(2017, 10, 6), 'yyyyyyyy') //=> '00002017'`
+*
+* 4. `QQQQQ` and `qqqqq` could be not strictly numerical in some locales.
+*    These tokens represent the shortest form of the quarter.
+*
+* 5. The main difference between `y` and `u` patterns are B.C. years:
+*
+*    | Year | `y` | `u` |
+*    |------|-----|-----|
+*    | AC 1 |   1 |   1 |
+*    | BC 1 |   1 |   0 |
+*    | BC 2 |   2 |  -1 |
+*
+*    Also `yy` always returns the last two digits of a year,
+*    while `uu` pads single digit years to 2 characters and returns other years unchanged:
+*
+*    | Year | `yy` | `uu` |
+*    |------|------|------|
+*    | 1    |   01 |   01 |
+*    | 14   |   14 |   14 |
+*    | 376  |   76 |  376 |
+*    | 1453 |   53 | 1453 |
+*
+*    The same difference is true for local and ISO week-numbering years (`Y` and `R`),
+*    except local week-numbering years are dependent on `options.weekStartsOn`
+*    and `options.firstWeekContainsDate` (compare [getISOWeekYear](https://date-fns.org/docs/getISOWeekYear)
+*    and [getWeekYear](https://date-fns.org/docs/getWeekYear)).
+*
+* 6. Specific non-location timezones are currently unavailable in `date-fns`,
+*    so right now these tokens fall back to GMT timezones.
+*
+* 7. These patterns are not in the Unicode Technical Standard #35:
+*    - `i`: ISO day of week
+*    - `I`: ISO week of year
+*    - `R`: ISO week-numbering year
+*    - `t`: seconds timestamp
+*    - `T`: milliseconds timestamp
+*    - `o`: ordinal number modifier
+*    - `P`: long localized date
+*    - `p`: long localized time
+*
+* 8. `YY` and `YYYY` tokens represent week-numbering years but they are often confused with years.
+*    You should enable `options.useAdditionalWeekYearTokens` to use them. See: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+*
+* 9. `D` and `DD` tokens represent days of the year but they are often confused with days of the month.
+*    You should enable `options.useAdditionalDayOfYearTokens` to use them. See: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+*
+* @param date - The original date
+* @param format - The string of tokens
+* @param options - An object with options
+*
+* @returns The formatted date string
+*
+* @throws `date` must not be Invalid Date
+* @throws `options.locale` must contain `localize` property
+* @throws `options.locale` must contain `formatLong` property
+* @throws use `yyyy` instead of `YYYY` for formatting years using [format provided] to the input [input provided]; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+* @throws use `yy` instead of `YY` for formatting years using [format provided] to the input [input provided]; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+* @throws use `d` instead of `D` for formatting days of the month using [format provided] to the input [input provided]; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+* @throws use `dd` instead of `DD` for formatting days of the month using [format provided] to the input [input provided]; see: https://github.com/date-fns/date-fns/blob/master/docs/unicodeTokens.md
+* @throws format string contains an unescaped latin alphabet character
+*
+* @example
+* // Represent 11 February 2014 in middle-endian format:
+* const result = format(new Date(2014, 1, 11), 'MM/dd/yyyy')
+* //=> '02/11/2014'
+*
+* @example
+* // Represent 2 July 2014 in Esperanto:
+* import { eoLocale } from 'date-fns/locale/eo'
+* const result = format(new Date(2014, 6, 2), "do 'de' MMMM yyyy", {
+*   locale: eoLocale
+* })
+* //=> '2-a de julio 2014'
+*
+* @example
+* // Escape string by single quote characters:
+* const result = format(new Date(2014, 6, 2, 15), "h 'o''clock'")
+* //=> "3 o'clock"
+*/
+function format(date, formatStr, options) {
+	const defaultOptions = getDefaultOptions();
+	const locale = options?.locale ?? defaultOptions.locale ?? enUS;
+	const firstWeekContainsDate = options?.firstWeekContainsDate ?? options?.locale?.options?.firstWeekContainsDate ?? defaultOptions.firstWeekContainsDate ?? defaultOptions.locale?.options?.firstWeekContainsDate ?? 1;
+	const weekStartsOn = options?.weekStartsOn ?? options?.locale?.options?.weekStartsOn ?? defaultOptions.weekStartsOn ?? defaultOptions.locale?.options?.weekStartsOn ?? 0;
+	const originalDate = toDate(date, options?.in);
+	if (!isValid(originalDate)) throw new RangeError("Invalid time value");
+	let parts = formatStr.match(longFormattingTokensRegExp).map((substring) => {
+		const firstCharacter = substring[0];
+		if (firstCharacter === "p" || firstCharacter === "P") {
+			const longFormatter = longFormatters[firstCharacter];
+			return longFormatter(substring, locale.formatLong);
+		}
+		return substring;
+	}).join("").match(formattingTokensRegExp).map((substring) => {
+		if (substring === "''") return {
+			isToken: false,
+			value: "'"
+		};
+		const firstCharacter = substring[0];
+		if (firstCharacter === "'") return {
+			isToken: false,
+			value: cleanEscapedString(substring)
+		};
+		if (formatters[firstCharacter]) return {
+			isToken: true,
+			value: substring
+		};
+		if (firstCharacter.match(unescapedLatinCharacterRegExp)) throw new RangeError("Format string contains an unescaped latin alphabet character `" + firstCharacter + "`");
+		return {
+			isToken: false,
+			value: substring
+		};
+	});
+	if (locale.localize.preprocessor) parts = locale.localize.preprocessor(originalDate, parts);
+	const formatterOptions = {
+		firstWeekContainsDate,
+		weekStartsOn,
+		locale
+	};
+	return parts.map((part) => {
+		if (!part.isToken) return part.value;
+		const token = part.value;
+		if (!options?.useAdditionalWeekYearTokens && isProtectedWeekYearToken(token) || !options?.useAdditionalDayOfYearTokens && isProtectedDayOfYearToken(token)) warnOrThrowProtectedError(token, formatStr, String(date));
+		const formatter = formatters[token[0]];
+		return formatter(originalDate, token, locale.localize, formatterOptions);
+	}).join("");
+}
+function cleanEscapedString(input) {
+	const matched = input.match(escapedStringRegExp);
+	if (!matched) return input;
+	return matched[1].replace(doubleQuoteRegExp, "'");
+}
+//#endregion
+//#region src/components/consultation/AuditLogTab.tsx
+function AuditLogTab({ patientId }) {
+	const { logs } = useAuditStore();
+	const patientLogs = logs.filter((log) => log.patientId === patientId);
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+		"data-uid": "src/components/consultation/AuditLogTab.tsx:19:5",
+		"data-prohibitions": "[editContent]",
+		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				"data-uid": "src/components/consultation/AuditLogTab.tsx:20:7",
+				"data-prohibitions": "[]",
+				className: "h-1 w-full bg-gradient-to-r from-amber-500/50 to-amber-500"
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
+				"data-uid": "src/components/consultation/AuditLogTab.tsx:21:7",
+				"data-prohibitions": "[]",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
+					"data-uid": "src/components/consultation/AuditLogTab.tsx:22:9",
+					"data-prohibitions": "[]",
+					className: "font-serif text-xl text-amber-700 flex items-center gap-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldCheck, {
+						"data-uid": "src/components/consultation/AuditLogTab.tsx:23:11",
+						"data-prohibitions": "[editContent]",
+						className: "w-5 h-5"
+					}), " Trilha de Auditoria"]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
+					"data-uid": "src/components/consultation/AuditLogTab.tsx:25:9",
+					"data-prohibitions": "[]",
+					children: "Registro imutável de acessos e modificações realizadas no prontuário do paciente."
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
+				"data-uid": "src/components/consultation/AuditLogTab.tsx:29:7",
+				"data-prohibitions": "[editContent]",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					"data-uid": "src/components/consultation/AuditLogTab.tsx:30:9",
+					"data-prohibitions": "[editContent]",
+					className: "rounded-xl border border-border/50 overflow-hidden bg-white",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
+						"data-uid": "src/components/consultation/AuditLogTab.tsx:31:11",
+						"data-prohibitions": "[editContent]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
+							"data-uid": "src/components/consultation/AuditLogTab.tsx:32:13",
+							"data-prohibitions": "[]",
+							className: "bg-muted/30",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+								"data-uid": "src/components/consultation/AuditLogTab.tsx:33:15",
+								"data-prohibitions": "[]",
+								className: "hover:bg-transparent",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:34:17",
+										"data-prohibitions": "[]",
+										className: "w-[200px]",
+										children: "Data e Hora"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:35:17",
+										"data-prohibitions": "[]",
+										children: "Profissional"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:36:17",
+										"data-prohibitions": "[]",
+										children: "Ação Realizada"
+									})
+								]
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
+							"data-uid": "src/components/consultation/AuditLogTab.tsx:39:13",
+							"data-prohibitions": "[editContent]",
+							children: patientLogs.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+								"data-uid": "src/components/consultation/AuditLogTab.tsx:41:17",
+								"data-prohibitions": "[]",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/components/consultation/AuditLogTab.tsx:42:19",
+									"data-prohibitions": "[]",
+									colSpan: 3,
+									className: "text-center py-8 text-muted-foreground",
+									children: "Nenhum registro de auditoria encontrado."
+								})
+							}) : patientLogs.map((log) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+								"data-uid": "src/components/consultation/AuditLogTab.tsx:48:19",
+								"data-prohibitions": "[editContent]",
+								className: "hover:bg-muted/20",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:49:21",
+										"data-prohibitions": "[editContent]",
+										className: "text-xs text-muted-foreground whitespace-nowrap",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+											"data-uid": "src/components/consultation/AuditLogTab.tsx:50:23",
+											"data-prohibitions": "[editContent]",
+											className: "flex items-center gap-1.5",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
+												"data-uid": "src/components/consultation/AuditLogTab.tsx:51:25",
+												"data-prohibitions": "[editContent]",
+												className: "w-3.5 h-3.5 text-amber-600/70"
+											}), format(new Date(log.timestamp), "dd/MM/yyyy 'às' HH:mm:ss")]
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:55:21",
+										"data-prohibitions": "[editContent]",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/components/consultation/AuditLogTab.tsx:56:23",
+											"data-prohibitions": "[editContent]",
+											className: "flex flex-col",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/components/consultation/AuditLogTab.tsx:57:25",
+												"data-prohibitions": "[editContent]",
+												className: "font-medium text-sm text-foreground",
+												children: log.userName
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+												"data-uid": "src/components/consultation/AuditLogTab.tsx:58:25",
+												"data-prohibitions": "[editContent]",
+												className: "text-xs text-muted-foreground",
+												children: log.userRole
+											})]
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/components/consultation/AuditLogTab.tsx:61:21",
+										"data-prohibitions": "[editContent]",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											"data-uid": "src/components/consultation/AuditLogTab.tsx:62:23",
+											"data-prohibitions": "[editContent]",
+											className: "text-sm font-medium text-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border/50",
+											children: log.action
+										})
+									})
+								]
+							}, log.id))
+						})]
+					})
+				})
+			})
+		]
+	});
+}
+//#endregion
 //#region src/pages/Consultation.tsx
 function Consultation() {
 	const { id } = useParams();
+	const patientId = id || "p-001";
 	const { currentUser } = useUserStore();
+	const { addLog } = useAuditStore();
+	const [isFinalized, setIsFinalized] = (0, import_react.useState)(false);
 	const showAnamneseExame = currentUser.role === "Médico" || currentUser.role === "Estético";
 	const showDocs = currentUser.role === "Médico";
 	const [activeTab, setActiveTab] = (0, import_react.useState)(showAnamneseExame ? "anamnese" : "planejamento");
+	(0, import_react.useEffect)(() => {
+		addLog("Prontuário visualizado", patientId);
+	}, [patientId, addLog]);
 	(0, import_react.useEffect)(() => {
 		if (!showAnamneseExame && (activeTab === "anamnese" || activeTab === "exame")) setActiveTab("planejamento");
 		if (!showDocs && activeTab === "documentos") setActiveTab("planejamento");
@@ -36636,180 +39115,215 @@ function Consultation() {
 		showDocs,
 		activeTab
 	]);
-	const patient = patients[0];
+	const handleFinalize = () => {
+		setIsFinalized(true);
+		addLog("Status alterado: Consulta Finalizada", patientId);
+	};
+	const patient = patients.find((p) => p.id === patientId) || patients[0];
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Consultation.tsx:39:5",
+		"data-uid": "src/pages/Consultation.tsx:54:5",
 		"data-prohibitions": "[editContent]",
 		className: "flex flex-col h-[calc(100vh-4rem)]",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Consultation.tsx:41:7",
+			"data-uid": "src/pages/Consultation.tsx:56:7",
 			"data-prohibitions": "[editContent]",
 			className: "bg-white border-b border-border shadow-sm z-10",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientHeader, {
-				"data-uid": "src/pages/Consultation.tsx:42:9",
+				"data-uid": "src/pages/Consultation.tsx:57:9",
 				"data-prohibitions": "[editContent]",
 				patient,
-				id
+				id: patientId,
+				isFinalized,
+				onFinalize: handleFinalize
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/pages/Consultation.tsx:45:9",
+				"data-uid": "src/pages/Consultation.tsx:65:9",
 				"data-prohibitions": "[editContent]",
 				className: "px-6 overflow-x-auto",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tabs, {
-					"data-uid": "src/pages/Consultation.tsx:46:11",
+					"data-uid": "src/pages/Consultation.tsx:66:11",
 					"data-prohibitions": "[editContent]",
 					value: activeTab,
 					onValueChange: setActiveTab,
 					className: "w-full min-w-max",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-						"data-uid": "src/pages/Consultation.tsx:47:13",
+						"data-uid": "src/pages/Consultation.tsx:67:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto",
 						children: [
 							showAnamneseExame && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:50:19",
+								"data-uid": "src/pages/Consultation.tsx:70:19",
 								"data-prohibitions": "[]",
 								value: "anamnese",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-									"data-uid": "src/pages/Consultation.tsx:54:21",
+									"data-uid": "src/pages/Consultation.tsx:74:21",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Anamnese"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:57:19",
+								"data-uid": "src/pages/Consultation.tsx:77:19",
 								"data-prohibitions": "[]",
 								value: "exame",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Activity, {
-									"data-uid": "src/pages/Consultation.tsx:61:21",
+									"data-uid": "src/pages/Consultation.tsx:81:21",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Exame Físico"]
 							})] }),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:66:15",
+								"data-uid": "src/pages/Consultation.tsx:86:15",
 								"data-prohibitions": "[]",
 								value: "planejamento",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipboardList, {
-									"data-uid": "src/pages/Consultation.tsx:70:17",
+									"data-uid": "src/pages/Consultation.tsx:90:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Planejamento"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:73:15",
+								"data-uid": "src/pages/Consultation.tsx:93:15",
 								"data-prohibitions": "[]",
 								value: "procedimentos",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-									"data-uid": "src/pages/Consultation.tsx:77:17",
+									"data-uid": "src/pages/Consultation.tsx:97:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Procedimentos"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:80:15",
+								"data-uid": "src/pages/Consultation.tsx:100:15",
 								"data-prohibitions": "[]",
 								value: "evolucao",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-									"data-uid": "src/pages/Consultation.tsx:84:17",
+									"data-uid": "src/pages/Consultation.tsx:104:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Evolução"]
 							}),
 							showDocs && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
-								"data-uid": "src/pages/Consultation.tsx:88:17",
+								"data-uid": "src/pages/Consultation.tsx:108:17",
 								"data-prohibitions": "[]",
 								value: "documentos",
 								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-									"data-uid": "src/pages/Consultation.tsx:92:19",
+									"data-uid": "src/pages/Consultation.tsx:112:19",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2 inline-block"
 								}), "Receitas & Laudos"]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsTrigger, {
+								"data-uid": "src/pages/Consultation.tsx:116:15",
+								"data-prohibitions": "[]",
+								value: "auditoria",
+								className: "relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldCheck, {
+									"data-uid": "src/pages/Consultation.tsx:120:17",
+									"data-prohibitions": "[editContent]",
+									className: "h-4 w-4 mr-2 inline-block"
+								}), "Auditoria"]
 							})
 						]
 					})
 				})
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			"data-uid": "src/pages/Consultation.tsx:102:7",
+			"data-uid": "src/pages/Consultation.tsx:129:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex-1 overflow-auto bg-muted/20 p-6",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/pages/Consultation.tsx:103:9",
+				"data-uid": "src/pages/Consultation.tsx:130:9",
 				"data-prohibitions": "[editContent]",
 				className: "max-w-5xl mx-auto",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-					"data-uid": "src/pages/Consultation.tsx:104:11",
+					"data-uid": "src/pages/Consultation.tsx:131:11",
 					"data-prohibitions": "[editContent]",
 					value: activeTab,
 					className: "w-full",
 					children: [
 						showAnamneseExame && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:107:17",
+							"data-uid": "src/pages/Consultation.tsx:134:17",
 							"data-prohibitions": "[]",
 							value: "anamnese",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AnamnesisTab, {
-								"data-uid": "src/pages/Consultation.tsx:111:19",
+								"data-uid": "src/pages/Consultation.tsx:138:19",
 								"data-prohibitions": "[editContent]",
-								isSigned: false
+								isSigned: isFinalized,
+								patientId
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:113:17",
+							"data-uid": "src/pages/Consultation.tsx:140:17",
 							"data-prohibitions": "[]",
 							value: "exame",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhysicalExamTab, {
-								"data-uid": "src/pages/Consultation.tsx:117:19",
+								"data-uid": "src/pages/Consultation.tsx:144:19",
 								"data-prohibitions": "[editContent]",
-								isSigned: false
+								isSigned: isFinalized,
+								patientId
 							})
 						})] }),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:121:13",
+							"data-uid": "src/pages/Consultation.tsx:148:13",
 							"data-prohibitions": "[]",
 							value: "planejamento",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningTab, {
-								"data-uid": "src/pages/Consultation.tsx:125:15",
+								"data-uid": "src/pages/Consultation.tsx:152:15",
 								"data-prohibitions": "[editContent]",
-								isSigned: false
+								isSigned: isFinalized,
+								patientId
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:127:13",
+							"data-uid": "src/pages/Consultation.tsx:154:13",
 							"data-prohibitions": "[]",
 							value: "procedimentos",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProcedureTab, {
-								"data-uid": "src/pages/Consultation.tsx:131:15",
+								"data-uid": "src/pages/Consultation.tsx:158:15",
 								"data-prohibitions": "[editContent]",
-								isSigned: false
+								isSigned: isFinalized,
+								patientId
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:133:13",
+							"data-uid": "src/pages/Consultation.tsx:160:13",
 							"data-prohibitions": "[]",
 							value: "evolucao",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EvolutionTab, {
-								"data-uid": "src/pages/Consultation.tsx:137:15",
+								"data-uid": "src/pages/Consultation.tsx:164:15",
 								"data-prohibitions": "[editContent]",
-								isSigned: false
+								isSigned: isFinalized,
+								patientId
 							})
 						}),
 						showDocs && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-							"data-uid": "src/pages/Consultation.tsx:140:15",
+							"data-uid": "src/pages/Consultation.tsx:167:15",
 							"data-prohibitions": "[]",
 							value: "documentos",
 							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DocumentsTab, {
-								"data-uid": "src/pages/Consultation.tsx:144:17",
-								"data-prohibitions": "[editContent]"
+								"data-uid": "src/pages/Consultation.tsx:171:17",
+								"data-prohibitions": "[editContent]",
+								isSigned: isFinalized,
+								patientId
+							})
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
+							"data-uid": "src/pages/Consultation.tsx:174:13",
+							"data-prohibitions": "[]",
+							value: "auditoria",
+							className: "m-0 focus-visible:outline-none focus-visible:ring-0",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuditLogTab, {
+								"data-uid": "src/pages/Consultation.tsx:178:15",
+								"data-prohibitions": "[editContent]",
+								patientId
 							})
 						})
 					]
@@ -43538,98 +46052,102 @@ var NotFound = () => {
 //#endregion
 //#region src/App.tsx
 var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
-	"data-uid": "src/App.tsx:18:3",
+	"data-uid": "src/App.tsx:19:3",
 	"data-prohibitions": "[]",
-	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
-		"data-uid": "src/App.tsx:19:5",
+	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuditProvider, {
+		"data-uid": "src/App.tsx:20:5",
 		"data-prohibitions": "[]",
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
-			"data-uid": "src/App.tsx:20:7",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
+			"data-uid": "src/App.tsx:21:7",
 			"data-prohibitions": "[]",
-			future: {
-				v7_startTransition: false,
-				v7_relativeSplatPath: false
-			},
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TooltipProvider, {
-				"data-uid": "src/App.tsx:21:9",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
+				"data-uid": "src/App.tsx:22:9",
 				"data-prohibitions": "[]",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toaster$2, {
-						"data-uid": "src/App.tsx:22:11",
-						"data-prohibitions": "[editContent]"
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toaster, {
-						"data-uid": "src/App.tsx:23:11",
-						"data-prohibitions": "[editContent]"
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Routes, {
-						"data-uid": "src/App.tsx:24:11",
-						"data-prohibitions": "[]",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Route, {
+				future: {
+					v7_startTransition: false,
+					v7_relativeSplatPath: false
+				},
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TooltipProvider, {
+					"data-uid": "src/App.tsx:23:11",
+					"data-prohibitions": "[]",
+					children: [
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toaster$2, {
+							"data-uid": "src/App.tsx:24:13",
+							"data-prohibitions": "[editContent]"
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toaster, {
 							"data-uid": "src/App.tsx:25:13",
+							"data-prohibitions": "[editContent]"
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Routes, {
+							"data-uid": "src/App.tsx:26:13",
 							"data-prohibitions": "[]",
-							element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layout, {
-								"data-uid": "src/App.tsx:25:29",
-								"data-prohibitions": "[editContent]"
-							}),
-							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-									"data-uid": "src/App.tsx:26:15",
-									"data-prohibitions": "[editContent]",
-									path: "/",
-									element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Index, {
-										"data-uid": "src/App.tsx:26:40",
-										"data-prohibitions": "[editContent]"
-									})
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Route, {
+								"data-uid": "src/App.tsx:27:15",
+								"data-prohibitions": "[]",
+								element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layout, {
+									"data-uid": "src/App.tsx:27:31",
+									"data-prohibitions": "[editContent]"
 								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-									"data-uid": "src/App.tsx:27:15",
-									"data-prohibitions": "[editContent]",
-									path: "/pacientes",
-									element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Patients, {
-										"data-uid": "src/App.tsx:27:49",
-										"data-prohibitions": "[editContent]"
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+										"data-uid": "src/App.tsx:28:17",
+										"data-prohibitions": "[editContent]",
+										path: "/",
+										element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Index, {
+											"data-uid": "src/App.tsx:28:42",
+											"data-prohibitions": "[editContent]"
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+										"data-uid": "src/App.tsx:29:17",
+										"data-prohibitions": "[editContent]",
+										path: "/pacientes",
+										element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Patients, {
+											"data-uid": "src/App.tsx:29:51",
+											"data-prohibitions": "[editContent]"
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+										"data-uid": "src/App.tsx:30:17",
+										"data-prohibitions": "[editContent]",
+										path: "/prontuario/:id",
+										element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Consultation, {
+											"data-uid": "src/App.tsx:30:56",
+											"data-prohibitions": "[editContent]"
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+										"data-uid": "src/App.tsx:31:17",
+										"data-prohibitions": "[editContent]",
+										path: "/documentos",
+										element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Documents, {
+											"data-uid": "src/App.tsx:31:52",
+											"data-prohibitions": "[editContent]"
+										})
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+										"data-uid": "src/App.tsx:32:17",
+										"data-prohibitions": "[editContent]",
+										path: "/configuracoes",
+										element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, {
+											"data-uid": "src/App.tsx:32:55",
+											"data-prohibitions": "[editContent]"
+										})
 									})
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-									"data-uid": "src/App.tsx:28:15",
-									"data-prohibitions": "[editContent]",
-									path: "/prontuario/:id",
-									element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Consultation, {
-										"data-uid": "src/App.tsx:28:54",
-										"data-prohibitions": "[editContent]"
-									})
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-									"data-uid": "src/App.tsx:29:15",
-									"data-prohibitions": "[editContent]",
-									path: "/documentos",
-									element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Documents, {
-										"data-uid": "src/App.tsx:29:50",
-										"data-prohibitions": "[editContent]"
-									})
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-									"data-uid": "src/App.tsx:30:15",
-									"data-prohibitions": "[editContent]",
-									path: "/configuracoes",
-									element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, {
-										"data-uid": "src/App.tsx:30:53",
-										"data-prohibitions": "[editContent]"
-									})
+								]
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
+								"data-uid": "src/App.tsx:34:15",
+								"data-prohibitions": "[editContent]",
+								path: "*",
+								element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NotFound, {
+									"data-uid": "src/App.tsx:34:40",
+									"data-prohibitions": "[editContent]"
 								})
-							]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Route, {
-							"data-uid": "src/App.tsx:32:13",
-							"data-prohibitions": "[editContent]",
-							path: "*",
-							element: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(NotFound, {
-								"data-uid": "src/App.tsx:32:38",
-								"data-prohibitions": "[editContent]"
-							})
-						})]
-					})
-				]
+							})]
+						})
+					]
+				})
 			})
 		})
 	})
@@ -43642,4 +46160,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CKFa82Ta.js.map
+//# sourceMappingURL=index-9_haoZrH.js.map

@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Stethoscope } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Stethoscope, Save } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import useAuditStore from '@/stores/useAuditStore'
 import {
   Accordion,
   AccordionContent,
@@ -109,11 +111,22 @@ const SECTIONS = [
   },
 ]
 
-export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
+export default function AnamnesisTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
   const [formData, setFormData] = useState(MOCK_DATA)
+  const { addLog } = useAuditStore()
 
   const handleChange = (id: string, value: string) => {
     setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSave = () => {
+    addLog('Anamnese atualizada', patientId)
   }
 
   return (
@@ -173,6 +186,17 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
             </AccordionItem>
           ))}
         </Accordion>
+
+        {!isSigned && (
+          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+            <Button
+              onClick={handleSave}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            >
+              <Save className="w-4 h-4 mr-2" /> Salvar Anamnese
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

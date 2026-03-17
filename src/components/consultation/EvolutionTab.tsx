@@ -1,10 +1,27 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { History, CheckCircle, Plus } from 'lucide-react'
+import useAuditStore from '@/stores/useAuditStore'
 
-export default function EvolutionTab({ isSigned }: { isSigned: boolean }) {
+export default function EvolutionTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
+  const { addLog } = useAuditStore()
+  const [note, setNote] = useState('')
+
+  const handleAddNote = () => {
+    if (!note.trim()) return
+    addLog('Evolução adicionada', patientId)
+    setNote('')
+  }
+
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
       <div className="h-1 w-full bg-gradient-to-r from-muted to-muted-foreground/30"></div>
@@ -17,17 +34,21 @@ export default function EvolutionTab({ isSigned }: { isSigned: boolean }) {
         <div className="bg-muted/20 p-5 rounded-xl border border-border space-y-4 mb-8">
           <Label className="text-base text-foreground">Nova Evolução Clínica</Label>
           <Textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
             placeholder="Registre a evolução, retorno do paciente, queixas atuais ou orientações dadas..."
             className="bg-white border-border rounded-xl focus-visible:ring-primary min-h-[100px]"
             disabled={isSigned}
           />
           <div className="flex justify-end">
-            <Button
-              disabled={isSigned}
-              className="bg-primary text-white shadow-sm hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Adicionar Nota
-            </Button>
+            {!isSigned && (
+              <Button
+                onClick={handleAddNote}
+                className="bg-primary text-white shadow-sm hover:bg-primary/90"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Adicionar Nota
+              </Button>
+            )}
           </div>
         </div>
 

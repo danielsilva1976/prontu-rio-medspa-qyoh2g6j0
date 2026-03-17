@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Save } from 'lucide-react'
+import useAuditStore from '@/stores/useAuditStore'
 import {
   Select,
   SelectContent,
@@ -11,7 +14,14 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
+export default function PhysicalExamTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
+  const { addLog } = useAuditStore()
   const [examData, setExamData] = useState({
     // Facial
     fototipo: '',
@@ -33,6 +43,10 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
 
   const handleChange = (field: keyof typeof examData, value: string) => {
     setExamData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSave = () => {
+    addLog('Exame Físico atualizado', patientId)
   }
 
   return (
@@ -301,6 +315,17 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             </div>
           </TabsContent>
         </Tabs>
+
+        {!isSigned && (
+          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+            <Button
+              onClick={handleSave}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            >
+              <Save className="w-4 h-4 mr-2" /> Salvar Exames
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

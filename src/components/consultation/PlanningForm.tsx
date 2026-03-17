@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import useSettingsStore from '@/stores/useSettingsStore'
+import useAuditStore from '@/stores/useAuditStore'
 import PlanningEntryItem, { type ChronogramEntry, type ProcedureOption } from './PlanningEntryItem'
 
 export type SavedPlan = {
@@ -40,12 +41,15 @@ export const getPaymentMethodLabel = (id: string) =>
 
 type Props = {
   isSigned: boolean
+  patientId: string
   onSave: (plan: SavedPlan) => void
   onCancel: () => void
 }
 
-export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
+export default function PlanningForm({ isSigned, patientId, onSave, onCancel }: Props) {
   const { procedures, technologies, prices } = useSettingsStore()
+  const { addLog } = useAuditStore()
+
   const [objective, setObjective] = useState('')
   const [planName, setPlanName] = useState('')
   const [downPayment, setDownPayment] = useState('')
@@ -108,6 +112,7 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
   const handleSave = () => {
+    addLog('Planejamento salvo', patientId)
     onSave({
       id: Math.random().toString(36).slice(2),
       date: new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
@@ -271,9 +276,11 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
         <Button variant="outline" onClick={onCancel} className="rounded-xl">
           Cancelar
         </Button>
-        <Button onClick={handleSave} disabled={isSigned} className="rounded-xl">
-          <Save className="w-4 h-4 mr-2" /> Salvar plano
-        </Button>
+        {!isSigned && (
+          <Button onClick={handleSave} className="rounded-xl">
+            <Save className="w-4 h-4 mr-2" /> Salvar plano
+          </Button>
+        )}
       </div>
     </div>
   )

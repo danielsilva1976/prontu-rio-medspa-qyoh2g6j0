@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { Plus, Printer, Download, FileText, CheckCircle2, FileSignature } from 'lucide-react'
+import {
+  Plus,
+  Printer,
+  Download,
+  FileText,
+  CheckCircle2,
+  FileSignature,
+  ShieldAlert,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -21,6 +29,7 @@ import {
 } from '@/components/ui/dialog'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import useAuditStore from '@/stores/useAuditStore'
 
 // Mock generated documents
 const generatedDocuments = [
@@ -44,14 +53,28 @@ const generatedDocuments = [
   },
 ]
 
-export default function DocumentsTab() {
+export default function DocumentsTab({
+  isSigned,
+  patientId,
+}: {
+  isSigned: boolean
+  patientId: string
+}) {
+  const { addLog } = useAuditStore()
   const [docType, setDocType] = useState('prescription')
   const [previewOpen, setPreviewOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
+  const [isSignDialogOpen, setIsSignDialogOpen] = useState(false)
 
   const handlePreview = (doc: any) => {
     setSelectedDoc(doc)
     setPreviewOpen(true)
+  }
+
+  const handleConfirmAndSign = () => {
+    addLog('Documento gerado e assinado', patientId)
+    setIsSignDialogOpen(false)
+    // mock behavior
   }
 
   return (
@@ -71,7 +94,7 @@ export default function DocumentsTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/10 p-5 rounded-xl border border-border/50">
             <div className="space-y-2">
               <Label className="text-foreground/80">Tipo de Documento</Label>
-              <Select value={docType} onValueChange={setDocType}>
+              <Select disabled={isSigned} value={docType} onValueChange={setDocType}>
                 <SelectTrigger className="bg-white border-border focus:ring-primary rounded-lg">
                   <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
@@ -86,6 +109,7 @@ export default function DocumentsTab() {
             <div className="space-y-2">
               <Label className="text-foreground/80">Título / Referência</Label>
               <Input
+                disabled={isSigned}
                 placeholder="Ex: Receita Rotina Noturna"
                 className="bg-white focus-visible:ring-primary rounded-lg"
               />
@@ -100,54 +124,73 @@ export default function DocumentsTab() {
               </span>
             </Label>
             <Textarea
+              disabled={isSigned}
               placeholder="Digite o conteúdo aqui..."
               className="min-h-[300px] resize-y focus-visible:ring-primary font-serif text-[15px] leading-loose p-5 rounded-xl border-border/80 shadow-inner bg-card"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
-            <Button
-              variant="outline"
-              className="rounded-lg border-primary/20 text-primary hover:bg-primary/5"
-            >
-              Salvar Rascunho
-            </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm">
-                  <Plus className="h-4 w-4" />
-                  Gerar e Assinar
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md rounded-xl">
-                <DialogHeader>
-                  <DialogTitle className="font-serif text-xl text-primary">
-                    Assinatura Digital
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Insira seu PIN para aplicar sua assinatura digital e gerar o documento oficial
-                    em PDF com o timbre da clínica.
-                  </p>
-                  <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-border">
-                    <Label className="text-center block text-foreground/80">
-                      PIN de Assinatura
-                    </Label>
-                    <Input
-                      type="password"
-                      placeholder="••••"
-                      className="text-center text-2xl tracking-[1em] focus-visible:ring-primary h-12 bg-white"
-                      maxLength={4}
-                    />
-                  </div>
-                  <Button className="w-full bg-primary hover:bg-primary/90 h-11 text-base">
-                    Confirmar e Assinar
+          {!isSigned ? (
+            <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
+              <Button
+                variant="outline"
+                className="rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+              >
+                Salvar Rascunho
+              </Button>
+              <Dialog open={isSignDialogOpen} onOpenChange={setIsSignDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm">
+                    <Plus className="h-4 w-4" />
+                    Gerar e Assinar
                   </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md rounded-xl">
+                  <DialogHeader>
+                    <DialogTitle className="font-serif text-xl text-primary">
+                      Assinatura Digital
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Insira seu PIN para aplicar sua assinatura digital e gerar o documento oficial
+                      em PDF com o timbre da clínica.
+                    </p>
+                    <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-border">
+                      <Label className="text-center block text-foreground/80">
+                        PIN de Assinatura
+                      </Label>
+                      <Input
+                        type="password"
+                        placeholder="••••"
+                        className="text-center text-2xl tracking-[1em] focus-visible:ring-primary h-12 bg-white"
+                        maxLength={4}
+                      />
+                    </div>
+                    <Button
+                      onClick={handleConfirmAndSign}
+                      className="w-full bg-primary hover:bg-primary/90 h-11 text-base"
+                    >
+                      Confirmar e Assinar
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ) : (
+            <div className="pt-6 border-t border-border/50">
+              <div className="bg-amber-50/80 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3">
+                <ShieldAlert className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">Edição Bloqueada</p>
+                  <p className="text-sm mt-1 opacity-90 leading-relaxed">
+                    A consulta foi finalizada. A emissão e edição de documentos está desabilitada
+                    para garantir a integridade e segurança do prontuário médico.
+                  </p>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
