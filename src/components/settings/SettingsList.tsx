@@ -24,7 +24,7 @@ export default function SettingsList({ category, title, description }: SettingsL
   const store = useSettingsStore()
 
   const items =
-    category === 'procedures'
+    category === 'procedures' || category === 'technologies'
       ? [...store[category]].sort((a, b) => a.localeCompare(b, 'pt-BR'))
       : store[category]
 

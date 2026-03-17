@@ -35436,7 +35436,7 @@ function Documents() {
 //#region src/components/settings/SettingsList.tsx
 function SettingsList({ category, title, description }) {
 	const store = useSettingsStore();
-	const items = category === "procedures" ? [...store[category]].sort((a, b) => a.localeCompare(b, "pt-BR")) : store[category];
+	const items = category === "procedures" || category === "technologies" ? [...store[category]].sort((a, b) => a.localeCompare(b, "pt-BR")) : store[category];
 	const [newItem, setNewItem] = (0, import_react.useState)("");
 	const [newItemPrice, setNewItemPrice] = (0, import_react.useState)("");
 	const [editingItem, setEditingItem] = (0, import_react.useState)(null);
@@ -35944,4 +35944,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-woD_4hes.js.map
+//# sourceMappingURL=index-BTMyGsep.js.map
