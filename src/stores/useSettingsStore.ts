@@ -1,12 +1,13 @@
 import { useState, useContext, createContext, ReactNode, createElement } from 'react'
 
-export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands'
+export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands' | 'technologies'
 
 type SettingsState = {
   procedures: string[]
   areas: string[]
   products: string[]
   brands: string[]
+  technologies: string[]
   addItem: (category: SettingsCategory, item: string) => void
   removeItem: (category: SettingsCategory, item: string) => void
   updateItem: (category: SettingsCategory, oldItem: string, newItem: string) => void
@@ -46,6 +47,16 @@ const defaultData = {
     'Lavieen',
   ],
   brands: ['Allergan', 'Galderma', 'Merz', 'Sinclair', 'Mantecorp', 'Rennova'],
+  technologies: [
+    'Ultraformer III',
+    'Ultraformer MPT',
+    'Lavieen',
+    'Fotona',
+    'Soprano Ice',
+    'Zye AL',
+    'Luz Pulsada (LIP)',
+    'Radiofrequência',
+  ],
 }
 
 const SettingsContext = createContext<SettingsState>({} as SettingsState)

@@ -19170,6 +19170,72 @@ var Clock = createLucideIcon("clock", [["circle", {
 	d: "M12 6v6l4 2",
 	key: "mmk7yg"
 }]]);
+var Cpu = createLucideIcon("cpu", [
+	["path", {
+		d: "M12 20v2",
+		key: "1lh1kg"
+	}],
+	["path", {
+		d: "M12 2v2",
+		key: "tus03m"
+	}],
+	["path", {
+		d: "M17 20v2",
+		key: "1rnc9c"
+	}],
+	["path", {
+		d: "M17 2v2",
+		key: "11trls"
+	}],
+	["path", {
+		d: "M2 12h2",
+		key: "1t8f8n"
+	}],
+	["path", {
+		d: "M2 17h2",
+		key: "7oei6x"
+	}],
+	["path", {
+		d: "M2 7h2",
+		key: "asdhe0"
+	}],
+	["path", {
+		d: "M20 12h2",
+		key: "1q8mjw"
+	}],
+	["path", {
+		d: "M20 17h2",
+		key: "1fpfkl"
+	}],
+	["path", {
+		d: "M20 7h2",
+		key: "1o8tra"
+	}],
+	["path", {
+		d: "M7 20v2",
+		key: "4gnj0m"
+	}],
+	["path", {
+		d: "M7 2v2",
+		key: "1i4yhu"
+	}],
+	["rect", {
+		x: "4",
+		y: "4",
+		width: "16",
+		height: "16",
+		rx: "2",
+		key: "1vbyd7"
+	}],
+	["rect", {
+		x: "8",
+		y: "8",
+		width: "8",
+		height: "8",
+		rx: "1",
+		key: "z9xiuo"
+	}]
+]);
 var Download = createLucideIcon("download", [
 	["path", {
 		d: "M12 15V3",
@@ -24499,6 +24565,16 @@ var defaultData = {
 		"Sinclair",
 		"Mantecorp",
 		"Rennova"
+	],
+	technologies: [
+		"Ultraformer III",
+		"Ultraformer MPT",
+		"Lavieen",
+		"Fotona",
+		"Soprano Ice",
+		"Zye AL",
+		"Luz Pulsada (LIP)",
+		"Radiofrequência"
 	]
 };
 var SettingsContext = (0, import_react.createContext)({});
@@ -30382,69 +30458,69 @@ function PhysicalExamTab({ isSigned }) {
 //#endregion
 //#region src/components/consultation/ProcedureEntryCard.tsx
 function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
-	const { procedures, areas, products, brands } = useSettingsStore();
+	const { procedures, areas, products, brands, technologies } = useSettingsStore();
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:37:5",
+		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:38:5",
 		"data-prohibitions": "[editContent]",
 		className: "relative border border-border bg-muted/5 shadow-sm animate-fade-in",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:38:7",
+			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:39:7",
 			"data-prohibitions": "[editContent]",
 			className: "p-6 pt-8",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:39:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:40:9",
 					"data-prohibitions": "[editContent]",
 					className: "absolute top-0 left-0 bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg",
 					children: ["Procedimento ", index + 1]
 				}),
 				!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:43:11",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:44:11",
 					"data-prohibitions": "[]",
 					variant: "ghost",
 					size: "icon",
 					className: "absolute top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors",
 					onClick: () => onRemove(entry.id),
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:49:13",
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:50:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4"
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:53:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:54:9",
 					"data-prohibitions": "[editContent]",
 					className: "grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:54:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:55:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2 md:col-span-2 lg:col-span-3",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:55:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:56:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Tipo de Procedimento"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:56:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:57:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.type,
 								onValueChange: (val) => onUpdate(entry.id, "type", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:61:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:62:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:62:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:63:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o procedimento..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:64:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:65:15",
 									"data-prohibitions": "[editContent]",
 									children: procedures.map((proc) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:66:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:67:19",
 										"data-prohibitions": "[editContent]",
 										value: proc,
 										children: proc
@@ -30453,34 +30529,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:74:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:75:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:75:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:76:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Área Aplicada"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:76:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:77:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.area,
 								onValueChange: (val) => onUpdate(entry.id, "area", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:81:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:82:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:82:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:83:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a área..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:84:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:85:15",
 									"data-prohibitions": "[editContent]",
 									children: areas.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:86:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:87:19",
 										"data-prohibitions": "[editContent]",
 										value: a,
 										children: a
@@ -30489,34 +30565,70 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:94:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:95:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:95:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:96:13",
+								"data-prohibitions": "[]",
+								className: "text-foreground",
+								children: "Tecnologia"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:97:13",
+								"data-prohibitions": "[editContent]",
+								disabled: isSigned,
+								value: entry.technology,
+								onValueChange: (val) => onUpdate(entry.id, "technology", val),
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:102:15",
+									"data-prohibitions": "[]",
+									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:103:17",
+										"data-prohibitions": "[editContent]",
+										placeholder: "Selecione a tecnologia..."
+									})
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:105:15",
+									"data-prohibitions": "[editContent]",
+									children: technologies.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:107:19",
+										"data-prohibitions": "[editContent]",
+										value: t,
+										children: t
+									}, t))
+								})]
+							})]
+						}),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:115:11",
+							"data-prohibitions": "[editContent]",
+							className: "space-y-2",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:116:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Produto"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:96:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:117:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.product,
 								onValueChange: (val) => onUpdate(entry.id, "product", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:101:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:122:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:102:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:123:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o produto..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:104:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:125:15",
 									"data-prohibitions": "[editContent]",
 									children: products.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:106:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:127:19",
 										"data-prohibitions": "[editContent]",
 										value: p,
 										children: p
@@ -30525,34 +30637,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:114:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:135:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:115:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:136:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Marca"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:116:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:137:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.brand,
 								onValueChange: (val) => onUpdate(entry.id, "brand", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:121:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:142:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:122:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:143:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a marca..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:124:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:145:15",
 									"data-prohibitions": "[editContent]",
 									children: brands.map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:126:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:147:19",
 										"data-prohibitions": "[editContent]",
 										value: b,
 										children: b
@@ -30561,16 +30673,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:134:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:155:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:135:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:156:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Lote"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:136:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:157:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: AB12345",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -30580,16 +30692,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:145:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:166:11",
 							"data-prohibitions": "[]",
-							className: "space-y-2 lg:col-span-2",
+							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:146:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:167:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Dose / Volume / Parâmetros"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:147:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:168:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: 50U, 1mL, 20J/cm²",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -30611,6 +30723,7 @@ function ProcedureTab({ isSigned }) {
 		id: Math.random().toString(36).slice(2),
 		type: "",
 		area: "",
+		technology: "",
 		product: "",
 		brand: "",
 		batch: "",
@@ -30622,6 +30735,7 @@ function ProcedureTab({ isSigned }) {
 			id: Math.random().toString(36).slice(2),
 			type: "",
 			area: "",
+			technology: "",
 			product: "",
 			brand: "",
 			batch: "",
@@ -30638,44 +30752,44 @@ function ProcedureTab({ isSigned }) {
 		} : e));
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/ProcedureTab.tsx:47:5",
+		"data-uid": "src/components/consultation/ProcedureTab.tsx:49:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:48:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:50:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:49:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:51:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:50:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:52:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:51:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:53:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Registro Técnico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:53:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:55:9",
 					"data-prohibitions": "[]",
 					children: "Detalhes dos materiais utilizados e técnicas aplicadas."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:55:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:57:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6",
 				children: [
 					entries.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:57:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:59:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4",
 						children: entries.map((entry, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProcedureEntryCard, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:59:15",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:61:15",
 							"data-prohibitions": "[editContent]",
 							entry,
 							index,
@@ -30685,27 +30799,27 @@ function ProcedureTab({ isSigned }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:72:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:74:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:77:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:79:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-5 h-5 mr-2"
 						}), "Adicionar Novo Procedimento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:82:9",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:84:9",
 						"data-prohibitions": "[]",
 						className: "space-y-2 pt-4 border-t border-border",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:83:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:85:11",
 							"data-prohibitions": "[]",
 							children: "Técnica de Aplicação e Observações Gerais"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:84:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:86:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas...",
 							className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
@@ -33167,6 +33281,12 @@ var tabs = [
 		desc: "Gerencie as regiões faciais e corporais que podem ser selecionadas durante o atendimento."
 	},
 	{
+		id: "technologies",
+		label: "Tecnologias",
+		icon: Cpu,
+		desc: "Cadastre os equipamentos e tecnologias disponíveis na clínica."
+	},
+	{
 		id: "products",
 		label: "Produtos",
 		icon: Package,
@@ -33183,49 +33303,49 @@ function Settings() {
 	const [activeTab, setActiveTab] = (0, import_react.useState)("procedures");
 	const activeData = tabs.find((t) => t.id === activeTab);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Settings.tsx:40:5",
+		"data-uid": "src/pages/Settings.tsx:46:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-slide-up p-6 lg:p-8",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Settings.tsx:41:7",
+			"data-uid": "src/pages/Settings.tsx:47:7",
 			"data-prohibitions": "[]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-				"data-uid": "src/pages/Settings.tsx:42:9",
+				"data-uid": "src/pages/Settings.tsx:48:9",
 				"data-prohibitions": "[]",
 				className: "text-3xl font-serif text-primary tracking-tight",
 				children: "Configurações"
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/Settings.tsx:43:9",
+				"data-uid": "src/pages/Settings.tsx:49:9",
 				"data-prohibitions": "[]",
 				className: "text-muted-foreground mt-1",
 				children: "Gerencie as listas dinâmicas e os parâmetros padrões da clínica."
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Settings.tsx:48:7",
+			"data-uid": "src/pages/Settings.tsx:54:7",
 			"data-prohibitions": "[editContent]",
 			className: "grid gap-8 md:grid-cols-[240px_1fr] max-w-6xl items-start",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
-				"data-uid": "src/pages/Settings.tsx:49:9",
+				"data-uid": "src/pages/Settings.tsx:55:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col gap-2 sticky top-24",
 				children: tabs.map((tab) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/pages/Settings.tsx:51:13",
+					"data-uid": "src/pages/Settings.tsx:57:13",
 					"data-prohibitions": "[editContent]",
 					variant: "ghost",
 					onClick: () => setActiveTab(tab.id),
 					className: cn$1("justify-start font-medium transition-all duration-200", activeTab === tab.id ? "bg-primary/10 text-primary border-l-2 border-primary rounded-l-none" : "text-muted-foreground hover:bg-muted hover:text-foreground border-l-2 border-transparent rounded-l-none"),
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(tab.icon, {
-						"data-uid": "src/pages/Settings.tsx:62:15",
+						"data-uid": "src/pages/Settings.tsx:68:15",
 						"data-prohibitions": "[editContent]",
 						className: cn$1("w-4 h-4 mr-3", activeTab === tab.id ? "text-primary" : "opacity-70")
 					}), tab.label]
 				}, tab.id))
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/pages/Settings.tsx:70:9",
+				"data-uid": "src/pages/Settings.tsx:76:9",
 				"data-prohibitions": "[]",
 				className: "min-w-0",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsList, {
-					"data-uid": "src/pages/Settings.tsx:71:11",
+					"data-uid": "src/pages/Settings.tsx:77:11",
 					"data-prohibitions": "[editContent]",
 					category: activeTab,
 					title: activeData.label,
@@ -33388,4 +33508,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BQdZYS7h.js.map
+//# sourceMappingURL=index-BAKwWx1_.js.map

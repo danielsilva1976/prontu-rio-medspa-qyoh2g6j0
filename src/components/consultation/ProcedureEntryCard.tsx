@@ -16,6 +16,7 @@ export type ProcedureEntry = {
   id: string
   type: string
   area: string
+  technology: string
   product: string
   brand: string
   batch: string
@@ -31,7 +32,7 @@ type Props = {
 }
 
 export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }: Props) {
-  const { procedures, areas, products, brands } = useSettingsStore()
+  const { procedures, areas, products, brands, technologies } = useSettingsStore()
 
   return (
     <Card className="relative border border-border bg-muted/5 shadow-sm animate-fade-in">
@@ -92,6 +93,26 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
           </div>
 
           <div className="space-y-2">
+            <Label className="text-foreground">Tecnologia</Label>
+            <Select
+              disabled={isSigned}
+              value={entry.technology}
+              onValueChange={(val) => onUpdate(entry.id, 'technology', val)}
+            >
+              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
+                <SelectValue placeholder="Selecione a tecnologia..." />
+              </SelectTrigger>
+              <SelectContent>
+                {technologies.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label className="text-foreground">Produto</Label>
             <Select
               disabled={isSigned}
@@ -142,7 +163,7 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
             />
           </div>
 
-          <div className="space-y-2 lg:col-span-2">
+          <div className="space-y-2">
             <Label className="text-foreground">Dose / Volume / Parâmetros</Label>
             <Input
               placeholder="Ex: 50U, 1mL, 20J/cm²"

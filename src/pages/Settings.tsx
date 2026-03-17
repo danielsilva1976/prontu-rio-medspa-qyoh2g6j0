@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Syringe, MapPin, Package, Tag } from 'lucide-react'
+import { Syringe, MapPin, Package, Tag, Cpu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsCategory } from '@/stores/useSettingsStore'
 import SettingsList from '@/components/settings/SettingsList'
@@ -17,6 +17,12 @@ const tabs = [
     label: 'Áreas Tratadas',
     icon: MapPin,
     desc: 'Gerencie as regiões faciais e corporais que podem ser selecionadas durante o atendimento.',
+  },
+  {
+    id: 'technologies',
+    label: 'Tecnologias',
+    icon: Cpu,
+    desc: 'Cadastre os equipamentos e tecnologias disponíveis na clínica.',
   },
   {
     id: 'products',
