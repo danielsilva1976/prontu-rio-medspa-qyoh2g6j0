@@ -10,14 +10,14 @@ import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
 import ProcedureTab from '@/components/consultation/ProcedureTab'
 import EvolutionTab from '@/components/consultation/EvolutionTab'
 import DocumentsTab from '@/components/consultation/DocumentsTab'
-import { mockPatients } from '@/lib/mock-data'
+import { patients } from '@/lib/mock-data'
 
 export default function Consultation() {
   const { id } = useParams()
   const [activeTab, setActiveTab] = useState('anamnese')
 
   // In a real app, we would fetch patient data based on ID
-  const patient = mockPatients[0]
+  const patient = patients[0]
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -118,25 +118,25 @@ export default function Consultation() {
               value="anamnese"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <AnamnesisTab />
+              <AnamnesisTab isSigned={false} />
             </TabsContent>
             <TabsContent
               value="exame"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <PhysicalExamTab />
+              <PhysicalExamTab isSigned={false} />
             </TabsContent>
             <TabsContent
               value="procedimentos"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <ProcedureTab />
+              <ProcedureTab isSigned={false} />
             </TabsContent>
             <TabsContent
               value="evolucao"
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <EvolutionTab />
+              <EvolutionTab isSigned={false} />
             </TabsContent>
             <TabsContent
               value="documentos"
