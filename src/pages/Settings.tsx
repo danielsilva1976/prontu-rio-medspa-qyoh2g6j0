@@ -1,11 +1,28 @@
 import { useState } from 'react'
-import { Syringe, MapPin, Package, Tag, Cpu } from 'lucide-react'
+import { Syringe, MapPin, Package, Tag, Cpu, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsCategory } from '@/stores/useSettingsStore'
+import useUserStore from '@/stores/useUserStore'
 import SettingsList from '@/components/settings/SettingsList'
+import { UserManagement } from '@/components/settings/UserManagement'
 import { cn } from '@/lib/utils'
 
-const tabs = [
+type TabItem = {
+  id: string
+  label: string
+  icon: any
+  desc: string
+  adminOnly?: boolean
+}
+
+const allTabs: TabItem[] = [
+  {
+    id: 'users',
+    label: 'Equipe',
+    icon: Users,
+    desc: 'Gerencie os membros da equipe, níveis de acesso e permissões do sistema.',
+    adminOnly: true,
+  },
   {
     id: 'procedures',
     label: 'Procedimentos',
@@ -36,28 +53,33 @@ const tabs = [
     icon: Tag,
     desc: 'Lista de fabricantes e marcas parceiras homologadas pela clínica.',
   },
-] as const
+]
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState<SettingsCategory>('procedures')
-  const activeData = tabs.find((t) => t.id === activeTab)!
+  const { currentUser } = useUserStore()
+
+  // Filter tabs based on user access level
+  const visibleTabs = allTabs.filter((t) => !t.adminOnly || currentUser.role === 'Admin')
+
+  const [activeTab, setActiveTab] = useState<string>(visibleTabs[0]?.id || 'procedures')
+  const activeData = visibleTabs.find((t) => t.id === activeTab)!
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
       <div>
         <h1 className="text-3xl font-serif text-primary tracking-tight">Configurações</h1>
         <p className="text-muted-foreground mt-1">
-          Gerencie as listas dinâmicas e os parâmetros padrões da clínica.
+          Gerencie as listas dinâmicas, acessos e os parâmetros padrões da clínica.
         </p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-[240px_1fr] max-w-6xl items-start">
         <nav className="flex flex-col gap-2 sticky top-24">
-          {tabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <Button
               key={tab.id}
               variant="ghost"
-              onClick={() => setActiveTab(tab.id as SettingsCategory)}
+              onClick={() => setActiveTab(tab.id)}
               className={cn(
                 'justify-start font-medium transition-all duration-200',
                 activeTab === tab.id
@@ -74,12 +96,16 @@ export default function Settings() {
         </nav>
 
         <div className="min-w-0">
-          <SettingsList
-            key={activeTab}
-            category={activeTab}
-            title={activeData.label}
-            description={activeData.desc}
-          />
+          {activeTab === 'users' ? (
+            <UserManagement title={activeData.label} description={activeData.desc} />
+          ) : (
+            <SettingsList
+              key={activeTab}
+              category={activeTab as SettingsCategory}
+              title={activeData.label}
+              description={activeData.desc}
+            />
+          )}
         </div>
       </div>
     </div>
