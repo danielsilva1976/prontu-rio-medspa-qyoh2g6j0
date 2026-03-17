@@ -28449,7 +28449,8 @@ var patients = [
 		nextAppointment: `${todayStr}T10:00:00`,
 		status: "scheduled",
 		phone: "(11) 98765-4321",
-		procedures: ["Toxina Botulínica", "Bioestimulador"]
+		procedures: ["Toxina Botulínica", "Bioestimulador"],
+		professional: "Dra. Fabíola Kleinert"
 	},
 	{
 		id: "p-002",
@@ -28460,7 +28461,8 @@ var patients = [
 		nextAppointment: `${todayStr}T11:30:00`,
 		status: "scheduled",
 		phone: "(11) 99876-5432",
-		procedures: ["Preenchimento Labial", "Laser Lavieen"]
+		procedures: ["Preenchimento Labial", "Laser Lavieen"],
+		professional: "Dra. Sofia Mendes"
 	},
 	{
 		id: "p-003",
@@ -28471,7 +28473,8 @@ var patients = [
 		nextAppointment: `${tomorrowStr}T14:00:00`,
 		status: "scheduled",
 		phone: "(11) 91234-5678",
-		procedures: ["Peeling Químico"]
+		procedures: ["Peeling Químico"],
+		professional: "Dra. Fabíola Kleinert"
 	},
 	{
 		id: "p-004",
@@ -28482,7 +28485,8 @@ var patients = [
 		nextAppointment: `${tomorrowStr}T15:30:00`,
 		status: "scheduled",
 		phone: "(11) 97777-8888",
-		procedures: ["MMP", "Toxina Botulínica"]
+		procedures: ["MMP", "Toxina Botulínica"],
+		professional: null
 	},
 	{
 		id: "p-005",
@@ -28493,7 +28497,8 @@ var patients = [
 		nextAppointment: null,
 		status: "inactive",
 		phone: "(11) 96666-5555",
-		procedures: ["Transplante Capilar - Acompanhamento"]
+		procedures: ["Transplante Capilar - Acompanhamento"],
+		professional: "Dr. Marcos Silva"
 	}
 ];
 var mockDashboardStats = {
@@ -28575,13 +28580,85 @@ var DialogDescription = import_react.forwardRef(({ className, ...props }, ref) =
 }));
 DialogDescription.displayName = Description.displayName;
 //#endregion
+//#region src/components/ui/table.tsx
+var Table = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+	"data-uid": "src/components/ui/table.tsx:8:5",
+	"data-prohibitions": "[editContent]",
+	className: "relative w-full overflow-auto",
+	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("table", {
+		"data-uid": "src/components/ui/table.tsx:9:7",
+		"data-prohibitions": "[editContent]",
+		ref,
+		className: cn$1("w-full caption-bottom text-sm", className),
+		...props
+	})
+}));
+Table.displayName = "Table";
+var TableHeader = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", {
+	"data-uid": "src/components/ui/table.tsx:19:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("[&_tr]:border-b", className),
+	...props
+}));
+TableHeader.displayName = "TableHeader";
+var TableBody = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", {
+	"data-uid": "src/components/ui/table.tsx:27:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("[&_tr:last-child]:border-0", className),
+	...props
+}));
+TableBody.displayName = "TableBody";
+var TableFooter = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tfoot", {
+	"data-uid": "src/components/ui/table.tsx:35:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
+	...props
+}));
+TableFooter.displayName = "TableFooter";
+var TableRow = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tr", {
+	"data-uid": "src/components/ui/table.tsx:45:5",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className),
+	...props
+}));
+TableRow.displayName = "TableRow";
+var TableHead = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
+	"data-uid": "src/components/ui/table.tsx:61:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0", className),
+	...props
+}));
+TableHead.displayName = "TableHead";
+var TableCell = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
+	"data-uid": "src/components/ui/table.tsx:76:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("p-4 align-middle [&:has([role=checkbox])]:pr-0", className),
+	...props
+}));
+TableCell.displayName = "TableCell";
+var TableCaption = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("caption", {
+	"data-uid": "src/components/ui/table.tsx:88:3",
+	"data-prohibitions": "[editContent]",
+	ref,
+	className: cn$1("mt-4 text-sm text-muted-foreground", className),
+	...props
+}));
+TableCaption.displayName = "TableCaption";
+//#endregion
 //#region src/pages/Index.tsx
 function Index() {
 	const { currentUser } = useUserStore();
 	const isMedico = currentUser.role === "Médico";
 	const today = /* @__PURE__ */ new Date();
 	const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-	const todaysAppointments = patients.filter((p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr)).length;
+	const todaysAppointmentsList = patients.filter((p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr)).sort((a, b) => a.nextAppointment > b.nextAppointment ? 1 : -1);
+	const todaysAppointments = todaysAppointmentsList.length;
 	const totalAppointments = mockDashboardStats.scheduledToday;
 	const finalizedRecords = mockDashboardStats.completedRecords;
 	const pendingRecords = totalAppointments - finalizedRecords;
@@ -28597,217 +28674,342 @@ function Index() {
 			minute: "2-digit"
 		}).format(date);
 	};
+	const formatTime = (dateString) => {
+		return new Date(dateString).toLocaleTimeString("pt-BR", {
+			hour: "2-digit",
+			minute: "2-digit"
+		});
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Index.tsx:52:5",
+		"data-uid": "src/pages/Index.tsx:64:5",
 		"data-prohibitions": "[editContent]",
-		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:54:7",
-			"data-prohibitions": "[editContent]",
-			className: "flex flex-col gap-2",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-				"data-uid": "src/pages/Index.tsx:55:9",
+		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6 pb-8",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				"data-uid": "src/pages/Index.tsx:65:7",
 				"data-prohibitions": "[editContent]",
-				className: "text-3xl md:text-4xl text-primary",
-				children: [
-					isMedico ? "Bom dia," : "Olá,",
-					" ",
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						"data-uid": "src/pages/Index.tsx:57:11",
-						"data-prohibitions": "[editContent]",
-						className: "font-serif italic text-primary/80",
-						children: currentUser.name.split(" ")[0]
-					})
-				]
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/Index.tsx:61:9",
-				"data-prohibitions": "[]",
-				className: "text-muted-foreground",
-				children: "Aqui está o resumo da sua agenda para hoje."
-			})]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:65:7",
-			"data-prohibitions": "[editContent]",
-			className: "grid gap-4 md:grid-cols-3",
-			children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+				className: "flex flex-col gap-2",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
 					"data-uid": "src/pages/Index.tsx:66:9",
 					"data-prohibitions": "[editContent]",
-					className: "border-none shadow-subtle bg-white",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:67:11",
-						"data-prohibitions": "[editContent]",
-						className: "p-6 flex items-center gap-4",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:68:13",
-							"data-prohibitions": "[]",
-							className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-								"data-uid": "src/pages/Index.tsx:69:15",
-								"data-prohibitions": "[editContent]",
-								className: "w-6 h-6"
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:71:13",
+					className: "text-3xl md:text-4xl text-primary",
+					children: [
+						isMedico ? "Bom dia," : "Olá,",
+						" ",
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/pages/Index.tsx:68:11",
 							"data-prohibitions": "[editContent]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:72:15",
-								"data-prohibitions": "[]",
-								className: "text-sm font-medium text-muted-foreground",
-								children: "Agendamentos do Dia"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:73:15",
-								"data-prohibitions": "[editContent]",
-								className: "text-2xl font-bold font-serif",
-								children: todaysAppointments
-							})]
-						})]
-					})
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:78:9",
-					"data-prohibitions": "[editContent]",
-					className: "border-none shadow-subtle bg-white",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:79:11",
-						"data-prohibitions": "[editContent]",
-						className: "p-6 flex items-center gap-4",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:80:13",
-							"data-prohibitions": "[]",
-							className: "p-3 bg-green-50 text-green-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/Index.tsx:81:15",
-								"data-prohibitions": "[editContent]",
-								className: "w-6 h-6"
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:83:13",
-							"data-prohibitions": "[editContent]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:84:15",
-								"data-prohibitions": "[]",
-								className: "text-sm font-medium text-muted-foreground",
-								children: "Prontuários Finalizados"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:85:15",
-								"data-prohibitions": "[editContent]",
-								className: "text-2xl font-bold font-serif",
-								children: finalizedRecords
-							})]
-						})]
-					})
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-					"data-uid": "src/pages/Index.tsx:90:9",
-					"data-prohibitions": "[editContent]",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-						"data-uid": "src/pages/Index.tsx:91:11",
-						"data-prohibitions": "[editContent]",
-						asChild: true,
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-							"data-uid": "src/pages/Index.tsx:92:13",
-							"data-prohibitions": "[editContent]",
-							className: "border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-								"data-uid": "src/pages/Index.tsx:93:15",
-								"data-prohibitions": "[editContent]",
-								className: "p-6 flex items-center gap-4",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Index.tsx:94:17",
-									"data-prohibitions": "[]",
-									className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-										"data-uid": "src/pages/Index.tsx:95:19",
-										"data-prohibitions": "[editContent]",
-										className: "w-6 h-6"
-									})
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Index.tsx:97:17",
-									"data-prohibitions": "[editContent]",
-									className: "text-left",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Index.tsx:98:19",
-										"data-prohibitions": "[]",
-										className: "text-sm font-medium text-muted-foreground",
-										children: "Prontuários Pendentes"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-										"data-uid": "src/pages/Index.tsx:99:19",
-										"data-prohibitions": "[editContent]",
-										className: "text-2xl font-bold font-serif",
-										children: pendingRecords
-									})]
-								})]
-							})
+							className: "font-serif italic text-primary/80",
+							children: currentUser.name.split(" ")[0]
 						})
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-						"data-uid": "src/pages/Index.tsx:104:11",
+					]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+					"data-uid": "src/pages/Index.tsx:72:9",
+					"data-prohibitions": "[]",
+					className: "text-muted-foreground",
+					children: "Aqui está o resumo da sua agenda para hoje."
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				"data-uid": "src/pages/Index.tsx:75:7",
+				"data-prohibitions": "[editContent]",
+				className: "grid gap-4 md:grid-cols-3",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+						"data-uid": "src/pages/Index.tsx:76:9",
 						"data-prohibitions": "[editContent]",
-						className: "sm:max-w-md md:max-w-2xl rounded-xl",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-							"data-uid": "src/pages/Index.tsx:105:13",
-							"data-prohibitions": "[]",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-								"data-uid": "src/pages/Index.tsx:106:15",
-								"data-prohibitions": "[]",
-								className: "font-serif text-xl text-primary",
-								children: "Prontuários Pendentes"
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:110:13",
+						className: "border-none shadow-subtle bg-white",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+							"data-uid": "src/pages/Index.tsx:77:11",
 							"data-prohibitions": "[editContent]",
-							className: "space-y-3 mt-2 max-h-[60vh] overflow-y-auto pr-2",
-							children: pendingPatients.length > 0 ? pendingPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:113:19",
-								"data-prohibitions": "[editContent]",
-								className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-border/50 rounded-xl bg-card hover:border-primary/30 hover:shadow-sm transition-all",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Index.tsx:117:21",
-									"data-prohibitions": "[editContent]",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Index.tsx:118:23",
-										"data-prohibitions": "[editContent]",
-										className: "font-semibold text-foreground",
-										children: patient.name
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-										"data-uid": "src/pages/Index.tsx:119:23",
-										"data-prohibitions": "[editContent]",
-										className: "text-sm text-muted-foreground",
-										children: ["Agendado para: ", formatDateTime(patient.nextAppointment)]
-									})]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-									"data-uid": "src/pages/Index.tsx:123:21",
-									"data-prohibitions": "[]",
-									asChild: true,
-									variant: "outline",
-									className: "shrink-0 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
-										"data-uid": "src/pages/Index.tsx:128:23",
-										"data-prohibitions": "[]",
-										to: `/prontuario/${patient.id}`,
-										children: ["Abrir Prontuário", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, {
-											"data-uid": "src/pages/Index.tsx:130:25",
-											"data-prohibitions": "[editContent]",
-											className: "w-4 h-4 ml-1"
-										})]
-									})
-								})]
-							}, patient.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:136:17",
+							className: "p-6 flex items-center gap-4",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Index.tsx:78:13",
 								"data-prohibitions": "[]",
-								className: "text-center py-8",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:137:19",
+								className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
+									"data-uid": "src/pages/Index.tsx:79:15",
+									"data-prohibitions": "[editContent]",
+									className: "w-6 h-6"
+								})
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/pages/Index.tsx:81:13",
+								"data-prohibitions": "[editContent]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-uid": "src/pages/Index.tsx:82:15",
 									"data-prohibitions": "[]",
-									className: "text-muted-foreground",
-									children: "Nenhum prontuário pendente."
+									className: "text-sm font-medium text-muted-foreground",
+									children: "Agendamentos do Dia"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+									"data-uid": "src/pages/Index.tsx:83:15",
+									"data-prohibitions": "[editContent]",
+									className: "text-2xl font-bold font-serif",
+									children: todaysAppointments
+								})]
+							})]
+						})
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+						"data-uid": "src/pages/Index.tsx:88:9",
+						"data-prohibitions": "[editContent]",
+						className: "border-none shadow-subtle bg-white",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+							"data-uid": "src/pages/Index.tsx:89:11",
+							"data-prohibitions": "[editContent]",
+							className: "p-6 flex items-center gap-4",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Index.tsx:90:13",
+								"data-prohibitions": "[]",
+								className: "p-3 bg-green-50 text-green-600 rounded-2xl",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
+									"data-uid": "src/pages/Index.tsx:91:15",
+									"data-prohibitions": "[editContent]",
+									className: "w-6 h-6"
+								})
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/pages/Index.tsx:93:13",
+								"data-prohibitions": "[editContent]",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-uid": "src/pages/Index.tsx:94:15",
+									"data-prohibitions": "[]",
+									className: "text-sm font-medium text-muted-foreground",
+									children: "Prontuários Finalizados"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+									"data-uid": "src/pages/Index.tsx:95:15",
+									"data-prohibitions": "[editContent]",
+									className: "text-2xl font-bold font-serif",
+									children: finalizedRecords
+								})]
+							})]
+						})
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
+						"data-uid": "src/pages/Index.tsx:100:9",
+						"data-prohibitions": "[editContent]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
+							"data-uid": "src/pages/Index.tsx:101:11",
+							"data-prohibitions": "[editContent]",
+							asChild: true,
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+								"data-uid": "src/pages/Index.tsx:102:13",
+								"data-prohibitions": "[editContent]",
+								className: "border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+									"data-uid": "src/pages/Index.tsx:103:15",
+									"data-prohibitions": "[editContent]",
+									className: "p-6 flex items-center gap-4",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										"data-uid": "src/pages/Index.tsx:104:17",
+										"data-prohibitions": "[]",
+										className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+											"data-uid": "src/pages/Index.tsx:105:19",
+											"data-prohibitions": "[editContent]",
+											className: "w-6 h-6"
+										})
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/pages/Index.tsx:107:17",
+										"data-prohibitions": "[editContent]",
+										className: "text-left",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											"data-uid": "src/pages/Index.tsx:108:19",
+											"data-prohibitions": "[]",
+											className: "text-sm font-medium text-muted-foreground",
+											children: "Prontuários Pendentes"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+											"data-uid": "src/pages/Index.tsx:109:19",
+											"data-prohibitions": "[editContent]",
+											className: "text-2xl font-bold font-serif",
+											children: pendingRecords
+										})]
+									})]
+								})
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
+							"data-uid": "src/pages/Index.tsx:114:11",
+							"data-prohibitions": "[editContent]",
+							className: "sm:max-w-md md:max-w-2xl rounded-xl",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
+								"data-uid": "src/pages/Index.tsx:115:13",
+								"data-prohibitions": "[]",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
+									"data-uid": "src/pages/Index.tsx:116:15",
+									"data-prohibitions": "[]",
+									className: "font-serif text-xl text-primary",
+									children: "Prontuários Pendentes"
+								})
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/pages/Index.tsx:120:13",
+								"data-prohibitions": "[editContent]",
+								className: "space-y-3 mt-2 max-h-[60vh] overflow-y-auto pr-2",
+								children: pendingPatients.length > 0 ? pendingPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/pages/Index.tsx:123:19",
+									"data-prohibitions": "[editContent]",
+									className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-border/50 rounded-xl bg-card hover:border-primary/30 hover:shadow-sm transition-all",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/pages/Index.tsx:127:21",
+										"data-prohibitions": "[editContent]",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											"data-uid": "src/pages/Index.tsx:128:23",
+											"data-prohibitions": "[editContent]",
+											className: "font-semibold text-foreground",
+											children: patient.name
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+											"data-uid": "src/pages/Index.tsx:129:23",
+											"data-prohibitions": "[editContent]",
+											className: "text-sm text-muted-foreground",
+											children: ["Agendado para: ", formatDateTime(patient.nextAppointment)]
+										})]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+										"data-uid": "src/pages/Index.tsx:133:21",
+										"data-prohibitions": "[]",
+										asChild: true,
+										variant: "outline",
+										className: "shrink-0 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
+											"data-uid": "src/pages/Index.tsx:138:23",
+											"data-prohibitions": "[]",
+											to: `/prontuario/${patient.id}`,
+											children: ["Abrir Prontuário", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, {
+												"data-uid": "src/pages/Index.tsx:140:25",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4 ml-1"
+											})]
+										})
+									})]
+								}, patient.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-uid": "src/pages/Index.tsx:146:17",
+									"data-prohibitions": "[]",
+									className: "text-center py-8",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/pages/Index.tsx:147:19",
+										"data-prohibitions": "[]",
+										className: "text-muted-foreground",
+										children: "Nenhum prontuário pendente."
+									})
+								})
+							})]
+						})]
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				"data-uid": "src/pages/Index.tsx:155:7",
+				"data-prohibitions": "[editContent]",
+				className: "space-y-4 pt-4",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+					"data-uid": "src/pages/Index.tsx:156:9",
+					"data-prohibitions": "[]",
+					className: "text-xl font-serif text-primary",
+					children: "Agenda de Hoje"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+					"data-uid": "src/pages/Index.tsx:157:9",
+					"data-prohibitions": "[editContent]",
+					className: "border-none shadow-subtle bg-white overflow-hidden",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
+						"data-uid": "src/pages/Index.tsx:158:11",
+						"data-prohibitions": "[editContent]",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
+							"data-uid": "src/pages/Index.tsx:159:13",
+							"data-prohibitions": "[]",
+							className: "bg-muted/50",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+								"data-uid": "src/pages/Index.tsx:160:15",
+								"data-prohibitions": "[]",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/pages/Index.tsx:161:17",
+										"data-prohibitions": "[]",
+										className: "w-[100px]",
+										children: "Horário"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/pages/Index.tsx:162:17",
+										"data-prohibitions": "[]",
+										children: "Paciente"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/pages/Index.tsx:163:17",
+										"data-prohibitions": "[]",
+										children: "Procedimento"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/pages/Index.tsx:164:17",
+										"data-prohibitions": "[]",
+										children: "Profissional"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+										"data-uid": "src/pages/Index.tsx:165:17",
+										"data-prohibitions": "[]",
+										className: "text-right",
+										children: "Ação"
+									})
+								]
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
+							"data-uid": "src/pages/Index.tsx:168:13",
+							"data-prohibitions": "[editContent]",
+							children: todaysAppointmentsList.length > 0 ? todaysAppointmentsList.map((apt) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
+								"data-uid": "src/pages/Index.tsx:171:19",
+								"data-prohibitions": "[editContent]",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/pages/Index.tsx:172:21",
+										"data-prohibitions": "[editContent]",
+										className: "font-medium",
+										children: formatTime(apt.nextAppointment)
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/pages/Index.tsx:175:21",
+										"data-prohibitions": "[editContent]",
+										children: apt.name
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/pages/Index.tsx:176:21",
+										"data-prohibitions": "[editContent]",
+										children: apt.procedures.join(", ")
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/pages/Index.tsx:177:21",
+										"data-prohibitions": "[editContent]",
+										children: apt.professional || "-"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+										"data-uid": "src/pages/Index.tsx:178:21",
+										"data-prohibitions": "[]",
+										className: "text-right",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/pages/Index.tsx:179:23",
+											"data-prohibitions": "[]",
+											variant: "ghost",
+											size: "sm",
+											className: "text-primary hover:text-primary/80",
+											asChild: true,
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
+												"data-uid": "src/pages/Index.tsx:185:25",
+												"data-prohibitions": "[]",
+												to: `/prontuario/${apt.id}`,
+												children: "Abrir"
+											})
+										})
+									})
+								]
+							}, apt.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+								"data-uid": "src/pages/Index.tsx:191:17",
+								"data-prohibitions": "[]",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/pages/Index.tsx:192:19",
+									"data-prohibitions": "[]",
+									colSpan: 5,
+									className: "text-center py-8 text-muted-foreground",
+									children: "Nenhum agendamento para hoje."
 								})
 							})
 						})]
-					})]
-				})
-			]
-		})]
+					})
+				})]
+			})
+		]
 	});
 }
 //#endregion
@@ -35645,77 +35847,6 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 		]
 	});
 }
-//#endregion
-//#region src/components/ui/table.tsx
-var Table = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-	"data-uid": "src/components/ui/table.tsx:8:5",
-	"data-prohibitions": "[editContent]",
-	className: "relative w-full overflow-auto",
-	children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("table", {
-		"data-uid": "src/components/ui/table.tsx:9:7",
-		"data-prohibitions": "[editContent]",
-		ref,
-		className: cn$1("w-full caption-bottom text-sm", className),
-		...props
-	})
-}));
-Table.displayName = "Table";
-var TableHeader = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", {
-	"data-uid": "src/components/ui/table.tsx:19:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("[&_tr]:border-b", className),
-	...props
-}));
-TableHeader.displayName = "TableHeader";
-var TableBody = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", {
-	"data-uid": "src/components/ui/table.tsx:27:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("[&_tr:last-child]:border-0", className),
-	...props
-}));
-TableBody.displayName = "TableBody";
-var TableFooter = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tfoot", {
-	"data-uid": "src/components/ui/table.tsx:35:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
-	...props
-}));
-TableFooter.displayName = "TableFooter";
-var TableRow = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tr", {
-	"data-uid": "src/components/ui/table.tsx:45:5",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className),
-	...props
-}));
-TableRow.displayName = "TableRow";
-var TableHead = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
-	"data-uid": "src/components/ui/table.tsx:61:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0", className),
-	...props
-}));
-TableHead.displayName = "TableHead";
-var TableCell = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", {
-	"data-uid": "src/components/ui/table.tsx:76:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("p-4 align-middle [&:has([role=checkbox])]:pr-0", className),
-	...props
-}));
-TableCell.displayName = "TableCell";
-var TableCaption = import_react.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("caption", {
-	"data-uid": "src/components/ui/table.tsx:88:3",
-	"data-prohibitions": "[editContent]",
-	ref,
-	className: cn$1("mt-4 text-sm text-muted-foreground", className),
-	...props
-}));
-TableCaption.displayName = "TableCaption";
 //#endregion
 //#region src/components/consultation/PlanningList.tsx
 function PlanningList({ plans, onCreate, isSigned }) {
@@ -43206,4 +43337,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BHMaJJ5a.js.map
+//# sourceMappingURL=index-BSpko-AJ.js.map

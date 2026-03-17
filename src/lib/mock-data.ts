@@ -22,6 +22,7 @@ export const patients = [
     status: 'scheduled',
     phone: '(11) 98765-4321',
     procedures: ['Toxina Botulínica', 'Bioestimulador'],
+    professional: 'Dra. Fabíola Kleinert',
   },
   {
     id: 'p-002',
@@ -33,6 +34,7 @@ export const patients = [
     status: 'scheduled',
     phone: '(11) 99876-5432',
     procedures: ['Preenchimento Labial', 'Laser Lavieen'],
+    professional: 'Dra. Sofia Mendes',
   },
   {
     id: 'p-003',
@@ -44,6 +46,7 @@ export const patients = [
     status: 'scheduled',
     phone: '(11) 91234-5678',
     procedures: ['Peeling Químico'],
+    professional: 'Dra. Fabíola Kleinert',
   },
   {
     id: 'p-004',
@@ -55,6 +58,7 @@ export const patients = [
     status: 'scheduled',
     phone: '(11) 97777-8888',
     procedures: ['MMP', 'Toxina Botulínica'],
+    professional: null,
   },
   {
     id: 'p-005',
@@ -66,6 +70,7 @@ export const patients = [
     status: 'inactive',
     phone: '(11) 96666-5555',
     procedures: ['Transplante Capilar - Acompanhamento'],
+    professional: 'Dr. Marcos Silva',
   },
 ]
 

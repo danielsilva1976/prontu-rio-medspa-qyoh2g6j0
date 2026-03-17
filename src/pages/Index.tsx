@@ -11,29 +11,34 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 export default function Index() {
   const { currentUser } = useUserStore()
   const isMedico = currentUser.role === 'Médico'
 
-  // Dynamic calculation for today's appointments
   const today = new Date()
   const y = today.getFullYear()
   const m = String(today.getMonth() + 1).padStart(2, '0')
   const d = String(today.getDate()).padStart(2, '0')
   const todayStr = `${y}-${m}-${d}`
 
-  const todaysAppointmentsList = patients.filter(
-    (p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr),
-  )
-  const todaysAppointments = todaysAppointmentsList.length
+  const todaysAppointmentsList = patients
+    .filter((p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr))
+    .sort((a, b) => (a.nextAppointment! > b.nextAppointment! ? 1 : -1))
 
-  // Keeping other metrics cumulative/total as previously defined
+  const todaysAppointments = todaysAppointmentsList.length
   const totalAppointments = mockDashboardStats.scheduledToday
   const finalizedRecords = mockDashboardStats.completedRecords
   const pendingRecords = totalAppointments - finalizedRecords
 
-  // Assuming 'scheduled' implies not started or in-progress for pending records
   const pendingPatients = patients.filter((p) => p.status === 'scheduled')
 
   const formatDateTime = (dateString: string | null) => {
@@ -48,9 +53,15 @@ export default function Index() {
     }).format(date)
   }
 
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
-    <div className="space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6">
-      {/* Welcome Section */}
+    <div className="space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6 pb-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl md:text-4xl text-primary">
           {isMedico ? 'Bom dia,' : 'Olá,'}{' '}
@@ -61,7 +72,6 @@ export default function Index() {
         <p className="text-muted-foreground">Aqui está o resumo da sua agenda para hoje.</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-none shadow-subtle bg-white">
           <CardContent className="p-6 flex items-center gap-4">
@@ -89,7 +99,7 @@ export default function Index() {
 
         <Dialog>
           <DialogTrigger asChild>
-            <Card className="border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <CardContent className="p-6 flex items-center gap-4">
                 <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
                   <Clock className="w-6 h-6" />
@@ -140,6 +150,53 @@ export default function Index() {
             </div>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="space-y-4 pt-4">
+        <h2 className="text-xl font-serif text-primary">Agenda de Hoje</h2>
+        <Card className="border-none shadow-subtle bg-white overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-[100px]">Horário</TableHead>
+                <TableHead>Paciente</TableHead>
+                <TableHead>Procedimento</TableHead>
+                <TableHead>Profissional</TableHead>
+                <TableHead className="text-right">Ação</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {todaysAppointmentsList.length > 0 ? (
+                todaysAppointmentsList.map((apt) => (
+                  <TableRow key={apt.id}>
+                    <TableCell className="font-medium">
+                      {formatTime(apt.nextAppointment!)}
+                    </TableCell>
+                    <TableCell>{apt.name}</TableCell>
+                    <TableCell>{apt.procedures.join(', ')}</TableCell>
+                    <TableCell>{apt.professional || '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-primary hover:text-primary/80"
+                        asChild
+                      >
+                        <Link to={`/prontuario/${apt.id}`}>Abrir</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    Nenhum agendamento para hoje.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
       </div>
     </div>
   )
