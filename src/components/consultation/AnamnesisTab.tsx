@@ -13,13 +13,6 @@ import {
 } from '@/components/ui/accordion'
 
 const MOCK_DATA: Record<string, string> = {
-  cpf: '123.456.789-00',
-  rg: '12.345.678-9',
-  profissao: 'Engenheira de Software',
-  estado_civil: 'Casada',
-  telefone: '(11) 98765-4321',
-  email: 'paciente@email.com',
-  endereco: 'Rua das Flores, 123 - São Paulo/SP',
   queixa: 'Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve.',
   ciclo: 'Regular (28 dias)',
   contraceptivos: 'Anticoncepcional oral (Yaz)',
@@ -52,19 +45,6 @@ const MOCK_DATA: Record<string, string> = {
 }
 
 const SECTIONS = [
-  {
-    id: 'identificacao',
-    title: 'IDENTIFICAÇÃO',
-    fields: [
-      { id: 'cpf', label: 'CPF' },
-      { id: 'rg', label: 'RG' },
-      { id: 'profissao', label: 'Profissão' },
-      { id: 'estado_civil', label: 'Estado Civil' },
-      { id: 'telefone', label: 'Telefone' },
-      { id: 'email', label: 'E-mail' },
-      { id: 'endereco', label: 'Endereço Completo', full: true },
-    ],
-  },
   {
     id: 'gineco',
     title: 'ANTECEDENTES GINECO-OBSTÉTRICOS',
@@ -159,7 +139,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
           />
         </div>
 
-        <Accordion type="multiple" defaultValue={['identificacao']} className="w-full space-y-4">
+        <Accordion type="multiple" defaultValue={['gineco']} className="w-full space-y-4">
           {SECTIONS.map((section) => (
             <AccordionItem
               value={section.id}
