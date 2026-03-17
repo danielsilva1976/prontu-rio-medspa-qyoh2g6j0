@@ -19061,13 +19061,6 @@ var ArrowLeft = createLucideIcon("arrow-left", [["path", {
 	d: "M19 12H5",
 	key: "x3x0zl"
 }]]);
-var ArrowRight = createLucideIcon("arrow-right", [["path", {
-	d: "M5 12h14",
-	key: "1ays0h"
-}], ["path", {
-	d: "m12 5 7 7-7 7",
-	key: "xquz4c"
-}]]);
 var Bell = createLucideIcon("bell", [["path", {
 	d: "M10.268 21a2 2 0 0 0 3.464 0",
 	key: "vwvbt9"
@@ -28504,6 +28497,153 @@ var mockDashboardStats = {
 	newPatients: 2
 };
 //#endregion
+//#region src/pages/Index.tsx
+function Index() {
+	const { currentUser } = useUserStore();
+	const isMedico = currentUser.role === "Médico";
+	const totalAppointments = mockDashboardStats.scheduledToday;
+	const finalizedRecords = mockDashboardStats.completedRecords;
+	const pendingRecords = totalAppointments - finalizedRecords;
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		"data-uid": "src/pages/Index.tsx:15:5",
+		"data-prohibitions": "[editContent]",
+		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			"data-uid": "src/pages/Index.tsx:17:7",
+			"data-prohibitions": "[editContent]",
+			className: "flex flex-col gap-2",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
+				"data-uid": "src/pages/Index.tsx:18:9",
+				"data-prohibitions": "[editContent]",
+				className: "text-3xl md:text-4xl text-primary",
+				children: [
+					isMedico ? "Bom dia," : "Olá,",
+					" ",
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						"data-uid": "src/pages/Index.tsx:20:11",
+						"data-prohibitions": "[editContent]",
+						className: "font-serif italic text-primary/80",
+						children: currentUser.name.split(" ")[0]
+					})
+				]
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				"data-uid": "src/pages/Index.tsx:24:9",
+				"data-prohibitions": "[]",
+				className: "text-muted-foreground",
+				children: "Aqui está o resumo da sua agenda para hoje."
+			})]
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			"data-uid": "src/pages/Index.tsx:28:7",
+			"data-prohibitions": "[editContent]",
+			className: "grid gap-4 md:grid-cols-3",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+					"data-uid": "src/pages/Index.tsx:29:9",
+					"data-prohibitions": "[editContent]",
+					className: "border-none shadow-subtle bg-white",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+						"data-uid": "src/pages/Index.tsx:30:11",
+						"data-prohibitions": "[editContent]",
+						className: "p-6 flex items-center gap-4",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/pages/Index.tsx:31:13",
+							"data-prohibitions": "[]",
+							className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
+								"data-uid": "src/pages/Index.tsx:32:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-6 h-6"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/pages/Index.tsx:34:13",
+							"data-prohibitions": "[editContent]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Index.tsx:35:15",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium text-muted-foreground",
+								children: "Número de Agendamentos"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+								"data-uid": "src/pages/Index.tsx:36:15",
+								"data-prohibitions": "[editContent]",
+								className: "text-2xl font-bold font-serif",
+								children: totalAppointments
+							})]
+						})]
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+					"data-uid": "src/pages/Index.tsx:41:9",
+					"data-prohibitions": "[editContent]",
+					className: "border-none shadow-subtle bg-white",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+						"data-uid": "src/pages/Index.tsx:42:11",
+						"data-prohibitions": "[editContent]",
+						className: "p-6 flex items-center gap-4",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/pages/Index.tsx:43:13",
+							"data-prohibitions": "[]",
+							className: "p-3 bg-green-50 text-green-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
+								"data-uid": "src/pages/Index.tsx:44:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-6 h-6"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/pages/Index.tsx:46:13",
+							"data-prohibitions": "[editContent]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Index.tsx:47:15",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium text-muted-foreground",
+								children: "Prontuários Finalizados"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+								"data-uid": "src/pages/Index.tsx:48:15",
+								"data-prohibitions": "[editContent]",
+								className: "text-2xl font-bold font-serif",
+								children: finalizedRecords
+							})]
+						})]
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+					"data-uid": "src/pages/Index.tsx:53:9",
+					"data-prohibitions": "[editContent]",
+					className: "border-none shadow-subtle bg-white",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+						"data-uid": "src/pages/Index.tsx:54:11",
+						"data-prohibitions": "[editContent]",
+						className: "p-6 flex items-center gap-4",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/pages/Index.tsx:55:13",
+							"data-prohibitions": "[]",
+							className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+								"data-uid": "src/pages/Index.tsx:56:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-6 h-6"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/pages/Index.tsx:58:13",
+							"data-prohibitions": "[editContent]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Index.tsx:59:15",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium text-muted-foreground",
+								children: "Prontuários Pendentes"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+								"data-uid": "src/pages/Index.tsx:60:15",
+								"data-prohibitions": "[editContent]",
+								className: "text-2xl font-bold font-serif",
+								children: pendingRecords
+							})]
+						})]
+					})
+				})
+			]
+		})]
+	});
+}
+//#endregion
 //#region src/components/ui/badge.tsx
 var badgeVariants = cva("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", {
 	variants: { variant: {
@@ -28520,409 +28660,6 @@ function Badge({ className, variant, ...props }) {
 		"data-prohibitions": "[editContent]",
 		className: cn$1(badgeVariants({ variant }), className),
 		...props
-	});
-}
-//#endregion
-//#region src/pages/Index.tsx
-function Index() {
-	const { currentUser } = useUserStore();
-	const isMedico = currentUser.role === "Médico";
-	const todayPatients = patients.filter((p) => p.status === "scheduled");
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Index.tsx:23:5",
-		"data-prohibitions": "[editContent]",
-		className: "space-y-8 animate-slide-up",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:25:7",
-				"data-prohibitions": "[editContent]",
-				className: "flex flex-col gap-2",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-					"data-uid": "src/pages/Index.tsx:26:9",
-					"data-prohibitions": "[editContent]",
-					className: "text-3xl md:text-4xl text-primary",
-					children: [
-						isMedico ? "Bom dia," : "Olá,",
-						" ",
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/pages/Index.tsx:28:11",
-							"data-prohibitions": "[editContent]",
-							className: "font-serif italic text-primary/80",
-							children: currentUser.name.split(" ")[0]
-						})
-					]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Index.tsx:32:9",
-					"data-prohibitions": "[]",
-					className: "text-muted-foreground",
-					children: "Aqui está o resumo da sua agenda para hoje."
-				})]
-			}),
-			isMedico && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:37:9",
-				"data-prohibitions": "[editContent]",
-				className: "grid gap-4 md:grid-cols-3",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Index.tsx:38:11",
-						"data-prohibitions": "[editContent]",
-						className: "border-none shadow-subtle bg-white",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Index.tsx:39:13",
-							"data-prohibitions": "[editContent]",
-							className: "p-6 flex items-center gap-4",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:40:15",
-								"data-prohibitions": "[]",
-								className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-									"data-uid": "src/pages/Index.tsx:41:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-6 h-6"
-								})
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:43:15",
-								"data-prohibitions": "[editContent]",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:44:17",
-									"data-prohibitions": "[]",
-									className: "text-sm font-medium text-muted-foreground",
-									children: "Agendamentos Hoje"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-									"data-uid": "src/pages/Index.tsx:45:17",
-									"data-prohibitions": "[editContent]",
-									className: "text-2xl font-bold font-serif",
-									children: mockDashboardStats.scheduledToday
-								})]
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Index.tsx:51:11",
-						"data-prohibitions": "[editContent]",
-						className: "border-none shadow-subtle bg-white",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Index.tsx:52:13",
-							"data-prohibitions": "[editContent]",
-							className: "p-6 flex items-center gap-4",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:53:15",
-								"data-prohibitions": "[]",
-								className: "p-3 bg-green-50 text-success rounded-2xl",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-									"data-uid": "src/pages/Index.tsx:54:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-6 h-6"
-								})
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:56:15",
-								"data-prohibitions": "[editContent]",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:57:17",
-									"data-prohibitions": "[]",
-									className: "text-sm font-medium text-muted-foreground",
-									children: "Prontuários Finalizados"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-									"data-uid": "src/pages/Index.tsx:58:17",
-									"data-prohibitions": "[editContent]",
-									className: "text-2xl font-bold font-serif",
-									children: mockDashboardStats.completedRecords
-								})]
-							})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Index.tsx:64:11",
-						"data-prohibitions": "[editContent]",
-						className: "border-none shadow-subtle bg-white",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Index.tsx:65:13",
-							"data-prohibitions": "[editContent]",
-							className: "p-6 flex items-center gap-4",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:66:15",
-								"data-prohibitions": "[]",
-								className: "p-3 bg-primary/10 text-primary rounded-2xl",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserPlus, {
-									"data-uid": "src/pages/Index.tsx:67:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-6 h-6"
-								})
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:69:15",
-								"data-prohibitions": "[editContent]",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:70:17",
-									"data-prohibitions": "[]",
-									className: "text-sm font-medium text-muted-foreground",
-									children: "Novos Pacientes"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-									"data-uid": "src/pages/Index.tsx:71:17",
-									"data-prohibitions": "[editContent]",
-									className: "text-2xl font-bold font-serif",
-									children: mockDashboardStats.newPatients
-								})]
-							})]
-						})
-					})
-				]
-			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:78:7",
-				"data-prohibitions": "[editContent]",
-				className: cn$1("grid gap-8", isMedico ? "md:grid-cols-[2fr_1fr]" : "grid-cols-1"),
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-					"data-uid": "src/pages/Index.tsx:80:9",
-					"data-prohibitions": "[editContent]",
-					className: "border-none shadow-subtle",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-						"data-uid": "src/pages/Index.tsx:81:11",
-						"data-prohibitions": "[]",
-						className: "flex flex-row items-center justify-between pb-2 border-b",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:82:13",
-							"data-prohibitions": "[]",
-							className: "space-y-1",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-								"data-uid": "src/pages/Index.tsx:83:15",
-								"data-prohibitions": "[]",
-								className: "text-xl",
-								children: "Agenda do Dia"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardDescription, {
-								"data-uid": "src/pages/Index.tsx:84:15",
-								"data-prohibitions": "[]",
-								className: "flex items-center gap-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-									"data-uid": "src/pages/Index.tsx:85:17",
-									"data-prohibitions": "[]",
-									className: "relative flex h-2 w-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										"data-uid": "src/pages/Index.tsx:86:19",
-										"data-prohibitions": "[]",
-										className: "animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										"data-uid": "src/pages/Index.tsx:87:19",
-										"data-prohibitions": "[]",
-										className: "relative inline-flex rounded-full h-2 w-2 bg-success"
-									})]
-								}), "Sincronizado com Belle Software"]
-							})]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-							"data-uid": "src/pages/Index.tsx:92:13",
-							"data-prohibitions": "[]",
-							variant: "outline",
-							size: "sm",
-							asChild: true,
-							className: "hidden sm:flex text-primary border-primary/30 hover:bg-primary/5",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
-								"data-uid": "src/pages/Index.tsx:98:15",
-								"data-prohibitions": "[]",
-								to: "/pacientes",
-								children: ["Ver todos ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowRight, {
-									"data-uid": "src/pages/Index.tsx:99:27",
-									"data-prohibitions": "[editContent]",
-									className: "w-4 h-4 ml-2"
-								})]
-							})
-						})]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:103:11",
-						"data-prohibitions": "[editContent]",
-						className: "p-0",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:104:13",
-							"data-prohibitions": "[editContent]",
-							className: "divide-y divide-border/50",
-							children: todayPatients.map((patient) => {
-								const time = new Date(patient.nextAppointment).toLocaleTimeString("pt-BR", {
-									hour: "2-digit",
-									minute: "2-digit"
-								});
-								return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Index.tsx:111:19",
-									"data-prohibitions": "[editContent]",
-									className: "flex items-center justify-between p-4 md:p-6 transition-colors hover:bg-muted/30 group",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Index.tsx:115:21",
-										"data-prohibitions": "[editContent]",
-										className: "flex items-center gap-4 md:gap-6",
-										children: [
-											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/pages/Index.tsx:116:23",
-												"data-prohibitions": "[editContent]",
-												className: "text-center w-16 shrink-0",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													"data-uid": "src/pages/Index.tsx:117:25",
-													"data-prohibitions": "[editContent]",
-													className: "text-sm font-bold text-primary block",
-													children: time
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													"data-uid": "src/pages/Index.tsx:118:25",
-													"data-prohibitions": "[]",
-													className: "text-xs text-muted-foreground block mt-1",
-													children: "30 min"
-												})]
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/pages/Index.tsx:120:23",
-												"data-prohibitions": "[]",
-												className: "w-px h-10 bg-border hidden sm:block"
-											}),
-											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/pages/Index.tsx:121:23",
-												"data-prohibitions": "[editContent]",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-													"data-uid": "src/pages/Index.tsx:122:25",
-													"data-prohibitions": "[editContent]",
-													className: "font-medium text-foreground group-hover:text-primary transition-colors",
-													children: patient.name
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													"data-uid": "src/pages/Index.tsx:125:25",
-													"data-prohibitions": "[editContent]",
-													className: "flex flex-wrap items-center gap-2 mt-1",
-													children: [
-														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-															"data-uid": "src/pages/Index.tsx:126:27",
-															"data-prohibitions": "[editContent]",
-															className: "text-sm text-muted-foreground",
-															children: [patient.age, " anos"]
-														}),
-														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-															"data-uid": "src/pages/Index.tsx:127:27",
-															"data-prohibitions": "[]",
-															className: "text-muted-foreground text-xs",
-															children: "•"
-														}),
-														patient.procedures.map((proc, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-															"data-uid": "src/pages/Index.tsx:129:29",
-															"data-prohibitions": "[editContent]",
-															variant: "secondary",
-															className: "font-normal text-xs bg-primary/5 text-primary border-none",
-															children: proc
-														}, idx))
-													]
-												})]
-											})
-										]
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/pages/Index.tsx:140:21",
-										"data-prohibitions": "[]",
-										asChild: true,
-										className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-full px-6 shrink-0",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-											"data-uid": "src/pages/Index.tsx:144:23",
-											"data-prohibitions": "[]",
-											to: `/prontuario/${patient.id}`,
-											children: "Iniciar"
-										})
-									})]
-								}, patient.id);
-							})
-						})
-					})]
-				}), isMedico && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Index.tsx:155:11",
-					"data-prohibitions": "[]",
-					className: "space-y-4",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-							"data-uid": "src/pages/Index.tsx:156:13",
-							"data-prohibitions": "[]",
-							className: "font-serif text-xl mb-4 text-primary",
-							children: "Ações Rápidas"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-							"data-uid": "src/pages/Index.tsx:158:13",
-							"data-prohibitions": "[]",
-							to: "/documentos?tab=receita",
-							className: "block",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-								"data-uid": "src/pages/Index.tsx:159:15",
-								"data-prohibitions": "[]",
-								className: "border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Index.tsx:160:17",
-									"data-prohibitions": "[]",
-									className: "absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-									"data-uid": "src/pages/Index.tsx:161:17",
-									"data-prohibitions": "[]",
-									className: "p-6 flex flex-col gap-4",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/pages/Index.tsx:162:19",
-										"data-prohibitions": "[]",
-										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
-											"data-uid": "src/pages/Index.tsx:163:21",
-											"data-prohibitions": "[editContent]",
-											className: "w-6 h-6"
-										})
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Index.tsx:165:19",
-										"data-prohibitions": "[]",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-											"data-uid": "src/pages/Index.tsx:166:21",
-											"data-prohibitions": "[]",
-											className: "font-medium text-lg text-foreground group-hover:text-primary transition-colors",
-											children: "Prescrição Médica"
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Index.tsx:169:21",
-											"data-prohibitions": "[]",
-											className: "text-sm text-muted-foreground mt-1",
-											children: "Gerar nova receita com assinatura digital."
-										})]
-									})]
-								})]
-							})
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-							"data-uid": "src/pages/Index.tsx:177:13",
-							"data-prohibitions": "[]",
-							to: "/documentos?tab=laudo",
-							className: "block",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-								"data-uid": "src/pages/Index.tsx:178:15",
-								"data-prohibitions": "[]",
-								className: "border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Index.tsx:179:17",
-									"data-prohibitions": "[]",
-									className: "absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-									"data-uid": "src/pages/Index.tsx:180:17",
-									"data-prohibitions": "[]",
-									className: "p-6 flex flex-col gap-4",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/pages/Index.tsx:181:19",
-										"data-prohibitions": "[]",
-										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-											"data-uid": "src/pages/Index.tsx:182:21",
-											"data-prohibitions": "[editContent]",
-											className: "w-6 h-6"
-										})
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Index.tsx:184:19",
-										"data-prohibitions": "[]",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-											"data-uid": "src/pages/Index.tsx:185:21",
-											"data-prohibitions": "[]",
-											className: "font-medium text-lg text-foreground group-hover:text-primary transition-colors",
-											children: "Laudo de Procedimento"
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Index.tsx:188:21",
-											"data-prohibitions": "[]",
-											className: "text-sm text-muted-foreground mt-1",
-											children: "Documentar orientações pós-procedimento."
-										})]
-									})]
-								})]
-							})
-						})
-					]
-				})]
-			})
-		]
 	});
 }
 //#endregion
@@ -43375,4 +43112,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CsMtpFtS.js.map
+//# sourceMappingURL=index-QV5DTrxv.js.map
