@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -8,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Trash2 } from 'lucide-react'
 
 export type ChronogramEntry = {
@@ -17,6 +19,7 @@ export type ChronogramEntry = {
   quantity: string
   standardValue: string
   discountValue: string
+  discountType: 'currency' | 'percentage'
   finalValue: string
 }
 
@@ -35,6 +38,39 @@ export default function PlanningEntryItem({
   onUpdate,
   onRemove,
 }: Props) {
+  // Auto-calculate final value based on standard value and discount
+  useEffect(() => {
+    // Avoid calculating if both inputs are empty and final value is already empty
+    if (!entry.standardValue && !entry.discountValue && !entry.finalValue) return
+
+    const standard = parseFloat(entry.standardValue) || 0
+    const discount = parseFloat(entry.discountValue) || 0
+    let final = standard
+
+    if (entry.discountType === 'percentage') {
+      final = standard - standard * (discount / 100)
+    } else {
+      final = standard - discount
+    }
+
+    final = Math.max(0, final)
+
+    // Allow empty state if no inputs
+    const finalStr = entry.standardValue || entry.discountValue ? final.toFixed(2) : ''
+
+    if (entry.finalValue !== finalStr && !isSigned) {
+      onUpdate(entry.id, 'finalValue', finalStr)
+    }
+  }, [
+    entry.standardValue,
+    entry.discountValue,
+    entry.discountType,
+    entry.finalValue,
+    entry.id,
+    isSigned,
+    onUpdate,
+  ])
+
   return (
     <div className="relative pl-6 md:pl-8 animate-fade-in">
       <div className="absolute w-4 h-4 bg-white border-2 border-primary rounded-full -left-[9px] top-5 shadow-sm" />
@@ -117,16 +153,41 @@ export default function PlanningEntryItem({
           </div>
           <div className="w-full md:w-1/3 space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-              Valor de Desconto (R$)
+              Desconto
             </Label>
-            <Input
-              type="number"
-              placeholder="0.00"
-              value={entry.discountValue}
-              onChange={(e) => onUpdate(entry.id, 'discountValue', e.target.value)}
-              disabled={isSigned}
-              className="bg-muted/5 h-9"
-            />
+            <div className="flex gap-1.5">
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={entry.discountValue}
+                onChange={(e) => onUpdate(entry.id, 'discountValue', e.target.value)}
+                disabled={isSigned}
+                className="bg-muted/5 h-9 w-full"
+              />
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={entry.discountType || 'currency'}
+                onValueChange={(val) => {
+                  if (val) onUpdate(entry.id, 'discountType', val)
+                }}
+                disabled={isSigned}
+                className="shrink-0 gap-0 -space-x-px rounded-md h-9"
+              >
+                <ToggleGroupItem
+                  value="currency"
+                  className="rounded-r-none focus:z-10 text-[11px] px-2.5 h-9 font-semibold"
+                >
+                  R$
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="percentage"
+                  className="rounded-l-none focus:z-10 text-[11px] px-2.5 h-9 font-semibold"
+                >
+                  %
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
           <div className="w-full md:w-1/3 space-y-1.5">
             <Label className="text-[10px] text-primary uppercase tracking-wider font-semibold">
@@ -136,9 +197,8 @@ export default function PlanningEntryItem({
               type="number"
               placeholder="0.00"
               value={entry.finalValue}
-              onChange={(e) => onUpdate(entry.id, 'finalValue', e.target.value)}
-              disabled={isSigned}
-              className="bg-primary/5 border-primary/30 h-9 focus-visible:ring-primary text-primary font-medium"
+              readOnly
+              className="bg-primary/5 border-primary/30 h-9 focus-visible:ring-primary text-primary font-medium pointer-events-none"
             />
           </div>
         </div>

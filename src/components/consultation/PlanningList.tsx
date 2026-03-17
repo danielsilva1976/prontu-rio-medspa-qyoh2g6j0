@@ -147,7 +147,9 @@ export default function PlanningList({ plans, onCreate, isSigned }: Props) {
                               {formatCurrency(parseFloat(entry.standardValue) || 0)}
                             </TableCell>
                             <TableCell className="py-3 text-right text-muted-foreground text-sm">
-                              {formatCurrency(parseFloat(entry.discountValue) || 0)}
+                              {entry.discountType === 'percentage'
+                                ? `${entry.discountValue || '0'}%`
+                                : formatCurrency(parseFloat(entry.discountValue) || 0)}
                             </TableCell>
                             <TableCell className="py-3 text-right font-medium text-primary text-sm">
                               {formatCurrency(parseFloat(entry.finalValue) || 0)}

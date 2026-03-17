@@ -61,13 +61,14 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
       quantity: '1',
       standardValue: '',
       discountValue: '',
+      discountType: 'currency',
       finalValue: '',
     },
   ])
 
   const addEntry = () =>
-    setEntries([
-      ...entries,
+    setEntries((prev) => [
+      ...prev,
       {
         id: Math.random().toString(36).slice(2),
         timing: '',
@@ -75,13 +76,15 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
         quantity: '1',
         standardValue: '',
         discountValue: '',
+        discountType: 'currency',
         finalValue: '',
       },
     ])
 
-  const removeEntry = (id: string) => setEntries(entries.filter((e) => e.id !== id))
+  const removeEntry = (id: string) => setEntries((prev) => prev.filter((e) => e.id !== id))
+
   const updateEntry = (id: string, field: keyof ChronogramEntry, value: string) =>
-    setEntries(entries.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
 
   const uniqueProcedures = useMemo(
     () => Array.from(new Set([...procedures, 'Retorno', 'Consulta'])),
@@ -237,7 +240,7 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
             <Input
               readOnly
               value={formatCurr(installmentValue)}
-              className="bg-primary/5 text-primary font-semibold border-primary/20"
+              className="bg-primary/5 text-primary font-semibold border-primary/20 pointer-events-none"
             />
           </div>
           <div className="space-y-2">

@@ -23,6 +23,7 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
           quantity: '1',
           standardValue: '2500',
           discountValue: '0',
+          discountType: 'currency',
           finalValue: '2500',
         },
         {
@@ -32,6 +33,7 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
           quantity: '2',
           standardValue: '2000',
           discountValue: '0',
+          discountType: 'currency',
           finalValue: '2000',
         },
       ],
