@@ -1,51 +1,40 @@
 import { useState } from 'react'
-import useSettingsStore from '@/stores/useSettingsStore'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Syringe, MapPin, Package, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Trash2, Plus, Syringe } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { SettingsCategory } from '@/stores/useSettingsStore'
+import SettingsList from '@/components/settings/SettingsList'
+import { cn } from '@/lib/utils'
+
+const tabs = [
+  {
+    id: 'procedures',
+    label: 'Procedimentos',
+    icon: Syringe,
+    desc: 'Gerencie os tipos de procedimentos realizados na clínica para usar nos prontuários.',
+  },
+  {
+    id: 'areas',
+    label: 'Áreas Tratadas',
+    icon: MapPin,
+    desc: 'Gerencie as regiões faciais e corporais que podem ser selecionadas durante o atendimento.',
+  },
+  {
+    id: 'products',
+    label: 'Produtos',
+    icon: Package,
+    desc: 'Mantenha atualizado o catálogo de produtos e ativos utilizados nos procedimentos.',
+  },
+  {
+    id: 'brands',
+    label: 'Marcas',
+    icon: Tag,
+    desc: 'Lista de fabricantes e marcas parceiras homologadas pela clínica.',
+  },
+] as const
 
 export default function Settings() {
-  const { procedures, addProcedure, removeProcedure } = useSettingsStore()
-  const [newProcedure, setNewProcedure] = useState('')
-  const { toast } = useToast()
-
-  const handleAdd = () => {
-    const trimmed = newProcedure.trim()
-    if (!trimmed) return
-
-    if (procedures.some((p) => p.toLowerCase() === trimmed.toLowerCase())) {
-      toast({
-        title: 'Procedimento duplicado',
-        description: 'Este procedimento já existe na sua lista.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    addProcedure(trimmed)
-    setNewProcedure('')
-    toast({
-      title: 'Procedimento adicionado',
-      description: `"${trimmed}" agora está disponível para os prontuários.`,
-    })
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAdd()
-    }
-  }
+  const [activeTab, setActiveTab] = useState<SettingsCategory>('procedures')
+  const activeData = tabs.find((t) => t.id === activeTab)!
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
@@ -56,79 +45,36 @@ export default function Settings() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_2fr] max-w-6xl">
-        {/* Settings Navigation (Static for now, scalable for future settings) */}
-        <div className="flex flex-col gap-2">
-          <Button variant="ghost" className="justify-start bg-primary/10 text-primary font-medium">
-            <Syringe className="w-4 h-4 mr-2" /> Tipos de Procedimentos
-          </Button>
-        </div>
-
-        {/* Procedures Dashboard */}
-        <Card className="border-none shadow-subtle">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl text-primary font-serif">
-              Procedimentos Cadastrados
-            </CardTitle>
-            <CardDescription>
-              Abaixo estão os procedimentos que aparecem na lista do prontuário do paciente.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex gap-3">
-              <Input
-                placeholder="Nome do novo procedimento..."
-                value={newProcedure}
-                onChange={(e) => setNewProcedure(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm"
+      <div className="grid gap-8 md:grid-cols-[240px_1fr] max-w-6xl items-start">
+        <nav className="flex flex-col gap-2 sticky top-24">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant="ghost"
+              onClick={() => setActiveTab(tab.id as SettingsCategory)}
+              className={cn(
+                'justify-start font-medium transition-all duration-200',
+                activeTab === tab.id
+                  ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-l-none'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground border-l-2 border-transparent rounded-l-none',
+              )}
+            >
+              <tab.icon
+                className={cn('w-4 h-4 mr-3', activeTab === tab.id ? 'text-primary' : 'opacity-70')}
               />
-              <Button
-                onClick={handleAdd}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl shrink-0"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar
-              </Button>
-            </div>
+              {tab.label}
+            </Button>
+          ))}
+        </nav>
 
-            <div className="border rounded-xl bg-white overflow-hidden shadow-sm">
-              <Table>
-                <TableHeader className="bg-muted/30">
-                  <TableRow>
-                    <TableHead className="w-full">Nome do Procedimento</TableHead>
-                    <TableHead className="text-right">Ação</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {procedures.map((proc) => (
-                    <TableRow key={proc} className="group transition-colors hover:bg-muted/10">
-                      <TableCell className="font-medium text-foreground">{proc}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeProcedure(proc)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="sr-only">Remover {proc}</span>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {procedures.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={2} className="text-center text-muted-foreground py-8">
-                        Nenhum procedimento cadastrado. Adicione um acima.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="min-w-0">
+          <SettingsList
+            key={activeTab}
+            category={activeTab}
+            title={activeData.label}
+            description={activeData.desc}
+          />
+        </div>
       </div>
     </div>
   )
