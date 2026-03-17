@@ -51,9 +51,9 @@ export function UserManagement({ title, description }: UserManagementProps) {
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="bg-primary/5 text-primary border-none">
-                      {user.role === 'Admin' && <ShieldAlert className="w-3 h-3 mr-1" />}
-                      {user.role === 'Profissional' && <Shield className="w-3 h-3 mr-1" />}
-                      {user.role === 'Assistente' && <User className="w-3 h-3 mr-1" />}
+                      {user.role === 'Médico' && <ShieldAlert className="w-3 h-3 mr-1" />}
+                      {user.role === 'Estético' && <Shield className="w-3 h-3 mr-1" />}
+                      {user.role === 'Secretária' && <User className="w-3 h-3 mr-1" />}
                       {user.role}
                     </Badge>
                   </TableCell>

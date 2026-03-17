@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Syringe, MapPin, Package, Tag, Cpu, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsCategory } from '@/stores/useSettingsStore'
@@ -58,11 +59,13 @@ const allTabs: TabItem[] = [
 export default function Settings() {
   const { currentUser } = useUserStore()
 
-  // Filter tabs based on user access level
-  const visibleTabs = allTabs.filter((t) => !t.adminOnly || currentUser.role === 'Admin')
+  // Strict RBAC: Only Médico has access to settings
+  if (currentUser.role !== 'Médico') {
+    return <Navigate to="/" replace />
+  }
 
-  const [activeTab, setActiveTab] = useState<string>(visibleTabs[0]?.id || 'procedures')
-  const activeData = visibleTabs.find((t) => t.id === activeTab)!
+  const [activeTab, setActiveTab] = useState<string>(allTabs[0]?.id || 'procedures')
+  const activeData = allTabs.find((t) => t.id === activeTab)!
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
@@ -75,7 +78,7 @@ export default function Settings() {
 
       <div className="grid gap-8 md:grid-cols-[240px_1fr] max-w-6xl items-start">
         <nav className="flex flex-col gap-2 sticky top-24">
-          {visibleTabs.map((tab) => (
+          {allTabs.map((tab) => (
             <Button
               key={tab.id}
               variant="ghost"

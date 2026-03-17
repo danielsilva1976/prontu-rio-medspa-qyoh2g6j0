@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,15 +15,23 @@ import {
 } from '@/components/ui/select'
 import { Printer, Download, FileSignature } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import useUserStore from '@/stores/useUserStore'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 
 export default function Documents() {
+  const { currentUser } = useUserStore()
+  const { toast } = useToast()
+
   const [docType, setDocType] = useState('receita')
   const [patientName, setPatientName] = useState('Isabella Rodrigues')
   const [content, setContent] = useState(
     'Uso Tópico:\n\n1. Vitamina C 10% - Aplicar 3 a 4 gotas na face pela manhã, antes do protetor solar.\n\n2. Protetor Solar FPS 50+ - Reaplicar a cada 3 horas.\n\n3. Ácido Retinoico 0.025% (Creme) - Aplicar pequena quantidade à noite. Iniciar uso em dias alternados para evitar sensibilização.',
   )
-  const { toast } = useToast()
+
+  // Strict RBAC: Only Médico has access to documents module
+  if (currentUser.role !== 'Médico') {
+    return <Navigate to="/" replace />
+  }
 
   const currentDate = new Date().toLocaleDateString('pt-BR', {
     day: '2-digit',

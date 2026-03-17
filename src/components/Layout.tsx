@@ -23,30 +23,44 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
-
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Pacientes', href: '/pacientes', icon: Users },
-  { name: 'Agenda', href: '/agenda', icon: Calendar },
-  { name: 'Documentos', href: '/documentos', icon: FileText },
-  { name: 'Configurações', href: '/configuracoes', icon: Settings },
-]
+import useUserStore from '@/stores/useUserStore'
 
 export default function Layout() {
   const location = useLocation()
+  const { currentUser, users, switchUser } = useUserStore()
+
+  const navItems = [
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard, show: currentUser.role === 'Médico' },
+    { name: 'Agenda', href: '/', icon: Calendar, show: currentUser.role !== 'Médico' },
+    { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
+    {
+      name: 'Documentos',
+      href: '/documentos',
+      icon: FileText,
+      show: currentUser.role === 'Médico',
+    },
+    {
+      name: 'Configurações',
+      href: '/configuracoes',
+      icon: Settings,
+      show: currentUser.role === 'Médico',
+    },
+  ]
+
+  const filteredNav = navItems.filter((item) => item.show)
 
   const SidebarContent = () => (
     <>
       <div className="flex h-28 shrink-0 items-center justify-center px-6 mb-2 mt-4 border-b border-border/50 pb-6">
         <img
           src={logoMarca}
-          alt="Clínica MEDSPA - Dra. Fabíola Kleinert"
+          alt="Clínica MEDSPA"
           className="h-[4.5rem] w-auto object-contain mix-blend-multiply transition-transform hover:scale-105 duration-300"
         />
       </div>
       <div className="flex flex-1 flex-col overflow-y-auto">
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {navigation.map((item) => {
+          {filteredNav.map((item) => {
             const isActive =
               location.pathname === item.href ||
               (item.href !== '/' && location.pathname.startsWith(item.href)) ||
@@ -139,11 +153,13 @@ export default function Layout() {
                   >
                     <Avatar className="h-9 w-9 border border-primary/20 shadow-sm">
                       <AvatarImage
-                        src="https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1"
-                        alt="Dra. Fabíola"
+                        src={`https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${
+                          currentUser.id === 'usr-1' ? 1 : 2
+                        }`}
+                        alt={currentUser.name}
                       />
                       <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                        FK
+                        {currentUser.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -152,18 +168,43 @@ export default function Layout() {
                   <DropdownMenuLabel className="font-normal p-3 bg-muted/30">
                     <div className="flex flex-col space-y-1.5">
                       <p className="text-sm font-semibold leading-none text-primary">
-                        Dra. Fabíola Kleinert
+                        {currentUser.name}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        Médica Dermatologista • CRM-SP 123456
+                        {currentUser.role} {currentUser.role === 'Médico' ? '• CRM-SP 123456' : ''}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">Perfil</DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    Configurações da Clínica
-                  </DropdownMenuItem>
+                  <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+                    Alternar Usuário (Demo)
+                  </DropdownMenuLabel>
+                  {users.map((u) => (
+                    <DropdownMenuItem
+                      key={u.id}
+                      className="cursor-pointer py-2"
+                      onClick={() => switchUser(u.id)}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="text-[10px] bg-primary/5 text-primary">
+                            {u.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span
+                            className={cn(
+                              'text-sm',
+                              currentUser.id === u.id && 'font-bold text-primary',
+                            )}
+                          >
+                            {u.name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{u.role}</span>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10">
                     Sair

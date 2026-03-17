@@ -11,8 +11,12 @@ import {
 } from 'lucide-react'
 import { patients, mockDashboardStats } from '@/lib/mock-data'
 import { Badge } from '@/components/ui/badge'
+import useUserStore from '@/stores/useUserStore'
+import { cn } from '@/lib/utils'
 
 export default function Index() {
+  const { currentUser } = useUserStore()
+  const isMedico = currentUser.role === 'Médico'
   const todayPatients = patients.filter((p) => p.status === 'scheduled')
 
   return (
@@ -20,51 +24,58 @@ export default function Index() {
       {/* Welcome Section */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl md:text-4xl text-primary">
-          Bom dia, <span className="font-serif italic text-primary/80">Dra. Sofia</span>
+          {isMedico ? 'Bom dia,' : 'Olá,'}{' '}
+          <span className="font-serif italic text-primary/80">
+            {currentUser.name.split(' ')[0]}
+          </span>
         </h1>
         <p className="text-muted-foreground">Aqui está o resumo da sua agenda para hoje.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-none shadow-subtle bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-              <CalendarClock className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Agendamentos Hoje</p>
-              <h3 className="text-2xl font-bold font-serif">{mockDashboardStats.scheduledToday}</h3>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-subtle bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 bg-green-50 text-success rounded-2xl">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Prontuários Finalizados</p>
-              <h3 className="text-2xl font-bold font-serif">
-                {mockDashboardStats.completedRecords}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-subtle bg-white">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
-              <UserPlus className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Novos Pacientes</p>
-              <h3 className="text-2xl font-bold font-serif">{mockDashboardStats.newPatients}</h3>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {isMedico && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-none shadow-subtle bg-white">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                <CalendarClock className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Agendamentos Hoje</p>
+                <h3 className="text-2xl font-bold font-serif">
+                  {mockDashboardStats.scheduledToday}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-subtle bg-white">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 bg-green-50 text-success rounded-2xl">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Prontuários Finalizados</p>
+                <h3 className="text-2xl font-bold font-serif">
+                  {mockDashboardStats.completedRecords}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-subtle bg-white">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                <UserPlus className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Novos Pacientes</p>
+                <h3 className="text-2xl font-bold font-serif">{mockDashboardStats.newPatients}</h3>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
+      <div className={cn('grid gap-8', isMedico ? 'md:grid-cols-[2fr_1fr]' : 'grid-cols-1')}>
         {/* Agenda list */}
         <Card className="border-none shadow-subtle">
           <CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
@@ -140,47 +151,49 @@ export default function Index() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="space-y-4">
-          <h3 className="font-serif text-xl mb-4 text-primary">Ações Rápidas</h3>
+        {isMedico && (
+          <div className="space-y-4">
+            <h3 className="font-serif text-xl mb-4 text-primary">Ações Rápidas</h3>
 
-          <Link to="/documentos?tab=receita" className="block">
-            <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <FileSignature className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
-                    Prescrição Médica
-                  </h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Gerar nova receita com assinatura digital.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+            <Link to="/documentos?tab=receita" className="block">
+              <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <CardContent className="p-6 flex flex-col gap-4">
+                  <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <FileSignature className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
+                      Prescrição Médica
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Gerar nova receita com assinatura digital.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
 
-          <Link to="/documentos?tab=laudo" className="block">
-            <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <Syringe className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
-                    Laudo de Procedimento
-                  </h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Documentar orientações pós-procedimento.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
+            <Link to="/documentos?tab=laudo" className="block">
+              <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <CardContent className="p-6 flex flex-col gap-4">
+                  <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <Syringe className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
+                      Laudo de Procedimento
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Documentar orientações pós-procedimento.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   )

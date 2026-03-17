@@ -35,7 +35,7 @@ const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
   email: z.string().email('Formato de e-mail inválido.'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
-  role: z.enum(['Admin', 'Profissional', 'Assistente'], {
+  role: z.enum(['Médico', 'Estético', 'Secretária'], {
     required_error: 'Selecione um nível de acesso.',
   }),
 })
@@ -53,7 +53,7 @@ export function AddUserDialog() {
       name: '',
       email: '',
       password: '',
-      role: undefined as unknown as UserRole, // Forces user to select
+      role: undefined as unknown as UserRole,
     },
   })
 
@@ -140,11 +140,9 @@ export function AddUserDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Admin">Admin (Acesso Total)</SelectItem>
-                      <SelectItem value="Profissional">
-                        Profissional (Acesso a Prontuários)
-                      </SelectItem>
-                      <SelectItem value="Assistente">Assistente (Acesso à Agenda)</SelectItem>
+                      <SelectItem value="Médico">Médico (Acesso Total)</SelectItem>
+                      <SelectItem value="Estético">Estético (Acesso Parcial)</SelectItem>
+                      <SelectItem value="Secretária">Secretária (Acesso Restrito)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

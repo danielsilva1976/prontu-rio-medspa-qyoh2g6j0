@@ -1,6 +1,6 @@
 import { useState, useContext, createContext, ReactNode, createElement } from 'react'
 
-export type UserRole = 'Admin' | 'Profissional' | 'Assistente'
+export type UserRole = 'Médico' | 'Estético' | 'Secretária'
 export type UserStatus = 'Ativo' | 'Inativo'
 
 export type User = {
@@ -17,6 +17,7 @@ type UserState = {
   addUser: (user: Omit<User, 'id' | 'status'>) => void
   toggleStatus: (id: string) => void
   removeUser: (id: string) => void
+  switchUser: (id: string) => void
 }
 
 const defaultUsers: User[] = [
@@ -24,14 +25,21 @@ const defaultUsers: User[] = [
     id: 'usr-1',
     name: 'Dra. Fabíola Kleinert',
     email: 'fabiola@medspa.com',
-    role: 'Admin',
+    role: 'Médico',
     status: 'Ativo',
   },
   {
     id: 'usr-2',
     name: 'Dra. Sofia Mendes',
     email: 'sofia@medspa.com',
-    role: 'Profissional',
+    role: 'Estético',
+    status: 'Ativo',
+  },
+  {
+    id: 'usr-3',
+    name: 'Mariana Costa',
+    email: 'mariana@medspa.com',
+    role: 'Secretária',
     status: 'Ativo',
   },
 ]
@@ -40,8 +48,9 @@ const UserContext = createContext<UserState>({} as UserState)
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [users, setUsers] = useState<User[]>(defaultUsers)
-  // Mock logged in user for Access Control (Admin)
-  const [currentUser] = useState<User>(defaultUsers[0])
+  const [currentUserId, setCurrentUserId] = useState<string>(defaultUsers[0].id)
+
+  const currentUser = users.find((u) => u.id === currentUserId) || users[0]
 
   const addUser = (userData: Omit<User, 'id' | 'status'>) => {
     const newUser: User = {
@@ -64,6 +73,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setUsers((prev) => prev.filter((u) => u.id !== id))
   }
 
+  const switchUser = (id: string) => {
+    setCurrentUserId(id)
+  }
+
   return createElement(
     UserContext.Provider,
     {
@@ -73,6 +86,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         addUser,
         toggleStatus,
         removeUser,
+        switchUser,
       },
     },
     children,
