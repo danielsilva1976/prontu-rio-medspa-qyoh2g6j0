@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,6 +12,29 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
+  const [examData, setExamData] = useState({
+    // Facial
+    fototipo: '',
+    glogau: '',
+    tipoPele: '',
+    inspecaoFacial: '',
+    // Cabelo
+    padraoQueda: '',
+    testeTracao: '',
+    textura: '',
+    densidade: '',
+    tricoscopia: '',
+    // Corporal
+    grauCelulite: '',
+    flacidez: '',
+    gordura: '',
+    inspecaoCorporal: '',
+  })
+
+  const handleChange = (field: keyof typeof examData, value: string) => {
+    setExamData((prev) => ({ ...prev, [field]: value }))
+  }
+
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
       <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
@@ -48,7 +72,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label>Fototipo (Fitzpatrick)</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.fototipo}
+                  onValueChange={(v) => handleChange('fototipo', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -64,7 +92,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
               </div>
               <div className="space-y-2">
                 <Label>Grau de Envelhecimento (Glogau)</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.glogau}
+                  onValueChange={(v) => handleChange('glogau', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -78,7 +110,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
               </div>
               <div className="space-y-2">
                 <Label>Tipo de Pele</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.tipoPele}
+                  onValueChange={(v) => handleChange('tipoPele', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -96,6 +132,8 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             <div className="space-y-2">
               <Label>Inspeção Visual, Marcações e Achados - Facial</Label>
               <Textarea
+                value={examData.inspecaoFacial}
+                onChange={(e) => handleChange('inspecaoFacial', e.target.value)}
                 placeholder="Descreva assimetrias, áreas de ptose, manchas (melasma, melanose), cicatrizes, flacidez e detalhe os pontos de marcação para o procedimento..."
                 className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4"
                 disabled={isSigned}
@@ -110,7 +148,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Padrão de Queda</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.padraoQueda}
+                  onValueChange={(v) => handleChange('padraoQueda', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -125,7 +167,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
               </div>
               <div className="space-y-2">
                 <Label>Teste de Tração</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.testeTracao}
+                  onValueChange={(v) => handleChange('testeTracao', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -135,12 +181,48 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Textura do Fio</Label>
+                <Select
+                  disabled={isSigned}
+                  value={examData.textura}
+                  onValueChange={(v) => handleChange('textura', v)}
+                >
+                  <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fina">Fina</SelectItem>
+                    <SelectItem value="media">Média</SelectItem>
+                    <SelectItem value="grossa">Grossa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Densidade</Label>
+                <Select
+                  disabled={isSigned}
+                  value={examData.densidade}
+                  onValueChange={(v) => handleChange('densidade', v)}
+                >
+                  <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="reduzida">Reduzida</SelectItem>
+                    <SelectItem value="rarefacao">Rarefação Acentuada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Tricoscopia e Inspeção do Couro Cabeludo</Label>
+              <Label className="uppercase font-bold text-foreground">Tricoscopia</Label>
               <Textarea
-                placeholder="Descreva os achados tricoscópicos, afinamento folicular, descamação, eritema ou outras alterações no couro cabeludo..."
+                value={examData.tricoscopia}
+                onChange={(e) => handleChange('tricoscopia', e.target.value)}
+                placeholder="Descreva detalhadamente os achados tricoscópicos, afinamento folicular, descamação, eritema, halos peripilares, pontos amarelos/pretos ou outras alterações no couro cabeludo..."
                 className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4"
                 disabled={isSigned}
               />
@@ -154,7 +236,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label>Grau de Celulite (FEG)</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.grauCelulite}
+                  onValueChange={(v) => handleChange('grauCelulite', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -168,7 +254,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
               </div>
               <div className="space-y-2">
                 <Label>Flacidez Tissular</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.flacidez}
+                  onValueChange={(v) => handleChange('flacidez', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -181,7 +271,11 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
               </div>
               <div className="space-y-2">
                 <Label>Gordura Localizada</Label>
-                <Select disabled={isSigned}>
+                <Select
+                  disabled={isSigned}
+                  value={examData.gordura}
+                  onValueChange={(v) => handleChange('gordura', v)}
+                >
                   <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary h-11">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
@@ -198,6 +292,8 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
             <div className="space-y-2">
               <Label>Inspeção Visual e Marcações - Corporal</Label>
               <Textarea
+                value={examData.inspecaoCorporal}
+                onChange={(e) => handleChange('inspecaoCorporal', e.target.value)}
                 placeholder="Descreva áreas de flacidez, estrias, cicatrizes, distribuição de gordura e detalhe os pontos de aplicação/tratamento..."
                 className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4"
                 disabled={isSigned}

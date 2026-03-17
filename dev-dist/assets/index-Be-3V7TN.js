@@ -31433,61 +31433,82 @@ SelectSeparator.displayName = Separator.displayName;
 //#endregion
 //#region src/components/consultation/PhysicalExamTab.tsx
 function PhysicalExamTab({ isSigned }) {
+	const [examData, setExamData] = (0, import_react.useState)({
+		fototipo: "",
+		glogau: "",
+		tipoPele: "",
+		inspecaoFacial: "",
+		padraoQueda: "",
+		testeTracao: "",
+		textura: "",
+		densidade: "",
+		tricoscopia: "",
+		grauCelulite: "",
+		flacidez: "",
+		gordura: "",
+		inspecaoCorporal: ""
+	});
+	const handleChange = (field, value) => {
+		setExamData((prev) => ({
+			...prev,
+			[field]: value
+		}));
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/PhysicalExamTab.tsx:15:5",
+		"data-uid": "src/components/consultation/PhysicalExamTab.tsx:39:5",
 		"data-prohibitions": "[]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:16:7",
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:40:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:17:7",
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:41:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:18:9",
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:42:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary",
 					children: "Exame Físico"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:19:9",
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:43:9",
 					"data-prohibitions": "[]",
 					children: "Mapeamento e classificação clínica por região anatômica."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:21:7",
+				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:45:7",
 				"data-prohibitions": "[]",
 				className: "space-y-6",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:22:9",
+					"data-uid": "src/components/consultation/PhysicalExamTab.tsx:46:9",
 					"data-prohibitions": "[]",
 					defaultValue: "facial",
 					className: "w-full",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:23:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:47:11",
 							"data-prohibitions": "[]",
 							className: "grid w-full grid-cols-3 mb-6 bg-muted/50 p-1 rounded-xl h-auto",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:24:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:48:13",
 									"data-prohibitions": "[]",
 									value: "facial",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
 									children: "Facial"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:30:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:54:13",
 									"data-prohibitions": "[]",
 									value: "cabelo",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
 									children: "Cabelo"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:36:13",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:60:13",
 									"data-prohibitions": "[]",
 									value: "corporal",
 									className: "rounded-lg py-2.5 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm",
@@ -31496,72 +31517,74 @@ function PhysicalExamTab({ isSigned }) {
 							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:44:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:68:11",
 							"data-prohibitions": "[]",
 							value: "facial",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:48:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:72:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-3 gap-6",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:49:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:73:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:50:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:74:17",
 											"data-prohibitions": "[]",
 											children: "Fototipo (Fitzpatrick)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:51:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:75:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.fototipo,
+											onValueChange: (v) => handleChange("fototipo", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:52:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:80:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:53:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:81:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:55:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:83:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:56:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:84:21",
 														"data-prohibitions": "[]",
 														value: "I",
 														children: "I - Pele Branca (Sempre queima)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:57:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:85:21",
 														"data-prohibitions": "[]",
 														value: "II",
 														children: "II - Pele Branca (Queima fácil)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:58:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:86:21",
 														"data-prohibitions": "[]",
 														value: "III",
 														children: "III - Pele Morena Clara"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:59:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:87:21",
 														"data-prohibitions": "[]",
 														value: "IV",
 														children: "IV - Pele Morena Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:60:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:88:21",
 														"data-prohibitions": "[]",
 														value: "V",
 														children: "V - Pele Morena Escura"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:61:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:89:21",
 														"data-prohibitions": "[]",
 														value: "VI",
 														children: "VI - Pele Negra"
@@ -31571,50 +31594,52 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:65:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:93:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:66:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:94:17",
 											"data-prohibitions": "[]",
 											children: "Grau de Envelhecimento (Glogau)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:67:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:95:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.glogau,
+											onValueChange: (v) => handleChange("glogau", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:68:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:100:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:69:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:101:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:71:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:103:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:72:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:104:21",
 														"data-prohibitions": "[]",
 														value: "1",
 														children: "Tipo I (Sem rugas)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:73:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:105:21",
 														"data-prohibitions": "[]",
 														value: "2",
 														children: "Tipo II (Rugas em movimento)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:74:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:106:21",
 														"data-prohibitions": "[]",
 														value: "3",
 														children: "Tipo III (Rugas em repouso)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:75:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:107:21",
 														"data-prohibitions": "[]",
 														value: "4",
 														children: "Tipo IV (Apenas rugas)"
@@ -31624,56 +31649,58 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:79:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:111:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:80:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:112:17",
 											"data-prohibitions": "[]",
 											children: "Tipo de Pele"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:81:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:113:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.tipoPele,
+											onValueChange: (v) => handleChange("tipoPele", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:82:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:118:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:83:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:119:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:85:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:121:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:86:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:122:21",
 														"data-prohibitions": "[]",
 														value: "normal",
 														children: "Normal"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:87:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:123:21",
 														"data-prohibitions": "[]",
 														value: "seca",
 														children: "Seca"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:88:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:124:21",
 														"data-prohibitions": "[]",
 														value: "oleosa",
 														children: "Oleosa"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:89:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:125:21",
 														"data-prohibitions": "[]",
 														value: "mista",
 														children: "Mista"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:90:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:126:21",
 														"data-prohibitions": "[]",
 														value: "sensivel",
 														children: "Sensível/Reativa"
@@ -31684,16 +31711,18 @@ function PhysicalExamTab({ isSigned }) {
 									})
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:96:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:132:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:97:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:133:15",
 									"data-prohibitions": "[]",
 									children: "Inspeção Visual, Marcações e Achados - Facial"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:98:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:134:15",
 									"data-prohibitions": "[editContent]",
+									value: examData.inspecaoFacial,
+									onChange: (e) => handleChange("inspecaoFacial", e.target.value),
 									placeholder: "Descreva assimetrias, áreas de ptose, manchas (melasma, melanose), cicatrizes, flacidez e detalhe os pontos de marcação para o procedimento...",
 									className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4",
 									disabled: isSigned
@@ -31701,182 +31730,292 @@ function PhysicalExamTab({ isSigned }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:106:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:144:11",
 							"data-prohibitions": "[]",
 							value: "cabelo",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:110:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:148:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-2 gap-6",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:111:15",
-									"data-prohibitions": "[]",
-									className: "space-y-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:112:17",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:149:15",
 										"data-prohibitions": "[]",
-										children: "Padrão de Queda"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:113:17",
-										"data-prohibitions": "[]",
-										disabled: isSigned,
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:114:19",
+										className: "space-y-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:150:17",
 											"data-prohibitions": "[]",
-											className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:115:21",
-												"data-prohibitions": "[editContent]",
-												placeholder: "Selecione..."
-											})
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:117:19",
+											children: "Padrão de Queda"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:151:17",
 											"data-prohibitions": "[]",
-											children: [
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:118:21",
-													"data-prohibitions": "[]",
-													value: "androgenetica",
-													children: "Alopécia Androgenética"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:119:21",
-													"data-prohibitions": "[]",
-													value: "areata",
-													children: "Alopécia Areata"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:120:21",
-													"data-prohibitions": "[]",
-													value: "efluvio",
-													children: "Eflúvio Telógeno"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:121:21",
-													"data-prohibitions": "[]",
-													value: "frontal",
-													children: "Alopécia Frontal Fibrosante"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:122:21",
-													"data-prohibitions": "[]",
-													value: "outros",
-													children: "Outros"
+											disabled: isSigned,
+											value: examData.padraoQueda,
+											onValueChange: (v) => handleChange("padraoQueda", v),
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:156:19",
+												"data-prohibitions": "[]",
+												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:157:21",
+													"data-prohibitions": "[editContent]",
+													placeholder: "Selecione..."
 												})
-											]
-										})]
-									})]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:126:15",
-									"data-prohibitions": "[]",
-									className: "space-y-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:127:17",
-										"data-prohibitions": "[]",
-										children: "Teste de Tração"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:128:17",
-										"data-prohibitions": "[]",
-										disabled: isSigned,
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:129:19",
-											"data-prohibitions": "[]",
-											className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:130:21",
-												"data-prohibitions": "[editContent]",
-												placeholder: "Selecione..."
-											})
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:132:19",
-											"data-prohibitions": "[]",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:133:21",
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:159:19",
 												"data-prohibitions": "[]",
-												value: "positivo",
-												children: "Positivo"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:134:21",
-												"data-prohibitions": "[]",
-												value: "negativo",
-												children: "Negativo"
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:160:21",
+														"data-prohibitions": "[]",
+														value: "androgenetica",
+														children: "Alopécia Androgenética"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:161:21",
+														"data-prohibitions": "[]",
+														value: "areata",
+														children: "Alopécia Areata"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:162:21",
+														"data-prohibitions": "[]",
+														value: "efluvio",
+														children: "Eflúvio Telógeno"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:163:21",
+														"data-prohibitions": "[]",
+														value: "frontal",
+														children: "Alopécia Frontal Fibrosante"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:164:21",
+														"data-prohibitions": "[]",
+														value: "outros",
+														children: "Outros"
+													})
+												]
 											})]
 										})]
-									})]
-								})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:168:15",
+										"data-prohibitions": "[]",
+										className: "space-y-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:169:17",
+											"data-prohibitions": "[]",
+											children: "Teste de Tração"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:170:17",
+											"data-prohibitions": "[]",
+											disabled: isSigned,
+											value: examData.testeTracao,
+											onValueChange: (v) => handleChange("testeTracao", v),
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:175:19",
+												"data-prohibitions": "[]",
+												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:176:21",
+													"data-prohibitions": "[editContent]",
+													placeholder: "Selecione..."
+												})
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:178:19",
+												"data-prohibitions": "[]",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:179:21",
+													"data-prohibitions": "[]",
+													value: "positivo",
+													children: "Positivo"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:180:21",
+													"data-prohibitions": "[]",
+													value: "negativo",
+													children: "Negativo"
+												})]
+											})]
+										})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:184:15",
+										"data-prohibitions": "[]",
+										className: "space-y-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:185:17",
+											"data-prohibitions": "[]",
+											children: "Textura do Fio"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:186:17",
+											"data-prohibitions": "[]",
+											disabled: isSigned,
+											value: examData.textura,
+											onValueChange: (v) => handleChange("textura", v),
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:191:19",
+												"data-prohibitions": "[]",
+												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:192:21",
+													"data-prohibitions": "[editContent]",
+													placeholder: "Selecione..."
+												})
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:194:19",
+												"data-prohibitions": "[]",
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:195:21",
+														"data-prohibitions": "[]",
+														value: "fina",
+														children: "Fina"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:196:21",
+														"data-prohibitions": "[]",
+														value: "media",
+														children: "Média"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:197:21",
+														"data-prohibitions": "[]",
+														value: "grossa",
+														children: "Grossa"
+													})
+												]
+											})]
+										})]
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:201:15",
+										"data-prohibitions": "[]",
+										className: "space-y-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:202:17",
+											"data-prohibitions": "[]",
+											children: "Densidade"
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:203:17",
+											"data-prohibitions": "[]",
+											disabled: isSigned,
+											value: examData.densidade,
+											onValueChange: (v) => handleChange("densidade", v),
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:208:19",
+												"data-prohibitions": "[]",
+												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:209:21",
+													"data-prohibitions": "[editContent]",
+													placeholder: "Selecione..."
+												})
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:211:19",
+												"data-prohibitions": "[]",
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:212:21",
+														"data-prohibitions": "[]",
+														value: "normal",
+														children: "Normal"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:213:21",
+														"data-prohibitions": "[]",
+														value: "reduzida",
+														children: "Reduzida"
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:214:21",
+														"data-prohibitions": "[]",
+														value: "rarefacao",
+														children: "Rarefação Acentuada"
+													})
+												]
+											})]
+										})]
+									})
+								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:140:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:220:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:141:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:221:15",
 									"data-prohibitions": "[]",
-									children: "Tricoscopia e Inspeção do Couro Cabeludo"
+									className: "uppercase font-bold text-foreground",
+									children: "Tricoscopia"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:142:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:222:15",
 									"data-prohibitions": "[editContent]",
-									placeholder: "Descreva os achados tricoscópicos, afinamento folicular, descamação, eritema ou outras alterações no couro cabeludo...",
+									value: examData.tricoscopia,
+									onChange: (e) => handleChange("tricoscopia", e.target.value),
+									placeholder: "Descreva detalhadamente os achados tricoscópicos, afinamento folicular, descamação, eritema, halos peripilares, pontos amarelos/pretos ou outras alterações no couro cabeludo...",
 									className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4",
 									disabled: isSigned
 								})]
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsContent, {
-							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:150:11",
+							"data-uid": "src/components/consultation/PhysicalExamTab.tsx:232:11",
 							"data-prohibitions": "[]",
 							value: "corporal",
 							className: "space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:154:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:236:13",
 								"data-prohibitions": "[]",
 								className: "grid md:grid-cols-3 gap-6",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:155:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:237:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:156:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:238:17",
 											"data-prohibitions": "[]",
 											children: "Grau de Celulite (FEG)"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:157:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:239:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.grauCelulite,
+											onValueChange: (v) => handleChange("grauCelulite", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:158:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:244:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:159:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:245:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:161:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:247:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:162:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:248:21",
 														"data-prohibitions": "[]",
 														value: "0",
 														children: "Grau 0 (Sem alterações)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:163:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:249:21",
 														"data-prohibitions": "[]",
 														value: "1",
 														children: "Grau 1 (Apenas à compressão)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:164:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:250:21",
 														"data-prohibitions": "[]",
 														value: "2",
 														children: "Grau 2 (Visível em repouso)"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:165:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:251:21",
 														"data-prohibitions": "[]",
 														value: "3",
 														children: "Grau 3 (Nódulos e dor)"
@@ -31886,44 +32025,46 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:169:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:255:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:170:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:256:17",
 											"data-prohibitions": "[]",
 											children: "Flacidez Tissular"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:171:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:257:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.flacidez,
+											onValueChange: (v) => handleChange("flacidez", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:172:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:262:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:173:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:263:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:175:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:265:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:176:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:266:21",
 														"data-prohibitions": "[]",
 														value: "leve",
 														children: "Leve"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:177:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:267:21",
 														"data-prohibitions": "[]",
 														value: "moderada",
 														children: "Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:178:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:268:21",
 														"data-prohibitions": "[]",
 														value: "intensa",
 														children: "Intensa"
@@ -31933,50 +32074,52 @@ function PhysicalExamTab({ isSigned }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:182:15",
+										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:272:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:183:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:273:17",
 											"data-prohibitions": "[]",
 											children: "Gordura Localizada"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:184:17",
+											"data-uid": "src/components/consultation/PhysicalExamTab.tsx:274:17",
 											"data-prohibitions": "[]",
 											disabled: isSigned,
+											value: examData.gordura,
+											onValueChange: (v) => handleChange("gordura", v),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:185:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:279:19",
 												"data-prohibitions": "[]",
 												className: "bg-muted/20 border-border rounded-xl focus:ring-primary h-11",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:186:21",
+													"data-uid": "src/components/consultation/PhysicalExamTab.tsx:280:21",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione..."
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:188:19",
+												"data-uid": "src/components/consultation/PhysicalExamTab.tsx:282:19",
 												"data-prohibitions": "[]",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:189:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:283:21",
 														"data-prohibitions": "[]",
 														value: "ausente",
 														children: "Ausente"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:190:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:284:21",
 														"data-prohibitions": "[]",
 														value: "leve",
 														children: "Leve"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:191:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:285:21",
 														"data-prohibitions": "[]",
 														value: "moderada",
 														children: "Moderada"
 													}),
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:192:21",
+														"data-uid": "src/components/consultation/PhysicalExamTab.tsx:286:21",
 														"data-prohibitions": "[]",
 														value: "acentuada",
 														children: "Acentuada"
@@ -31987,16 +32130,18 @@ function PhysicalExamTab({ isSigned }) {
 									})
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:198:13",
+								"data-uid": "src/components/consultation/PhysicalExamTab.tsx:292:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:199:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:293:15",
 									"data-prohibitions": "[]",
 									children: "Inspeção Visual e Marcações - Corporal"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:200:15",
+									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:294:15",
 									"data-prohibitions": "[editContent]",
+									value: examData.inspecaoCorporal,
+									onChange: (e) => handleChange("inspecaoCorporal", e.target.value),
 									placeholder: "Descreva áreas de flacidez, estrias, cicatrizes, distribuição de gordura e detalhe os pontos de aplicação/tratamento...",
 									className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl p-4",
 									disabled: isSigned
@@ -37146,4 +37291,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BbK_EFin.js.map
+//# sourceMappingURL=index-Be-3V7TN.js.map
