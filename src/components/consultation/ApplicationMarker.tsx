@@ -10,21 +10,36 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
   Face: (
     <>
       <path
-        d="M150 150 C150 50 350 50 350 150 C350 300 280 400 250 420 C220 400 150 300 150 150 Z"
+        d="M250 50 C160 50 110 120 110 220 C110 300 130 350 170 400 C200 440 230 460 250 460 C270 460 300 440 330 400 C370 350 390 300 390 220 C390 120 340 50 250 50 Z"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M200 220 Q220 200 240 220 M260 220 Q280 200 300 220"
+        d="M160 190 Q195 170 230 190 M270 190 Q305 170 340 190"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M250 240 L250 310 L235 310 M210 350 Q250 370 290 350"
+        d="M165 220 Q195 205 225 220 Q195 230 165 220 M275 220 Q305 205 335 220 Q305 230 275 220"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M250 220 L250 310 M230 320 Q250 335 270 320"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M200 370 Q250 355 300 370 Q250 395 200 370 M205 372 Q250 375 295 372"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -62,27 +77,25 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
   Braço: (
     <>
       <path
-        d="M200 50 C150 100 130 250 150 400 C160 450 180 480 250 480 C320 480 340 450 350 400 C370 250 350 100 300 50"
+        d="M260 40 C350 80 420 170 400 260 C370 360 330 420 300 460 M140 80 C180 150 240 200 280 260 C250 340 220 400 200 460 M260 40 Q200 30 140 80 M300 460 Q250 480 200 460"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
       />
       <path
-        d="M180 150 Q220 220 250 150 M170 300 Q250 370 330 300"
+        d="M280 260 Q320 275 350 250"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeDasharray="4 4"
       />
       <path
-        d="M250 200 L250 280"
+        d="M400 260 Q415 260 410 230 M140 80 Q130 120 150 150"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
-        strokeDasharray="2 6"
       />
     </>
   ),
