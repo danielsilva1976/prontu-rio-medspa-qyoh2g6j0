@@ -1,3 +1,16 @@
+const today = new Date()
+const y = today.getFullYear()
+const m = String(today.getMonth() + 1).padStart(2, '0')
+const d = String(today.getDate()).padStart(2, '0')
+const todayStr = `${y}-${m}-${d}`
+
+const tomorrow = new Date(today)
+tomorrow.setDate(tomorrow.getDate() + 1)
+const ty = tomorrow.getFullYear()
+const tm = String(tomorrow.getMonth() + 1).padStart(2, '0')
+const td = String(tomorrow.getDate()).padStart(2, '0')
+const tomorrowStr = `${ty}-${tm}-${td}`
+
 export const patients = [
   {
     id: 'p-001',
@@ -5,7 +18,7 @@ export const patients = [
     age: 34,
     dob: '1989-05-12',
     lastVisit: '2023-09-15',
-    nextAppointment: '2023-11-20T10:00:00',
+    nextAppointment: `${todayStr}T10:00:00`,
     status: 'scheduled',
     phone: '(11) 98765-4321',
     procedures: ['Toxina Botulínica', 'Bioestimulador'],
@@ -16,7 +29,7 @@ export const patients = [
     age: 42,
     dob: '1981-10-02',
     lastVisit: '2023-10-02',
-    nextAppointment: '2023-11-20T11:30:00',
+    nextAppointment: `${todayStr}T11:30:00`,
     status: 'scheduled',
     phone: '(11) 99876-5432',
     procedures: ['Preenchimento Labial', 'Laser Lavieen'],
@@ -27,7 +40,7 @@ export const patients = [
     age: 28,
     dob: '1995-08-20',
     lastVisit: '2023-08-20',
-    nextAppointment: '2023-11-20T14:00:00',
+    nextAppointment: `${tomorrowStr}T14:00:00`,
     status: 'scheduled',
     phone: '(11) 91234-5678',
     procedures: ['Peeling Químico'],
@@ -38,7 +51,7 @@ export const patients = [
     age: 45,
     dob: '1978-11-01',
     lastVisit: '2023-11-01',
-    nextAppointment: '2023-11-20T15:30:00',
+    nextAppointment: `${tomorrowStr}T15:30:00`,
     status: 'scheduled',
     phone: '(11) 97777-8888',
     procedures: ['MMP', 'Toxina Botulínica'],

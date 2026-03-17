@@ -1,12 +1,24 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarClock, CheckCircle2, Clock } from 'lucide-react'
-import { mockDashboardStats } from '@/lib/mock-data'
+import { mockDashboardStats, patients } from '@/lib/mock-data'
 import useUserStore from '@/stores/useUserStore'
 
 export default function Index() {
   const { currentUser } = useUserStore()
   const isMedico = currentUser.role === 'Médico'
 
+  // Dynamic calculation for today's appointments
+  const today = new Date()
+  const y = today.getFullYear()
+  const m = String(today.getMonth() + 1).padStart(2, '0')
+  const d = String(today.getDate()).padStart(2, '0')
+  const todayStr = `${y}-${m}-${d}`
+
+  const todaysAppointments = patients.filter(
+    (p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr),
+  ).length
+
+  // Keeping other metrics cumulative/total as previously defined
   const totalAppointments = mockDashboardStats.scheduledToday
   const finalizedRecords = mockDashboardStats.completedRecords
   const pendingRecords = totalAppointments - finalizedRecords
@@ -32,8 +44,8 @@ export default function Index() {
               <CalendarClock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Número de Agendamentos</p>
-              <h3 className="text-2xl font-bold font-serif">{totalAppointments}</h3>
+              <p className="text-sm font-medium text-muted-foreground">Agendamentos do Dia</p>
+              <h3 className="text-2xl font-bold font-serif">{todaysAppointments}</h3>
             </div>
           </CardContent>
         </Card>

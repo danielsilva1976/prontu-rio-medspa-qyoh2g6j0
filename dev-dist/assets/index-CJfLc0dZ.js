@@ -28434,6 +28434,11 @@ var CardFooter = import_react.forwardRef(({ className, ...props }, ref) => /* @_
 CardFooter.displayName = "CardFooter";
 //#endregion
 //#region src/lib/mock-data.ts
+var today = /* @__PURE__ */ new Date();
+var todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+var tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+var tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
 var patients = [
 	{
 		id: "p-001",
@@ -28441,7 +28446,7 @@ var patients = [
 		age: 34,
 		dob: "1989-05-12",
 		lastVisit: "2023-09-15",
-		nextAppointment: "2023-11-20T10:00:00",
+		nextAppointment: `${todayStr}T10:00:00`,
 		status: "scheduled",
 		phone: "(11) 98765-4321",
 		procedures: ["Toxina Botulínica", "Bioestimulador"]
@@ -28452,7 +28457,7 @@ var patients = [
 		age: 42,
 		dob: "1981-10-02",
 		lastVisit: "2023-10-02",
-		nextAppointment: "2023-11-20T11:30:00",
+		nextAppointment: `${todayStr}T11:30:00`,
 		status: "scheduled",
 		phone: "(11) 99876-5432",
 		procedures: ["Preenchimento Labial", "Laser Lavieen"]
@@ -28463,7 +28468,7 @@ var patients = [
 		age: 28,
 		dob: "1995-08-20",
 		lastVisit: "2023-08-20",
-		nextAppointment: "2023-11-20T14:00:00",
+		nextAppointment: `${tomorrowStr}T14:00:00`,
 		status: "scheduled",
 		phone: "(11) 91234-5678",
 		procedures: ["Peeling Químico"]
@@ -28474,7 +28479,7 @@ var patients = [
 		age: 45,
 		dob: "1978-11-01",
 		lastVisit: "2023-11-01",
-		nextAppointment: "2023-11-20T15:30:00",
+		nextAppointment: `${tomorrowStr}T15:30:00`,
 		status: "scheduled",
 		phone: "(11) 97777-8888",
 		procedures: ["MMP", "Toxina Botulínica"]
@@ -28501,76 +28506,45 @@ var mockDashboardStats = {
 function Index() {
 	const { currentUser } = useUserStore();
 	const isMedico = currentUser.role === "Médico";
+	const today = /* @__PURE__ */ new Date();
+	const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+	const todaysAppointments = patients.filter((p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr)).length;
 	const totalAppointments = mockDashboardStats.scheduledToday;
 	const finalizedRecords = mockDashboardStats.completedRecords;
 	const pendingRecords = totalAppointments - finalizedRecords;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Index.tsx:15:5",
+		"data-uid": "src/pages/Index.tsx:27:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:17:7",
+			"data-uid": "src/pages/Index.tsx:29:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col gap-2",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-				"data-uid": "src/pages/Index.tsx:18:9",
+				"data-uid": "src/pages/Index.tsx:30:9",
 				"data-prohibitions": "[editContent]",
 				className: "text-3xl md:text-4xl text-primary",
 				children: [
 					isMedico ? "Bom dia," : "Olá,",
 					" ",
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-						"data-uid": "src/pages/Index.tsx:20:11",
+						"data-uid": "src/pages/Index.tsx:32:11",
 						"data-prohibitions": "[editContent]",
 						className: "font-serif italic text-primary/80",
 						children: currentUser.name.split(" ")[0]
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				"data-uid": "src/pages/Index.tsx:24:9",
+				"data-uid": "src/pages/Index.tsx:36:9",
 				"data-prohibitions": "[]",
 				className: "text-muted-foreground",
 				children: "Aqui está o resumo da sua agenda para hoje."
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Index.tsx:28:7",
+			"data-uid": "src/pages/Index.tsx:40:7",
 			"data-prohibitions": "[editContent]",
 			className: "grid gap-4 md:grid-cols-3",
 			children: [
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:29:9",
-					"data-prohibitions": "[editContent]",
-					className: "border-none shadow-subtle bg-white",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-						"data-uid": "src/pages/Index.tsx:30:11",
-						"data-prohibitions": "[editContent]",
-						className: "p-6 flex items-center gap-4",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/pages/Index.tsx:31:13",
-							"data-prohibitions": "[]",
-							className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-								"data-uid": "src/pages/Index.tsx:32:15",
-								"data-prohibitions": "[editContent]",
-								className: "w-6 h-6"
-							})
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/pages/Index.tsx:34:13",
-							"data-prohibitions": "[editContent]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/pages/Index.tsx:35:15",
-								"data-prohibitions": "[]",
-								className: "text-sm font-medium text-muted-foreground",
-								children: "Número de Agendamentos"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-								"data-uid": "src/pages/Index.tsx:36:15",
-								"data-prohibitions": "[editContent]",
-								className: "text-2xl font-bold font-serif",
-								children: totalAppointments
-							})]
-						})]
-					})
-				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
 					"data-uid": "src/pages/Index.tsx:41:9",
 					"data-prohibitions": "[editContent]",
@@ -28582,8 +28556,8 @@ function Index() {
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 							"data-uid": "src/pages/Index.tsx:43:13",
 							"data-prohibitions": "[]",
-							className: "p-3 bg-green-50 text-green-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
+							className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
 								"data-uid": "src/pages/Index.tsx:44:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-6 h-6"
@@ -28595,12 +28569,12 @@ function Index() {
 								"data-uid": "src/pages/Index.tsx:47:15",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium text-muted-foreground",
-								children: "Prontuários Finalizados"
+								children: "Agendamentos do Dia"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
 								"data-uid": "src/pages/Index.tsx:48:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-2xl font-bold font-serif",
-								children: finalizedRecords
+								children: todaysAppointments
 							})]
 						})]
 					})
@@ -28616,8 +28590,8 @@ function Index() {
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 							"data-uid": "src/pages/Index.tsx:55:13",
 							"data-prohibitions": "[]",
-							className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
-							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+							className: "p-3 bg-green-50 text-green-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
 								"data-uid": "src/pages/Index.tsx:56:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-6 h-6"
@@ -28629,9 +28603,43 @@ function Index() {
 								"data-uid": "src/pages/Index.tsx:59:15",
 								"data-prohibitions": "[]",
 								className: "text-sm font-medium text-muted-foreground",
-								children: "Prontuários Pendentes"
+								children: "Prontuários Finalizados"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
 								"data-uid": "src/pages/Index.tsx:60:15",
+								"data-prohibitions": "[editContent]",
+								className: "text-2xl font-bold font-serif",
+								children: finalizedRecords
+							})]
+						})]
+					})
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+					"data-uid": "src/pages/Index.tsx:65:9",
+					"data-prohibitions": "[editContent]",
+					className: "border-none shadow-subtle bg-white",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
+						"data-uid": "src/pages/Index.tsx:66:11",
+						"data-prohibitions": "[editContent]",
+						className: "p-6 flex items-center gap-4",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							"data-uid": "src/pages/Index.tsx:67:13",
+							"data-prohibitions": "[]",
+							className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
+								"data-uid": "src/pages/Index.tsx:68:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-6 h-6"
+							})
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/pages/Index.tsx:70:13",
+							"data-prohibitions": "[editContent]",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Index.tsx:71:15",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium text-muted-foreground",
+								children: "Prontuários Pendentes"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+								"data-uid": "src/pages/Index.tsx:72:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-2xl font-bold font-serif",
 								children: pendingRecords
@@ -43112,4 +43120,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-QV5DTrxv.js.map
+//# sourceMappingURL=index-CJfLc0dZ.js.map
