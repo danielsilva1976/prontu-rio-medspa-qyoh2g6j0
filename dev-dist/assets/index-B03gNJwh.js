@@ -32670,58 +32670,66 @@ function PlanningTab({ isSigned }) {
 	const totalInvestment = (0, import_react.useMemo)(() => {
 		return entries.reduce((acc, entry) => acc + (parseFloat(entry.finalValue) || 0), 0);
 	}, [entries]);
+	const installmentValue = (0, import_react.useMemo)(() => {
+		const down = parseFloat(downPayment) || 0;
+		return Math.max(0, totalInvestment - down) / (parseInt(installments) || 1);
+	}, [
+		totalInvestment,
+		downPayment,
+		installments
+	]);
 	const formatCurrency = (val) => new Intl.NumberFormat("pt-BR", {
 		style: "currency",
 		currency: "BRL"
 	}).format(val);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/PlanningTab.tsx:90:5",
+		"data-uid": "src/components/consultation/PlanningTab.tsx:97:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:91:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:98:7",
 				"data-prohibitions": "[editContent]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:92:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:99:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:93:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:100:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipboardList, {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:94:11",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:101:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Planejamento Terapêutico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:96:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:103:9",
 					"data-prohibitions": "[]",
 					children: "Estratégia clínica e plano de tratamento estruturado."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:98:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:105:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-8",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:99:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:106:9",
 						"data-prohibitions": "[]",
 						className: "space-y-3",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:100:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:107:11",
 							"data-prohibitions": "[]",
 							className: "flex items-center gap-1.5 text-foreground text-base",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Target, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:101:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:108:13",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 text-primary/70"
 							}), " Objetivos Principais do Paciente"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:103:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:110:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Ex: Melhorar qualidade da pele...",
 							className: "bg-muted/10 border-border/50 focus-visible:ring-primary rounded-xl min-h-[80px]",
@@ -32729,20 +32737,20 @@ function PlanningTab({ isSigned }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:110:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:117:9",
 						"data-prohibitions": "[]",
 						className: "space-y-3 pt-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:111:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:118:11",
 							"data-prohibitions": "[]",
 							className: "flex items-center gap-1.5 text-foreground text-base",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:112:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:119:13",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 text-primary/70"
 							}), " Nome que será dado ao plano personalizado para o paciente"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:115:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:122:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Ex: Protocolo Rejuvenescimento Global 360",
 							value: planName,
@@ -32752,26 +32760,26 @@ function PlanningTab({ isSigned }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:124:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:131:9",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:125:11",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:132:11",
 								"data-prohibitions": "[]",
 								className: "flex items-center gap-1.5 text-foreground text-base",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:126:13",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:133:13",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 text-primary/70"
 								}), " Cronograma de Tratamento"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:129:11",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:136:11",
 								"data-prohibitions": "[editContent]",
 								className: "relative border-l-2 border-primary/20 ml-3 md:ml-4 space-y-6 pb-2 pt-2",
 								children: entries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningEntryItem, {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:131:15",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:138:15",
 									"data-prohibitions": "[editContent]",
 									entry,
 									isSigned,
@@ -32781,13 +32789,13 @@ function PlanningTab({ isSigned }) {
 								}, entry.id))
 							}),
 							!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:143:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:150:13",
 								"data-prohibitions": "[]",
 								onClick: addEntry,
 								variant: "outline",
 								className: "w-full mt-4 border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:148:15",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:155:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), "Adicionar Procedimento/Sessão"]
@@ -32795,54 +32803,54 @@ function PlanningTab({ isSigned }) {
 						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:154:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:161:9",
 						"data-prohibitions": "[editContent]",
 						className: "bg-muted/10 rounded-xl p-5 border border-border/50 space-y-5 mt-6",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:155:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:162:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-5",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:156:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:163:13",
 								"data-prohibitions": "[]",
 								className: "space-y-1",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:157:15",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:164:15",
 									"data-prohibitions": "[]",
 									className: "text-base font-semibold flex items-center gap-2 text-foreground",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Calculator, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:158:17",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:165:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-4 h-4 text-primary"
 									}), " Investimento"]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:160:15",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:167:15",
 									"data-prohibitions": "[]",
 									className: "text-sm text-muted-foreground",
 									children: "Soma automática dos valores finais previstos no cronograma."
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:164:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:171:13",
 								"data-prohibitions": "[editContent]",
 								className: "text-3xl font-bold text-primary tracking-tight",
 								children: formatCurrency(totalInvestment)
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:169:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:176:11",
 							"data-prohibitions": "[editContent]",
-							className: "grid grid-cols-1 md:grid-cols-3 gap-5 pt-1",
+							className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-1",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:170:13",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:177:13",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:171:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:178:15",
 										"data-prohibitions": "[]",
 										className: "text-xs uppercase tracking-wider text-muted-foreground font-semibold",
 										children: "Entrada (R$)"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:174:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:181:15",
 										"data-prohibitions": "[editContent]",
 										type: "number",
 										placeholder: "0.00",
@@ -32853,31 +32861,31 @@ function PlanningTab({ isSigned }) {
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:183:13",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:190:13",
 									"data-prohibitions": "[editContent]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:184:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:191:15",
 										"data-prohibitions": "[]",
 										className: "text-xs uppercase tracking-wider text-muted-foreground font-semibold",
-										children: "Número de parcelas do saldo"
+										children: "Número de parcelas"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:187:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:194:15",
 										"data-prohibitions": "[editContent]",
 										disabled: isSigned,
 										value: installments,
 										onValueChange: setInstallments,
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-											"data-uid": "src/components/consultation/PlanningTab.tsx:188:17",
+											"data-uid": "src/components/consultation/PlanningTab.tsx:195:17",
 											"data-prohibitions": "[]",
 											className: "bg-white rounded-lg border-border/50 focus:ring-primary",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-												"data-uid": "src/components/consultation/PlanningTab.tsx:189:19",
+												"data-uid": "src/components/consultation/PlanningTab.tsx:196:19",
 												"data-prohibitions": "[editContent]",
 												placeholder: "Selecione..."
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-											"data-uid": "src/components/consultation/PlanningTab.tsx:191:17",
+											"data-uid": "src/components/consultation/PlanningTab.tsx:198:17",
 											"data-prohibitions": "[editContent]",
 											children: [
 												1,
@@ -32889,7 +32897,7 @@ function PlanningTab({ isSigned }) {
 												10,
 												12
 											].map((n) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectItem, {
-												"data-uid": "src/components/consultation/PlanningTab.tsx:193:21",
+												"data-uid": "src/components/consultation/PlanningTab.tsx:200:21",
 												"data-prohibitions": "[editContent]",
 												value: n.toString(),
 												children: [
@@ -32902,57 +32910,74 @@ function PlanningTab({ isSigned }) {
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/PlanningTab.tsx:200:13",
+									"data-uid": "src/components/consultation/PlanningTab.tsx:207:13",
+									"data-prohibitions": "[]",
+									className: "space-y-2",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+										"data-uid": "src/components/consultation/PlanningTab.tsx:208:15",
+										"data-prohibitions": "[]",
+										className: "text-xs uppercase tracking-wider text-primary font-semibold",
+										children: "Valor da Parcela"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+										"data-uid": "src/components/consultation/PlanningTab.tsx:211:15",
+										"data-prohibitions": "[editContent]",
+										readOnly: true,
+										value: formatCurrency(installmentValue),
+										className: "bg-primary/5 text-primary font-semibold rounded-lg border-primary/20 focus-visible:ring-0"
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/components/consultation/PlanningTab.tsx:217:13",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:201:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:218:15",
 										"data-prohibitions": "[]",
 										className: "text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CreditCard, {
-											"data-uid": "src/components/consultation/PlanningTab.tsx:202:17",
+											"data-uid": "src/components/consultation/PlanningTab.tsx:219:17",
 											"data-prohibitions": "[editContent]",
 											className: "w-3.5 h-3.5"
 										}), " Forma de pagamento"]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/consultation/PlanningTab.tsx:204:15",
+										"data-uid": "src/components/consultation/PlanningTab.tsx:221:15",
 										"data-prohibitions": "[]",
 										disabled: isSigned,
 										value: paymentMethod,
 										onValueChange: setPaymentMethod,
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-											"data-uid": "src/components/consultation/PlanningTab.tsx:205:17",
+											"data-uid": "src/components/consultation/PlanningTab.tsx:222:17",
 											"data-prohibitions": "[]",
 											className: "bg-white rounded-lg border-border/50 focus:ring-primary",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-												"data-uid": "src/components/consultation/PlanningTab.tsx:206:19",
+												"data-uid": "src/components/consultation/PlanningTab.tsx:223:19",
 												"data-prohibitions": "[editContent]",
 												placeholder: "Selecione..."
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-											"data-uid": "src/components/consultation/PlanningTab.tsx:208:17",
+											"data-uid": "src/components/consultation/PlanningTab.tsx:225:17",
 											"data-prohibitions": "[]",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PlanningTab.tsx:209:19",
+													"data-uid": "src/components/consultation/PlanningTab.tsx:226:19",
 													"data-prohibitions": "[]",
 													value: "credit_card",
 													children: "Cartão de Crédito"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PlanningTab.tsx:210:19",
+													"data-uid": "src/components/consultation/PlanningTab.tsx:227:19",
 													"data-prohibitions": "[]",
 													value: "pix",
 													children: "PIX"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PlanningTab.tsx:211:19",
+													"data-uid": "src/components/consultation/PlanningTab.tsx:228:19",
 													"data-prohibitions": "[]",
 													value: "boleto",
 													children: "Boleto Bancário"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/consultation/PlanningTab.tsx:212:19",
+													"data-uid": "src/components/consultation/PlanningTab.tsx:229:19",
 													"data-prohibitions": "[]",
 													value: "cash",
 													children: "Dinheiro"
@@ -34185,4 +34210,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-C7qP4C-6.js.map
+//# sourceMappingURL=index-B03gNJwh.js.map

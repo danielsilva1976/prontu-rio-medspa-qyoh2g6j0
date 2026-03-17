@@ -83,6 +83,13 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
     return entries.reduce((acc, entry) => acc + (parseFloat(entry.finalValue) || 0), 0)
   }, [entries])
 
+  const installmentValue = useMemo(() => {
+    const down = parseFloat(downPayment) || 0
+    const remaining = Math.max(0, totalInvestment - down)
+    const numInstallments = parseInt(installments) || 1
+    return remaining / numInstallments
+  }, [totalInvestment, downPayment, installments])
+
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
@@ -166,7 +173,7 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-1">
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Entrada (R$)
@@ -182,7 +189,7 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                Número de parcelas do saldo
+                Número de parcelas
               </Label>
               <Select disabled={isSigned} value={installments} onValueChange={setInstallments}>
                 <SelectTrigger className="bg-white rounded-lg border-border/50 focus:ring-primary">
@@ -196,6 +203,16 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-primary font-semibold">
+                Valor da Parcela
+              </Label>
+              <Input
+                readOnly
+                value={formatCurrency(installmentValue)}
+                className="bg-primary/5 text-primary font-semibold rounded-lg border-primary/20 focus-visible:ring-0"
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
