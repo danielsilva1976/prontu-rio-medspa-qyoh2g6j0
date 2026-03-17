@@ -20,14 +20,23 @@ export type SavedPlan = {
   planName: string
   objective: string
   totalInvestment: number
+  entries: ChronogramEntry[]
+  downPayment: number
+  downPaymentMethod: string
+  installments: number
+  installmentValue: number
+  paymentMethod: string
 }
 
-const PAYMENT_METHODS = [
+export const PAYMENT_METHODS = [
   { id: 'credit', label: 'Cartão de Crédito' },
   { id: 'pix', label: 'PIX' },
   { id: 'boleto', label: 'Boleto Bancário' },
   { id: 'cash', label: 'Dinheiro' },
 ]
+
+export const getPaymentMethodLabel = (id: string) =>
+  PAYMENT_METHODS.find((m) => m.id === id)?.label || 'Não informado'
 
 type Props = {
   isSigned: boolean
@@ -100,6 +109,12 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
       planName: planName || 'Plano Personalizado',
       objective,
       totalInvestment,
+      entries,
+      downPayment: parseFloat(downPayment) || 0,
+      downPaymentMethod,
+      installments: parseInt(installments) || 1,
+      installmentValue,
+      paymentMethod,
     })
   }
 

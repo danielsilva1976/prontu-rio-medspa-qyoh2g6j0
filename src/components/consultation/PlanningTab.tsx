@@ -15,6 +15,31 @@ export default function PlanningTab({ isSigned }: { isSigned: boolean }) {
       planName: 'Protocolo Rejuvenescimento Global 360',
       objective: 'Melhorar textura e flacidez da pele com bioestimuladores e laser.',
       totalInvestment: 4500,
+      entries: [
+        {
+          id: 'e1',
+          timing: 'Sessão 01',
+          procedure: 'Bioestimulador de Colágeno',
+          quantity: '1',
+          standardValue: '2500',
+          discountValue: '0',
+          finalValue: '2500',
+        },
+        {
+          id: 'e2',
+          timing: 'Sessão 02',
+          procedure: 'Laser Lavieen',
+          quantity: '2',
+          standardValue: '2000',
+          discountValue: '0',
+          finalValue: '2000',
+        },
+      ],
+      downPayment: 1500,
+      downPaymentMethod: 'pix',
+      installments: 3,
+      installmentValue: 1000,
+      paymentMethod: 'credit',
     },
   ])
 
