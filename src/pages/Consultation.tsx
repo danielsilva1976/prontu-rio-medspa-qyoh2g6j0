@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Clock, FileText, Activity, Syringe } from 'lucide-react'
+import { ArrowLeft, Clock, FileText, Activity, Syringe, ClipboardList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -10,6 +10,7 @@ import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
 import ProcedureTab from '@/components/consultation/ProcedureTab'
 import EvolutionTab from '@/components/consultation/EvolutionTab'
 import DocumentsTab from '@/components/consultation/DocumentsTab'
+import PlanningTab from '@/components/consultation/PlanningTab'
 import { patients } from '@/lib/mock-data'
 
 export default function Consultation() {
@@ -67,8 +68,8 @@ export default function Consultation() {
         </div>
 
         {/* Custom Branded Tabs Navigation */}
-        <div className="px-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="px-6 overflow-x-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-max">
             <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto">
               <TabsTrigger
                 value="anamnese"
@@ -83,6 +84,13 @@ export default function Consultation() {
               >
                 <Activity className="h-4 w-4 mr-2 inline-block" />
                 Exame Físico
+              </TabsTrigger>
+              <TabsTrigger
+                value="planejamento"
+                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+              >
+                <ClipboardList className="h-4 w-4 mr-2 inline-block" />
+                Planejamento
               </TabsTrigger>
               <TabsTrigger
                 value="procedimentos"
@@ -125,6 +133,12 @@ export default function Consultation() {
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
               <PhysicalExamTab isSigned={false} />
+            </TabsContent>
+            <TabsContent
+              value="planejamento"
+              className="m-0 focus-visible:outline-none focus-visible:ring-0"
+            >
+              <PlanningTab isSigned={false} />
             </TabsContent>
             <TabsContent
               value="procedimentos"

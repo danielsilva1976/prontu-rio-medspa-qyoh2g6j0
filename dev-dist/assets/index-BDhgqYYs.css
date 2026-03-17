@@ -1012,6 +1012,9 @@ video {
 .min-h-\[120px\] {
   min-height: 120px;
 }
+.min-h-\[150px\] {
+  min-height: 150px;
+}
 .min-h-\[250px\] {
   min-height: 250px;
 }
@@ -1154,6 +1157,10 @@ video {
 }
 .min-w-\[var\(--radix-select-trigger-width\)\] {
   min-width: var(--radix-select-trigger-width);
+}
+.min-w-max {
+  min-width: -moz-max-content;
+  min-width: max-content;
 }
 .max-w-4xl {
   max-width: 56rem;
@@ -1451,6 +1458,9 @@ video {
 }
 .overflow-hidden {
   overflow: hidden;
+}
+.overflow-x-auto {
+  overflow-x: auto;
 }
 .overflow-y-auto {
   overflow-y: auto;
