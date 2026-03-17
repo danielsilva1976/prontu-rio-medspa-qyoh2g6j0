@@ -35436,7 +35436,7 @@ function Documents() {
 //#region src/components/settings/SettingsList.tsx
 function SettingsList({ category, title, description }) {
 	const store = useSettingsStore();
-	const items = store[category];
+	const items = category === "procedures" ? [...store[category]].sort((a, b) => a.localeCompare(b, "pt-BR")) : store[category];
 	const [newItem, setNewItem] = (0, import_react.useState)("");
 	const [newItemPrice, setNewItemPrice] = (0, import_react.useState)("");
 	const [editingItem, setEditingItem] = (0, import_react.useState)(null);
@@ -35452,7 +35452,7 @@ function SettingsList({ category, title, description }) {
 	const handleAdd = () => {
 		const trimmed = newItem.trim();
 		if (!trimmed) return;
-		if (items.some((i) => i.toLowerCase() === trimmed.toLowerCase())) {
+		if (store[category].some((i) => i.toLowerCase() === trimmed.toLowerCase())) {
 			toast({
 				title: "Item duplicado",
 				description: "Este item já existe na sua lista.",
@@ -35482,33 +35482,33 @@ function SettingsList({ category, title, description }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/SettingsList.tsx:81:5",
+		"data-uid": "src/components/settings/SettingsList.tsx:86:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/SettingsList.tsx:82:7",
+			"data-uid": "src/components/settings/SettingsList.tsx:87:7",
 			"data-prohibitions": "[editContent]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-				"data-uid": "src/components/settings/SettingsList.tsx:83:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:88:9",
 				"data-prohibitions": "[editContent]",
 				className: "text-xl text-primary font-serif",
 				children: title
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-				"data-uid": "src/components/settings/SettingsList.tsx:84:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:89:9",
 				"data-prohibitions": "[editContent]",
 				children: description
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/settings/SettingsList.tsx:86:7",
+			"data-uid": "src/components/settings/SettingsList.tsx:91:7",
 			"data-prohibitions": "[editContent]",
 			className: "space-y-6",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/SettingsList.tsx:87:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:92:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col sm:flex-row gap-3",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/components/settings/SettingsList.tsx:88:11",
+						"data-uid": "src/components/settings/SettingsList.tsx:93:11",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Nome do novo item...",
 						value: newItem,
@@ -35517,7 +35517,7 @@ function SettingsList({ category, title, description }) {
 						className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm flex-1"
 					}),
 					hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/components/settings/SettingsList.tsx:96:13",
+						"data-uid": "src/components/settings/SettingsList.tsx:101:13",
 						"data-prohibitions": "[editContent]",
 						type: "number",
 						placeholder: "Valor Padrão (R$)",
@@ -35527,46 +35527,46 @@ function SettingsList({ category, title, description }) {
 						className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm w-full sm:w-40 shrink-0"
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/settings/SettingsList.tsx:105:11",
+						"data-uid": "src/components/settings/SettingsList.tsx:110:11",
 						"data-prohibitions": "[]",
 						onClick: handleAdd,
 						className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl shrink-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/settings/SettingsList.tsx:109:13",
+							"data-uid": "src/components/settings/SettingsList.tsx:114:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), "Adicionar"]
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/settings/SettingsList.tsx:114:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:119:9",
 				"data-prohibitions": "[editContent]",
 				className: "border rounded-xl bg-white overflow-hidden shadow-sm",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-					"data-uid": "src/components/settings/SettingsList.tsx:115:11",
+					"data-uid": "src/components/settings/SettingsList.tsx:120:11",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-						"data-uid": "src/components/settings/SettingsList.tsx:116:13",
+						"data-uid": "src/components/settings/SettingsList.tsx:121:13",
 						"data-prohibitions": "[editContent]",
 						className: "bg-muted/30",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:117:15",
+							"data-uid": "src/components/settings/SettingsList.tsx:122:15",
 							"data-prohibitions": "[editContent]",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/SettingsList.tsx:118:17",
+									"data-uid": "src/components/settings/SettingsList.tsx:123:17",
 									"data-prohibitions": "[]",
 									className: "w-full",
 									children: "Nome"
 								}),
 								hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/SettingsList.tsx:119:30",
+									"data-uid": "src/components/settings/SettingsList.tsx:124:30",
 									"data-prohibitions": "[]",
 									className: "whitespace-nowrap",
 									children: "Valor Padrão (R$)"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/SettingsList.tsx:120:17",
+									"data-uid": "src/components/settings/SettingsList.tsx:125:17",
 									"data-prohibitions": "[]",
 									className: "text-right",
 									children: "Ações"
@@ -35574,19 +35574,19 @@ function SettingsList({ category, title, description }) {
 							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableBody, {
-						"data-uid": "src/components/settings/SettingsList.tsx:123:13",
+						"data-uid": "src/components/settings/SettingsList.tsx:128:13",
 						"data-prohibitions": "[editContent]",
 						children: [items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:125:17",
+							"data-uid": "src/components/settings/SettingsList.tsx:130:17",
 							"data-prohibitions": "[editContent]",
 							className: "group transition-colors hover:bg-muted/10 h-14",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/SettingsList.tsx:126:19",
+									"data-uid": "src/components/settings/SettingsList.tsx:131:19",
 									"data-prohibitions": "[editContent]",
 									className: "font-medium text-foreground",
 									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/settings/SettingsList.tsx:128:23",
+										"data-uid": "src/components/settings/SettingsList.tsx:133:23",
 										"data-prohibitions": "[editContent]",
 										value: editingItem.current,
 										onChange: (e) => setEditingItem({
@@ -35599,10 +35599,10 @@ function SettingsList({ category, title, description }) {
 									}) : item
 								}),
 								hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/SettingsList.tsx:142:21",
+									"data-uid": "src/components/settings/SettingsList.tsx:147:21",
 									"data-prohibitions": "[editContent]",
 									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/settings/SettingsList.tsx:144:25",
+										"data-uid": "src/components/settings/SettingsList.tsx:149:25",
 										"data-prohibitions": "[editContent]",
 										type: "number",
 										value: editingItem.price,
@@ -35616,44 +35616,44 @@ function SettingsList({ category, title, description }) {
 									}) : formatCurrency(store.prices[item])
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/SettingsList.tsx:159:19",
+									"data-uid": "src/components/settings/SettingsList.tsx:164:19",
 									"data-prohibitions": "[editContent]",
 									className: "text-right",
 									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/SettingsList.tsx:161:23",
+										"data-uid": "src/components/settings/SettingsList.tsx:166:23",
 										"data-prohibitions": "[]",
 										className: "flex justify-end gap-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/SettingsList.tsx:162:25",
+											"data-uid": "src/components/settings/SettingsList.tsx:167:25",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
 											onClick: handleSaveEdit,
 											className: "h-8 w-8 text-success hover:text-success hover:bg-success/10",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, {
-												"data-uid": "src/components/settings/SettingsList.tsx:168:27",
+												"data-uid": "src/components/settings/SettingsList.tsx:173:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/SettingsList.tsx:170:25",
+											"data-uid": "src/components/settings/SettingsList.tsx:175:25",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
 											onClick: () => setEditingItem(null),
 											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
-												"data-uid": "src/components/settings/SettingsList.tsx:176:27",
+												"data-uid": "src/components/settings/SettingsList.tsx:181:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})
 										})]
 									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/SettingsList.tsx:180:23",
+										"data-uid": "src/components/settings/SettingsList.tsx:185:23",
 										"data-prohibitions": "[]",
 										className: "flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/SettingsList.tsx:181:25",
+											"data-uid": "src/components/settings/SettingsList.tsx:186:25",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
@@ -35664,19 +35664,19 @@ function SettingsList({ category, title, description }) {
 											}),
 											className: "h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-												"data-uid": "src/components/settings/SettingsList.tsx:193:27",
+												"data-uid": "src/components/settings/SettingsList.tsx:198:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/SettingsList.tsx:195:25",
+											"data-uid": "src/components/settings/SettingsList.tsx:200:25",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
 											onClick: () => handleRemove(item),
 											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-												"data-uid": "src/components/settings/SettingsList.tsx:201:27",
+												"data-uid": "src/components/settings/SettingsList.tsx:206:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})
@@ -35685,10 +35685,10 @@ function SettingsList({ category, title, description }) {
 								})
 							]
 						}, item)), items.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:209:17",
+							"data-uid": "src/components/settings/SettingsList.tsx:214:17",
 							"data-prohibitions": "[]",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/settings/SettingsList.tsx:210:19",
+								"data-uid": "src/components/settings/SettingsList.tsx:215:19",
 								"data-prohibitions": "[]",
 								colSpan: hasValue ? 3 : 2,
 								className: "text-center text-muted-foreground py-8",
@@ -35944,4 +35944,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DjWl7qz-.js.map
+//# sourceMappingURL=index-woD_4hes.js.map

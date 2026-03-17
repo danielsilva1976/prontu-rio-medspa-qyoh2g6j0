@@ -22,7 +22,12 @@ type SettingsListProps = {
 
 export default function SettingsList({ category, title, description }: SettingsListProps) {
   const store = useSettingsStore()
-  const items = store[category]
+
+  const items =
+    category === 'procedures'
+      ? [...store[category]].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+      : store[category]
+
   const [newItem, setNewItem] = useState('')
   const [newItemPrice, setNewItemPrice] = useState('')
   const [editingItem, setEditingItem] = useState<{
@@ -45,7 +50,7 @@ export default function SettingsList({ category, title, description }: SettingsL
     const trimmed = newItem.trim()
     if (!trimmed) return
 
-    if (items.some((i) => i.toLowerCase() === trimmed.toLowerCase())) {
+    if (store[category].some((i) => i.toLowerCase() === trimmed.toLowerCase())) {
       toast({
         title: 'Item duplicado',
         description: 'Este item já existe na sua lista.',
