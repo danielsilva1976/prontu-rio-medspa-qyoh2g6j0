@@ -19204,13 +19204,6 @@ var ChevronsUpDown = createLucideIcon("chevrons-up-down", [["path", {
 	d: "m7 9 5-5 5 5",
 	key: "sgt6xg"
 }]]);
-var CircleCheckBig = createLucideIcon("circle-check-big", [["path", {
-	d: "M21.801 10A10 10 0 1 1 17 3.335",
-	key: "yps3ct"
-}], ["path", {
-	d: "m9 11 3 3L22 4",
-	key: "1pflzl"
-}]]);
 var CircleCheck = createLucideIcon("circle-check", [["circle", {
 	cx: "12",
 	cy: "12",
@@ -33860,159 +33853,65 @@ function ProcedureTab({ isSigned, patientId }) {
 function EvolutionTab({ isSigned, patientId }) {
 	const { addLog } = useAuditStore();
 	const [note, setNote] = (0, import_react.useState)("");
-	const handleAddNote = () => {
+	const handleSave = () => {
 		if (!note.trim()) return;
 		addLog("Evolução adicionada", patientId);
-		setNote("");
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/EvolutionTab.tsx:26:5",
+		"data-uid": "src/components/consultation/EvolutionTab.tsx:24:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:27:7",
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:25:7",
 				"data-prohibitions": "[]",
-				className: "h-1 w-full bg-gradient-to-r from-muted to-muted-foreground/30"
+				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:28:7",
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:26:7",
 				"data-prohibitions": "[]",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:29:9",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:27:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(History, {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:30:11",
+						"data-uid": "src/components/consultation/EvolutionTab.tsx:28:11",
 						"data-prohibitions": "[editContent]",
-						className: "w-5 h-5"
+						className: "w-5 h-5 text-primary"
 					}), " Evolução"]
-				})
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:30:9",
+					"data-prohibitions": "[]",
+					children: "Registre a evolução clínica atual do paciente."
+				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/EvolutionTab.tsx:33:7",
+				"data-uid": "src/components/consultation/EvolutionTab.tsx:32:7",
 				"data-prohibitions": "[editContent]",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:34:9",
+				className: "space-y-6",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:33:9",
 					"data-prohibitions": "[editContent]",
-					className: "bg-muted/20 p-5 rounded-xl border border-border space-y-4 mb-8",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:35:11",
-							"data-prohibitions": "[]",
-							className: "text-base text-foreground",
-							children: "Nova Evolução Clínica"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:36:11",
-							"data-prohibitions": "[editContent]",
-							value: note,
-							onChange: (e) => setNote(e.target.value),
-							placeholder: "Registre a evolução, retorno do paciente, queixas atuais ou orientações dadas...",
-							className: "bg-white border-border rounded-xl focus-visible:ring-primary min-h-[100px]",
-							disabled: isSigned
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/components/consultation/EvolutionTab.tsx:43:11",
-							"data-prohibitions": "[editContent]",
-							className: "flex justify-end",
-							children: !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:45:15",
-								"data-prohibitions": "[]",
-								onClick: handleAddNote,
-								className: "bg-primary text-white shadow-sm hover:bg-primary/90",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:49:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-4 h-4 mr-2"
-								}), " Adicionar Nota"]
-							})
-						})
-					]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/EvolutionTab.tsx:55:9",
+					value: note,
+					onChange: (e) => setNote(e.target.value),
+					placeholder: "Registre o retorno do paciente, queixas atuais, evolução do tratamento ou orientações dadas...",
+					className: "min-h-[300px] resize-y bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-xl text-base p-4",
+					disabled: isSigned
+				}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+					"data-uid": "src/components/consultation/EvolutionTab.tsx:42:11",
 					"data-prohibitions": "[]",
-					className: "relative border-l-2 border-muted ml-4 md:ml-6 space-y-8 pb-4",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:56:11",
+					className: "flex justify-end pt-4 mt-6 border-t border-border/50",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/components/consultation/EvolutionTab.tsx:43:13",
 						"data-prohibitions": "[]",
-						className: "relative pl-6",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:57:13",
-								"data-prohibitions": "[]",
-								className: "absolute w-4 h-4 bg-background border-2 border-primary rounded-full -left-[9px] top-1"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:58:13",
-								"data-prohibitions": "[]",
-								className: "text-sm font-bold text-primary mb-1",
-								children: "15 de Setembro, 2023"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:59:13",
-								"data-prohibitions": "[]",
-								className: "bg-white border border-border/50 rounded-xl p-4 shadow-sm",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:60:15",
-										"data-prohibitions": "[]",
-										className: "font-medium text-primary mb-2",
-										children: "Toxina Botulínica (Terço Superior)"
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:61:15",
-										"data-prohibitions": "[]",
-										className: "text-sm text-muted-foreground",
-										children: "Aplicação de 45U de Dysport. Paciente queixava-se de vincos glabelares fortes. Sem intercorrências. Orientada sobre cuidados pós."
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/EvolutionTab.tsx:65:15",
-										"data-prohibitions": "[]",
-										className: "mt-3 flex items-center gap-2 text-xs font-medium text-success",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheckBig, {
-											"data-uid": "src/components/consultation/EvolutionTab.tsx:66:17",
-											"data-prohibitions": "[editContent]",
-											className: "w-3 h-3"
-										}), " Assinado por Dra. Sofia Alencar"]
-									})
-								]
-							})
-						]
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/EvolutionTab.tsx:71:11",
-						"data-prohibitions": "[]",
-						className: "relative pl-6",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:72:13",
-								"data-prohibitions": "[]",
-								className: "absolute w-4 h-4 bg-background border-2 border-muted-foreground rounded-full -left-[9px] top-1"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:73:13",
-								"data-prohibitions": "[]",
-								className: "text-sm font-bold text-muted-foreground mb-1",
-								children: "10 de Março, 2023"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/EvolutionTab.tsx:74:13",
-								"data-prohibitions": "[]",
-								className: "bg-white border border-border/50 rounded-xl p-4 shadow-sm opacity-80",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:75:15",
-									"data-prohibitions": "[]",
-									className: "font-medium text-primary mb-2",
-									children: "Primeira Consulta - Avaliação Global"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/consultation/EvolutionTab.tsx:76:15",
-									"data-prohibitions": "[]",
-									className: "text-sm text-muted-foreground",
-									children: "Mapeamento facial realizado. Indicado plano de tratamento anual focando em prevenção de rugas dinâmicas e melhora de textura da pele."
-								})]
-							})
-						]
-					})]
+						onClick: handleSave,
+						className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+							"data-uid": "src/components/consultation/EvolutionTab.tsx:47:15",
+							"data-prohibitions": "[editContent]",
+							className: "w-4 h-4 mr-2"
+						}), " Salvar Evolução"]
+					})
 				})]
 			})
 		]
@@ -46160,4 +46059,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-2zPtMP2F.js.map
+//# sourceMappingURL=index-bBhD8K10.js.map
