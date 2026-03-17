@@ -26,10 +26,15 @@ export type ChronogramEntry = {
   finalValue: string
 }
 
+export type ProcedureOption = {
+  name: string
+  standardValue?: string
+}
+
 type Props = {
   entry: ChronogramEntry
   isSigned: boolean
-  uniqueProcedures: string[]
+  uniqueProcedures: ProcedureOption[]
   onUpdate: (id: string, field: keyof ChronogramEntry, value: string) => void
   onRemove: (id: string) => void
 }
@@ -109,7 +114,8 @@ export default function PlanningEntryItem({
                   )}
                 >
                   {entry.procedure
-                    ? uniqueProcedures.find((p) => p === entry.procedure) || entry.procedure
+                    ? uniqueProcedures.find((p) => p.name === entry.procedure)?.name ||
+                      entry.procedure
                     : 'Selecione ou busque...'}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -122,28 +128,33 @@ export default function PlanningEntryItem({
                     <CommandGroup>
                       {uniqueProcedures.map((p) => (
                         <CommandItem
-                          key={p}
-                          value={p}
+                          key={p.name}
+                          value={p.name}
                           onSelect={(currentValue) => {
                             const originalValue =
                               uniqueProcedures.find(
-                                (item) => item.toLowerCase() === currentValue.toLowerCase(),
+                                (item) => item.name.toLowerCase() === currentValue.toLowerCase(),
                               ) || p
-                            onUpdate(
-                              entry.id,
-                              'procedure',
-                              originalValue === entry.procedure ? '' : originalValue,
-                            )
+
+                            const newProcedure =
+                              originalValue.name === entry.procedure ? '' : originalValue.name
+
+                            onUpdate(entry.id, 'procedure', newProcedure)
+
+                            if (newProcedure && originalValue.standardValue) {
+                              onUpdate(entry.id, 'standardValue', originalValue.standardValue)
+                            }
+
                             setOpen(false)
                           }}
                         >
                           <Check
                             className={cn(
                               'mr-2 h-4 w-4',
-                              entry.procedure === p ? 'opacity-100' : 'opacity-0',
+                              entry.procedure === p.name ? 'opacity-100' : 'opacity-0',
                             )}
                           />
-                          {p}
+                          {p.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>

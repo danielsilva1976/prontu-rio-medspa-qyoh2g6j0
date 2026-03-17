@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import useSettingsStore from '@/stores/useSettingsStore'
-import PlanningEntryItem, { type ChronogramEntry } from './PlanningEntryItem'
+import PlanningEntryItem, { type ChronogramEntry, type ProcedureOption } from './PlanningEntryItem'
 
 export type SavedPlan = {
   id: string
@@ -45,7 +45,7 @@ type Props = {
 }
 
 export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
-  const { procedures, technologies } = useSettingsStore()
+  const { procedures, technologies, prices } = useSettingsStore()
   const [objective, setObjective] = useState('')
   const [planName, setPlanName] = useState('')
   const [downPayment, setDownPayment] = useState('')
@@ -86,10 +86,14 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
   const updateEntry = (id: string, field: keyof ChronogramEntry, value: string) =>
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
 
-  const uniqueProcedures = useMemo(
-    () => Array.from(new Set([...procedures, ...technologies, 'Retorno', 'Consulta'])),
-    [procedures, technologies],
-  )
+  const uniqueProcedures: ProcedureOption[] = useMemo(() => {
+    const combined = [...procedures, ...technologies, 'Retorno', 'Consulta']
+    return Array.from(new Set(combined)).map((name) => ({
+      name,
+      standardValue: prices[name] || '',
+    }))
+  }, [procedures, technologies, prices])
+
   const totalInvestment = useMemo(
     () => entries.reduce((acc, e) => acc + (parseFloat(e.finalValue) || 0), 0),
     [entries],

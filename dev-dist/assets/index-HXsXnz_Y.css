@@ -1078,6 +1078,9 @@ video {
 .w-24 {
   width: 6rem;
 }
+.w-28 {
+  width: 7rem;
+}
 .w-3 {
   width: 0.75rem;
 }
@@ -3435,6 +3438,10 @@ video {
 
   .sm\:flex {
     display: flex;
+  }
+
+  .sm\:w-40 {
+    width: 10rem;
   }
 
   .sm\:w-auto {

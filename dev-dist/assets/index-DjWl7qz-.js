@@ -24713,30 +24713,71 @@ var defaultData = {
 		"Zye AL",
 		"Luz Pulsada (LIP)",
 		"Radiofrequência"
-	]
+	],
+	prices: {
+		"Toxina Botulínica": "1200",
+		"Preenchimento com Ácido Hialurônico": "1500",
+		"Bioestimulador de Colágeno": "2500",
+		"Fios de PDO": "800",
+		"Laser / Tecnologias": "1000",
+		"Peeling Químico": "350",
+		Microagulhamento: "450",
+		"Ultraformer III": "3000",
+		"Ultraformer MPT": "4000",
+		Lavieen: "1200",
+		Fotona: "2500",
+		"Soprano Ice": "600",
+		"Zye AL": "800",
+		"Luz Pulsada (LIP)": "450",
+		Radiofrequência: "300"
+	}
 };
 var SettingsContext = (0, import_react.createContext)({});
 var SettingsProvider = ({ children }) => {
 	const [data, setData] = (0, import_react.useState)(defaultData);
-	const addItem = (category, item) => {
+	const addItem = (category, item, price) => {
 		const trimmed = item.trim();
 		if (trimmed && !data[category].includes(trimmed)) setData((prev) => ({
 			...prev,
-			[category]: [...prev[category], trimmed]
+			[category]: [...prev[category], trimmed],
+			prices: price ? {
+				...prev.prices,
+				[trimmed]: price
+			} : prev.prices
 		}));
 	};
 	const removeItem = (category, item) => {
-		setData((prev) => ({
-			...prev,
-			[category]: prev[category].filter((i) => i !== item)
-		}));
+		setData((prev) => {
+			const newPrices = { ...prev.prices };
+			delete newPrices[item];
+			return {
+				...prev,
+				[category]: prev[category].filter((i) => i !== item),
+				prices: newPrices
+			};
+		});
 	};
-	const updateItem = (category, oldItem, newItem) => {
+	const updateItem = (category, oldItem, newItem, price) => {
 		const trimmed = newItem.trim();
-		if (trimmed && trimmed !== oldItem) setData((prev) => ({
-			...prev,
-			[category]: prev[category].map((i) => i === oldItem ? trimmed : i)
-		}));
+		if (trimmed && trimmed !== oldItem) setData((prev) => {
+			const newPrices = { ...prev.prices };
+			delete newPrices[oldItem];
+			if (price) newPrices[trimmed] = price;
+			return {
+				...prev,
+				[category]: prev[category].map((i) => i === oldItem ? trimmed : i),
+				prices: newPrices
+			};
+		});
+		else if (trimmed === oldItem) setData((prev) => {
+			const newPrices = { ...prev.prices };
+			if (price) newPrices[trimmed] = price;
+			else delete newPrices[trimmed];
+			return {
+				...prev,
+				prices: newPrices
+			};
+		});
 	};
 	return (0, import_react.createElement)(SettingsContext.Provider, { value: {
 		...data,
@@ -33512,33 +33553,33 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 		onUpdate
 	]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/PlanningEntryItem.tsx:77:5",
+		"data-uid": "src/components/consultation/PlanningEntryItem.tsx:82:5",
 		"data-prohibitions": "[editContent]",
 		className: "relative pl-6 md:pl-8 animate-fade-in",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			"data-uid": "src/components/consultation/PlanningEntryItem.tsx:78:7",
+			"data-uid": "src/components/consultation/PlanningEntryItem.tsx:83:7",
 			"data-prohibitions": "[editContent]",
 			className: "absolute w-4 h-4 bg-white border-2 border-primary rounded-full -left-[9px] top-5 shadow-sm"
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/consultation/PlanningEntryItem.tsx:80:7",
+			"data-uid": "src/components/consultation/PlanningEntryItem.tsx:85:7",
 			"data-prohibitions": "[editContent]",
 			className: "bg-white border border-border/60 hover:border-primary/40 transition-colors rounded-xl p-4 shadow-sm flex flex-col gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningEntryItem.tsx:81:9",
+				"data-uid": "src/components/consultation/PlanningEntryItem.tsx:86:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col md:flex-row gap-4 md:items-center",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:82:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:87:11",
 						"data-prohibitions": "[]",
 						className: "w-full md:w-1/3 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:83:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:88:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
 							children: "Momento / Ordem"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:86:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:91:13",
 							"data-prohibitions": "[editContent]",
 							value: entry.timing,
 							onChange: (e) => onUpdate(entry.id, "timing", e.target.value),
@@ -33548,74 +33589,76 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:95:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:100:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-full md:w-1/2 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:96:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:101:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
 							children: "Procedimento / Etapa"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Popover, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:99:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:104:13",
 							"data-prohibitions": "[editContent]",
 							open,
 							onOpenChange: setOpen,
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopoverTrigger, {
-								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:100:15",
+								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:105:15",
 								"data-prohibitions": "[editContent]",
 								asChild: true,
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:101:17",
+									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:106:17",
 									"data-prohibitions": "[editContent]",
 									variant: "outline",
 									role: "combobox",
 									"aria-expanded": open,
 									disabled: isSigned,
 									className: cn$1("w-full justify-between bg-muted/5 h-9 font-normal border-input", !entry.procedure && "text-muted-foreground"),
-									children: [entry.procedure ? uniqueProcedures.find((p) => p === entry.procedure) || entry.procedure : "Selecione ou busque...", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronsUpDown, {
-										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:114:19",
+									children: [entry.procedure ? uniqueProcedures.find((p) => p.name === entry.procedure)?.name || entry.procedure : "Selecione ou busque...", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronsUpDown, {
+										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:120:19",
 										"data-prohibitions": "[editContent]",
 										className: "ml-2 h-4 w-4 shrink-0 opacity-50"
 									})]
 								})
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopoverContent, {
-								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:117:15",
+								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:123:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-[--radix-popover-trigger-width] p-0",
 								align: "start",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Command, {
-									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:118:17",
+									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:124:17",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CommandInput, {
-										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:119:19",
+										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:125:19",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Buscar procedimento..."
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CommandList, {
-										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:120:19",
+										"data-uid": "src/components/consultation/PlanningEntryItem.tsx:126:19",
 										"data-prohibitions": "[editContent]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CommandEmpty, {
-											"data-uid": "src/components/consultation/PlanningEntryItem.tsx:121:21",
+											"data-uid": "src/components/consultation/PlanningEntryItem.tsx:127:21",
 											"data-prohibitions": "[]",
 											children: "Nenhum procedimento encontrado."
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CommandGroup, {
-											"data-uid": "src/components/consultation/PlanningEntryItem.tsx:122:21",
+											"data-uid": "src/components/consultation/PlanningEntryItem.tsx:128:21",
 											"data-prohibitions": "[editContent]",
 											children: uniqueProcedures.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CommandItem, {
-												"data-uid": "src/components/consultation/PlanningEntryItem.tsx:124:25",
+												"data-uid": "src/components/consultation/PlanningEntryItem.tsx:130:25",
 												"data-prohibitions": "[editContent]",
-												value: p,
+												value: p.name,
 												onSelect: (currentValue) => {
-													const originalValue = uniqueProcedures.find((item) => item.toLowerCase() === currentValue.toLowerCase()) || p;
-													onUpdate(entry.id, "procedure", originalValue === entry.procedure ? "" : originalValue);
+													const originalValue = uniqueProcedures.find((item) => item.name.toLowerCase() === currentValue.toLowerCase()) || p;
+													const newProcedure = originalValue.name === entry.procedure ? "" : originalValue.name;
+													onUpdate(entry.id, "procedure", newProcedure);
+													if (newProcedure && originalValue.standardValue) onUpdate(entry.id, "standardValue", originalValue.standardValue);
 													setOpen(false);
 												},
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, {
-													"data-uid": "src/components/consultation/PlanningEntryItem.tsx:140:27",
+													"data-uid": "src/components/consultation/PlanningEntryItem.tsx:151:27",
 													"data-prohibitions": "[editContent]",
-													className: cn$1("mr-2 h-4 w-4", entry.procedure === p ? "opacity-100" : "opacity-0")
-												}), p]
-											}, p))
+													className: cn$1("mr-2 h-4 w-4", entry.procedure === p.name ? "opacity-100" : "opacity-0")
+												}), p.name]
+											}, p.name))
 										})]
 									})]
 								})
@@ -33623,16 +33666,16 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:156:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:167:11",
 						"data-prohibitions": "[]",
 						className: "w-full md:w-24 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:157:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:168:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
 							children: "Qtd"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:160:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:171:13",
 							"data-prohibitions": "[editContent]",
 							type: "number",
 							min: "1",
@@ -33643,18 +33686,18 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 						})]
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:170:13",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:181:13",
 						"data-prohibitions": "[]",
 						className: "flex justify-end pt-5 md:pt-4",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:171:15",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:182:15",
 							"data-prohibitions": "[]",
 							variant: "ghost",
 							size: "icon",
 							onClick: () => onRemove(entry.id),
 							className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2 md:mr-0 h-8 w-8",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:177:17",
+								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:188:17",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4"
 							})
@@ -33662,21 +33705,21 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningEntryItem.tsx:183:9",
+				"data-uid": "src/components/consultation/PlanningEntryItem.tsx:194:9",
 				"data-prohibitions": "[]",
 				className: "flex flex-col md:flex-row gap-4 border-t border-border/40 pt-3",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:184:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:195:11",
 						"data-prohibitions": "[]",
 						className: "w-full md:w-1/3 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:185:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:196:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
 							children: "Valor Padrão (R$)"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:188:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:199:13",
 							"data-prohibitions": "[editContent]",
 							type: "number",
 							placeholder: "0.00",
@@ -33687,20 +33730,20 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:197:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:208:11",
 						"data-prohibitions": "[]",
 						className: "w-full md:w-1/3 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:198:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:209:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
 							children: "Desconto"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:201:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:212:13",
 							"data-prohibitions": "[]",
 							className: "flex gap-1.5",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:202:15",
+								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:213:15",
 								"data-prohibitions": "[editContent]",
 								type: "number",
 								placeholder: "0.00",
@@ -33709,7 +33752,7 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 								disabled: isSigned,
 								className: "bg-muted/5 h-9 w-full"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroup, {
-								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:210:15",
+								"data-uid": "src/components/consultation/PlanningEntryItem.tsx:221:15",
 								"data-prohibitions": "[]",
 								type: "single",
 								variant: "outline",
@@ -33720,13 +33763,13 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 								disabled: isSigned,
 								className: "shrink-0 gap-0 -space-x-px rounded-md h-9",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItem, {
-									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:220:17",
+									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:231:17",
 									"data-prohibitions": "[]",
 									value: "currency",
 									className: "rounded-r-none focus:z-10 text-[11px] px-2.5 h-9 font-semibold",
 									children: "R$"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleGroupItem, {
-									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:226:17",
+									"data-uid": "src/components/consultation/PlanningEntryItem.tsx:237:17",
 									"data-prohibitions": "[]",
 									value: "percentage",
 									className: "rounded-l-none focus:z-10 text-[11px] px-2.5 h-9 font-semibold",
@@ -33736,16 +33779,16 @@ function PlanningEntryItem({ entry, isSigned, uniqueProcedures, onUpdate, onRemo
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:235:11",
+						"data-uid": "src/components/consultation/PlanningEntryItem.tsx:246:11",
 						"data-prohibitions": "[]",
 						className: "w-full md:w-1/3 space-y-1.5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:236:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:247:13",
 							"data-prohibitions": "[]",
 							className: "text-[10px] text-primary uppercase tracking-wider font-semibold",
 							children: "Valor Final (R$)"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:239:13",
+							"data-uid": "src/components/consultation/PlanningEntryItem.tsx:250:13",
 							"data-prohibitions": "[editContent]",
 							type: "number",
 							placeholder: "0.00",
@@ -33781,7 +33824,7 @@ var PAYMENT_METHODS = [
 ];
 var getPaymentMethodLabel = (id) => PAYMENT_METHODS.find((m) => m.id === id)?.label || "Não informado";
 function PlanningForm({ isSigned, onSave, onCancel }) {
-	const { procedures, technologies } = useSettingsStore();
+	const { procedures, technologies, prices } = useSettingsStore();
 	const [objective, setObjective] = (0, import_react.useState)("");
 	const [planName, setPlanName] = (0, import_react.useState)("");
 	const [downPayment, setDownPayment] = (0, import_react.useState)("");
@@ -33813,12 +33856,22 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 		...e,
 		[field]: value
 	} : e));
-	const uniqueProcedures = (0, import_react.useMemo)(() => Array.from(new Set([
-		...procedures,
-		...technologies,
-		"Retorno",
-		"Consulta"
-	])), [procedures, technologies]);
+	const uniqueProcedures = (0, import_react.useMemo)(() => {
+		const combined = [
+			...procedures,
+			...technologies,
+			"Retorno",
+			"Consulta"
+		];
+		return Array.from(new Set(combined)).map((name) => ({
+			name,
+			standardValue: prices[name] || ""
+		}));
+	}, [
+		procedures,
+		technologies,
+		prices
+	]);
 	const totalInvestment = (0, import_react.useMemo)(() => entries.reduce((acc, e) => acc + (parseFloat(e.finalValue) || 0), 0), [entries]);
 	const installmentValue = (0, import_react.useMemo)(() => Math.max(0, totalInvestment - (parseFloat(downPayment) || 0)) / (parseInt(installments) || 1), [
 		totalInvestment,
@@ -33848,25 +33901,25 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/PlanningForm.tsx:125:5",
+		"data-uid": "src/components/consultation/PlanningForm.tsx:129:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-fade-in",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:126:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:130:7",
 				"data-prohibitions": "[]",
 				className: "space-y-3",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:127:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:131:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-1.5 text-base",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Target, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:128:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:132:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 text-primary/70"
 					}), " Objetivo principal do paciente"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:130:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:134:9",
 					"data-prohibitions": "[editContent]",
 					value: objective,
 					onChange: (e) => setObjective(e.target.value),
@@ -33875,20 +33928,20 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:138:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:142:7",
 				"data-prohibitions": "[]",
 				className: "space-y-3 pt-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:139:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:143:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-1.5 text-base",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tag, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:140:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:144:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 text-primary/70"
 					}), " Nome do Plano Personalizado"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:142:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:146:9",
 					"data-prohibitions": "[editContent]",
 					value: planName,
 					onChange: (e) => setPlanName(e.target.value),
@@ -33897,26 +33950,26 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:150:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:154:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-4 pt-1",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:151:9",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:155:9",
 						"data-prohibitions": "[]",
 						className: "flex items-center gap-1.5 text-base",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:152:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:156:11",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 text-primary/70"
 						}), " Cronograma de Tratamento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:154:9",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:158:9",
 						"data-prohibitions": "[editContent]",
 						className: "relative border-l-2 border-primary/20 ml-3 md:ml-4 space-y-4 py-2",
 						children: entries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlanningEntryItem, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:156:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:160:13",
 							"data-prohibitions": "[editContent]",
 							entry,
 							isSigned,
@@ -33926,13 +33979,13 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:167:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:171:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full mt-2 border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:172:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:176:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), " Adicionar Procedimento/Sessão"]
@@ -33940,44 +33993,44 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:177:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:181:7",
 				"data-prohibitions": "[editContent]",
 				className: "bg-muted/10 rounded-xl p-5 border border-border/50 space-y-5 mt-4",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:178:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:182:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-5",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:179:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:183:11",
 						"data-prohibitions": "[]",
 						className: "text-base font-semibold flex items-center gap-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Calculator, {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:180:13",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:184:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 text-primary"
 						}), " Investimento"]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:182:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:186:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-3xl font-bold text-primary tracking-tight",
 						children: formatCurr(totalInvestment)
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:187:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:191:9",
 					"data-prohibitions": "[editContent]",
 					className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-1",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:188:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:192:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:189:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:193:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Entrada (R$)"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:192:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:196:13",
 								"data-prohibitions": "[editContent]",
 								type: "number",
 								value: downPayment,
@@ -33987,34 +34040,34 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:200:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:204:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:201:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:205:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Forma de pgto. Entrada"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:204:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:208:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: downPaymentMethod,
 								onValueChange: setDownPaymentMethod,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:209:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:213:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:210:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:214:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:212:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:216:15",
 									"data-prohibitions": "[editContent]",
 									children: PAYMENT_METHODS.map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:214:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:218:19",
 										"data-prohibitions": "[editContent]",
 										value: m.id,
 										children: m.label
@@ -34023,31 +34076,31 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:221:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:225:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:222:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:226:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground",
 								children: "Número de parcelas"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:225:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:229:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: installments,
 								onValueChange: setInstallments,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:226:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:230:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:227:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:231:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:229:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:233:15",
 									"data-prohibitions": "[editContent]",
 									children: [
 										1,
@@ -34059,7 +34112,7 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 										10,
 										12
 									].map((n) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:231:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:235:19",
 										"data-prohibitions": "[editContent]",
 										value: n.toString(),
 										children: [n, "x"]
@@ -34068,16 +34121,16 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:238:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:242:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:239:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:243:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-primary",
 								children: "Valor da Parcela"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:240:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:244:13",
 								"data-prohibitions": "[editContent]",
 								readOnly: true,
 								value: formatCurr(installmentValue),
@@ -34085,38 +34138,38 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningForm.tsx:246:11",
+							"data-uid": "src/components/consultation/PlanningForm.tsx:250:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:247:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:251:13",
 								"data-prohibitions": "[]",
 								className: "text-xs uppercase font-semibold text-muted-foreground flex items-center gap-1",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CreditCard, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:248:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:252:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-3 h-3"
 								}), " Forma de pgto. Saldo"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/PlanningForm.tsx:250:13",
+								"data-uid": "src/components/consultation/PlanningForm.tsx:254:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: paymentMethod,
 								onValueChange: setPaymentMethod,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:251:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:255:15",
 									"data-prohibitions": "[]",
 									className: "bg-white",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:252:17",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:256:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/PlanningForm.tsx:254:15",
+									"data-uid": "src/components/consultation/PlanningForm.tsx:258:15",
 									"data-prohibitions": "[editContent]",
 									children: PAYMENT_METHODS.map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/PlanningForm.tsx:256:19",
+										"data-uid": "src/components/consultation/PlanningForm.tsx:260:19",
 										"data-prohibitions": "[editContent]",
 										value: m.id,
 										children: m.label
@@ -34128,24 +34181,24 @@ function PlanningForm({ isSigned, onSave, onCancel }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PlanningForm.tsx:266:7",
+				"data-uid": "src/components/consultation/PlanningForm.tsx:270:7",
 				"data-prohibitions": "[]",
 				className: "flex justify-end gap-3 pt-4 border-t border-border/50",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:267:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:271:9",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					onClick: onCancel,
 					className: "rounded-xl",
 					children: "Cancelar"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/consultation/PlanningForm.tsx:270:9",
+					"data-uid": "src/components/consultation/PlanningForm.tsx:274:9",
 					"data-prohibitions": "[]",
 					onClick: handleSave,
 					disabled: isSigned,
 					className: "rounded-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-						"data-uid": "src/components/consultation/PlanningForm.tsx:271:11",
+						"data-uid": "src/components/consultation/PlanningForm.tsx:275:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 mr-2"
 					}), " Salvar plano"]
@@ -35385,8 +35438,17 @@ function SettingsList({ category, title, description }) {
 	const store = useSettingsStore();
 	const items = store[category];
 	const [newItem, setNewItem] = (0, import_react.useState)("");
+	const [newItemPrice, setNewItemPrice] = (0, import_react.useState)("");
 	const [editingItem, setEditingItem] = (0, import_react.useState)(null);
 	const { toast } = useToast();
+	const hasValue = category === "procedures" || category === "technologies";
+	const formatCurrency = (val) => {
+		if (!val) return "-";
+		return new Intl.NumberFormat("pt-BR", {
+			style: "currency",
+			currency: "BRL"
+		}).format(parseFloat(val));
+	};
 	const handleAdd = () => {
 		const trimmed = newItem.trim();
 		if (!trimmed) return;
@@ -35398,8 +35460,9 @@ function SettingsList({ category, title, description }) {
 			});
 			return;
 		}
-		store.addItem(category, trimmed);
+		store.addItem(category, trimmed, hasValue ? newItemPrice : void 0);
 		setNewItem("");
+		setNewItemPrice("");
 		toast({
 			title: "Adicionado com sucesso",
 			description: `"${trimmed}" foi adicionado à lista.`
@@ -35407,7 +35470,7 @@ function SettingsList({ category, title, description }) {
 	};
 	const handleSaveEdit = () => {
 		if (!editingItem || !editingItem.current.trim()) return;
-		store.updateItem(category, editingItem.old, editingItem.current);
+		store.updateItem(category, editingItem.old, editingItem.current, hasValue ? editingItem.price : void 0);
 		setEditingItem(null);
 		toast({ title: "Atualizado com sucesso" });
 	};
@@ -35419,172 +35482,215 @@ function SettingsList({ category, title, description }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/SettingsList.tsx:61:5",
+		"data-uid": "src/components/settings/SettingsList.tsx:81:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/SettingsList.tsx:62:7",
+			"data-uid": "src/components/settings/SettingsList.tsx:82:7",
 			"data-prohibitions": "[editContent]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-				"data-uid": "src/components/settings/SettingsList.tsx:63:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:83:9",
 				"data-prohibitions": "[editContent]",
 				className: "text-xl text-primary font-serif",
 				children: title
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-				"data-uid": "src/components/settings/SettingsList.tsx:64:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:84:9",
 				"data-prohibitions": "[editContent]",
 				children: description
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/settings/SettingsList.tsx:66:7",
+			"data-uid": "src/components/settings/SettingsList.tsx:86:7",
 			"data-prohibitions": "[editContent]",
 			className: "space-y-6",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/SettingsList.tsx:67:9",
-				"data-prohibitions": "[]",
-				className: "flex gap-3",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-					"data-uid": "src/components/settings/SettingsList.tsx:68:11",
-					"data-prohibitions": "[editContent]",
-					placeholder: "Nome do novo item...",
-					value: newItem,
-					onChange: (e) => setNewItem(e.target.value),
-					onKeyDown: (e) => e.key === "Enter" && handleAdd(),
-					className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/settings/SettingsList.tsx:75:11",
-					"data-prohibitions": "[]",
-					onClick: handleAdd,
-					className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl shrink-0",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-						"data-uid": "src/components/settings/SettingsList.tsx:79:13",
+				"data-uid": "src/components/settings/SettingsList.tsx:87:9",
+				"data-prohibitions": "[editContent]",
+				className: "flex flex-col sm:flex-row gap-3",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+						"data-uid": "src/components/settings/SettingsList.tsx:88:11",
 						"data-prohibitions": "[editContent]",
-						className: "w-4 h-4 mr-2"
-					}), "Adicionar"]
-				})]
+						placeholder: "Nome do novo item...",
+						value: newItem,
+						onChange: (e) => setNewItem(e.target.value),
+						onKeyDown: (e) => e.key === "Enter" && handleAdd(),
+						className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm flex-1"
+					}),
+					hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+						"data-uid": "src/components/settings/SettingsList.tsx:96:13",
+						"data-prohibitions": "[editContent]",
+						type: "number",
+						placeholder: "Valor Padrão (R$)",
+						value: newItemPrice,
+						onChange: (e) => setNewItemPrice(e.target.value),
+						onKeyDown: (e) => e.key === "Enter" && handleAdd(),
+						className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm w-full sm:w-40 shrink-0"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/components/settings/SettingsList.tsx:105:11",
+						"data-prohibitions": "[]",
+						onClick: handleAdd,
+						className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl shrink-0",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
+							"data-uid": "src/components/settings/SettingsList.tsx:109:13",
+							"data-prohibitions": "[editContent]",
+							className: "w-4 h-4 mr-2"
+						}), "Adicionar"]
+					})
+				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/settings/SettingsList.tsx:84:9",
+				"data-uid": "src/components/settings/SettingsList.tsx:114:9",
 				"data-prohibitions": "[editContent]",
 				className: "border rounded-xl bg-white overflow-hidden shadow-sm",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-					"data-uid": "src/components/settings/SettingsList.tsx:85:11",
+					"data-uid": "src/components/settings/SettingsList.tsx:115:11",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-						"data-uid": "src/components/settings/SettingsList.tsx:86:13",
-						"data-prohibitions": "[]",
+						"data-uid": "src/components/settings/SettingsList.tsx:116:13",
+						"data-prohibitions": "[editContent]",
 						className: "bg-muted/30",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:87:15",
-							"data-prohibitions": "[]",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-								"data-uid": "src/components/settings/SettingsList.tsx:88:17",
-								"data-prohibitions": "[]",
-								className: "w-full",
-								children: "Nome"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-								"data-uid": "src/components/settings/SettingsList.tsx:89:17",
-								"data-prohibitions": "[]",
-								className: "text-right",
-								children: "Ações"
-							})]
+							"data-uid": "src/components/settings/SettingsList.tsx:117:15",
+							"data-prohibitions": "[editContent]",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+									"data-uid": "src/components/settings/SettingsList.tsx:118:17",
+									"data-prohibitions": "[]",
+									className: "w-full",
+									children: "Nome"
+								}),
+								hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+									"data-uid": "src/components/settings/SettingsList.tsx:119:30",
+									"data-prohibitions": "[]",
+									className: "whitespace-nowrap",
+									children: "Valor Padrão (R$)"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+									"data-uid": "src/components/settings/SettingsList.tsx:120:17",
+									"data-prohibitions": "[]",
+									className: "text-right",
+									children: "Ações"
+								})
+							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableBody, {
-						"data-uid": "src/components/settings/SettingsList.tsx:92:13",
+						"data-uid": "src/components/settings/SettingsList.tsx:123:13",
 						"data-prohibitions": "[editContent]",
 						children: [items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:94:17",
+							"data-uid": "src/components/settings/SettingsList.tsx:125:17",
 							"data-prohibitions": "[editContent]",
 							className: "group transition-colors hover:bg-muted/10 h-14",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/settings/SettingsList.tsx:95:19",
-								"data-prohibitions": "[editContent]",
-								className: "font-medium text-foreground",
-								children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/settings/SettingsList.tsx:97:23",
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/components/settings/SettingsList.tsx:126:19",
 									"data-prohibitions": "[editContent]",
-									value: editingItem.current,
-									onChange: (e) => setEditingItem({
-										...editingItem,
-										current: e.target.value
-									}),
-									onKeyDown: (e) => e.key === "Enter" && handleSaveEdit(),
-									className: "h-8 max-w-sm",
-									autoFocus: true
-								}) : item
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/settings/SettingsList.tsx:110:19",
-								"data-prohibitions": "[editContent]",
-								className: "text-right",
-								children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/SettingsList.tsx:112:23",
-									"data-prohibitions": "[]",
-									className: "flex justify-end gap-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/settings/SettingsList.tsx:113:25",
-										"data-prohibitions": "[]",
-										variant: "ghost",
-										size: "icon",
-										onClick: handleSaveEdit,
-										className: "h-8 w-8 text-success hover:text-success hover:bg-success/10",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, {
-											"data-uid": "src/components/settings/SettingsList.tsx:119:27",
-											"data-prohibitions": "[editContent]",
-											className: "w-4 h-4"
-										})
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/settings/SettingsList.tsx:121:25",
-										"data-prohibitions": "[]",
-										variant: "ghost",
-										size: "icon",
-										onClick: () => setEditingItem(null),
-										className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
-											"data-uid": "src/components/settings/SettingsList.tsx:127:27",
-											"data-prohibitions": "[editContent]",
-											className: "w-4 h-4"
-										})
-									})]
-								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/SettingsList.tsx:131:23",
-									"data-prohibitions": "[]",
-									className: "flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/settings/SettingsList.tsx:132:25",
-										"data-prohibitions": "[]",
-										variant: "ghost",
-										size: "icon",
-										onClick: () => setEditingItem({
-											old: item,
-											current: item
+									className: "font-medium text-foreground",
+									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+										"data-uid": "src/components/settings/SettingsList.tsx:128:23",
+										"data-prohibitions": "[editContent]",
+										value: editingItem.current,
+										onChange: (e) => setEditingItem({
+											...editingItem,
+											current: e.target.value
 										}),
-										className: "h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-											"data-uid": "src/components/settings/SettingsList.tsx:138:27",
-											"data-prohibitions": "[editContent]",
-											className: "w-4 h-4"
-										})
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/settings/SettingsList.tsx:140:25",
+										onKeyDown: (e) => e.key === "Enter" && handleSaveEdit(),
+										className: "h-8 max-w-sm",
+										autoFocus: true
+									}) : item
+								}),
+								hasValue && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/components/settings/SettingsList.tsx:142:21",
+									"data-prohibitions": "[editContent]",
+									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+										"data-uid": "src/components/settings/SettingsList.tsx:144:25",
+										"data-prohibitions": "[editContent]",
+										type: "number",
+										value: editingItem.price,
+										onChange: (e) => setEditingItem({
+											...editingItem,
+											price: e.target.value
+										}),
+										onKeyDown: (e) => e.key === "Enter" && handleSaveEdit(),
+										className: "h-8 w-28",
+										placeholder: "0.00"
+									}) : formatCurrency(store.prices[item])
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/components/settings/SettingsList.tsx:159:19",
+									"data-prohibitions": "[editContent]",
+									className: "text-right",
+									children: editingItem?.old === item ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/settings/SettingsList.tsx:161:23",
 										"data-prohibitions": "[]",
-										variant: "ghost",
-										size: "icon",
-										onClick: () => handleRemove(item),
-										className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-											"data-uid": "src/components/settings/SettingsList.tsx:146:27",
-											"data-prohibitions": "[editContent]",
-											className: "w-4 h-4"
-										})
-									})]
+										className: "flex justify-end gap-2",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/components/settings/SettingsList.tsx:162:25",
+											"data-prohibitions": "[]",
+											variant: "ghost",
+											size: "icon",
+											onClick: handleSaveEdit,
+											className: "h-8 w-8 text-success hover:text-success hover:bg-success/10",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Check, {
+												"data-uid": "src/components/settings/SettingsList.tsx:168:27",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4"
+											})
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/components/settings/SettingsList.tsx:170:25",
+											"data-prohibitions": "[]",
+											variant: "ghost",
+											size: "icon",
+											onClick: () => setEditingItem(null),
+											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
+												"data-uid": "src/components/settings/SettingsList.tsx:176:27",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4"
+											})
+										})]
+									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/settings/SettingsList.tsx:180:23",
+										"data-prohibitions": "[]",
+										className: "flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/components/settings/SettingsList.tsx:181:25",
+											"data-prohibitions": "[]",
+											variant: "ghost",
+											size: "icon",
+											onClick: () => setEditingItem({
+												old: item,
+												current: item,
+												price: store.prices[item] || ""
+											}),
+											className: "h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
+												"data-uid": "src/components/settings/SettingsList.tsx:193:27",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4"
+											})
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+											"data-uid": "src/components/settings/SettingsList.tsx:195:25",
+											"data-prohibitions": "[]",
+											variant: "ghost",
+											size: "icon",
+											onClick: () => handleRemove(item),
+											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
+												"data-uid": "src/components/settings/SettingsList.tsx:201:27",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4"
+											})
+										})]
+									})
 								})
-							})]
+							]
 						}, item)), items.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-							"data-uid": "src/components/settings/SettingsList.tsx:154:17",
+							"data-uid": "src/components/settings/SettingsList.tsx:209:17",
 							"data-prohibitions": "[]",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/settings/SettingsList.tsx:155:19",
+								"data-uid": "src/components/settings/SettingsList.tsx:210:19",
 								"data-prohibitions": "[]",
-								colSpan: 2,
+								colSpan: hasValue ? 3 : 2,
 								className: "text-center text-muted-foreground py-8",
 								children: "Nenhum registro encontrado. Adicione um acima."
 							})
@@ -35838,4 +35944,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CAdDVjxW.js.map
+//# sourceMappingURL=index-DjWl7qz-.js.map

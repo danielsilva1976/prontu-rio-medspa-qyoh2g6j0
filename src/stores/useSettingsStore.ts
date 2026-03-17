@@ -8,9 +8,10 @@ type SettingsState = {
   products: string[]
   brands: string[]
   technologies: string[]
-  addItem: (category: SettingsCategory, item: string) => void
+  prices: Record<string, string>
+  addItem: (category: SettingsCategory, item: string, price?: string) => void
   removeItem: (category: SettingsCategory, item: string) => void
-  updateItem: (category: SettingsCategory, oldItem: string, newItem: string) => void
+  updateItem: (category: SettingsCategory, oldItem: string, newItem: string, price?: string) => void
 }
 
 const defaultData = {
@@ -57,6 +58,23 @@ const defaultData = {
     'Luz Pulsada (LIP)',
     'Radiofrequência',
   ],
+  prices: {
+    'Toxina Botulínica': '1200',
+    'Preenchimento com Ácido Hialurônico': '1500',
+    'Bioestimulador de Colágeno': '2500',
+    'Fios de PDO': '800',
+    'Laser / Tecnologias': '1000',
+    'Peeling Químico': '350',
+    Microagulhamento: '450',
+    'Ultraformer III': '3000',
+    'Ultraformer MPT': '4000',
+    Lavieen: '1200',
+    Fotona: '2500',
+    'Soprano Ice': '600',
+    'Zye AL': '800',
+    'Luz Pulsada (LIP)': '450',
+    Radiofrequência: '300',
+  } as Record<string, string>,
 }
 
 const SettingsContext = createContext<SettingsState>({} as SettingsState)
@@ -64,27 +82,62 @@ const SettingsContext = createContext<SettingsState>({} as SettingsState)
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState(defaultData)
 
-  const addItem = (category: SettingsCategory, item: string) => {
+  const addItem = (category: SettingsCategory, item: string, price?: string) => {
     const trimmed = item.trim()
     if (trimmed && !data[category].includes(trimmed)) {
-      setData((prev) => ({ ...prev, [category]: [...prev[category], trimmed] }))
+      setData((prev) => ({
+        ...prev,
+        [category]: [...prev[category], trimmed],
+        prices: price ? { ...prev.prices, [trimmed]: price } : prev.prices,
+      }))
     }
   }
 
   const removeItem = (category: SettingsCategory, item: string) => {
-    setData((prev) => ({
-      ...prev,
-      [category]: prev[category].filter((i) => i !== item),
-    }))
+    setData((prev) => {
+      const newPrices = { ...prev.prices }
+      delete newPrices[item]
+      return {
+        ...prev,
+        [category]: prev[category].filter((i) => i !== item),
+        prices: newPrices,
+      }
+    })
   }
 
-  const updateItem = (category: SettingsCategory, oldItem: string, newItem: string) => {
+  const updateItem = (
+    category: SettingsCategory,
+    oldItem: string,
+    newItem: string,
+    price?: string,
+  ) => {
     const trimmed = newItem.trim()
     if (trimmed && trimmed !== oldItem) {
-      setData((prev) => ({
-        ...prev,
-        [category]: prev[category].map((i) => (i === oldItem ? trimmed : i)),
-      }))
+      setData((prev) => {
+        const newPrices = { ...prev.prices }
+        delete newPrices[oldItem]
+        if (price) {
+          newPrices[trimmed] = price
+        }
+        return {
+          ...prev,
+          [category]: prev[category].map((i) => (i === oldItem ? trimmed : i)),
+          prices: newPrices,
+        }
+      })
+    } else if (trimmed === oldItem) {
+      setData((prev) => {
+        const newPrices = { ...prev.prices }
+        if (price) {
+          newPrices[trimmed] = price
+        } else {
+          delete newPrices[trimmed]
+        }
+        return {
+          ...prev,
+          prices: newPrices,
+        }
+      })
     }
   }
 

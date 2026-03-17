@@ -24,8 +24,22 @@ export default function SettingsList({ category, title, description }: SettingsL
   const store = useSettingsStore()
   const items = store[category]
   const [newItem, setNewItem] = useState('')
-  const [editingItem, setEditingItem] = useState<{ old: string; current: string } | null>(null)
+  const [newItemPrice, setNewItemPrice] = useState('')
+  const [editingItem, setEditingItem] = useState<{
+    old: string
+    current: string
+    price: string
+  } | null>(null)
   const { toast } = useToast()
+
+  const hasValue = category === 'procedures' || category === 'technologies'
+
+  const formatCurrency = (val?: string) => {
+    if (!val) return '-'
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+      parseFloat(val),
+    )
+  }
 
   const handleAdd = () => {
     const trimmed = newItem.trim()
@@ -40,14 +54,20 @@ export default function SettingsList({ category, title, description }: SettingsL
       return
     }
 
-    store.addItem(category, trimmed)
+    store.addItem(category, trimmed, hasValue ? newItemPrice : undefined)
     setNewItem('')
+    setNewItemPrice('')
     toast({ title: 'Adicionado com sucesso', description: `"${trimmed}" foi adicionado à lista.` })
   }
 
   const handleSaveEdit = () => {
     if (!editingItem || !editingItem.current.trim()) return
-    store.updateItem(category, editingItem.old, editingItem.current)
+    store.updateItem(
+      category,
+      editingItem.old,
+      editingItem.current,
+      hasValue ? editingItem.price : undefined,
+    )
     setEditingItem(null)
     toast({ title: 'Atualizado com sucesso' })
   }
@@ -64,14 +84,24 @@ export default function SettingsList({ category, title, description }: SettingsL
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Input
             placeholder="Nome do novo item..."
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm"
+            className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm flex-1"
           />
+          {hasValue && (
+            <Input
+              type="number"
+              placeholder="Valor Padrão (R$)"
+              value={newItemPrice}
+              onChange={(e) => setNewItemPrice(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm w-full sm:w-40 shrink-0"
+            />
+          )}
           <Button
             onClick={handleAdd}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl shrink-0"
@@ -86,6 +116,7 @@ export default function SettingsList({ category, title, description }: SettingsL
             <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead className="w-full">Nome</TableHead>
+                {hasValue && <TableHead className="whitespace-nowrap">Valor Padrão (R$)</TableHead>}
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -107,6 +138,24 @@ export default function SettingsList({ category, title, description }: SettingsL
                       item
                     )}
                   </TableCell>
+                  {hasValue && (
+                    <TableCell>
+                      {editingItem?.old === item ? (
+                        <Input
+                          type="number"
+                          value={editingItem.price}
+                          onChange={(e) =>
+                            setEditingItem({ ...editingItem, price: e.target.value })
+                          }
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
+                          className="h-8 w-28"
+                          placeholder="0.00"
+                        />
+                      ) : (
+                        formatCurrency(store.prices[item])
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">
                     {editingItem?.old === item ? (
                       <div className="flex justify-end gap-2">
@@ -132,7 +181,13 @@ export default function SettingsList({ category, title, description }: SettingsL
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setEditingItem({ old: item, current: item })}
+                          onClick={() =>
+                            setEditingItem({
+                              old: item,
+                              current: item,
+                              price: store.prices[item] || '',
+                            })
+                          }
                           className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -152,7 +207,10 @@ export default function SettingsList({ category, title, description }: SettingsL
               ))}
               {items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center text-muted-foreground py-8">
+                  <TableCell
+                    colSpan={hasValue ? 3 : 2}
+                    className="text-center text-muted-foreground py-8"
+                  >
                     Nenhum registro encontrado. Adicione um acima.
                   </TableCell>
                 </TableRow>
