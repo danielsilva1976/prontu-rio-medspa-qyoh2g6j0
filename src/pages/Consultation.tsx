@@ -1,18 +1,7 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useParams } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -23,16 +12,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Stethoscope, CheckCircle, Save, PenTool, User, AlertCircle, History } from 'lucide-react'
+import { CheckCircle, Save, PenTool, User, FileSignature } from 'lucide-react'
 import { patients } from '@/lib/mock-data'
 import { useToast } from '@/hooks/use-toast'
 
+import AnamnesisTab from '@/components/consultation/AnamnesisTab'
+import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
+import ProcedureTab from '@/components/consultation/ProcedureTab'
+import EvolutionTab from '@/components/consultation/EvolutionTab'
+import DocumentsTab from '@/components/consultation/DocumentsTab'
+
 export default function Consultation() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { toast } = useToast()
 
-  const patient = patients.find((p) => p.id === id) || patients[0] // fallback for demo
+  const patient = patients.find((p) => p.id === id) || patients[0] // fallback for stable navigation
 
   const [isSigned, setIsSigned] = useState(false)
   const [signatureModalOpen, setSignatureModalOpen] = useState(false)
@@ -56,7 +50,6 @@ export default function Consultation() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
-      {/* Consultation Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-white p-6 rounded-2xl shadow-subtle border border-border/50">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-muted rounded-xl text-primary">
@@ -79,8 +72,10 @@ export default function Consultation() {
                 </Badge>
               )}
             </div>
-            <p className="text-muted-foreground mt-1 text-sm flex items-center gap-4">
-              <span>{patient.age} anos</span>
+            <p className="text-muted-foreground mt-1 text-sm flex items-center gap-4 flex-wrap">
+              <span>
+                Nascimento: {new Date(patient.dob).toLocaleDateString('pt-BR')} ({patient.age} anos)
+              </span>
               <span>ID Belle: {patient.id.toUpperCase()}</span>
               <span>Última visita: {new Date(patient.lastVisit).toLocaleDateString('pt-BR')}</span>
             </p>
@@ -103,7 +98,7 @@ export default function Consultation() {
                 disabled={isSigned}
                 className="bg-primary text-white hover:bg-primary/90 shadow-elevation"
               >
-                <PenTool className="w-4 h-4 mr-2" /> Finalizar e Assinar
+                <PenTool className="w-4 h-4 mr-2" /> Finalizar Atendimento
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -136,16 +131,14 @@ export default function Consultation() {
                 <Button variant="outline" onClick={() => setSignatureModalOpen(false)}>
                   Cancelar
                 </Button>
-                {/* We trigger the action via the div above for demo, but keeping a primary button is good practice */}
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Main Form Area */}
       <Tabs defaultValue="anamnese" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-white border shadow-subtle rounded-xl mb-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto p-1 bg-white border shadow-subtle rounded-xl mb-6">
           <TabsTrigger
             value="anamnese"
             className="rounded-lg py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-none transition-all"
@@ -156,13 +149,13 @@ export default function Consultation() {
             value="exame"
             className="rounded-lg py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-none transition-all"
           >
-            Exame Físico
+            Mapeamento Facial
           </TabsTrigger>
           <TabsTrigger
             value="procedimento"
             className="rounded-lg py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-none transition-all"
           >
-            Registro de Procedimento
+            Procedimentos
           </TabsTrigger>
           <TabsTrigger
             value="evolucao"
@@ -170,270 +163,30 @@ export default function Consultation() {
           >
             Evolução
           </TabsTrigger>
+          <TabsTrigger
+            value="documentos"
+            className="rounded-lg py-3 data-[state=active]:bg-accent/10 data-[state=active]:text-accent data-[state=active]:shadow-none transition-all"
+          >
+            Documentos
+          </TabsTrigger>
         </TabsList>
 
-        {/* Tab 1: Anamnese */}
-        <TabsContent value="anamnese" className="space-y-6 animate-slide-up mt-0">
-          <Card className="border-none shadow-subtle overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-accent/20 to-accent"></div>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary font-serif text-xl">
-                <Stethoscope className="w-5 h-5 text-accent" /> História Clínica
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="queixa" className="text-base text-foreground">
-                  Queixa Principal
-                </Label>
-                <Textarea
-                  id="queixa"
-                  placeholder="Descreva o motivo da consulta com as palavras do paciente..."
-                  className="min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                  disabled={isSigned}
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="alergias" className="flex items-center gap-1 text-foreground">
-                    <AlertCircle className="w-4 h-4 text-destructive" /> Alergias Conhecidas
-                  </Label>
-                  <Textarea
-                    id="alergias"
-                    placeholder="Ex: Látex, Dipirona, Lidocaína..."
-                    className="bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                    disabled={isSigned}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="medicamentos" className="text-foreground">
-                    Uso Contínuo de Medicamentos
-                  </Label>
-                  <Textarea
-                    id="medicamentos"
-                    placeholder="Ex: Roacutan (isotretinoína), Anticoncepcional..."
-                    className="bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                    disabled={isSigned}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="procedimentos_previos" className="text-foreground">
-                  Procedimentos Estéticos Prévios
-                </Label>
-                <Textarea
-                  id="procedimentos_previos"
-                  placeholder="Detalhe tratamentos anteriores, intercorrências, insatisfações..."
-                  className="min-h-[100px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                  disabled={isSigned}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="anamnese" className="mt-0 outline-none">
+          <AnamnesisTab isSigned={isSigned} />
         </TabsContent>
-
-        {/* Tab 2: Exame Físico */}
-        <TabsContent value="exame" className="space-y-6 animate-slide-up mt-0">
-          <Card className="border-none shadow-subtle overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-accent/20 to-accent"></div>
-            <CardHeader>
-              <CardTitle className="font-serif text-xl text-primary">
-                Mapeamento Facial e Corporal
-              </CardTitle>
-              <CardDescription>Classificação clínica e notas de inspeção visual.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label>Fototipo (Fitzpatrick)</Label>
-                  <Select disabled={isSigned}>
-                    <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="I">I - Pele Branca (Sempre queima)</SelectItem>
-                      <SelectItem value="II">II - Pele Branca (Queima fácil)</SelectItem>
-                      <SelectItem value="III">III - Pele Morena Clara</SelectItem>
-                      <SelectItem value="IV">IV - Pele Morena Moderada</SelectItem>
-                      <SelectItem value="V">V - Pele Morena Escura</SelectItem>
-                      <SelectItem value="VI">VI - Pele Negra</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Grau de Envelhecimento (Glogau)</Label>
-                  <Select disabled={isSigned}>
-                    <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">Tipo I (Sem rugas)</SelectItem>
-                      <SelectItem value="2">Tipo II (Rugas em movimento)</SelectItem>
-                      <SelectItem value="3">Tipo III (Rugas em repouso)</SelectItem>
-                      <SelectItem value="4">Tipo IV (Apenas rugas)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Pele</Label>
-                  <Select disabled={isSigned}>
-                    <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="seca">Seca</SelectItem>
-                      <SelectItem value="oleosa">Oleosa</SelectItem>
-                      <SelectItem value="mista">Mista</SelectItem>
-                      <SelectItem value="sensivel">Sensível/Reativa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Inspeção Visual e Achados</Label>
-                <Textarea
-                  placeholder="Descreva assimetrias, manchas (melasma, melanose), cicatrizes, flacidez..."
-                  className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                  disabled={isSigned}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="exame" className="mt-0 outline-none">
+          <PhysicalExamTab isSigned={isSigned} />
         </TabsContent>
-
-        {/* Tab 3: Procedimento */}
-        <TabsContent value="procedimento" className="space-y-6 animate-slide-up mt-0">
-          <Card className="border-none shadow-subtle overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-accent/20 to-accent"></div>
-            <CardHeader>
-              <CardTitle className="font-serif text-xl text-primary flex items-center gap-2">
-                <Syringe className="w-5 h-5 text-accent" /> Registro Técnico
-              </CardTitle>
-              <CardDescription>Detalhes do material utilizado e técnica aplicada.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6 bg-muted/10 p-6 rounded-xl border border-border">
-                <div className="space-y-2">
-                  <Label className="text-foreground">Tipo de Procedimento Principal</Label>
-                  <Select disabled={isSigned}>
-                    <SelectTrigger className="bg-white border-border rounded-xl focus:ring-accent shadow-sm">
-                      <SelectValue placeholder="Ex: Toxina Botulínica" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="toxina">Toxina Botulínica</SelectItem>
-                      <SelectItem value="preenchimento">
-                        Preenchimento com Ácido Hialurônico
-                      </SelectItem>
-                      <SelectItem value="bioestimulador">Bioestimulador de Colágeno</SelectItem>
-                      <SelectItem value="fios">Fios de PDO</SelectItem>
-                      <SelectItem value="laser">Laser / Tecnologias</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">Áreas Tratadas</Label>
-                  <Input
-                    placeholder="Ex: Glabela, Fronte, Periorbicular"
-                    className="bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm"
-                    disabled={isSigned}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">Produto / Marca</Label>
-                  <Input
-                    placeholder="Ex: Botox® (Allergan), Restylane"
-                    className="bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm"
-                    disabled={isSigned}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-foreground">Lote</Label>
-                    <Input
-                      placeholder="Nº do lote"
-                      className="bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm"
-                      disabled={isSigned}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-foreground">Dose / Volume (U ou mL)</Label>
-                    <Input
-                      placeholder="Ex: 50U, 1mL"
-                      className="bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm"
-                      disabled={isSigned}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Técnica de Aplicação e Observações</Label>
-                <Textarea
-                  placeholder="Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas (sangramento, hematoma)..."
-                  className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
-                  disabled={isSigned}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="procedimento" className="mt-0 outline-none">
+          <ProcedureTab isSigned={isSigned} />
         </TabsContent>
-
-        {/* Tab 4: Evolução */}
-        <TabsContent value="evolucao" className="space-y-6 animate-slide-up mt-0">
-          <Card className="border-none shadow-subtle overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-muted to-muted-foreground/30"></div>
-            <CardHeader>
-              <CardTitle className="font-serif text-xl text-primary flex items-center gap-2">
-                <History className="w-5 h-5" /> Histórico do Paciente
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative border-l-2 border-muted ml-4 md:ml-6 space-y-8 pb-4">
-                {/* Mock timeline items */}
-                <div className="relative pl-6">
-                  <div className="absolute w-4 h-4 bg-background border-2 border-accent rounded-full -left-[9px] top-1"></div>
-                  <p className="text-sm font-bold text-accent mb-1">15 de Setembro, 2023</p>
-                  <div className="bg-white border border-border/50 rounded-xl p-4 shadow-sm">
-                    <p className="font-medium text-primary mb-2">
-                      Toxina Botulínica (Terço Superior)
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Aplicação de 45U de Dysport. Paciente queixava-se de vincos glabelares fortes.
-                      Sem intercorrências. Orientada sobre cuidados pós.
-                    </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs font-medium text-success">
-                      <CheckCircle className="w-3 h-3" /> Assinado por Dra. Sofia Alencar
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative pl-6">
-                  <div className="absolute w-4 h-4 bg-background border-2 border-muted-foreground rounded-full -left-[9px] top-1"></div>
-                  <p className="text-sm font-bold text-muted-foreground mb-1">10 de Março, 2023</p>
-                  <div className="bg-white border border-border/50 rounded-xl p-4 shadow-sm opacity-80">
-                    <p className="font-medium text-primary mb-2">
-                      Primeira Consulta - Avaliação Global
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Mapeamento facial realizado. Indicado plano de tratamento anual focando em
-                      prevenção de rugas dinâmicas e melhora de textura da pele.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="evolucao" className="mt-0 outline-none">
+          <EvolutionTab isSigned={isSigned} />
+        </TabsContent>
+        <TabsContent value="documentos" className="mt-0 outline-none">
+          <DocumentsTab patientName={patient.name} isSigned={isSigned} />
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-// Required Lucide Icon import helper for above file
-import { FileSignature } from 'lucide-react'
