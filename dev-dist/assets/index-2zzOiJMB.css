@@ -2680,6 +2680,9 @@ video {
 .hover\:underline:hover {
   text-decoration-line: underline;
 }
+.hover\:no-underline:hover {
+  text-decoration-line: none;
+}
 .hover\:opacity-100:hover {
   opacity: 1;
 }
@@ -2990,6 +2993,9 @@ video {
 }
 .data-\[state\=active\]\:border-primary[data-state="active"] {
   border-color: hsl(var(--primary));
+}
+.data-\[state\=open\]\:border-primary\/30[data-state="open"] {
+  border-color: hsl(var(--primary) / 0.3);
 }
 .data-\[active\=true\]\:bg-sidebar-accent[data-active="true"] {
   background-color: hsl(var(--sidebar-accent));

@@ -5,8 +5,21 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Stethoscope } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 const MOCK_DATA: Record<string, string> = {
+  cpf: '123.456.789-00',
+  rg: '12.345.678-9',
+  profissao: 'Engenheira de Software',
+  estado_civil: 'Casada',
+  telefone: '(11) 98765-4321',
+  email: 'paciente@email.com',
+  endereco: 'Rua das Flores, 123 - São Paulo/SP',
   queixa: 'Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve.',
   ciclo: 'Regular (28 dias)',
   contraceptivos: 'Anticoncepcional oral (Yaz)',
@@ -40,7 +53,21 @@ const MOCK_DATA: Record<string, string> = {
 
 const SECTIONS = [
   {
-    title: 'Antecedentes Gineco-Obstétricos',
+    id: 'identificacao',
+    title: 'IDENTIFICAÇÃO',
+    fields: [
+      { id: 'cpf', label: 'CPF' },
+      { id: 'rg', label: 'RG' },
+      { id: 'profissao', label: 'Profissão' },
+      { id: 'estado_civil', label: 'Estado Civil' },
+      { id: 'telefone', label: 'Telefone' },
+      { id: 'email', label: 'E-mail' },
+      { id: 'endereco', label: 'Endereço Completo', full: true },
+    ],
+  },
+  {
+    id: 'gineco',
+    title: 'ANTECEDENTES GINECO-OBSTÉTRICOS',
     fields: [
       { id: 'ciclo', label: 'Ciclo menstrual' },
       { id: 'contraceptivos', label: 'Uso de contraceptivos' },
@@ -50,19 +77,21 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Antecedentes Alérgicos',
+    id: 'alergicos',
+    title: 'ANTECEDENTES ALÉRGICOS',
     fields: [
       { id: 'atopias', label: 'Atopias (rinite, bronquite e outras)', full: true },
       { id: 'alergias_meds', label: 'Alergias medicamentosas', full: true },
       {
         id: 'alergias_cosmeticos',
-        label: 'Alergias a cosméticos, perfumes, tinturas e outros',
+        label: 'Alergias a cosméticos, perfumes, tinturas...',
         full: true,
       },
     ],
   },
   {
-    title: 'Antecedentes Cirúrgicos',
+    id: 'cirurgicos',
+    title: 'ANTECEDENTES CIRÚRGICOS',
     fields: [
       { id: 'tipo_cirurgia', label: 'Tipo de cirurgia e datas', full: true },
       { id: 'cirurgias_plasticas', label: 'Cirurgias plásticas - tipos e datas', full: true },
@@ -71,7 +100,8 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Antecedentes Dermocosméticos',
+    id: 'dermocosmeticos',
+    title: 'ANTECEDENTES DERMOCOSMÉTICOS',
     fields: [
       { id: 'laser', label: 'Laser' },
       { id: 'peeling', label: 'Peeling' },
@@ -86,7 +116,8 @@ const SECTIONS = [
     ],
   },
   {
-    title: 'Antecedentes Gerais',
+    id: 'gerais',
+    title: 'ANTECEDENTES GERAIS',
     fields: [
       { id: 'habitos', label: 'Hábitos alimentares', full: true },
       { id: 'atividade', label: 'Atividade física', full: true },
@@ -128,29 +159,40 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
           />
         </div>
 
-        {SECTIONS.map((section, idx) => (
-          <div key={idx} className="space-y-4 pt-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50 pb-2">
-              {section.title}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {section.fields.map((field) => (
-                <div key={field.id} className={cn('space-y-1.5', field.full && 'md:col-span-2')}>
-                  <Label htmlFor={field.id} className="text-foreground/80 font-medium">
-                    {field.label}
-                  </Label>
-                  <Input
-                    id={field.id}
-                    className="bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-lg h-9"
-                    disabled={isSigned}
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleChange(field.id, e.target.value)}
-                  />
+        <Accordion type="multiple" defaultValue={['identificacao']} className="w-full space-y-4">
+          {SECTIONS.map((section) => (
+            <AccordionItem
+              value={section.id}
+              key={section.id}
+              className="border border-border/50 bg-white rounded-xl px-5 shadow-sm data-[state=open]:border-primary/30 transition-colors"
+            >
+              <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-muted-foreground hover:no-underline hover:text-primary py-4">
+                {section.title}
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 pb-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {section.fields.map((field) => (
+                    <div
+                      key={field.id}
+                      className={cn('space-y-1.5', field.full && 'md:col-span-2')}
+                    >
+                      <Label htmlFor={field.id} className="text-foreground/80 font-medium">
+                        {field.label}
+                      </Label>
+                      <Input
+                        id={field.id}
+                        className="bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-lg h-9"
+                        disabled={isSigned}
+                        value={formData[field.id] || ''}
+                        onChange={(e) => handleChange(field.id, e.target.value)}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </CardContent>
     </Card>
   )
