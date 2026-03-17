@@ -20,7 +20,7 @@ export default function Index() {
       {/* Welcome Section */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl md:text-4xl text-primary">
-          Bom dia, <span className="font-serif italic text-accent">Dra. Sofia</span>
+          Bom dia, <span className="font-serif italic text-primary/80">Dra. Sofia</span>
         </h1>
         <p className="text-muted-foreground">Aqui está o resumo da sua agenda para hoje.</p>
       </div>
@@ -40,7 +40,7 @@ export default function Index() {
         </Card>
         <Card className="border-none shadow-subtle bg-white">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 bg-sage-50 text-success rounded-2xl">
+            <div className="p-3 bg-green-50 text-success rounded-2xl">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
@@ -53,7 +53,7 @@ export default function Index() {
         </Card>
         <Card className="border-none shadow-subtle bg-white">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 bg-accent/10 text-accent rounded-2xl">
+            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
               <UserPlus className="w-6 h-6" />
             </div>
             <div>
@@ -82,7 +82,7 @@ export default function Index() {
               variant="outline"
               size="sm"
               asChild
-              className="hidden sm:flex text-accent border-accent/30 hover:bg-accent/5"
+              className="hidden sm:flex text-primary border-primary/30 hover:bg-primary/5"
             >
               <Link to="/pacientes">
                 Ver todos <ArrowRight className="w-4 h-4 ml-2" />
@@ -108,7 +108,7 @@ export default function Index() {
                       </div>
                       <div className="w-px h-10 bg-border hidden sm:block"></div>
                       <div>
-                        <p className="font-medium text-foreground group-hover:text-accent transition-colors">
+                        <p className="font-medium text-foreground group-hover:text-primary transition-colors">
                           {patient.name}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -118,7 +118,7 @@ export default function Index() {
                             <Badge
                               key={idx}
                               variant="secondary"
-                              className="font-normal text-xs bg-accent/5 text-accent border-none"
+                              className="font-normal text-xs bg-primary/5 text-primary border-none"
                             >
                               {proc}
                             </Badge>
@@ -144,14 +144,14 @@ export default function Index() {
           <h3 className="font-serif text-xl mb-4 text-primary">Ações Rápidas</h3>
 
           <Link to="/documentos?tab=receita" className="block">
-            <Card className="border border-transparent bg-white shadow-subtle hover:border-accent/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+            <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
+              <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
               <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                   <FileSignature className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-lg text-foreground group-hover:text-accent transition-colors">
+                  <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
                     Prescrição Médica
                   </h4>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -163,14 +163,14 @@ export default function Index() {
           </Link>
 
           <Link to="/documentos?tab=laudo" className="block">
-            <Card className="border border-transparent bg-white shadow-subtle hover:border-accent/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
-              <div className="absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+            <Card className="border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative">
+              <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
               <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                <div className="p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                   <Syringe className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-lg text-foreground group-hover:text-accent transition-colors">
+                  <h4 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
                     Laudo de Procedimento
                   </h4>
                   <p className="text-sm text-muted-foreground mt-1">

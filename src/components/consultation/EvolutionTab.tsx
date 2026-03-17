@@ -18,7 +18,7 @@ export default function EvolutionTab({ isSigned }: { isSigned: boolean }) {
           <Label className="text-base text-foreground">Nova Evolução Clínica</Label>
           <Textarea
             placeholder="Registre a evolução, retorno do paciente, queixas atuais ou orientações dadas..."
-            className="bg-white border-border rounded-xl focus-visible:ring-accent min-h-[100px]"
+            className="bg-white border-border rounded-xl focus-visible:ring-primary min-h-[100px]"
             disabled={isSigned}
           />
           <div className="flex justify-end">
@@ -33,8 +33,8 @@ export default function EvolutionTab({ isSigned }: { isSigned: boolean }) {
 
         <div className="relative border-l-2 border-muted ml-4 md:ml-6 space-y-8 pb-4">
           <div className="relative pl-6">
-            <div className="absolute w-4 h-4 bg-background border-2 border-accent rounded-full -left-[9px] top-1"></div>
-            <p className="text-sm font-bold text-accent mb-1">15 de Setembro, 2023</p>
+            <div className="absolute w-4 h-4 bg-background border-2 border-primary rounded-full -left-[9px] top-1"></div>
+            <p className="text-sm font-bold text-primary mb-1">15 de Setembro, 2023</p>
             <div className="bg-white border border-border/50 rounded-xl p-4 shadow-sm">
               <p className="font-medium text-primary mb-2">Toxina Botulínica (Terço Superior)</p>
               <p className="text-sm text-muted-foreground">

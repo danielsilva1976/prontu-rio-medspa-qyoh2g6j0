@@ -54,7 +54,7 @@ export default function Patients() {
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome, CPF ou ID do Belle Software..."
-              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-accent"
+              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -69,7 +69,7 @@ export default function Patients() {
               filteredPatients.map((patient) => (
                 <div
                   key={patient.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-accent/40 hover:shadow-subtle transition-all bg-white group"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group"
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
                     <Avatar className="h-12 w-12 border border-border">
@@ -78,7 +78,7 @@ export default function Patients() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-medium text-lg text-foreground group-hover:text-accent transition-colors">
+                      <h3 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
                         {patient.name}
                       </h3>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
@@ -99,7 +99,7 @@ export default function Patients() {
                       </p>
                       {patient.nextAppointment && (
                         <p className="flex items-center gap-1 mt-1 text-primary font-medium">
-                          <Clock className="w-3.5 h-3.5 text-accent" /> Próxima:{' '}
+                          <Clock className="w-3.5 h-3.5 text-primary" /> Próxima:{' '}
                           {new Date(patient.nextAppointment).toLocaleDateString('pt-BR')}
                         </p>
                       )}
@@ -107,7 +107,7 @@ export default function Patients() {
 
                     <Button
                       asChild
-                      className="rounded-full shrink-0 group-hover:bg-accent group-hover:text-white transition-colors"
+                      className="rounded-full shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                     >
                       <Link to={`/prontuario/${patient.id}`}>
                         <FileText className="w-4 h-4 mr-2" />

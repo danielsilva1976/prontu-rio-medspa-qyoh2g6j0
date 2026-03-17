@@ -6,10 +6,10 @@ import { Stethoscope, AlertCircle } from 'lucide-react'
 export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
-      <div className="h-1 w-full bg-gradient-to-r from-accent/20 to-accent"></div>
+      <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-primary font-serif text-xl">
-          <Stethoscope className="w-5 h-5 text-accent" /> História Clínica
+          <Stethoscope className="w-5 h-5 text-primary" /> História Clínica
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -20,7 +20,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
           <Textarea
             id="queixa"
             placeholder="Descreva o motivo da consulta com as palavras do paciente..."
-            className="min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
+            className="min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-primary rounded-xl"
             disabled={isSigned}
           />
         </div>
@@ -33,7 +33,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
             <Textarea
               id="alergias"
               placeholder="Ex: Látex, Dipirona, Lidocaína..."
-              className="bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
+              className="bg-muted/20 border-border focus-visible:ring-primary rounded-xl"
               disabled={isSigned}
             />
           </div>
@@ -44,7 +44,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
             <Textarea
               id="medicamentos"
               placeholder="Ex: Roacutan (isotretinoína), Anticoncepcional..."
-              className="bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
+              className="bg-muted/20 border-border focus-visible:ring-primary rounded-xl"
               disabled={isSigned}
             />
           </div>
@@ -57,7 +57,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
           <Textarea
             id="procedimentos_previos"
             placeholder="Detalhe tratamentos anteriores, intercorrências, insatisfações..."
-            className="min-h-[100px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
+            className="min-h-[100px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl"
             disabled={isSigned}
           />
         </div>

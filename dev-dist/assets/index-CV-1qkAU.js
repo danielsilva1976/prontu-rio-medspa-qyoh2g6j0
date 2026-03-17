@@ -28000,7 +28000,7 @@ function Index() {
 					children: ["Bom dia, ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 						"data-uid": "src/pages/Index.tsx:23:20",
 						"data-prohibitions": "[]",
-						className: "font-serif italic text-accent",
+						className: "font-serif italic text-primary/80",
 						children: "Dra. Sofia"
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -28060,7 +28060,7 @@ function Index() {
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								"data-uid": "src/pages/Index.tsx:43:13",
 								"data-prohibitions": "[]",
-								className: "p-3 bg-sage-50 text-success rounded-2xl",
+								className: "p-3 bg-green-50 text-success rounded-2xl",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
 									"data-uid": "src/pages/Index.tsx:44:15",
 									"data-prohibitions": "[editContent]",
@@ -28094,7 +28094,7 @@ function Index() {
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								"data-uid": "src/pages/Index.tsx:56:13",
 								"data-prohibitions": "[]",
-								className: "p-3 bg-accent/10 text-accent rounded-2xl",
+								className: "p-3 bg-primary/10 text-primary rounded-2xl",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserPlus, {
 									"data-uid": "src/pages/Index.tsx:57:15",
 									"data-prohibitions": "[editContent]",
@@ -28165,7 +28165,7 @@ function Index() {
 							variant: "outline",
 							size: "sm",
 							asChild: true,
-							className: "hidden sm:flex text-accent border-accent/30 hover:bg-accent/5",
+							className: "hidden sm:flex text-primary border-primary/30 hover:bg-primary/5",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
 								"data-uid": "src/pages/Index.tsx:87:15",
 								"data-prohibitions": "[]",
@@ -28226,7 +28226,7 @@ function Index() {
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 													"data-uid": "src/pages/Index.tsx:111:25",
 													"data-prohibitions": "[editContent]",
-													className: "font-medium text-foreground group-hover:text-accent transition-colors",
+													className: "font-medium text-foreground group-hover:text-primary transition-colors",
 													children: patient.name
 												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 													"data-uid": "src/pages/Index.tsx:114:25",
@@ -28249,7 +28249,7 @@ function Index() {
 															"data-uid": "src/pages/Index.tsx:118:29",
 															"data-prohibitions": "[editContent]",
 															variant: "secondary",
-															className: "font-normal text-xs bg-accent/5 text-accent border-none",
+															className: "font-normal text-xs bg-primary/5 text-primary border-none",
 															children: proc
 														}, idx))
 													]
@@ -28291,11 +28291,11 @@ function Index() {
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
 								"data-uid": "src/pages/Index.tsx:147:13",
 								"data-prohibitions": "[]",
-								className: "border border-transparent bg-white shadow-subtle hover:border-accent/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
+								className: "border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 									"data-uid": "src/pages/Index.tsx:148:15",
 									"data-prohibitions": "[]",
-									className: "absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
+									className: "absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
 									"data-uid": "src/pages/Index.tsx:149:15",
 									"data-prohibitions": "[]",
@@ -28303,7 +28303,7 @@ function Index() {
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 										"data-uid": "src/pages/Index.tsx:150:17",
 										"data-prohibitions": "[]",
-										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-accent/10 group-hover:text-accent transition-colors",
+										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
 											"data-uid": "src/pages/Index.tsx:151:19",
 											"data-prohibitions": "[editContent]",
@@ -28315,7 +28315,7 @@ function Index() {
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
 											"data-uid": "src/pages/Index.tsx:154:19",
 											"data-prohibitions": "[]",
-											className: "font-medium text-lg text-foreground group-hover:text-accent transition-colors",
+											className: "font-medium text-lg text-foreground group-hover:text-primary transition-colors",
 											children: "Prescrição Médica"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 											"data-uid": "src/pages/Index.tsx:157:19",
@@ -28335,11 +28335,11 @@ function Index() {
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
 								"data-uid": "src/pages/Index.tsx:166:13",
 								"data-prohibitions": "[]",
-								className: "border border-transparent bg-white shadow-subtle hover:border-accent/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
+								className: "border border-transparent bg-white shadow-subtle hover:border-primary/30 hover:shadow-elevation transition-all duration-300 group overflow-hidden relative",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 									"data-uid": "src/pages/Index.tsx:167:15",
 									"data-prohibitions": "[]",
-									className: "absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
+									className: "absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
 									"data-uid": "src/pages/Index.tsx:168:15",
 									"data-prohibitions": "[]",
@@ -28347,7 +28347,7 @@ function Index() {
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 										"data-uid": "src/pages/Index.tsx:169:17",
 										"data-prohibitions": "[]",
-										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-accent/10 group-hover:text-accent transition-colors",
+										className: "p-3 bg-muted rounded-full w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
 											"data-uid": "src/pages/Index.tsx:170:19",
 											"data-prohibitions": "[editContent]",
@@ -28359,7 +28359,7 @@ function Index() {
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
 											"data-uid": "src/pages/Index.tsx:173:19",
 											"data-prohibitions": "[]",
-											className: "font-medium text-lg text-foreground group-hover:text-accent transition-colors",
+											className: "font-medium text-lg text-foreground group-hover:text-primary transition-colors",
 											children: "Laudo de Procedimento"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 											"data-uid": "src/pages/Index.tsx:176:19",
@@ -28462,7 +28462,7 @@ function Patients() {
 						"data-uid": "src/pages/Patients.tsx:55:13",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Buscar por nome, CPF ou ID do Belle Software...",
-						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-accent",
+						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary",
 						value: searchTerm,
 						onChange: (e) => setSearchTerm(e.target.value)
 					})]
@@ -28478,7 +28478,7 @@ function Patients() {
 					}) : filteredPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						"data-uid": "src/pages/Patients.tsx:70:17",
 						"data-prohibitions": "[editContent]",
-						className: "flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-accent/40 hover:shadow-subtle transition-all bg-white group",
+						className: "flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							"data-uid": "src/pages/Patients.tsx:74:19",
 							"data-prohibitions": "[editContent]",
@@ -28499,7 +28499,7 @@ function Patients() {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
 									"data-uid": "src/pages/Patients.tsx:81:23",
 									"data-prohibitions": "[editContent]",
-									className: "font-medium text-lg text-foreground group-hover:text-accent transition-colors",
+									className: "font-medium text-lg text-foreground group-hover:text-primary transition-colors",
 									children: patient.name
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 									"data-uid": "src/pages/Patients.tsx:84:23",
@@ -28564,7 +28564,7 @@ function Patients() {
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
 											"data-uid": "src/pages/Patients.tsx:102:27",
 											"data-prohibitions": "[editContent]",
-											className: "w-3.5 h-3.5 text-accent"
+											className: "w-3.5 h-3.5 text-primary"
 										}),
 										" Próxima:",
 										" ",
@@ -28575,7 +28575,7 @@ function Patients() {
 								"data-uid": "src/pages/Patients.tsx:108:21",
 								"data-prohibitions": "[]",
 								asChild: true,
-								className: "rounded-full shrink-0 group-hover:bg-accent group-hover:text-white transition-colors",
+								className: "rounded-full shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link, {
 									"data-uid": "src/pages/Patients.tsx:112:23",
 									"data-prohibitions": "[]",
@@ -28805,7 +28805,7 @@ function AnamnesisTab({ isSigned }) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				"data-uid": "src/components/consultation/AnamnesisTab.tsx:9:7",
 				"data-prohibitions": "[]",
-				className: "h-1 w-full bg-gradient-to-r from-accent/20 to-accent"
+				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
 				"data-uid": "src/components/consultation/AnamnesisTab.tsx:10:7",
@@ -28817,7 +28817,7 @@ function AnamnesisTab({ isSigned }) {
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
 						"data-uid": "src/components/consultation/AnamnesisTab.tsx:12:11",
 						"data-prohibitions": "[editContent]",
-						className: "w-5 h-5 text-accent"
+						className: "w-5 h-5 text-primary"
 					}), " História Clínica"]
 				})
 			}),
@@ -28841,7 +28841,7 @@ function AnamnesisTab({ isSigned }) {
 							"data-prohibitions": "[editContent]",
 							id: "queixa",
 							placeholder: "Descreva o motivo da consulta com as palavras do paciente...",
-							className: "min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+							className: "min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 							disabled: isSigned
 						})]
 					}),
@@ -28868,7 +28868,7 @@ function AnamnesisTab({ isSigned }) {
 								"data-prohibitions": "[editContent]",
 								id: "alergias",
 								placeholder: "Ex: Látex, Dipirona, Lidocaína...",
-								className: "bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 								disabled: isSigned
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -28886,7 +28886,7 @@ function AnamnesisTab({ isSigned }) {
 								"data-prohibitions": "[editContent]",
 								id: "medicamentos",
 								placeholder: "Ex: Roacutan (isotretinoína), Anticoncepcional...",
-								className: "bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 								disabled: isSigned
 							})]
 						})]
@@ -28906,7 +28906,7 @@ function AnamnesisTab({ isSigned }) {
 							"data-prohibitions": "[editContent]",
 							id: "procedimentos_previos",
 							placeholder: "Detalhe tratamentos anteriores, intercorrências, insatisfações...",
-							className: "min-h-[100px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+							className: "min-h-[100px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 							disabled: isSigned
 						})]
 					})
@@ -30016,7 +30016,7 @@ function PhysicalExamTab({ isSigned }) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:15:7",
 				"data-prohibitions": "[]",
-				className: "h-1 w-full bg-gradient-to-r from-accent/20 to-accent"
+				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
 				"data-uid": "src/components/consultation/PhysicalExamTab.tsx:16:7",
@@ -30056,7 +30056,7 @@ function PhysicalExamTab({ isSigned }) {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
 									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:27:15",
 									"data-prohibitions": "[]",
-									className: "bg-muted/20 border-border rounded-xl focus:ring-accent",
+									className: "bg-muted/20 border-border rounded-xl focus:ring-primary",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
 										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:28:17",
 										"data-prohibitions": "[editContent]",
@@ -30121,7 +30121,7 @@ function PhysicalExamTab({ isSigned }) {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
 									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:43:15",
 									"data-prohibitions": "[]",
-									className: "bg-muted/20 border-border rounded-xl focus:ring-accent",
+									className: "bg-muted/20 border-border rounded-xl focus:ring-primary",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
 										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:44:17",
 										"data-prohibitions": "[editContent]",
@@ -30174,7 +30174,7 @@ function PhysicalExamTab({ isSigned }) {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
 									"data-uid": "src/components/consultation/PhysicalExamTab.tsx:57:15",
 									"data-prohibitions": "[]",
-									className: "bg-muted/20 border-border rounded-xl focus:ring-accent",
+									className: "bg-muted/20 border-border rounded-xl focus:ring-primary",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
 										"data-uid": "src/components/consultation/PhysicalExamTab.tsx:58:17",
 										"data-prohibitions": "[editContent]",
@@ -30231,7 +30231,7 @@ function PhysicalExamTab({ isSigned }) {
 						"data-uid": "src/components/consultation/PhysicalExamTab.tsx:73:11",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Descreva assimetrias, áreas de ptose, manchas (melasma, melanose), cicatrizes, flacidez e detalhe os pontos de marcação para o procedimento...",
-						className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+						className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 						disabled: isSigned
 					})]
 				})]
@@ -30250,7 +30250,7 @@ function ProcedureTab({ isSigned }) {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				"data-uid": "src/components/consultation/ProcedureTab.tsx:17:7",
 				"data-prohibitions": "[]",
-				className: "h-1 w-full bg-gradient-to-r from-accent/20 to-accent"
+				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
 				"data-uid": "src/components/consultation/ProcedureTab.tsx:18:7",
@@ -30262,7 +30262,7 @@ function ProcedureTab({ isSigned }) {
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
 						"data-uid": "src/components/consultation/ProcedureTab.tsx:20:11",
 						"data-prohibitions": "[editContent]",
-						className: "w-5 h-5 text-accent"
+						className: "w-5 h-5 text-primary"
 					}), " Registro Técnico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
 					"data-uid": "src/components/consultation/ProcedureTab.tsx:22:9",
@@ -30295,7 +30295,7 @@ function ProcedureTab({ isSigned }) {
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
 									"data-uid": "src/components/consultation/ProcedureTab.tsx:29:15",
 									"data-prohibitions": "[]",
-									className: "bg-white border-border rounded-xl focus:ring-accent shadow-sm",
+									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
 										"data-uid": "src/components/consultation/ProcedureTab.tsx:30:17",
 										"data-prohibitions": "[editContent]",
@@ -30352,7 +30352,7 @@ function ProcedureTab({ isSigned }) {
 								"data-uid": "src/components/consultation/ProcedureTab.tsx:44:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: Glabela, Fronte, Periorbicular",
-								className: "bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm",
+								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
 								disabled: isSigned
 							})]
 						}),
@@ -30369,7 +30369,7 @@ function ProcedureTab({ isSigned }) {
 								"data-uid": "src/components/consultation/ProcedureTab.tsx:53:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: Botox® (Allergan), Restylane",
-								className: "bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm",
+								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
 								disabled: isSigned
 							})]
 						}),
@@ -30390,7 +30390,7 @@ function ProcedureTab({ isSigned }) {
 									"data-uid": "src/components/consultation/ProcedureTab.tsx:63:15",
 									"data-prohibitions": "[editContent]",
 									placeholder: "Nº do lote",
-									className: "bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm",
+									className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
 									disabled: isSigned
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -30406,7 +30406,7 @@ function ProcedureTab({ isSigned }) {
 									"data-uid": "src/components/consultation/ProcedureTab.tsx:71:15",
 									"data-prohibitions": "[editContent]",
 									placeholder: "Ex: 50U, 1mL",
-									className: "bg-white border-border rounded-xl focus-visible:ring-accent shadow-sm",
+									className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
 									disabled: isSigned
 								})]
 							})]
@@ -30424,7 +30424,7 @@ function ProcedureTab({ isSigned }) {
 						"data-uid": "src/components/consultation/ProcedureTab.tsx:82:11",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas (sangramento, hematoma)...",
-						className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl",
+						className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
 						disabled: isSigned
 					})]
 				})]
@@ -30477,7 +30477,7 @@ function EvolutionTab({ isSigned }) {
 							"data-uid": "src/components/consultation/EvolutionTab.tsx:19:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Registre a evolução, retorno do paciente, queixas atuais ou orientações dadas...",
-							className: "bg-white border-border rounded-xl focus-visible:ring-accent min-h-[100px]",
+							className: "bg-white border-border rounded-xl focus-visible:ring-primary min-h-[100px]",
 							disabled: isSigned
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
@@ -30509,12 +30509,12 @@ function EvolutionTab({ isSigned }) {
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								"data-uid": "src/components/consultation/EvolutionTab.tsx:36:13",
 								"data-prohibitions": "[]",
-								className: "absolute w-4 h-4 bg-background border-2 border-accent rounded-full -left-[9px] top-1"
+								className: "absolute w-4 h-4 bg-background border-2 border-primary rounded-full -left-[9px] top-1"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								"data-uid": "src/components/consultation/EvolutionTab.tsx:37:13",
 								"data-prohibitions": "[]",
-								className: "text-sm font-bold text-accent mb-1",
+								className: "text-sm font-bold text-primary mb-1",
 								children: "15 de Setembro, 2023"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -31860,7 +31860,7 @@ function DocumentsTab() {
 													"data-uid": "src/components/consultation/DocumentsTab.tsx:289:21",
 													"data-prohibitions": "[]",
 													className: "absolute -top-14 flex flex-col items-center opacity-70",
-													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileSignature, {
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
 														"data-uid": "src/components/consultation/DocumentsTab.tsx:290:23",
 														"data-prohibitions": "[editContent]",
 														className: "w-12 h-12 text-primary"
@@ -32717,4 +32717,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BrowserRouter, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BJ53rRx7.js.map
+//# sourceMappingURL=index-CV-1qkAU.js.map

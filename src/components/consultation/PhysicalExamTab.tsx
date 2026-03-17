@@ -12,7 +12,7 @@ import {
 export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
-      <div className="h-1 w-full bg-gradient-to-r from-accent/20 to-accent"></div>
+      <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
       <CardHeader>
         <CardTitle className="font-serif text-xl text-primary">
           Mapeamento Facial e Corporal
@@ -24,7 +24,7 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
           <div className="space-y-2">
             <Label>Fototipo (Fitzpatrick)</Label>
             <Select disabled={isSigned}>
-              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
+              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -40,7 +40,7 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
           <div className="space-y-2">
             <Label>Grau de Envelhecimento (Glogau)</Label>
             <Select disabled={isSigned}>
-              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
+              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -54,7 +54,7 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
           <div className="space-y-2">
             <Label>Tipo de Pele</Label>
             <Select disabled={isSigned}>
-              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-accent">
+              <SelectTrigger className="bg-muted/20 border-border rounded-xl focus:ring-primary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -72,7 +72,7 @@ export default function PhysicalExamTab({ isSigned }: { isSigned: boolean }) {
           <Label>Inspeção Visual, Marcações e Achados</Label>
           <Textarea
             placeholder="Descreva assimetrias, áreas de ptose, manchas (melasma, melanose), cicatrizes, flacidez e detalhe os pontos de marcação para o procedimento..."
-            className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
+            className="min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl"
             disabled={isSigned}
           />
         </div>
