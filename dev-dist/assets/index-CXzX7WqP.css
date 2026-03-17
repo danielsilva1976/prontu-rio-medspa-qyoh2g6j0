@@ -1117,6 +1117,9 @@ video {
 .w-\[--cell-size\] {
   width: var(--cell-size);
 }
+.w-\[--radix-popover-trigger-width\] {
+  width: var(--radix-popover-trigger-width);
+}
 .w-\[--sidebar-width\] {
   width: var(--sidebar-width);
 }
@@ -2269,6 +2272,9 @@ video {
 }
 .opacity-0 {
   opacity: 0;
+}
+.opacity-100 {
+  opacity: 1;
 }
 .opacity-50 {
   opacity: 0.5;

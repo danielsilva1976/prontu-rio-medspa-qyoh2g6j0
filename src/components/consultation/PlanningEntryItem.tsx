@@ -1,16 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Trash2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Trash2, Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export type ChronogramEntry = {
   id: string
@@ -38,9 +41,10 @@ export default function PlanningEntryItem({
   onUpdate,
   onRemove,
 }: Props) {
+  const [open, setOpen] = useState(false)
+
   // Auto-calculate final value based on standard value and discount
   useEffect(() => {
-    // Avoid calculating if both inputs are empty and final value is already empty
     if (!entry.standardValue && !entry.discountValue && !entry.finalValue) return
 
     const standard = parseFloat(entry.standardValue) || 0
@@ -54,8 +58,6 @@ export default function PlanningEntryItem({
     }
 
     final = Math.max(0, final)
-
-    // Allow empty state if no inputs
     const finalStr = entry.standardValue || entry.discountValue ? final.toFixed(2) : ''
 
     if (entry.finalValue !== finalStr && !isSigned) {
@@ -89,27 +91,68 @@ export default function PlanningEntryItem({
               className="bg-muted/5 h-9"
             />
           </div>
+
           <div className="w-full md:w-1/2 space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
               Procedimento / Etapa
             </Label>
-            <Select
-              disabled={isSigned}
-              value={entry.procedure}
-              onValueChange={(val) => onUpdate(entry.id, 'procedure', val)}
-            >
-              <SelectTrigger className="bg-muted/5 h-9">
-                <SelectValue placeholder="Selecione..." />
-              </SelectTrigger>
-              <SelectContent>
-                {uniqueProcedures.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  disabled={isSigned}
+                  className={cn(
+                    'w-full justify-between bg-muted/5 h-9 font-normal border-input',
+                    !entry.procedure && 'text-muted-foreground',
+                  )}
+                >
+                  {entry.procedure
+                    ? uniqueProcedures.find((p) => p === entry.procedure) || entry.procedure
+                    : 'Selecione ou busque...'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar procedimento..." />
+                  <CommandList>
+                    <CommandEmpty>Nenhum procedimento encontrado.</CommandEmpty>
+                    <CommandGroup>
+                      {uniqueProcedures.map((p) => (
+                        <CommandItem
+                          key={p}
+                          value={p}
+                          onSelect={(currentValue) => {
+                            const originalValue =
+                              uniqueProcedures.find(
+                                (item) => item.toLowerCase() === currentValue.toLowerCase(),
+                              ) || p
+                            onUpdate(
+                              entry.id,
+                              'procedure',
+                              originalValue === entry.procedure ? '' : originalValue,
+                            )
+                            setOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              'mr-2 h-4 w-4',
+                              entry.procedure === p ? 'opacity-100' : 'opacity-0',
+                            )}
+                          />
+                          {p}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
+
           <div className="w-full md:w-24 space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
               Qtd

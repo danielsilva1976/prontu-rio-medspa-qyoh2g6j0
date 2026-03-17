@@ -45,7 +45,7 @@ type Props = {
 }
 
 export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
-  const { procedures } = useSettingsStore()
+  const { procedures, technologies } = useSettingsStore()
   const [objective, setObjective] = useState('')
   const [planName, setPlanName] = useState('')
   const [downPayment, setDownPayment] = useState('')
@@ -87,8 +87,8 @@ export default function PlanningForm({ isSigned, onSave, onCancel }: Props) {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
 
   const uniqueProcedures = useMemo(
-    () => Array.from(new Set([...procedures, 'Retorno', 'Consulta'])),
-    [procedures],
+    () => Array.from(new Set([...procedures, ...technologies, 'Retorno', 'Consulta'])),
+    [procedures, technologies],
   )
   const totalInvestment = useMemo(
     () => entries.reduce((acc, e) => acc + (parseFloat(e.finalValue) || 0), 0),
