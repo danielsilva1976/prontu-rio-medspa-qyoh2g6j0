@@ -32368,121 +32368,268 @@ function DocumentsTab() {
 //#endregion
 //#region src/components/consultation/PlanningTab.tsx
 function PlanningTab({ isSigned }) {
+	const { procedures } = useSettingsStore();
+	const [entries, setEntries] = (0, import_react.useState)([
+		{
+			id: "1",
+			timing: "Sessão 01 (Hoje)",
+			procedure: "Toxina Botulínica",
+			quantity: "1"
+		},
+		{
+			id: "2",
+			timing: "Após 15 dias",
+			procedure: "Retorno / Avaliação",
+			quantity: "1"
+		},
+		{
+			id: "3",
+			timing: "Após 30 dias",
+			procedure: "Bioestimulador de Colágeno",
+			quantity: "2"
+		}
+	]);
+	const addEntry = () => {
+		setEntries([...entries, {
+			id: Math.random().toString(36).slice(2),
+			timing: "",
+			procedure: "",
+			quantity: "1"
+		}]);
+	};
+	const removeEntry = (id) => {
+		setEntries(entries.filter((e) => e.id !== id));
+	};
+	const updateEntry = (id, field, value) => {
+		setEntries(entries.map((e) => e.id === id ? {
+			...e,
+			[field]: value
+		} : e));
+	};
+	const procedureOptions = [
+		...procedures,
+		"Retorno / Avaliação",
+		"Consulta de Acompanhamento",
+		"Limpeza de Pele",
+		"Outro"
+	];
+	const uniqueProcedures = Array.from(new Set(procedureOptions));
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/PlanningTab.tsx:9:5",
-		"data-prohibitions": "[]",
+		"data-uid": "src/components/consultation/PlanningTab.tsx:64:5",
+		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:10:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:65:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:11:7",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:66:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:12:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:67:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClipboardList, {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:13:11",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:68:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Planejamento Terapêutico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/PlanningTab.tsx:15:9",
+					"data-uid": "src/components/consultation/PlanningTab.tsx:70:9",
 					"data-prohibitions": "[]",
-					children: "Estratégia clínica e plano de tratamento sugerido."
+					children: "Estratégia clínica e plano de tratamento estruturado."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/PlanningTab.tsx:17:7",
-				"data-prohibitions": "[]",
-				className: "space-y-6",
+				"data-uid": "src/components/consultation/PlanningTab.tsx:72:7",
+				"data-prohibitions": "[editContent]",
+				className: "space-y-8",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:18:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:73:9",
 						"data-prohibitions": "[]",
-						className: "space-y-2",
+						className: "space-y-3",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:19:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:74:11",
 							"data-prohibitions": "[]",
 							htmlFor: "objetivos",
-							className: "flex items-center gap-1 text-foreground",
+							className: "flex items-center gap-1.5 text-foreground text-base",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Target, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:20:13",
+								"data-uid": "src/components/consultation/PlanningTab.tsx:78:13",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 text-primary/70"
 							}), " Objetivos Principais do Paciente"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:22:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:80:11",
 							"data-prohibitions": "[editContent]",
 							id: "objetivos",
-							placeholder: "Ex: Melhorar qualidade da pele, reposição de volume no terço médio, suavizar sulco nasogeniano...",
-							className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl min-h-[80px]",
+							placeholder: "Ex: Melhorar qualidade da pele, reposição de volume no terço médio...",
+							className: "bg-muted/10 border-border/50 focus-visible:ring-primary rounded-xl min-h-[80px]",
 							disabled: isSigned
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:30:9",
+						"data-uid": "src/components/consultation/PlanningTab.tsx:88:9",
+						"data-prohibitions": "[editContent]",
+						className: "space-y-4 pt-2",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
+								"data-uid": "src/components/consultation/PlanningTab.tsx:89:11",
+								"data-prohibitions": "[]",
+								className: "flex items-center gap-1.5 text-foreground text-base",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
+									"data-uid": "src/components/consultation/PlanningTab.tsx:90:13",
+									"data-prohibitions": "[editContent]",
+									className: "w-4 h-4 text-primary/70"
+								}), " Cronograma de Tratamento"]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								"data-uid": "src/components/consultation/PlanningTab.tsx:93:11",
+								"data-prohibitions": "[editContent]",
+								className: "relative border-l-2 border-primary/20 ml-3 md:ml-4 space-y-6 pb-2 pt-2",
+								children: entries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/components/consultation/PlanningTab.tsx:95:15",
+									"data-prohibitions": "[editContent]",
+									className: "relative pl-6 md:pl-8 animate-fade-in",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										"data-uid": "src/components/consultation/PlanningTab.tsx:96:17",
+										"data-prohibitions": "[]",
+										className: "absolute w-4 h-4 bg-white border-2 border-primary rounded-full -left-[9px] top-5 shadow-sm"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/PlanningTab.tsx:98:17",
+										"data-prohibitions": "[editContent]",
+										className: "bg-white border border-border/60 hover:border-primary/40 transition-colors rounded-xl p-4 shadow-sm flex flex-col md:flex-row gap-4 md:items-center",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/consultation/PlanningTab.tsx:99:19",
+												"data-prohibitions": "[]",
+												className: "w-full md:w-1/3 space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:100:21",
+													"data-prohibitions": "[]",
+													className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
+													children: "Momento / Ordem"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:103:21",
+													"data-prohibitions": "[editContent]",
+													value: entry.timing,
+													onChange: (e) => updateEntry(entry.id, "timing", e.target.value),
+													disabled: isSigned,
+													placeholder: "Ex: Sessão 01, Após 15 dias",
+													className: "bg-muted/5 border-border/50 h-9"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/consultation/PlanningTab.tsx:112:19",
+												"data-prohibitions": "[editContent]",
+												className: "w-full md:w-1/2 space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:113:21",
+													"data-prohibitions": "[]",
+													className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
+													children: "Procedimento / Etapa"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:116:21",
+													"data-prohibitions": "[editContent]",
+													disabled: isSigned,
+													value: entry.procedure,
+													onValueChange: (val) => updateEntry(entry.id, "procedure", val),
+													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+														"data-uid": "src/components/consultation/PlanningTab.tsx:121:23",
+														"data-prohibitions": "[]",
+														className: "bg-muted/5 border-border/50 h-9",
+														children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+															"data-uid": "src/components/consultation/PlanningTab.tsx:122:25",
+															"data-prohibitions": "[editContent]",
+															placeholder: "Selecione..."
+														})
+													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
+														"data-uid": "src/components/consultation/PlanningTab.tsx:124:23",
+														"data-prohibitions": "[editContent]",
+														children: uniqueProcedures.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+															"data-uid": "src/components/consultation/PlanningTab.tsx:126:27",
+															"data-prohibitions": "[editContent]",
+															value: p,
+															children: p
+														}, p))
+													})]
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/consultation/PlanningTab.tsx:134:19",
+												"data-prohibitions": "[]",
+												className: "w-full md:w-24 space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:135:21",
+													"data-prohibitions": "[]",
+													className: "text-[10px] text-muted-foreground uppercase tracking-wider font-semibold",
+													children: "Qtd"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:138:21",
+													"data-prohibitions": "[editContent]",
+													type: "number",
+													min: "1",
+													value: entry.quantity,
+													onChange: (e) => updateEntry(entry.id, "quantity", e.target.value),
+													disabled: isSigned,
+													className: "bg-muted/5 border-border/50 h-9 text-center"
+												})]
+											}),
+											!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+												"data-uid": "src/components/consultation/PlanningTab.tsx:149:21",
+												"data-prohibitions": "[]",
+												className: "flex justify-end pt-5 md:pt-4",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+													"data-uid": "src/components/consultation/PlanningTab.tsx:150:23",
+													"data-prohibitions": "[]",
+													variant: "ghost",
+													size: "icon",
+													onClick: () => removeEntry(entry.id),
+													className: "text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2 md:mr-0 h-8 w-8",
+													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
+														"data-uid": "src/components/consultation/PlanningTab.tsx:156:25",
+														"data-prohibitions": "[editContent]",
+														className: "w-4 h-4"
+													})
+												})
+											})
+										]
+									})]
+								}, entry.id))
+							}),
+							!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+								"data-uid": "src/components/consultation/PlanningTab.tsx:166:13",
+								"data-prohibitions": "[]",
+								onClick: addEntry,
+								variant: "outline",
+								className: "w-full mt-4 border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
+									"data-uid": "src/components/consultation/PlanningTab.tsx:171:15",
+									"data-prohibitions": "[editContent]",
+									className: "w-4 h-4 mr-2"
+								}), "Adicionar Procedimento/Sessão"]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/consultation/PlanningTab.tsx:177:9",
 						"data-prohibitions": "[]",
-						className: "space-y-2",
+						className: "space-y-3 pt-4 border-t border-border/50",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:31:11",
+							"data-uid": "src/components/consultation/PlanningTab.tsx:178:11",
 							"data-prohibitions": "[]",
-							htmlFor: "plano",
-							className: "text-foreground",
-							children: "Plano de Tratamento Global"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:34:11",
+							htmlFor: "orcamento",
+							className: "text-foreground text-base",
+							children: "Orçamento Previsto / Pacote Acordado"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+							"data-uid": "src/components/consultation/PlanningTab.tsx:181:11",
 							"data-prohibitions": "[editContent]",
-							id: "plano",
-							placeholder: "Descreva a estratégia, tecnologias escolhidas, ordem de execução e justificativa clínica...",
-							className: "min-h-[150px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
+							id: "orcamento",
+							placeholder: "Ex: R$ 5.000,00 - Pacote Rejuvenescimento Global (3x sem juros)",
+							className: "bg-muted/10 border-border/50 focus-visible:ring-primary rounded-xl",
 							disabled: isSigned
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PlanningTab.tsx:42:9",
-						"data-prohibitions": "[]",
-						className: "grid md:grid-cols-2 gap-6",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:43:11",
-							"data-prohibitions": "[]",
-							className: "space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:44:13",
-								"data-prohibitions": "[]",
-								htmlFor: "cronograma",
-								className: "text-foreground",
-								children: "Cronograma / Sessões Sugeridas"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:47:13",
-								"data-prohibitions": "[editContent]",
-								id: "cronograma",
-								placeholder: "Ex: 3 sessões mensais, manutenção semestral",
-								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-								disabled: isSigned
-							})]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PlanningTab.tsx:54:11",
-							"data-prohibitions": "[]",
-							className: "space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:55:13",
-								"data-prohibitions": "[]",
-								htmlFor: "orcamento",
-								className: "text-foreground",
-								children: "Orçamento Previsto / Pacote"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/PlanningTab.tsx:58:13",
-								"data-prohibitions": "[editContent]",
-								id: "orcamento",
-								placeholder: "Referência de valores ou pacote acordado",
-								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-								disabled: isSigned
-							})]
 						})]
 					})
 				]
@@ -33706,4 +33853,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-VXcx2Fcy.js.map
+//# sourceMappingURL=index-hTL9X1Az.js.map
