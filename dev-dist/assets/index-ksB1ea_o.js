@@ -30495,133 +30495,137 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 		setIsOpen(false);
 		addLog("Dados do paciente editados", id);
 	};
+	const handleOpenHistory = () => {
+		setIsHistoryOpen(true);
+		addLog("Histórico Completo visualizado", id);
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/PatientHeader.tsx:61:5",
+		"data-uid": "src/components/consultation/PatientHeader.tsx:66:5",
 		"data-prohibitions": "[editContent]",
 		className: "px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:62:7",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:67:7",
 				"data-prohibitions": "[editContent]",
 				className: "flex items-start gap-4",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:63:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:68:9",
 						"data-prohibitions": "[]",
 						to: "/pacientes",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:64:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:69:11",
 							"data-prohibitions": "[]",
 							variant: "ghost",
 							size: "icon",
 							className: "text-muted-foreground hover:text-primary mt-1",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowLeft, {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:69:13",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:74:13",
 								"data-prohibitions": "[editContent]",
 								className: "h-5 w-5"
 							})
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Avatar, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:72:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:77:9",
 						"data-prohibitions": "[editContent]",
 						className: "h-14 w-14 border-2 border-primary/20 mt-1",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarImage, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:73:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:78:11",
 							"data-prohibitions": "[editContent]",
 							src: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${id || 1}`
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:76:11",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:81:11",
 							"data-prohibitions": "[editContent]",
 							children: patient.name.substring(0, 2)
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:78:9",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:83:9",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-col gap-1.5",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:79:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:84:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex items-center gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:80:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:85:13",
 										"data-prohibitions": "[editContent]",
 										className: "text-xl font-bold text-foreground flex items-center gap-2",
 										children: patient.name
 									}),
 									isFinalized ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:85:15",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:90:15",
 										"data-prohibitions": "[]",
 										variant: "outline",
 										className: "text-destructive border-destructive bg-destructive/5 flex items-center gap-1.5 px-3 py-0.5",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Lock, {
-											"data-uid": "src/components/consultation/PatientHeader.tsx:89:17",
+											"data-uid": "src/components/consultation/PatientHeader.tsx:94:17",
 											"data-prohibitions": "[editContent]",
 											className: "w-3.5 h-3.5"
 										}), "Consulta Finalizada - Edição Desabilitada"]
 									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:93:15",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:98:15",
 										"data-prohibitions": "[]",
 										variant: "outline",
 										className: "text-primary border-primary bg-primary/5",
 										children: "Atendimento em curso"
 									}),
 									!isFinalized && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:99:15",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:104:15",
 										"data-prohibitions": "[]",
 										open: isOpen,
 										onOpenChange: setIsOpen,
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-											"data-uid": "src/components/consultation/PatientHeader.tsx:100:17",
+											"data-uid": "src/components/consultation/PatientHeader.tsx:105:17",
 											"data-prohibitions": "[]",
 											asChild: true,
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:101:19",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:106:19",
 												"data-prohibitions": "[]",
 												variant: "ghost",
 												size: "icon",
 												className: "h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted",
 												onClick: () => setEditInfo(patientInfo),
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:107:21",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:112:21",
 													"data-prohibitions": "[editContent]",
 													className: "h-3.5 w-3.5"
 												})
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-											"data-uid": "src/components/consultation/PatientHeader.tsx:110:17",
+											"data-uid": "src/components/consultation/PatientHeader.tsx:115:17",
 											"data-prohibitions": "[]",
 											className: "sm:max-w-[600px] rounded-xl",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:111:19",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:116:19",
 													"data-prohibitions": "[]",
 													children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:112:21",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:117:21",
 														"data-prohibitions": "[]",
 														className: "font-serif text-xl text-primary",
 														children: "Editar Dados de Identificação"
 													})
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:116:19",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:121:19",
 													"data-prohibitions": "[]",
 													className: "grid grid-cols-1 md:grid-cols-2 gap-4 py-4",
 													children: [
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:117:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:122:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:118:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:123:23",
 																"data-prohibitions": "[]",
 																htmlFor: "cpf",
 																children: "CPF"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:119:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:124:23",
 																"data-prohibitions": "[editContent]",
 																id: "cpf",
 																value: editInfo.cpf,
@@ -30632,16 +30636,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:125:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:130:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:126:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:131:23",
 																"data-prohibitions": "[]",
 																htmlFor: "rg",
 																children: "RG"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:127:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:132:23",
 																"data-prohibitions": "[editContent]",
 																id: "rg",
 																value: editInfo.rg,
@@ -30652,16 +30656,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:133:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:138:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:134:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:139:23",
 																"data-prohibitions": "[]",
 																htmlFor: "profissao",
 																children: "Profissão"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:135:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:140:23",
 																"data-prohibitions": "[editContent]",
 																id: "profissao",
 																value: editInfo.profissao,
@@ -30672,16 +30676,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:141:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:146:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:142:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:147:23",
 																"data-prohibitions": "[]",
 																htmlFor: "estado_civil",
 																children: "Estado Civil"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:143:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:148:23",
 																"data-prohibitions": "[editContent]",
 																id: "estado_civil",
 																value: editInfo.estado_civil,
@@ -30692,16 +30696,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:149:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:154:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:150:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:155:23",
 																"data-prohibitions": "[]",
 																htmlFor: "telefone",
 																children: "Telefone"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:151:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:156:23",
 																"data-prohibitions": "[editContent]",
 																id: "telefone",
 																value: editInfo.telefone,
@@ -30712,16 +30716,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:157:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:162:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:158:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:163:23",
 																"data-prohibitions": "[]",
 																htmlFor: "email",
 																children: "E-mail"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:159:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:164:23",
 																"data-prohibitions": "[editContent]",
 																id: "email",
 																value: editInfo.email,
@@ -30732,16 +30736,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 															})]
 														}),
 														/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-															"data-uid": "src/components/consultation/PatientHeader.tsx:165:21",
+															"data-uid": "src/components/consultation/PatientHeader.tsx:170:21",
 															"data-prohibitions": "[]",
 															className: "space-y-2 md:col-span-2",
 															children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:166:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:171:23",
 																"data-prohibitions": "[]",
 																htmlFor: "endereco",
 																children: "Endereço Completo"
 															}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-																"data-uid": "src/components/consultation/PatientHeader.tsx:167:23",
+																"data-uid": "src/components/consultation/PatientHeader.tsx:172:23",
 																"data-prohibitions": "[editContent]",
 																id: "endereco",
 																value: editInfo.endereco,
@@ -30754,16 +30758,16 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 													]
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogFooter, {
-													"data-uid": "src/components/consultation/PatientHeader.tsx:174:19",
+													"data-uid": "src/components/consultation/PatientHeader.tsx:179:19",
 													"data-prohibitions": "[]",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:175:21",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:180:21",
 														"data-prohibitions": "[]",
 														variant: "outline",
 														onClick: () => setIsOpen(false),
 														children: "Cancelar"
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-														"data-uid": "src/components/consultation/PatientHeader.tsx:178:21",
+														"data-uid": "src/components/consultation/PatientHeader.tsx:183:21",
 														"data-prohibitions": "[]",
 														onClick: handleSave,
 														className: "bg-primary hover:bg-primary/90 text-primary-foreground",
@@ -30776,17 +30780,17 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:190:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:195:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:191:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:196:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5 font-medium text-foreground/80",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:192:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:197:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30796,12 +30800,12 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:194:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:199:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CreditCard, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:195:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:200:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30810,12 +30814,12 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:197:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:202:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Briefcase, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:198:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:203:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30824,12 +30828,12 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										"data-uid": "src/components/consultation/PatientHeader.tsx:200:13",
+										"data-uid": "src/components/consultation/PatientHeader.tsx:205:13",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-1.5",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, {
-												"data-uid": "src/components/consultation/PatientHeader.tsx:201:15",
+												"data-uid": "src/components/consultation/PatientHeader.tsx:206:15",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 text-primary/70"
 											}),
@@ -30840,15 +30844,15 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:204:11",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:209:11",
 								"data-prohibitions": "[editContent]",
 								className: "flex items-center gap-1.5 text-sm text-muted-foreground",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-									"data-uid": "src/components/consultation/PatientHeader.tsx:205:13",
+									"data-uid": "src/components/consultation/PatientHeader.tsx:210:13",
 									"data-prohibitions": "[editContent]",
 									className: "h-3.5 w-3.5 shrink-0 text-primary/70"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/consultation/PatientHeader.tsx:206:13",
+									"data-uid": "src/components/consultation/PatientHeader.tsx:211:13",
 									"data-prohibitions": "[editContent]",
 									className: "truncate",
 									children: patientInfo.endereco
@@ -30859,22 +30863,22 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:210:7",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:215:7",
 				"data-prohibitions": "[editContent]",
 				className: "flex gap-2 shrink-0",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/consultation/PatientHeader.tsx:211:9",
+					"data-uid": "src/components/consultation/PatientHeader.tsx:216:9",
 					"data-prohibitions": "[]",
 					variant: "outline",
 					className: "border-primary/50 text-primary hover:bg-primary/5",
-					onClick: () => setIsHistoryOpen(true),
+					onClick: handleOpenHistory,
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(History, {
-						"data-uid": "src/components/consultation/PatientHeader.tsx:216:11",
+						"data-uid": "src/components/consultation/PatientHeader.tsx:221:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 mr-2"
 					}), "Histórico Completo"]
 				}), !isFinalized && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/PatientHeader.tsx:220:11",
+					"data-uid": "src/components/consultation/PatientHeader.tsx:225:11",
 					"data-prohibitions": "[]",
 					onClick: onFinalize,
 					className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
@@ -30882,7 +30886,7 @@ function PatientHeader({ patient, id, isFinalized, onFinalize }) {
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompleteHistoryModal, {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:229:7",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:234:7",
 				"data-prohibitions": "[editContent]",
 				isOpen: isHistoryOpen,
 				onClose: setIsHistoryOpen,
@@ -46059,4 +46063,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-bBhD8K10.js.map
+//# sourceMappingURL=index-ksB1ea_o.js.map

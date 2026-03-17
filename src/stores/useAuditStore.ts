@@ -11,6 +11,7 @@ export type AuditAction =
   | 'Documento gerado e assinado'
   | 'Status alterado: Consulta Finalizada'
   | 'Dados do paciente editados'
+  | 'Histórico Completo visualizado'
   | string
 
 export type AuditLog = {

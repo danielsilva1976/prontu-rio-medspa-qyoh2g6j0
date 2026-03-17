@@ -57,6 +57,11 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
     addLog('Dados do paciente editados', id)
   }
 
+  const handleOpenHistory = () => {
+    setIsHistoryOpen(true)
+    addLog('Histórico Completo visualizado', id)
+  }
+
   return (
     <div className="px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4">
       <div className="flex items-start gap-4">
@@ -211,7 +216,7 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
         <Button
           variant="outline"
           className="border-primary/50 text-primary hover:bg-primary/5"
-          onClick={() => setIsHistoryOpen(true)}
+          onClick={handleOpenHistory}
         >
           <History className="w-4 h-4 mr-2" />
           Histórico Completo
