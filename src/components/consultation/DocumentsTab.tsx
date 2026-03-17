@@ -1,146 +1,268 @@
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Plus, Printer, Download, FileText, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Printer, Download, FileSignature } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
-export default function DocumentsTab({
-  patientName,
-  isSigned,
-}: {
-  patientName: string
-  isSigned: boolean
-}) {
-  const [docType, setDocType] = useState('receita')
-  const [content, setContent] = useState(
-    'Uso Tópico:\n\n1. Vitamina C 10% - Aplicar 3 a 4 gotas na face pela manhã, antes do protetor solar.\n\n2. Protetor Solar FPS 50+ - Reaplicar a cada 3 horas.\n\n3. Ácido Retinoico 0.025% (Creme) - Aplicar pequena quantidade à noite. Iniciar uso em dias alternados para evitar sensibilização.',
-  )
-  const { toast } = useToast()
+// Mock generated documents
+const generatedDocuments = [
+  {
+    id: 1,
+    type: 'Receituário',
+    title: 'Receituário Skincare Routine',
+    date: '17/03/2026',
+    status: 'Assinado',
+    content:
+      'Uso Tópico:\n\n1. Ácido Retinóico 0.025% creme - 30g\n   Aplicar uma fina camada no rosto à noite, 3x na semana.\n\n2. Vitamina C 15% sérum - 30ml\n   Aplicar no rosto pela manhã, antes do protetor solar.\n\n3. Protetor Solar FPS 50+ toque seco\n   Aplicar generosamente pela manhã e reaplicar a cada 3 horas.',
+  },
+  {
+    id: 2,
+    type: 'Laudo Médico',
+    title: 'Laudo de Procedimento Estético',
+    date: '17/03/2026',
+    status: 'Rascunho',
+    content:
+      'Atesto para os devidos fins que a paciente supramencionada submeteu-se, nesta data, a procedimento dermatológico estético minimamente invasivo (Aplicação de Toxina Botulínica tipo A) nas regiões frontal, glabelar e periorbicular.\n\nProcedimento transcorreu sem intercorrências.\n\nRecomendações pós-procedimento fornecidas por escrito à paciente.',
+  },
+]
 
-  const handlePrint = () => {
-    toast({ title: 'Preparando impressão...' })
-    setTimeout(() => window.print(), 500)
+export default function DocumentsTab() {
+  const [docType, setDocType] = useState('prescription')
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [selectedDoc, setSelectedDoc] = useState<any>(null)
+
+  const handlePreview = (doc: any) => {
+    setSelectedDoc(doc)
+    setPreviewOpen(true)
   }
 
-  const currentDate = new Date().toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
-
   return (
-    <div className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start animate-slide-up">
-      <div className="space-y-6">
-        <Tabs value={docType} onValueChange={setDocType} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger
-              value="receita"
-              className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-            >
-              Receita Médica
-            </TabsTrigger>
-            <TabsTrigger
-              value="laudo"
-              className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
-            >
-              Laudo / Atestado
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <Card className="border-none shadow-subtle bg-white">
-          <CardContent className="p-6 space-y-4">
-            {docType === 'laudo' && (
-              <div className="space-y-2">
-                <Label>Título do Documento</Label>
-                <Input
-                  placeholder="Ex: Laudo de Procedimento Estético"
-                  className="bg-muted/10 border-border rounded-xl"
-                  disabled={isSigned}
-                />
-              </div>
-            )}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Document Generator Form */}
+      <Card className="lg:col-span-2 border-t-4 border-t-primary shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl text-primary flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Gerar Novo Documento
+          </CardTitle>
+          <CardDescription>
+            Crie receitas, laudos e atestados com a identidade visual da clínica.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Conteúdo Descritivo</Label>
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-[300px] resize-y bg-muted/10 border-border rounded-xl focus-visible:ring-accent leading-relaxed text-sm"
-                disabled={isSigned}
+              <Label>Tipo de Documento</Label>
+              <Select value={docType} onValueChange={setDocType}>
+                <SelectTrigger className="border-border focus:ring-primary">
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="prescription">Receituário</SelectItem>
+                  <SelectItem value="report">Laudo Médico</SelectItem>
+                  <SelectItem value="certificate">Atestado</SelectItem>
+                  <SelectItem value="consent">Termo de Consentimento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Título / Referência</Label>
+              <Input
+                placeholder="Ex: Receita Rotina Noturna"
+                className="focus-visible:ring-primary"
               />
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={handlePrint}
-                className="w-full border-border hover:bg-muted/50 hover:text-primary"
+          </div>
+
+          <div className="space-y-2">
+            <Label>Conteúdo do Documento</Label>
+            <Textarea
+              placeholder="Digite o conteúdo aqui..."
+              className="min-h-[300px] resize-y focus-visible:ring-primary font-mono text-sm"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button variant="outline">Salvar Rascunho</Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 gap-2">
+                  <Plus className="h-4 w-4" />
+                  Gerar e Assinar
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Assinatura Digital</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Insira seu PIN para aplicar sua assinatura digital e gerar o documento oficial
+                    em PDF.
+                  </p>
+                  <div className="space-y-2">
+                    <Label>PIN de Assinatura</Label>
+                    <Input
+                      type="password"
+                      placeholder="••••"
+                      className="text-center text-lg tracking-widest focus-visible:ring-primary"
+                    />
+                  </div>
+                  <Button className="w-full bg-primary hover:bg-primary/90">
+                    Confirmar e Assinar
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Document History / List */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Documentos Gerados</CardTitle>
+          <CardDescription>Documentos desta consulta.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {generatedDocuments.map((doc) => (
+              <div
+                key={doc.id}
+                className="p-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors group"
               >
-                <Printer className="w-4 h-4 mr-2" /> Imprimir
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="font-semibold text-sm">{doc.title}</h4>
+                    <span className="text-xs text-muted-foreground">
+                      {doc.type} • {doc.date}
+                    </span>
+                  </div>
+                  {doc.status === 'Assinado' ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                      Rascunho
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => handlePreview(doc)}
+                  >
+                    <Printer className="h-3 w-3 mr-1" />
+                    Visualizar
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full text-xs">
+                    <Download className="h-3 w-3 mr-1" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Beautiful Letterhead Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl h-[85vh] p-0 overflow-hidden bg-gray-100 flex flex-col">
+          <DialogHeader className="p-4 bg-white border-b flex flex-row items-center justify-between shadow-sm sticky top-0 z-10">
+            <DialogTitle className="text-primary font-medium">
+              Visualização do Documento
+            </DialogTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" /> PDF
               </Button>
-              <Button className="w-full bg-primary text-white hover:bg-primary/90 shadow-sm">
-                <Download className="w-4 h-4 mr-2" /> Exportar PDF
+              <Button className="bg-primary hover:bg-primary/90" size="sm">
+                <Printer className="h-4 w-4 mr-2" /> Imprimir
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </DialogHeader>
 
-      <div className="hidden lg:flex items-start justify-center bg-muted/30 rounded-2xl border border-border/50 p-6 overflow-hidden">
-        <div className="w-full max-w-[21cm] aspect-[1/1.414] bg-white shadow-elevation flex flex-col relative text-sm transform origin-top xl:scale-95">
-          <div className="flex justify-between items-start border-b border-muted p-8 pb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary flex items-center justify-center rounded">
-                <span className="text-white font-serif font-bold">M</span>
+          <ScrollArea className="flex-1 p-6 flex justify-center">
+            {/* The A4 "Paper" Element */}
+            <div className="bg-white shadow-xl mx-auto rounded-sm min-h-[1056px] w-[816px] p-16 flex flex-col relative shrink-0">
+              {/* Letterhead Header */}
+              <div className="flex flex-col items-center mb-10">
+                <img
+                  src={logoMarca}
+                  alt="MEDSPA Logo"
+                  className="h-28 w-auto object-contain mb-6"
+                />
+                <div className="w-full h-[1px] bg-primary/30"></div>
+                <div className="w-full h-[2px] bg-primary mt-1"></div>
               </div>
-              <div>
-                <h2 className="font-serif text-xl font-semibold tracking-tight text-primary">
-                  Clínica MEDSPA
-                </h2>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                  Dermatologia Avançada
+
+              {/* Document Body */}
+              <div className="flex-1">
+                <h1 className="text-xl font-semibold text-center mb-10 uppercase tracking-[0.2em] text-primary">
+                  {selectedDoc?.type || 'Documento Médico'}
+                </h1>
+
+                {/* Patient Info Header */}
+                <div className="mb-8 text-sm text-gray-700">
+                  <p>
+                    <strong>Paciente:</strong> Maria da Silva Santos
+                  </p>
+                  <p>
+                    <strong>Data:</strong> {selectedDoc?.date}
+                  </p>
+                </div>
+
+                <div className="text-gray-800 text-[15px] leading-loose whitespace-pre-wrap font-serif">
+                  {selectedDoc?.content}
+                </div>
+              </div>
+
+              {/* Letterhead Footer with Signature */}
+              <div className="mt-20 pt-8 flex flex-col items-center justify-end">
+                <div className="w-72 border-t border-gray-400 mb-3"></div>
+                <p className="font-semibold text-gray-900 tracking-wide text-lg">
+                  Dra. Fabíola Kleinert
+                </p>
+                <p className="text-sm text-gray-500 font-medium">
+                  Médica Dermatologista • CRM-SP 123456
+                </p>
+
+                {/* Brand Divider */}
+                <div className="w-full h-[1px] bg-primary/20 mt-12 mb-2"></div>
+
+                {/* Clinic Footer Info */}
+                <p className="text-[11px] text-gray-400 text-center uppercase tracking-wider leading-relaxed">
+                  Clínica MEDSPA Dermatologia Avançada
+                  <br />
+                  Av. Paulista, 1000, Conjunto 101 - Bela Vista, São Paulo - SP
+                  <br />
+                  (11) 99999-9999 • contato@medspa.com.br
                 </p>
               </div>
             </div>
-            <div className="text-right text-[10px] text-muted-foreground space-y-0.5">
-              <p>Av. Paulista, 1000 - SP</p>
-              <p>(11) 3000-0000</p>
-            </div>
-          </div>
-
-          <div className="flex-1 p-8 pt-10 flex flex-col">
-            <h3 className="text-center font-serif text-lg font-medium tracking-wide text-primary uppercase mb-8">
-              {docType === 'receita' ? 'Receituário Médico' : 'Laudo Médico'}
-            </h3>
-
-            <p className="mb-6">
-              <span className="font-semibold text-primary">Paciente:</span> {patientName}
-            </p>
-
-            <div className="flex-1 whitespace-pre-wrap leading-relaxed text-foreground/90">
-              {content}
-            </div>
-
-            <div className="mt-12 flex flex-col items-center justify-center pt-8 border-t border-primary/20 relative">
-              {isSigned && (
-                <div className="absolute -top-6 flex flex-col items-center opacity-80">
-                  <FileSignature className="w-6 h-6 text-accent/50" />
-                </div>
-              )}
-              <p className="font-serif font-medium text-primary">Dra. Sofia Alencar</p>
-              <p className="text-xs text-muted-foreground">Médica Dermatologista - CRM 123456/SP</p>
-              <p className="text-[10px] text-muted-foreground mt-4">São Paulo, {currentDate}</p>
-            </div>
-          </div>
-
-          <div className="bg-primary text-white text-[9px] py-2 text-center opacity-90">
-            Documento gerado digitalmente pela Clínica MEDSPA.
-          </div>
-        </div>
-      </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
