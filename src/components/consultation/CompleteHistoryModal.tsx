@@ -6,10 +6,12 @@ import { FileText, Printer, FileSignature } from 'lucide-react'
 const mockHistory = [
   {
     id: 'h2',
-    date: '15 de Setembro, 2023 - 14:30',
+    dateStr: '2023-09-15T14:30:00',
+    formattedDate: '15 de Setembro, 2023 - 14:30',
     professional: 'Dra. Sofia Mendes',
     role: 'Especialista em Estética Avançada',
     type: 'Procedimento Injetável',
+    status: 'finished',
     content: [
       {
         section: 'Evolução',
@@ -27,10 +29,12 @@ const mockHistory = [
   },
   {
     id: 'h1',
-    date: '10 de Março, 2023 - 10:00',
+    dateStr: '2023-03-10T10:00:00',
+    formattedDate: '10 de Março, 2023 - 10:00',
     professional: 'Dra. Fabíola Kleinert',
     role: 'Médica Dermatologista • CRM-SP 123456',
     type: 'Primeira Consulta - Avaliação Global',
+    status: 'finished',
     content: [
       {
         section: 'Anamnese',
@@ -46,6 +50,21 @@ const mockHistory = [
       },
     ],
   },
+  {
+    id: 'h3',
+    dateStr: '2023-11-20T11:00:00',
+    formattedDate: '20 de Novembro, 2023 - 11:00',
+    professional: 'Dra. Fabíola Kleinert',
+    role: 'Médica Dermatologista • CRM-SP 123456',
+    type: 'Retorno e Avaliação',
+    status: 'scheduled',
+    content: [
+      {
+        section: 'Observação',
+        text: 'Sessão ainda não realizada, agendada.',
+      },
+    ],
+  },
 ]
 
 type Props = {
@@ -58,6 +77,11 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
   const handlePrint = () => {
     setTimeout(() => window.print(), 500)
   }
+
+  // Filter for finished appointments and sort chronologically (oldest first)
+  const filteredAndSortedHistory = mockHistory
+    .filter((entry) => entry.status === 'finished')
+    .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime())
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -105,7 +129,7 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
                 {/* Continuous Vertical Line */}
                 <div className="absolute left-[5px] top-2 bottom-0 w-[2px] bg-muted print:hidden"></div>
 
-                {mockHistory.map((entry) => (
+                {filteredAndSortedHistory.map((entry) => (
                   <div key={entry.id} className="relative mb-14 last:mb-0">
                     {/* Timeline dot */}
                     <div className="absolute left-[-1px] top-2 w-3.5 h-3.5 bg-white border-2 border-primary rounded-full z-10 print:hidden shadow-sm"></div>
@@ -114,7 +138,7 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
                       {/* Date / Entry Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
                         <div className="bg-muted/30 text-foreground font-semibold px-3 py-1.5 rounded-md text-sm shrink-0 border border-border/50">
-                          {entry.date}
+                          {entry.formattedDate}
                         </div>
                         <div className="hidden sm:block h-px bg-border/50 flex-1"></div>
                         <div className="text-xs font-bold text-primary shrink-0 uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-md border border-primary/10">
@@ -157,6 +181,12 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
                     </div>
                   </div>
                 ))}
+
+                {filteredAndSortedHistory.length === 0 && (
+                  <div className="text-center py-10 text-muted-foreground">
+                    Nenhum registro finalizado encontrado para este paciente.
+                  </div>
+                )}
               </div>
 
               <div className="mt-16 pt-8 border-t-2 border-primary/10 text-center text-[10px] text-muted-foreground uppercase tracking-[0.2em]">

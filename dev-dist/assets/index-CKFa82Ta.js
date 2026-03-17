@@ -30140,138 +30140,159 @@ var ScrollBar = import_react.forwardRef(({ className, orientation = "vertical", 
 ScrollBar.displayName = ScrollAreaScrollbar.displayName;
 //#endregion
 //#region src/components/consultation/CompleteHistoryModal.tsx
-var mockHistory = [{
-	id: "h2",
-	date: "15 de Setembro, 2023 - 14:30",
-	professional: "Dra. Sofia Mendes",
-	role: "Especialista em Estética Avançada",
-	type: "Procedimento Injetável",
-	content: [
-		{
-			section: "Evolução",
-			text: "Paciente retorna para realização do procedimento planejado. Sem queixas ou alterações no quadro clínico desde a última consulta."
-		},
-		{
-			section: "Procedimento: Toxina Botulínica (Terço Superior)",
-			text: "Tecnologia/Produto: Dysport\nÁrea: Fronte, Glabela, Região Periorbicular\nDose: 45U totais\nLote: AB12345\nTécnica: Aplicação intramuscular padrão. Sem intercorrências imediatas."
-		},
-		{
-			section: "Orientações Pós",
-			text: "Orientada a não deitar ou abaixar a cabeça por 4 horas, evitar esforço físico intenso nas próximas 24h e não massagear a região tratada."
-		}
-	]
-}, {
-	id: "h1",
-	date: "10 de Março, 2023 - 10:00",
-	professional: "Dra. Fabíola Kleinert",
-	role: "Médica Dermatologista • CRM-SP 123456",
-	type: "Primeira Consulta - Avaliação Global",
-	content: [
-		{
-			section: "Anamnese",
-			text: "Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve. Nega alergias a cosméticos ou medicamentos. Histórico de hipotireoidismo (controlado com Puran T4 50mcg). Dieta balanceada, consumo adequado de água (2L/dia)."
-		},
-		{
-			section: "Exame Físico",
-			text: "Pele mista, fototipo III (Fitzpatrick). Grau II de Glogau (rugas em movimento). Presença de rítides dinâmicas em região frontal e glabelar. Flacidez leve no terço inferior. Tricoscopia sem alterações."
-		},
-		{
-			section: "Planejamento Terapêutico",
-			text: "Indicado plano de tratamento anual focando em prevenção de rugas dinâmicas e melhora de textura da pele. Proposto Toxina Botulínica no terço superior e bioestimulador de colágeno no terço médio/inferior. Prescrito rotina de skincare com Vitamina C 10% e protetor solar FPS 50."
-		}
-	]
-}];
+var mockHistory = [
+	{
+		id: "h2",
+		dateStr: "2023-09-15T14:30:00",
+		formattedDate: "15 de Setembro, 2023 - 14:30",
+		professional: "Dra. Sofia Mendes",
+		role: "Especialista em Estética Avançada",
+		type: "Procedimento Injetável",
+		status: "finished",
+		content: [
+			{
+				section: "Evolução",
+				text: "Paciente retorna para realização do procedimento planejado. Sem queixas ou alterações no quadro clínico desde a última consulta."
+			},
+			{
+				section: "Procedimento: Toxina Botulínica (Terço Superior)",
+				text: "Tecnologia/Produto: Dysport\nÁrea: Fronte, Glabela, Região Periorbicular\nDose: 45U totais\nLote: AB12345\nTécnica: Aplicação intramuscular padrão. Sem intercorrências imediatas."
+			},
+			{
+				section: "Orientações Pós",
+				text: "Orientada a não deitar ou abaixar a cabeça por 4 horas, evitar esforço físico intenso nas próximas 24h e não massagear a região tratada."
+			}
+		]
+	},
+	{
+		id: "h1",
+		dateStr: "2023-03-10T10:00:00",
+		formattedDate: "10 de Março, 2023 - 10:00",
+		professional: "Dra. Fabíola Kleinert",
+		role: "Médica Dermatologista • CRM-SP 123456",
+		type: "Primeira Consulta - Avaliação Global",
+		status: "finished",
+		content: [
+			{
+				section: "Anamnese",
+				text: "Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve. Nega alergias a cosméticos ou medicamentos. Histórico de hipotireoidismo (controlado com Puran T4 50mcg). Dieta balanceada, consumo adequado de água (2L/dia)."
+			},
+			{
+				section: "Exame Físico",
+				text: "Pele mista, fototipo III (Fitzpatrick). Grau II de Glogau (rugas em movimento). Presença de rítides dinâmicas em região frontal e glabelar. Flacidez leve no terço inferior. Tricoscopia sem alterações."
+			},
+			{
+				section: "Planejamento Terapêutico",
+				text: "Indicado plano de tratamento anual focando em prevenção de rugas dinâmicas e melhora de textura da pele. Proposto Toxina Botulínica no terço superior e bioestimulador de colágeno no terço médio/inferior. Prescrito rotina de skincare com Vitamina C 10% e protetor solar FPS 50."
+			}
+		]
+	},
+	{
+		id: "h3",
+		dateStr: "2023-11-20T11:00:00",
+		formattedDate: "20 de Novembro, 2023 - 11:00",
+		professional: "Dra. Fabíola Kleinert",
+		role: "Médica Dermatologista • CRM-SP 123456",
+		type: "Retorno e Avaliação",
+		status: "scheduled",
+		content: [{
+			section: "Observação",
+			text: "Sessão ainda não realizada, agendada."
+		}]
+	}
+];
 function CompleteHistoryModal({ isOpen, onClose, patient }) {
 	const handlePrint = () => {
 		setTimeout(() => window.print(), 500);
 	};
+	const filteredAndSortedHistory = mockHistory.filter((entry) => entry.status === "finished").sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime());
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-		"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:63:5",
+		"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:87:5",
 		"data-prohibitions": "[editContent]",
 		open: isOpen,
 		onOpenChange: onClose,
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-			"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:64:7",
+			"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:88:7",
 			"data-prohibitions": "[editContent]",
 			className: "max-w-5xl h-[90vh] p-0 overflow-hidden flex flex-col bg-muted/30 sm:rounded-xl border-none shadow-elevation",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-				"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:65:9",
+				"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:89:9",
 				"data-prohibitions": "[]",
 				className: "p-4 pr-12 pl-6 bg-white border-b border-border/50 shadow-sm flex flex-row items-center justify-between sticky top-0 z-10 shrink-0",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:66:11",
+					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:90:11",
 					"data-prohibitions": "[]",
 					className: "text-primary font-serif text-xl flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:67:13",
+						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:91:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5"
 					}), "Histórico Clínico Completo"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:70:11",
+					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:94:11",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-3",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:71:13",
+						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:95:13",
 						"data-prohibitions": "[]",
 						className: "bg-primary hover:bg-primary/90 shadow-sm text-white",
 						size: "sm",
 						onClick: handlePrint,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, {
-							"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:76:15",
+							"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:100:15",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4 mr-2"
 						}), " Imprimir Histórico"]
 					})
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollArea, {
-				"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:81:9",
+				"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:105:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex-1 p-4 sm:p-8 flex justify-center w-full print:p-0 print:h-auto print:overflow-visible",
 				id: "print-area",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:85:11",
+					"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:109:11",
 					"data-prohibitions": "[editContent]",
 					className: "bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] mx-auto rounded-sm min-h-[1056px] w-full max-w-[816px] flex flex-col shrink-0 mb-8 border border-gray-200 print:border-none print:shadow-none print:w-full print:max-w-full print:m-0",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:86:13",
+						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:110:13",
 						"data-prohibitions": "[]",
 						className: "h-2 w-full bg-gradient-to-r from-primary to-primary/80 shrink-0 print:hidden"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:88:13",
+						"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:112:13",
 						"data-prohibitions": "[editContent]",
 						className: "px-6 sm:px-10 py-12 print:px-0 print:py-0 flex-1",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:89:15",
+								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:113:15",
 								"data-prohibitions": "[editContent]",
 								className: "border-b-2 border-primary/20 pb-6 mb-10 text-center",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:90:17",
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:114:17",
 										"data-prohibitions": "[]",
 										className: "text-2xl font-serif text-primary uppercase tracking-[0.2em]",
 										children: "Prontuário Médico"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:93:17",
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:117:17",
 										"data-prohibitions": "[]",
 										className: "text-lg font-serif text-primary/80 uppercase tracking-widest mt-1",
 										children: "Histórico Contínuo"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:96:17",
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:120:17",
 										"data-prohibitions": "[editContent]",
 										className: "mt-4 inline-block bg-muted/10 border border-border px-6 py-2 rounded",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:97:19",
+											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:121:19",
 											"data-prohibitions": "[editContent]",
 											className: "text-sm text-muted-foreground uppercase tracking-wider font-semibold",
 											children: [
 												"Paciente:",
 												" ",
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:99:21",
+													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:123:21",
 													"data-prohibitions": "[editContent]",
 													className: "text-foreground ml-1",
 													children: patient?.name || "Paciente"
@@ -30282,111 +30303,120 @@ function CompleteHistoryModal({ isOpen, onClose, patient }) {
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:104:15",
+								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:128:15",
 								"data-prohibitions": "[editContent]",
 								className: "relative",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:106:17",
-									"data-prohibitions": "[]",
-									className: "absolute left-[5px] top-2 bottom-0 w-[2px] bg-muted print:hidden"
-								}), mockHistory.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:109:19",
-									"data-prohibitions": "[editContent]",
-									className: "relative mb-14 last:mb-0",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:111:21",
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:130:17",
 										"data-prohibitions": "[]",
-										className: "absolute left-[-1px] top-2 w-3.5 h-3.5 bg-white border-2 border-primary rounded-full z-10 print:hidden shadow-sm"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:113:21",
+										className: "absolute left-[5px] top-2 bottom-0 w-[2px] bg-muted print:hidden"
+									}),
+									filteredAndSortedHistory.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:133:19",
 										"data-prohibitions": "[editContent]",
-										className: "ml-8 print:ml-0",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:115:23",
-											"data-prohibitions": "[editContent]",
-											className: "flex flex-col sm:flex-row sm:items-center gap-3 mb-6",
-											children: [
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:116:25",
-													"data-prohibitions": "[editContent]",
-													className: "bg-muted/30 text-foreground font-semibold px-3 py-1.5 rounded-md text-sm shrink-0 border border-border/50",
-													children: entry.date
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:119:25",
-													"data-prohibitions": "[]",
-													className: "hidden sm:block h-px bg-border/50 flex-1"
-												}),
-												/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:120:25",
-													"data-prohibitions": "[editContent]",
-													className: "text-xs font-bold text-primary shrink-0 uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-md border border-primary/10",
-													children: entry.type
-												})
-											]
+										className: "relative mb-14 last:mb-0",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:135:21",
+											"data-prohibitions": "[]",
+											className: "absolute left-[-1px] top-2 w-3.5 h-3.5 bg-white border-2 border-primary rounded-full z-10 print:hidden shadow-sm"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:126:23",
+											"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:137:21",
 											"data-prohibitions": "[editContent]",
-											className: "space-y-6",
-											children: [entry.content.map((sec, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:128:27",
+											className: "ml-8 print:ml-0",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:139:23",
 												"data-prohibitions": "[editContent]",
-												className: "bg-muted/5 p-4 rounded-lg border border-border/30",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h4", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:132:29",
-													"data-prohibitions": "[editContent]",
-													className: "text-xs font-bold text-foreground mb-2 uppercase tracking-widest text-primary/80 flex items-center gap-2",
-													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:133:31",
-														"data-prohibitions": "[]",
-														className: "w-1.5 h-1.5 bg-primary/40 rounded-full"
-													}), sec.section]
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:136:29",
-													"data-prohibitions": "[editContent]",
-													className: "text-[15px] leading-relaxed text-foreground/90 whitespace-pre-wrap font-serif",
-													children: sec.text
-												})]
-											}, i)), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:143:25",
-												"data-prohibitions": "[editContent]",
-												className: "mt-8 pt-6 flex flex-col items-end w-72 ml-auto",
+												className: "flex flex-col sm:flex-row sm:items-center gap-3 mb-6",
 												children: [
 													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:144:27",
+														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:140:25",
+														"data-prohibitions": "[editContent]",
+														className: "bg-muted/30 text-foreground font-semibold px-3 py-1.5 rounded-md text-sm shrink-0 border border-border/50",
+														children: entry.formattedDate
+													}),
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:143:25",
 														"data-prohibitions": "[]",
-														className: "w-full border-t border-primary/30 relative flex justify-center mb-3",
-														children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-															"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:145:29",
-															"data-prohibitions": "[]",
-															className: "absolute -top-10 flex flex-col items-center opacity-60",
-															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
-																"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:146:31",
-																"data-prohibitions": "[editContent]",
-																className: "w-8 h-8 text-primary/80"
-															})
-														})
+														className: "hidden sm:block h-px bg-border/50 flex-1"
 													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:149:27",
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:144:25",
 														"data-prohibitions": "[editContent]",
-														className: "font-serif font-bold text-primary text-lg",
-														children: entry.professional
-													}),
-													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:152:27",
-														"data-prohibitions": "[editContent]",
-														className: "text-[11px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5 text-right",
-														children: entry.role
+														className: "text-xs font-bold text-primary shrink-0 uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-md border border-primary/10",
+														children: entry.type
 													})
 												]
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:150:23",
+												"data-prohibitions": "[editContent]",
+												className: "space-y-6",
+												children: [entry.content.map((sec, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:152:27",
+													"data-prohibitions": "[editContent]",
+													className: "bg-muted/5 p-4 rounded-lg border border-border/30",
+													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h4", {
+														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:156:29",
+														"data-prohibitions": "[editContent]",
+														className: "text-xs font-bold text-foreground mb-2 uppercase tracking-widest text-primary/80 flex items-center gap-2",
+														children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+															"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:157:31",
+															"data-prohibitions": "[]",
+															className: "w-1.5 h-1.5 bg-primary/40 rounded-full"
+														}), sec.section]
+													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+														"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:160:29",
+														"data-prohibitions": "[editContent]",
+														className: "text-[15px] leading-relaxed text-foreground/90 whitespace-pre-wrap font-serif",
+														children: sec.text
+													})]
+												}, i)), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+													"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:167:25",
+													"data-prohibitions": "[editContent]",
+													className: "mt-8 pt-6 flex flex-col items-end w-72 ml-auto",
+													children: [
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+															"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:168:27",
+															"data-prohibitions": "[]",
+															className: "w-full border-t border-primary/30 relative flex justify-center mb-3",
+															children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+																"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:169:29",
+																"data-prohibitions": "[]",
+																className: "absolute -top-10 flex flex-col items-center opacity-60",
+																children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
+																	"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:170:31",
+																	"data-prohibitions": "[editContent]",
+																	className: "w-8 h-8 text-primary/80"
+																})
+															})
+														}),
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+															"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:173:27",
+															"data-prohibitions": "[editContent]",
+															className: "font-serif font-bold text-primary text-lg",
+															children: entry.professional
+														}),
+														/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+															"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:176:27",
+															"data-prohibitions": "[editContent]",
+															className: "text-[11px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5 text-right",
+															children: entry.role
+														})
+													]
+												})]
 											})]
 										})]
-									})]
-								}, entry.id))]
+									}, entry.id)),
+									filteredAndSortedHistory.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:186:19",
+										"data-prohibitions": "[]",
+										className: "text-center py-10 text-muted-foreground",
+										children: "Nenhum registro finalizado encontrado para este paciente."
+									})
+								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:162:15",
+								"data-uid": "src/components/consultation/CompleteHistoryModal.tsx:192:15",
 								"data-prohibitions": "[]",
 								className: "mt-16 pt-8 border-t-2 border-primary/10 text-center text-[10px] text-muted-foreground uppercase tracking-[0.2em]",
 								children: "Fim do Histórico Registrado • Documento Confidencial"
@@ -43612,4 +43642,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DUD57VhT.js.map
+//# sourceMappingURL=index-CKFa82Ta.js.map
