@@ -139,7 +139,7 @@ export default function AnamnesisTab({ isSigned }: { isSigned: boolean }) {
           />
         </div>
 
-        <Accordion type="multiple" defaultValue={['gineco']} className="w-full space-y-4">
+        <Accordion type="multiple" className="w-full space-y-4">
           {SECTIONS.map((section) => (
             <AccordionItem
               value={section.id}

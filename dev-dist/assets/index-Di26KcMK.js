@@ -30485,7 +30485,6 @@ function AnamnesisTab({ isSigned }) {
 					"data-uid": "src/components/consultation/AnamnesisTab.tsx:142:9",
 					"data-prohibitions": "[editContent]",
 					type: "multiple",
-					defaultValue: ["gineco"],
 					className: "w-full space-y-4",
 					children: SECTIONS.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AccordionItem, {
 						"data-uid": "src/components/consultation/AnamnesisTab.tsx:144:13",
@@ -43337,4 +43336,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BSpko-AJ.js.map
+//# sourceMappingURL=index-Di26KcMK.js.map
