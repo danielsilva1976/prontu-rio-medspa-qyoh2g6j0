@@ -19176,28 +19176,6 @@ var ChevronsUpDown = createLucideIcon("chevrons-up-down", [["path", {
 	d: "m7 9 5-5 5 5",
 	key: "sgt6xg"
 }]]);
-var CircleAlert = createLucideIcon("circle-alert", [
-	["circle", {
-		cx: "12",
-		cy: "12",
-		r: "10",
-		key: "1mglay"
-	}],
-	["line", {
-		x1: "12",
-		x2: "12",
-		y1: "8",
-		y2: "12",
-		key: "1pkeuh"
-	}],
-	["line", {
-		x1: "12",
-		x2: "12.01",
-		y1: "16",
-		y2: "16",
-		key: "4dfq90"
-	}]
-]);
 var CircleCheckBig = createLucideIcon("circle-check-big", [["path", {
 	d: "M21.801 10A10 10 0 1 1 17 3.335",
 	key: "yps3ct"
@@ -29191,121 +29169,281 @@ var Textarea = import_react.forwardRef(({ className, ...props }, ref) => {
 Textarea.displayName = "Textarea";
 //#endregion
 //#region src/components/consultation/AnamnesisTab.tsx
+var MOCK_DATA = {
+	queixa: "Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve.",
+	ciclo: "Regular (28 dias)",
+	contraceptivos: "Anticoncepcional oral (Yaz)",
+	hormonais: "Nega reposição hormonal atual.",
+	menarca: "Menarca aos 12 anos.",
+	cirurgias_gineco: "Cesárea (2018).",
+	atopias: "Rinite alérgica sazonal.",
+	alergias_meds: "Dipirona (urticária).",
+	alergias_cosmeticos: "Nega alergias a cosméticos.",
+	tipo_cirurgia: "Apendicectomia (2010).",
+	cirurgias_plasticas: "Rinoplastia (2015).",
+	marcapasso: "Não",
+	proteses: "Prótese mamária de silicone (2016).",
+	laser: "Laser Lavieen (2022).",
+	peeling: "Peeling de retinoico (inverno 2021).",
+	preenchimentos: "Ácido hialurônico em lábios (2022).",
+	toxina: "No terço superior (há 8 meses).",
+	tratamentos_derm: "Tratamento para acne na adolescência.",
+	farmacos_ant: "Isotretinoína (2010).",
+	farmacos_atual: "Vitamina C, Protetor Solar.",
+	herpes: "Ocasional (último episódio há 1 ano).",
+	tratamentos_esteticos: "Limpeza de pele a cada 2 meses.",
+	cosmeticos: "Sabonete Actine, Epidrat Calm.",
+	habitos: "Dieta balanceada, consumo adequado de água (2L/dia).",
+	atividade: "Musculação 3x por semana.",
+	sol: "Exposição solar recreativa com proteção.",
+	tabagismo: "Nega tabagismo.",
+	patologias: "Hipotireoidismo (controlado).",
+	medicacoes: "Puran T4 50mcg."
+};
+var SECTIONS = [
+	{
+		title: "Antecedentes Gineco-Obstétricos",
+		fields: [
+			{
+				id: "ciclo",
+				label: "Ciclo menstrual"
+			},
+			{
+				id: "contraceptivos",
+				label: "Uso de contraceptivos"
+			},
+			{
+				id: "hormonais",
+				label: "Alterações hormonais (reposição)",
+				full: true
+			},
+			{
+				id: "menarca",
+				label: "Menarca, pré-menopausa e menopausa",
+				full: true
+			},
+			{
+				id: "cirurgias_gineco",
+				label: "Cirurgias",
+				full: true
+			}
+		]
+	},
+	{
+		title: "Antecedentes Alérgicos",
+		fields: [
+			{
+				id: "atopias",
+				label: "Atopias (rinite, bronquite e outras)",
+				full: true
+			},
+			{
+				id: "alergias_meds",
+				label: "Alergias medicamentosas",
+				full: true
+			},
+			{
+				id: "alergias_cosmeticos",
+				label: "Alergias a cosméticos, perfumes, tinturas e outros",
+				full: true
+			}
+		]
+	},
+	{
+		title: "Antecedentes Cirúrgicos",
+		fields: [
+			{
+				id: "tipo_cirurgia",
+				label: "Tipo de cirurgia e datas",
+				full: true
+			},
+			{
+				id: "cirurgias_plasticas",
+				label: "Cirurgias plásticas - tipos e datas",
+				full: true
+			},
+			{
+				id: "marcapasso",
+				label: "Marcapasso"
+			},
+			{
+				id: "proteses",
+				label: "Uso de próteses"
+			}
+		]
+	},
+	{
+		title: "Antecedentes Dermocosméticos",
+		fields: [
+			{
+				id: "laser",
+				label: "Laser"
+			},
+			{
+				id: "peeling",
+				label: "Peeling"
+			},
+			{
+				id: "preenchimentos",
+				label: "Preenchimentos"
+			},
+			{
+				id: "toxina",
+				label: "Toxina botulínica"
+			},
+			{
+				id: "tratamentos_derm",
+				label: "Tratamentos dermatológicos"
+			},
+			{
+				id: "farmacos_ant",
+				label: "Fármacos de uso anterior"
+			},
+			{
+				id: "farmacos_atual",
+				label: "Fármacos de uso atual"
+			},
+			{
+				id: "herpes",
+				label: "Herpes labial e genital"
+			},
+			{
+				id: "tratamentos_esteticos",
+				label: "Tratamentos estéticos anteriores"
+			},
+			{
+				id: "cosmeticos",
+				label: "Cosméticos em uso"
+			}
+		]
+	},
+	{
+		title: "Antecedentes Gerais",
+		fields: [
+			{
+				id: "habitos",
+				label: "Hábitos alimentares",
+				full: true
+			},
+			{
+				id: "atividade",
+				label: "Atividade física",
+				full: true
+			},
+			{
+				id: "sol",
+				label: "Exposição solar",
+				full: true
+			},
+			{
+				id: "tabagismo",
+				label: "Tabagismo",
+				full: true
+			},
+			{
+				id: "patologias",
+				label: "Patologias",
+				full: true
+			},
+			{
+				id: "medicacoes",
+				label: "Medicações em uso",
+				full: true
+			}
+		]
+	}
+];
 function AnamnesisTab({ isSigned }) {
+	const [formData, setFormData] = (0, import_react.useState)(MOCK_DATA);
+	const handleChange = (id, value) => {
+		setFormData((prev) => ({
+			...prev,
+			[id]: value
+		}));
+	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/AnamnesisTab.tsx:8:5",
-		"data-prohibitions": "[]",
+		"data-uid": "src/components/consultation/AnamnesisTab.tsx:109:5",
+		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:9:7",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:110:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardHeader, {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:10:7",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:111:7",
 				"data-prohibitions": "[]",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/AnamnesisTab.tsx:11:9",
+					"data-uid": "src/components/consultation/AnamnesisTab.tsx:112:9",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-2 text-primary font-serif text-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:12:11",
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:113:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " História Clínica"]
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/AnamnesisTab.tsx:15:7",
-				"data-prohibitions": "[]",
-				className: "space-y-6",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:16:9",
+				"data-uid": "src/components/consultation/AnamnesisTab.tsx:116:7",
+				"data-prohibitions": "[editContent]",
+				className: "space-y-8",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/components/consultation/AnamnesisTab.tsx:117:9",
+					"data-prohibitions": "[]",
+					className: "space-y-2",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:118:11",
 						"data-prohibitions": "[]",
-						className: "space-y-2",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:17:11",
-							"data-prohibitions": "[]",
-							htmlFor: "queixa",
-							className: "text-base text-foreground",
-							children: "Queixa Principal"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:20:11",
+						htmlFor: "queixa",
+						className: "text-base text-foreground font-semibold",
+						children: "Queixa Principal"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:121:11",
+						"data-prohibitions": "[editContent]",
+						id: "queixa",
+						placeholder: "Descreva o motivo da consulta com as palavras do paciente...",
+						className: "min-h-[100px] resize-y bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-xl",
+						disabled: isSigned,
+						value: formData.queixa || "",
+						onChange: (e) => handleChange("queixa", e.target.value)
+					})]
+				}), SECTIONS.map((section, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/components/consultation/AnamnesisTab.tsx:132:11",
+					"data-prohibitions": "[editContent]",
+					className: "space-y-4 pt-4",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:133:13",
+						"data-prohibitions": "[editContent]",
+						className: "text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50 pb-2",
+						children: section.title
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+						"data-uid": "src/components/consultation/AnamnesisTab.tsx:136:13",
+						"data-prohibitions": "[editContent]",
+						className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+						children: section.fields.map((field) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							"data-uid": "src/components/consultation/AnamnesisTab.tsx:138:17",
 							"data-prohibitions": "[editContent]",
-							id: "queixa",
-							placeholder: "Descreva o motivo da consulta com as palavras do paciente...",
-							className: "min-h-[100px] resize-y bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-							disabled: isSigned
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:28:9",
-						"data-prohibitions": "[]",
-						className: "grid md:grid-cols-2 gap-6",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:29:11",
-							"data-prohibitions": "[]",
-							className: "space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Label$1, {
-								"data-uid": "src/components/consultation/AnamnesisTab.tsx:30:13",
-								"data-prohibitions": "[]",
-								htmlFor: "alergias",
-								className: "flex items-center gap-1 text-foreground",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-									"data-uid": "src/components/consultation/AnamnesisTab.tsx:31:15",
-									"data-prohibitions": "[editContent]",
-									className: "w-4 h-4 text-destructive"
-								}), " Alergias Conhecidas"]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-								"data-uid": "src/components/consultation/AnamnesisTab.tsx:33:13",
-								"data-prohibitions": "[editContent]",
-								id: "alergias",
-								placeholder: "Ex: Látex, Dipirona, Lidocaína...",
-								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-								disabled: isSigned
-							})]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:40:11",
-							"data-prohibitions": "[]",
-							className: "space-y-2",
+							className: cn$1("space-y-1.5", field.full && "md:col-span-2"),
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/AnamnesisTab.tsx:41:13",
-								"data-prohibitions": "[]",
-								htmlFor: "medicamentos",
-								className: "text-foreground",
-								children: "Uso Contínuo de Medicamentos"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-								"data-uid": "src/components/consultation/AnamnesisTab.tsx:44:13",
+								"data-uid": "src/components/consultation/AnamnesisTab.tsx:139:19",
 								"data-prohibitions": "[editContent]",
-								id: "medicamentos",
-								placeholder: "Ex: Roacutan (isotretinoína), Anticoncepcional...",
-								className: "bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-								disabled: isSigned
+								htmlFor: field.id,
+								className: "text-foreground/80 font-medium",
+								children: field.label
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+								"data-uid": "src/components/consultation/AnamnesisTab.tsx:142:19",
+								"data-prohibitions": "[editContent]",
+								id: field.id,
+								className: "bg-muted/10 border-border/50 shadow-sm focus-visible:ring-primary rounded-lg h-9",
+								disabled: isSigned,
+								value: formData[field.id] || "",
+								onChange: (e) => handleChange(field.id, e.target.value)
 							})]
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/AnamnesisTab.tsx:53:9",
-						"data-prohibitions": "[]",
-						className: "space-y-2",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:54:11",
-							"data-prohibitions": "[]",
-							htmlFor: "procedimentos_previos",
-							className: "text-foreground",
-							children: "Procedimentos Estéticos Prévios"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/AnamnesisTab.tsx:57:11",
-							"data-prohibitions": "[editContent]",
-							id: "procedimentos_previos",
-							placeholder: "Detalhe tratamentos anteriores, intercorrências, insatisfações...",
-							className: "min-h-[100px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
-							disabled: isSigned
-						})]
-					})
-				]
+						}, field.id))
+					})]
+				}, idx))]
 			})
 		]
 	});
@@ -35944,4 +36082,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SettingsProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BTMyGsep.js.map
+//# sourceMappingURL=index-BTRNYUiB.js.map
