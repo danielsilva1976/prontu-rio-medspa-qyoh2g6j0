@@ -34638,7 +34638,7 @@ function ApplicationMarker({ area, points, vectors, lines, onChange, isSigned })
 						units: e.target.value
 					} : pt), vectors, lines),
 					disabled: isSigned,
-					className: "w-10 h-6 text-[10px] font-bold text-center text-primary-foreground border-none bg-primary/90 rounded shadow focus:ring-2 focus:ring-primary focus:bg-primary placeholder:text-primary-foreground/50 transition-colors",
+					className: "w-12 h-6 text-xs font-bold text-center text-primary border-none bg-transparent shadow-none focus:outline-none focus:ring-0 placeholder:text-primary/50 transition-colors drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]",
 					placeholder: "Un"
 				})
 			}, p.id))]
@@ -47148,4 +47148,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CEqWK4rQ.js.map
+//# sourceMappingURL=index-BwV43mPD.js.map
