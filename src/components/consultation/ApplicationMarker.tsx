@@ -9,41 +9,206 @@ export type VectorMark = { id: string; startX: number; startY: number; endX: num
 const DIAGRAMS: Record<string, React.ReactNode> = {
   Face: (
     <>
+      {/* Neck */}
       <path
-        d="M250 50 C160 50 110 120 110 220 C110 300 130 350 170 400 C200 440 230 460 250 460 C270 460 300 440 330 400 C370 350 390 300 390 220 C390 120 340 50 250 50 Z"
+        d="M 160 430 L 140 500 M 340 430 L 360 500"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      {/* Face Contour */}
+      <path
+        d="M 250 40 C 140 40 90 140 90 240 C 90 320 120 380 160 420 C 190 450 220 470 250 470 C 280 470 310 450 340 420 C 380 380 410 320 410 240 C 410 140 360 40 250 40 Z"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* Hairline */}
       <path
-        d="M160 190 Q195 170 230 190 M270 190 Q305 170 340 190"
+        d="M 120 120 C 180 80 320 80 380 120"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray="4 4"
+        opacity={0.5}
+      />
+      {/* Eyebrows */}
+      <path
+        d="M 130 190 Q 170 170 210 185"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 370 190 Q 330 170 290 185"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      {/* Eyes */}
+      <path
+        d="M 140 220 Q 175 205 200 225 Q 175 235 140 220"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="170" cy="220" r="5" fill="currentColor" />
+      <path
+        d="M 360 220 Q 325 205 300 225 Q 325 235 360 220"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="330" cy="220" r="5" fill="currentColor" />
+      {/* Nose Bridge & Tip */}
+      <path
+        d="M 230 220 C 240 240 240 280 235 310"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.6}
+      />
+      <path
+        d="M 270 220 C 260 240 260 280 265 310"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.6}
+      />
+      <path
+        d="M 235 320 C 235 335 265 335 265 320"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M165 220 Q195 205 225 220 Q195 230 165 220 M275 220 Q305 205 335 220 Q305 230 275 220"
+        d="M 215 315 Q 225 325 235 315"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M250 220 L250 310 M230 320 Q250 335 270 320"
+        d="M 285 315 Q 275 325 265 315"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* Lips */}
+      <path
+        d="M 190 380 Q 220 365 250 375 Q 280 365 310 380"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M200 370 Q250 355 300 370 Q250 395 200 370 M205 372 Q250 375 295 372"
+        d="M 190 380 Q 250 385 310 380"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
+      />
+      <path
+        d="M 195 385 Q 250 415 305 385"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* Chin crease */}
+      <path
+        d="M 230 435 Q 250 445 270 435"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      {/* Topographical lines for precise aesthetic mapping */}
+      <path
+        d="M 180 140 Q 250 160 320 140"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 220 315 Q 200 350 190 380"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 280 315 Q 300 350 310 380"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 170 240 Q 190 260 230 250"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 330 240 Q 310 260 270 250"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 180 400 Q 185 430 210 450"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 320 400 Q 315 430 290 450"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 110 330 Q 160 380 230 420"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 390 330 Q 340 380 270 420"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
       />
     </>
   ),
@@ -76,26 +241,70 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
   ),
   Braço: (
     <>
+      {/* Outer Profile of Arm (Shoulder -> Tricep -> Elbow -> Wrist) */}
       <path
-        d="M260 40 C350 80 420 170 400 260 C370 360 330 420 300 460 M140 80 C180 150 240 200 280 260 C250 340 220 400 200 460 M260 40 Q200 30 140 80 M300 460 Q250 480 200 460"
+        d="M 60 250 C 100 200 180 250 200 320 C 220 390 240 450 280 450 C 320 450 380 350 420 200"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
       />
+      {/* Inner Profile (Armpit -> Bicep -> Inner Elbow -> Wrist) */}
       <path
-        d="M280 260 Q320 275 350 250"
+        d="M 140 400 C 200 380 220 300 270 300 C 320 300 310 350 300 380 C 320 350 350 250 360 180"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="3"
         strokeLinecap="round"
       />
+      {/* Fist/Hand at top */}
       <path
-        d="M400 260 Q415 260 410 230 M140 80 Q130 120 150 150"
+        d="M 360 180 C 350 120 440 120 420 200"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      {/* Topographical / Muscle Definition Lines */}
+      <path
+        d="M 200 320 C 240 280 300 300 300 380"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
+        opacity={0.5}
+      />
+      <path
+        d="M 280 450 C 300 400 350 320 360 280"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+      <path
+        d="M 160 280 C 180 320 200 340 220 330"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 180 350 C 220 380 260 400 280 450"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      <path
+        d="M 300 380 C 330 330 370 280 380 220"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
       />
     </>
   ),
@@ -311,7 +520,7 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
           </Button>
         )}
       </div>
-      <div className="relative aspect-square w-full max-w-sm mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden">
+      <div className="relative aspect-square w-full max-w-lg mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden">
         <svg
           ref={svgRef}
           viewBox="0 0 500 500"
