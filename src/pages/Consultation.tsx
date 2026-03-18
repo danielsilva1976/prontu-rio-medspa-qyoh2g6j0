@@ -26,6 +26,7 @@ export default function Consultation() {
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
+  const showAudit = currentUser.id === 'usr-admin'
 
   // Check URL for specific tab request (e.g. ?tab=evolucao for Novo Atendimento)
   const searchParams = new URLSearchParams(location.search)
@@ -46,7 +47,10 @@ export default function Consultation() {
     if (!showDocs && (activeTab === 'receitas' || activeTab === 'laudos')) {
       setActiveTab('planejamento')
     }
-  }, [showAnamneseExame, showDocs, activeTab])
+    if (!showAudit && activeTab === 'auditoria') {
+      setActiveTab('planejamento')
+    }
+  }, [showAnamneseExame, showDocs, showAudit, activeTab])
 
   const handleFinalize = () => {
     setIsFinalized(true)
@@ -127,13 +131,15 @@ export default function Consultation() {
                   </TabsTrigger>
                 </>
               )}
-              <TabsTrigger
-                value="auditoria"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-              >
-                <ShieldCheck className="h-4 w-4 mr-2 inline-block" />
-                Auditoria
-              </TabsTrigger>
+              {showAudit && (
+                <TabsTrigger
+                  value="auditoria"
+                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-amber-600 data-[state=active]:text-amber-700 data-[state=active]:shadow-none hover:text-foreground"
+                >
+                  <ShieldCheck className="h-4 w-4 mr-2 inline-block" />
+                  Auditoria
+                </TabsTrigger>
+              )}
             </TabsList>
           </Tabs>
         </div>
@@ -193,12 +199,14 @@ export default function Consultation() {
                 </TabsContent>
               </>
             )}
-            <TabsContent
-              value="auditoria"
-              className="m-0 focus-visible:outline-none focus-visible:ring-0"
-            >
-              <AuditLogTab patientId={patientId} />
-            </TabsContent>
+            {showAudit && (
+              <TabsContent
+                value="auditoria"
+                className="m-0 focus-visible:outline-none focus-visible:ring-0"
+              >
+                <AuditLogTab patientId={patientId} />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>

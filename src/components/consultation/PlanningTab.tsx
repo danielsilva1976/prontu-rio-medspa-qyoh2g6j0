@@ -80,6 +80,7 @@ export default function PlanningTab({
             plans={savedPlans}
             onCreate={() => setIsCreating(true)}
             isSigned={isSigned}
+            patientId={patientId}
           />
         )}
       </CardContent>

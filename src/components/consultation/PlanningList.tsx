@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { History, Calendar, Plus, ClipboardList, Target, Calculator } from 'lucide-react'
+import {
+  History,
+  Calendar,
+  Plus,
+  ClipboardList,
+  Target,
+  Calculator,
+  FileText,
+  Printer,
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -9,6 +18,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -19,15 +29,26 @@ import {
 } from '@/components/ui/table'
 import type { SavedPlan } from './PlanningForm'
 import { getPaymentMethodLabel } from './PlanningForm'
+import { StrategicPlanA4 } from '@/components/documents/StrategicPlanA4'
+import useDocumentStore from '@/stores/useDocumentStore'
+import usePatientStore from '@/stores/usePatientStore'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 type Props = {
   plans: SavedPlan[]
   onCreate: () => void
   isSigned: boolean
+  patientId: string
 }
 
-export default function PlanningList({ plans, onCreate, isSigned }: Props) {
+export default function PlanningList({ plans, onCreate, isSigned, patientId }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<SavedPlan | null>(null)
+  const [printOpen, setPrintOpen] = useState(false)
+
+  const { layout } = useDocumentStore()
+  const { patients } = usePatientStore()
+  const patient = patients.find((p) => p.id === patientId)
+  const patientName = patient?.name || 'Paciente'
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -198,10 +219,47 @@ export default function PlanningList({ plans, onCreate, isSigned }: Props) {
                   </div>
                 </div>
               </div>
+
+              <div className="mt-8 pt-6 border-t border-border/50 flex justify-end">
+                <Button
+                  onClick={() => setPrintOpen(true)}
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 gap-2 shadow-sm"
+                >
+                  <FileText className="w-4 h-4" />
+                  Gerar Plano Estratégico
+                </Button>
+              </div>
             </div>
           )}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={printOpen} onOpenChange={setPrintOpen}>
+        <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden bg-gray-100/95 flex flex-col border-none shadow-elevation backdrop-blur-sm sm:rounded-xl">
+          <DialogHeader className="p-4 px-6 bg-white border-b border-border/50 flex flex-row items-center justify-between shadow-sm sticky top-0 z-10 shrink-0">
+            <DialogTitle className="text-primary font-serif text-xl flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Plano Terapêutico Estratégico
+            </DialogTitle>
+            <div className="flex gap-3">
+              <Button size="sm" onClick={() => setTimeout(() => window.print(), 500)}>
+                <Printer className="h-4 w-4 mr-2" /> Imprimir Plano
+              </Button>
+            </div>
+          </DialogHeader>
+
+          <ScrollArea className="flex-1 p-8 flex justify-center w-full">
+            {selectedPlan && (
+              <StrategicPlanA4
+                plan={selectedPlan}
+                patientName={patientName}
+                config={layout}
+                className="border border-gray-200"
+              />
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
