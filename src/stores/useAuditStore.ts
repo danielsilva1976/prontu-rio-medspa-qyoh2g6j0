@@ -12,6 +12,7 @@ export type AuditAction =
   | 'Status alterado: Consulta Finalizada'
   | 'Dados do paciente editados'
   | 'Histórico Completo visualizado'
+  | 'Sincronização Belle Software'
   | string
 
 export type AuditLog = {

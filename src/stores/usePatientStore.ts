@@ -26,6 +26,7 @@ type PatientState = {
   patients: Patient[]
   addPatient: (patient: Omit<Patient, 'id'>) => void
   updatePatient: (id: string, data: Partial<Patient>) => void
+  syncWithBelle: (belleData: Partial<Patient>[]) => { added: number; updated: number }
 }
 
 const PatientContext = createContext<PatientState>({} as PatientState)
@@ -45,9 +46,43 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     setPatients((prev) => prev.map((p) => (p.id === id ? { ...p, ...data } : p)))
   }
 
+  const syncWithBelle = (belleData: Partial<Patient>[]) => {
+    let added = 0
+    let updated = 0
+    setPatients((prev) => {
+      const next = [...prev]
+      belleData.forEach((bp) => {
+        const idx = next.findIndex(
+          (p) => (bp.cpf && p.cpf === bp.cpf) || (bp.email && p.email === bp.email),
+        )
+        if (idx >= 0) {
+          next[idx] = { ...next[idx], ...bp }
+          updated++
+        } else {
+          next.push({
+            id: `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            name: bp.name || 'Sem Nome',
+            age: bp.age || 30,
+            phone: bp.phone || '',
+            dob: bp.dob || '1990-01-01',
+            lastVisit: new Date().toISOString().split('T')[0],
+            nextAppointment: null,
+            status: 'active',
+            procedures: [],
+            professional: null,
+            ...bp,
+          })
+          added++
+        }
+      })
+      return next
+    })
+    return { added, updated }
+  }
+
   return createElement(
     PatientContext.Provider,
-    { value: { patients, addPatient, updatePatient } },
+    { value: { patients, addPatient, updatePatient, syncWithBelle } },
     children,
   )
 }

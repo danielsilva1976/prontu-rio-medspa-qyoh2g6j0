@@ -2,6 +2,13 @@ import { useState, useContext, createContext, ReactNode, createElement } from 'r
 
 export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands' | 'technologies'
 
+type BelleConfig = {
+  url: string
+  token: string
+  lastSync?: string
+  lastSyncStatus?: 'success' | 'error'
+}
+
 type SettingsState = {
   procedures: string[]
   areas: string[]
@@ -9,9 +16,12 @@ type SettingsState = {
   brands: string[]
   technologies: string[]
   prices: Record<string, string>
+  belleSoftware: BelleConfig
   addItem: (category: SettingsCategory, item: string, price?: string) => void
   removeItem: (category: SettingsCategory, item: string) => void
   updateItem: (category: SettingsCategory, oldItem: string, newItem: string, price?: string) => void
+  updateBelleConfig: (url: string, token: string) => void
+  setBelleLastSync: (status: 'success' | 'error', date: string) => void
 }
 
 const defaultData = {
@@ -24,40 +34,10 @@ const defaultData = {
     'Peeling Químico',
     'Microagulhamento',
   ],
-  areas: [
-    'Fronte',
-    'Glabela',
-    'Região Periorbicular',
-    'Malar',
-    'Sulco Nasogeniano',
-    'Lábios',
-    'Mento',
-    'Contorno Mandibular',
-    'Pescoço',
-    'Papada',
-  ],
-  products: [
-    'Botox®',
-    'Dysport®',
-    'Xeomin®',
-    'Restylane®',
-    'Juvederm®',
-    'Radiesse®',
-    'Sculptra®',
-    'Elleva',
-    'Lavieen',
-  ],
+  areas: ['Fronte', 'Glabela', 'Região Periorbicular', 'Malar', 'Lábios', 'Mento', 'Pescoço'],
+  products: ['Botox®', 'Dysport®', 'Restylane®', 'Juvederm®', 'Radiesse®', 'Sculptra®', 'Lavieen'],
   brands: ['Allergan', 'Galderma', 'Merz', 'Sinclair', 'Mantecorp', 'Rennova'],
-  technologies: [
-    'Ultraformer III',
-    'Ultraformer MPT',
-    'Lavieen',
-    'Fotona',
-    'Soprano Ice',
-    'Zye AL',
-    'Luz Pulsada (LIP)',
-    'Radiofrequência',
-  ],
+  technologies: ['Ultraformer III', 'Ultraformer MPT', 'Lavieen', 'Fotona', 'Luz Pulsada (LIP)'],
   prices: {
     'Toxina Botulínica': '1200',
     'Preenchimento com Ácido Hialurônico': '1500',
@@ -70,11 +50,9 @@ const defaultData = {
     'Ultraformer MPT': '4000',
     Lavieen: '1200',
     Fotona: '2500',
-    'Soprano Ice': '600',
-    'Zye AL': '800',
     'Luz Pulsada (LIP)': '450',
-    Radiofrequência: '300',
   } as Record<string, string>,
+  belleSoftware: { url: '', token: '' },
 }
 
 const SettingsContext = createContext<SettingsState>({} as SettingsState)
@@ -97,60 +75,47 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setData((prev) => {
       const newPrices = { ...prev.prices }
       delete newPrices[item]
-      return {
-        ...prev,
-        [category]: prev[category].filter((i) => i !== item),
-        prices: newPrices,
-      }
+      return { ...prev, [category]: prev[category].filter((i) => i !== item), prices: newPrices }
     })
   }
 
-  const updateItem = (
-    category: SettingsCategory,
-    oldItem: string,
-    newItem: string,
-    price?: string,
-  ) => {
-    const trimmed = newItem.trim()
-    if (trimmed && trimmed !== oldItem) {
+  const updateItem = (cat: SettingsCategory, old: string, newVal: string, price?: string) => {
+    const trimmed = newVal.trim()
+    if (trimmed && trimmed !== old) {
       setData((prev) => {
         const newPrices = { ...prev.prices }
-        delete newPrices[oldItem]
-        if (price) {
-          newPrices[trimmed] = price
-        }
+        delete newPrices[old]
+        if (price) newPrices[trimmed] = price
         return {
           ...prev,
-          [category]: prev[category].map((i) => (i === oldItem ? trimmed : i)),
+          [cat]: prev[cat].map((i) => (i === old ? trimmed : i)),
           prices: newPrices,
         }
       })
-    } else if (trimmed === oldItem) {
+    } else if (trimmed === old) {
       setData((prev) => {
         const newPrices = { ...prev.prices }
-        if (price) {
-          newPrices[trimmed] = price
-        } else {
-          delete newPrices[trimmed]
-        }
-        return {
-          ...prev,
-          prices: newPrices,
-        }
+        if (price) newPrices[trimmed] = price
+        else delete newPrices[trimmed]
+        return { ...prev, prices: newPrices }
       })
     }
   }
 
+  const updateBelleConfig = (url: string, token: string) => {
+    setData((prev) => ({ ...prev, belleSoftware: { ...prev.belleSoftware, url, token } }))
+  }
+
+  const setBelleLastSync = (status: 'success' | 'error', date: string) => {
+    setData((prev) => ({
+      ...prev,
+      belleSoftware: { ...prev.belleSoftware, lastSyncStatus: status, lastSync: date },
+    }))
+  }
+
   return createElement(
     SettingsContext.Provider,
-    {
-      value: {
-        ...data,
-        addItem,
-        removeItem,
-        updateItem,
-      },
-    },
+    { value: { ...data, addItem, removeItem, updateItem, updateBelleConfig, setBelleLastSync } },
     children,
   )
 }

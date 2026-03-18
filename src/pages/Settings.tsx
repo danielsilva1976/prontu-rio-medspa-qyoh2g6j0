@@ -1,11 +1,22 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Syringe, MapPin, Package, Tag, Cpu, Users } from 'lucide-react'
+import {
+  Syringe,
+  MapPin,
+  Package,
+  Tag,
+  Cpu,
+  Users,
+  Link as LinkIcon,
+  ShieldCheck,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsCategory } from '@/stores/useSettingsStore'
 import useUserStore from '@/stores/useUserStore'
 import SettingsList from '@/components/settings/SettingsList'
 import { UserManagement } from '@/components/settings/UserManagement'
+import { IntegrationSettings } from '@/components/settings/IntegrationSettings'
+import { SystemAuditLog } from '@/components/settings/SystemAuditLog'
 import { cn } from '@/lib/utils'
 
 type TabItem = {
@@ -23,6 +34,12 @@ const allTabs: TabItem[] = [
     icon: Users,
     desc: 'Gerencie os membros da equipe, níveis de acesso e permissões do sistema.',
     adminOnly: true,
+  },
+  {
+    id: 'integrations',
+    label: 'Integrações',
+    icon: LinkIcon,
+    desc: 'Configure a integração e sincronização com o Belle Software.',
   },
   {
     id: 'procedures',
@@ -54,13 +71,19 @@ const allTabs: TabItem[] = [
     icon: Tag,
     desc: 'Lista de fabricantes e marcas parceiras homologadas pela clínica.',
   },
+  {
+    id: 'audit',
+    label: 'Auditoria',
+    icon: ShieldCheck,
+    desc: 'Registro completo de atividades do sistema e sincronizações.',
+    adminOnly: true,
+  },
 ]
 
 export default function Settings() {
   const { currentUser } = useUserStore()
   const [activeTab, setActiveTab] = useState<string>(allTabs[0]?.id || 'procedures')
 
-  // Strict RBAC: Only Médico has access to settings
   if (currentUser.role !== 'Médico') {
     return <Navigate to="/" replace />
   }
@@ -72,7 +95,7 @@ export default function Settings() {
       <div>
         <h1 className="text-3xl font-serif text-primary tracking-tight">Configurações</h1>
         <p className="text-muted-foreground mt-1">
-          Gerencie as listas dinâmicas, acessos e os parâmetros padrões da clínica.
+          Gerencie as listas dinâmicas, acessos e integrações da clínica.
         </p>
       </div>
 
@@ -101,6 +124,10 @@ export default function Settings() {
         <div className="min-w-0">
           {activeTab === 'users' ? (
             <UserManagement title={activeData.label} description={activeData.desc} />
+          ) : activeTab === 'integrations' ? (
+            <IntegrationSettings title={activeData.label} description={activeData.desc} />
+          ) : activeTab === 'audit' ? (
+            <SystemAuditLog title={activeData.label} description={activeData.desc} />
           ) : (
             <SettingsList
               key={activeTab}
