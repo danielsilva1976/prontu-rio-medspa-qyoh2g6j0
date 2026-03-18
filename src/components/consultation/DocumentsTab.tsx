@@ -78,7 +78,7 @@ export default function DocumentsTab({
   }
 
   const handleConfirmAndSign = () => {
-    issueDocument({
+    const newDoc = issueDocument({
       patientId,
       type,
       title: title || (type === 'receita' ? 'Nova Receita' : 'Novo Laudo'),
@@ -91,6 +91,10 @@ export default function DocumentsTab({
     setTitle('')
     setContent('')
     setSelectedTemplateId('none')
+
+    // Automatically trigger preview for the newly issued document
+    setSelectedDoc(newDoc)
+    setPreviewOpen(true)
   }
 
   const titleText = type === 'receita' ? 'Receitas' : 'Laudos'

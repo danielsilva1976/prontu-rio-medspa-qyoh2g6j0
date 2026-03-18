@@ -36,7 +36,7 @@ type DocumentState = {
   updateTemplate: (id: string, t: Partial<DocTemplate>) => void
   removeTemplate: (id: string) => void
   updateLayout: (l: Partial<LayoutConfig>) => void
-  issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => void
+  issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => IssuedDocument
 }
 
 const defaultLayout: LayoutConfig = {
@@ -111,6 +111,7 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
       date: new Date().toLocaleDateString('pt-BR'),
     }
     setIssuedDocs((prev) => [newDoc, ...prev])
+    return newDoc
   }
 
   return createElement(
