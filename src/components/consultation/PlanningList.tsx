@@ -109,7 +109,7 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
       )}
 
       <Sheet open={!!selectedPlan} onOpenChange={(open) => !open && setSelectedPlan(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto sm:p-8">
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto sm:p-8">
           {selectedPlan && (
             <div className="space-y-6 mt-6 pb-8">
               <SheetHeader className="text-left">
@@ -139,7 +139,8 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
                     <TableHeader className="bg-muted/5">
                       <TableRow className="hover:bg-transparent">
                         <TableHead className="h-10 text-xs">Procedimento / Etapa</TableHead>
-                        <TableHead className="h-10 text-right text-xs">V. Padrão</TableHead>
+                        <TableHead className="h-10 text-right text-xs">V. Unitário</TableHead>
+                        <TableHead className="h-10 text-right text-xs">Subtotal</TableHead>
                         <TableHead className="h-10 text-right text-xs">Desconto</TableHead>
                         <TableHead className="h-10 text-right text-xs font-semibold">
                           V. Final
@@ -149,7 +150,7 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
                     <TableBody>
                       {selectedPlan.entries.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                          <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                             Nenhum procedimento adicionado.
                           </TableCell>
                         </TableRow>
@@ -166,6 +167,12 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
                             </TableCell>
                             <TableCell className="py-3 text-right text-muted-foreground text-sm">
                               {formatCurrency(parseFloat(entry.standardValue) || 0)}
+                            </TableCell>
+                            <TableCell className="py-3 text-right text-muted-foreground text-sm">
+                              {formatCurrency(
+                                (parseFloat(entry.standardValue) || 0) *
+                                  (parseInt(entry.quantity) || 1),
+                              )}
                             </TableCell>
                             <TableCell className="py-3 text-right text-muted-foreground text-sm">
                               {entry.discountType === 'percentage'
@@ -186,7 +193,7 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
               <div className="space-y-4 bg-primary/5 p-6 rounded-xl border border-primary/20 mt-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-primary/10 pb-4 gap-2">
                   <h4 className="font-semibold text-base flex items-center gap-2 text-primary">
-                    <Calculator className="w-4 h-4" /> Investimento
+                    <Calculator className="w-4 h-4" /> Investimento Total
                   </h4>
                   <div className="text-2xl font-bold text-primary tracking-tight">
                     {formatCurrency(selectedPlan.totalInvestment)}

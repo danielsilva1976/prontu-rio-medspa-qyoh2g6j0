@@ -48,18 +48,21 @@ export default function PlanningEntryItem({
 }: Props) {
   const [open, setOpen] = useState(false)
 
-  // Auto-calculate final value based on standard value and discount
+  const unitPrice = parseFloat(entry.standardValue) || 0
+  const qty = parseInt(entry.quantity, 10) || 1
+  const subtotal = unitPrice * qty
+
+  // Auto-calculate final value based on standard value, quantity, and discount
   useEffect(() => {
     if (!entry.standardValue && !entry.discountValue && !entry.finalValue) return
 
-    const standard = parseFloat(entry.standardValue) || 0
     const discount = parseFloat(entry.discountValue) || 0
-    let final = standard
+    let final = subtotal
 
     if (entry.discountType === 'percentage') {
-      final = standard - standard * (discount / 100)
+      final = subtotal - subtotal * (discount / 100)
     } else {
-      final = standard - discount
+      final = subtotal - discount
     }
 
     final = Math.max(0, final)
@@ -69,6 +72,7 @@ export default function PlanningEntryItem({
       onUpdate(entry.id, 'finalValue', finalStr)
     }
   }, [
+    subtotal,
     entry.standardValue,
     entry.discountValue,
     entry.discountType,
@@ -192,9 +196,9 @@ export default function PlanningEntryItem({
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 border-t border-border/40 pt-3">
-          <div className="w-full md:w-1/3 space-y-1.5">
+          <div className="w-full md:w-1/4 space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-              Valor Padrão (R$)
+              V. Unitário (R$)
             </Label>
             <Input
               type="number"
@@ -205,7 +209,19 @@ export default function PlanningEntryItem({
               className="bg-muted/5 h-9"
             />
           </div>
-          <div className="w-full md:w-1/3 space-y-1.5">
+          <div className="w-full md:w-1/4 space-y-1.5">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+              Subtotal (R$)
+            </Label>
+            <Input
+              type="number"
+              placeholder="0.00"
+              value={subtotal ? subtotal.toFixed(2) : ''}
+              readOnly
+              className="bg-muted/5 h-9 text-muted-foreground pointer-events-none opacity-80"
+            />
+          </div>
+          <div className="w-full md:w-1/4 space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
               Desconto
             </Label>
@@ -223,7 +239,7 @@ export default function PlanningEntryItem({
                 variant="outline"
                 value={entry.discountType || 'currency'}
                 onValueChange={(val) => {
-                  if (val) onUpdate(entry.id, 'discountType', val)
+                  if (val) onUpdate(entry.id, 'discountType', val as 'currency' | 'percentage')
                 }}
                 disabled={isSigned}
                 className="shrink-0 gap-0 -space-x-px rounded-md h-9"
@@ -243,7 +259,7 @@ export default function PlanningEntryItem({
               </ToggleGroup>
             </div>
           </div>
-          <div className="w-full md:w-1/3 space-y-1.5">
+          <div className="w-full md:w-1/4 space-y-1.5">
             <Label className="text-[10px] text-primary uppercase tracking-wider font-semibold">
               Valor Final (R$)
             </Label>

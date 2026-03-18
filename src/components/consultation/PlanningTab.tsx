@@ -20,7 +20,7 @@ export default function PlanningTab({
       date: '15/10/2023 14:30',
       planName: 'Protocolo Rejuvenescimento Global 360',
       objective: 'Melhorar textura e flacidez da pele com bioestimuladores e laser.',
-      totalInvestment: 4500,
+      totalInvestment: 6500,
       entries: [
         {
           id: 'e1',
@@ -40,12 +40,12 @@ export default function PlanningTab({
           standardValue: '2000',
           discountValue: '0',
           discountType: 'currency',
-          finalValue: '2000',
+          finalValue: '4000',
         },
       ],
       downPayment: 1500,
       downPaymentMethod: 'pix',
-      installments: 3,
+      installments: 5,
       installmentValue: 1000,
       paymentMethod: 'credit',
     },

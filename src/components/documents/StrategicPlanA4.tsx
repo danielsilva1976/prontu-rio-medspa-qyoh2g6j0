@@ -15,7 +15,12 @@ export function StrategicPlanA4({ plan, patientName, config, className }: Props)
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
-  const totalStandard = plan.entries.reduce((acc, e) => acc + (parseFloat(e.standardValue) || 0), 0)
+  const totalStandard = plan.entries.reduce((acc, e) => {
+    const unitPrice = parseFloat(e.standardValue) || 0
+    const qty = parseInt(e.quantity, 10) || 1
+    return acc + unitPrice * qty
+  }, 0)
+
   const totalDiscount = Math.max(0, totalStandard - plan.totalInvestment)
 
   return (
@@ -97,7 +102,8 @@ export function StrategicPlanA4({ plan, patientName, config, className }: Props)
                     <th className="text-left py-3 px-5 font-semibold text-gray-700">
                       Etapa / Momento
                     </th>
-                    <th className="text-right py-3 px-5 font-semibold text-gray-700">Valor Ref.</th>
+                    <th className="text-right py-3 px-5 font-semibold text-gray-700">V. Unit.</th>
+                    <th className="text-right py-3 px-5 font-semibold text-gray-700">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
@@ -114,11 +120,17 @@ export function StrategicPlanA4({ plan, patientName, config, className }: Props)
                         <td className="py-3 px-5 text-right text-gray-600">
                           {formatCurrency(parseFloat(entry.standardValue) || 0)}
                         </td>
+                        <td className="py-3 px-5 text-right text-gray-800 font-medium">
+                          {formatCurrency(
+                            (parseFloat(entry.standardValue) || 0) *
+                              (parseInt(entry.quantity, 10) || 1),
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={3} className="py-4 text-center text-muted-foreground italic">
+                      <td colSpan={4} className="py-4 text-center text-muted-foreground italic">
                         Nenhum procedimento registrado.
                       </td>
                     </tr>
