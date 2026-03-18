@@ -33872,7 +33872,7 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:13:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 160 430 L 140 500 M 340 430 L 360 500",
+			d: "M 180 400 L 150 500 M 320 400 L 350 500",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "3",
@@ -33881,7 +33881,7 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:21:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 250 40 C 140 40 90 140 90 240 C 90 320 120 380 160 420 C 190 450 220 470 250 470 C 280 470 310 450 340 420 C 380 380 410 320 410 240 C 410 140 360 40 250 40 Z",
+			d: "M 250 30 C 190 30 150 50 135 100 C 120 140 125 180 130 210 C 135 240 145 260 150 280 C 155 310 170 340 190 370 C 210 400 230 430 250 430 C 270 430 290 400 310 370 C 330 340 345 310 350 280 C 355 260 365 240 370 210 C 375 180 380 140 365 100 C 350 50 310 30 250 30 Z",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "3",
@@ -33891,7 +33891,25 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:30:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 120 120 C 180 80 320 80 380 120",
+			d: "M 130 200 C 100 190 95 240 110 260 C 120 270 135 270 145 260",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:37:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 370 200 C 400 190 405 240 390 260 C 380 270 365 270 355 260",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:45:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 135 100 C 180 60 320 60 365 100",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
@@ -33900,99 +33918,81 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:40:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 130 190 Q 170 170 210 185",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "3",
-			strokeLinecap: "round"
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:47:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 370 190 Q 330 170 290 185",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "3",
-			strokeLinecap: "round"
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:55:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 140 220 Q 175 205 200 225 Q 175 235 140 220",
+			d: "M 150 170 Q 185 160 215 175",
 			fill: "none",
 			stroke: "currentColor",
-			strokeWidth: "2",
+			strokeWidth: "3",
 			strokeLinecap: "round"
 		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:62:7",
 			"data-prohibitions": "[editContent]",
-			cx: "170",
-			cy: "220",
-			r: "5",
-			fill: "currentColor"
+			d: "M 350 170 Q 315 160 285 175",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "3",
+			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:63:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:70:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 360 220 Q 325 205 300 225 Q 325 235 360 220",
+			d: "M 155 205 Q 185 190 210 205 Q 185 215 155 205",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:70:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:77:7",
 			"data-prohibitions": "[editContent]",
-			cx: "330",
-			cy: "220",
+			cx: "182",
+			cy: "205",
 			r: "5",
 			fill: "currentColor"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:72:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:78:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 230 220 C 240 240 240 280 235 310",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "2",
-			strokeLinecap: "round",
-			opacity: .6
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:80:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 270 220 C 260 240 260 280 265 310",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "2",
-			strokeLinecap: "round",
-			opacity: .6
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:88:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 235 320 C 235 335 265 335 265 320",
+			d: "M 345 205 Q 315 190 290 205 Q 315 215 345 205",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
 			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:85:7",
+			"data-prohibitions": "[editContent]",
+			cx: "318",
+			cy: "205",
+			r: "5",
+			fill: "currentColor"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:87:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 235 200 C 245 240 245 270 235 295",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:95:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 215 315 Q 225 325 235 315",
+			d: "M 265 200 C 255 240 255 270 265 295",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
-			strokeLinecap: "round"
+			strokeLinecap: "round",
+			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:102:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:103:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 285 315 Q 275 325 265 315",
+			d: "M 235 295 C 235 310 265 310 265 295",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
@@ -34001,7 +34001,7 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:110:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 190 380 Q 220 365 250 375 Q 280 365 310 380",
+			d: "M 220 290 Q 225 300 235 295",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
@@ -34010,16 +34010,16 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:117:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 190 380 Q 250 385 310 380",
+			d: "M 280 290 Q 275 300 265 295",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:124:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:125:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 195 385 Q 250 415 305 385",
+			d: "M 200 345 Q 250 330 300 345",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
@@ -34028,7 +34028,25 @@ var DIAGRAMS = {
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:132:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 230 435 Q 250 445 270 435",
+			d: "M 200 345 Q 250 355 300 345",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:139:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 205 350 Q 250 375 295 350",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:147:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 230 400 Q 250 410 270 400",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "2",
@@ -34036,9 +34054,9 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:141:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:156:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 180 140 Q 250 160 320 140",
+			d: "M 220 290 Q 200 330 185 360",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34046,9 +34064,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:149:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:164:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 220 315 Q 200 350 190 380",
+			d: "M 280 290 Q 300 330 315 360",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34056,9 +34074,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:157:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:172:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 280 315 Q 300 350 310 380",
+			d: "M 195 365 Q 185 390 180 410",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34066,9 +34084,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:165:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:180:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 170 240 Q 190 260 230 250",
+			d: "M 305 365 Q 315 390 320 410",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34076,9 +34094,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:173:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:188:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 330 240 Q 310 260 270 250",
+			d: "M 155 220 Q 180 240 210 250",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34086,9 +34104,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:181:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:196:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 180 400 Q 185 430 210 450",
+			d: "M 345 220 Q 320 240 290 250",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34096,9 +34114,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:189:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:204:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 320 400 Q 315 430 290 450",
+			d: "M 170 120 Q 250 140 330 120",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34106,9 +34124,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:197:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:213:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 110 330 Q 160 380 230 420",
+			d: "M 140 240 Q 170 260 200 255",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34116,9 +34134,9 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:205:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:221:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 390 330 Q 340 380 270 420",
+			d: "M 360 240 Q 330 260 300 255",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "1.5",
@@ -34128,7 +34146,7 @@ var DIAGRAMS = {
 	] }),
 	Pescoço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:217:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:233:7",
 			"data-prohibitions": "[editContent]",
 			d: "M180 50 L180 180 C180 230 100 260 50 280 L50 400 M320 50 L320 180 C320 230 400 260 450 280 L450 400",
 			fill: "none",
@@ -34137,7 +34155,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:224:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:240:7",
 			"data-prohibitions": "[editContent]",
 			d: "M220 130 Q250 150 280 130 M200 230 Q250 260 300 230 M130 350 Q250 390 370 350",
 			fill: "none",
@@ -34147,7 +34165,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:232:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:248:7",
 			"data-prohibitions": "[editContent]",
 			d: "M250 160 L250 220",
 			fill: "none",
@@ -34159,86 +34177,79 @@ var DIAGRAMS = {
 	] }),
 	Braço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:245:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 60 250 C 100 200 180 250 200 320 C 220 390 240 450 280 450 C 320 450 380 350 420 200",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "3",
-			strokeLinecap: "round"
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:253:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 140 400 C 200 380 220 300 270 300 C 320 300 310 350 300 380 C 320 350 350 250 360 180",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "3",
-			strokeLinecap: "round"
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
 			"data-uid": "src/components/consultation/ApplicationMarker.tsx:261:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 360 180 C 350 120 440 120 420 200",
+			d: "M 100 350 C 200 370 300 380 350 360 C 380 370 400 350 390 300 C 380 250 390 150 370 100 C 360 50 320 50 310 100 C 300 150 290 200 300 250 C 280 230 250 210 200 210 C 150 210 120 230 100 250 M 100 250 Q 140 300 100 350",
 			fill: "none",
 			stroke: "currentColor",
 			strokeWidth: "3",
+			strokeLinecap: "round",
+			strokeLinejoin: "round"
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:270:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 200 210 C 230 260 280 270 300 250",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			opacity: .6
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:279:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 150 360 C 200 330 300 330 350 360",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
+			strokeLinecap: "round",
+			opacity: .6
+		}),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:288:7",
+			"data-prohibitions": "[editContent]",
+			d: "M 295 260 Q 320 270 340 250",
+			fill: "none",
+			stroke: "currentColor",
+			strokeWidth: "2",
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:269:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:296:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 200 320 C 240 280 300 300 300 380",
+			d: "M 310 230 C 330 230 350 180 340 120",
 			fill: "none",
 			stroke: "currentColor",
-			strokeWidth: "2",
+			strokeWidth: "1.5",
 			strokeLinecap: "round",
+			strokeDasharray: "4 4",
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:277:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:306:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 280 450 C 300 400 350 320 360 280",
+			d: "M 140 215 C 160 250 150 290 120 310",
 			fill: "none",
 			stroke: "currentColor",
-			strokeWidth: "2",
+			strokeWidth: "1.5",
 			strokeLinecap: "round",
+			strokeDasharray: "4 4",
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:285:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:316:7",
 			"data-prohibitions": "[editContent]",
-			d: "M 160 280 C 180 320 200 340 220 330",
+			d: "M 315 105 Q 340 115 365 105",
 			fill: "none",
 			stroke: "currentColor",
-			strokeWidth: "1.5",
-			strokeDasharray: "4 4",
-			opacity: .3
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:293:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 180 350 C 220 380 260 400 280 450",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "1.5",
-			strokeDasharray: "4 4",
-			opacity: .3
-		}),
-		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:301:7",
-			"data-prohibitions": "[editContent]",
-			d: "M 300 380 C 330 330 370 280 380 220",
-			fill: "none",
-			stroke: "currentColor",
-			strokeWidth: "1.5",
-			strokeDasharray: "4 4",
-			opacity: .3
+			strokeWidth: "2",
+			strokeLinecap: "round"
 		})
 	] }),
 	Abdome: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:313:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:327:7",
 			"data-prohibitions": "[editContent]",
 			d: "M130 50 C140 150 110 300 140 450 M370 50 C360 150 390 300 360 450",
 			fill: "none",
@@ -34247,7 +34258,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:320:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:334:7",
 			"data-prohibitions": "[editContent]",
 			cx: "250",
 			cy: "270",
@@ -34257,7 +34268,7 @@ var DIAGRAMS = {
 			strokeWidth: "3"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:321:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:335:7",
 			"data-prohibitions": "[editContent]",
 			d: "M250 80 L250 240 M250 300 L250 450",
 			fill: "none",
@@ -34267,7 +34278,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:329:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:343:7",
 			"data-prohibitions": "[editContent]",
 			d: "M180 120 Q250 150 320 120 M160 180 Q250 210 340 180 M150 350 Q250 380 350 350",
 			fill: "none",
@@ -34279,7 +34290,7 @@ var DIAGRAMS = {
 	] }),
 	Coxas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:341:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:355:7",
 			"data-prohibitions": "[editContent]",
 			d: "M100 50 C80 200 120 400 150 480 M240 50 C250 200 230 400 230 480 M260 50 C250 200 270 400 270 480 M400 50 C420 200 380 400 350 480",
 			fill: "none",
@@ -34288,7 +34299,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:348:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:362:7",
 			"data-prohibitions": "[editContent]",
 			d: "M100 50 Q170 90 240 50 M260 50 Q330 90 400 50",
 			fill: "none",
@@ -34298,7 +34309,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:356:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:370:7",
 			"data-prohibitions": "[editContent]",
 			d: "M170 150 Q200 180 240 130 M330 150 Q300 180 260 130",
 			fill: "none",
@@ -34310,7 +34321,7 @@ var DIAGRAMS = {
 	] }),
 	Pernas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:368:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:382:7",
 			"data-prohibitions": "[editContent]",
 			d: "M150 50 C110 200 100 350 120 450 M230 50 C250 200 200 350 180 450 M270 50 C250 200 300 350 320 450 M350 50 C390 200 400 350 380 450",
 			fill: "none",
@@ -34319,7 +34330,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:375:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:389:7",
 			"data-prohibitions": "[editContent]",
 			d: "M150 50 Q190 70 230 50 M270 50 Q310 70 350 50",
 			fill: "none",
@@ -34329,7 +34340,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:383:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:397:7",
 			"data-prohibitions": "[editContent]",
 			d: "M120 450 Q140 480 180 450 M380 450 Q360 480 320 450",
 			fill: "none",
@@ -34403,15 +34414,15 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 		if (vec) onChange(points, vectors.filter((v) => v.id !== vec.id));
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/ApplicationMarker.tsx:482:5",
+		"data-uid": "src/components/consultation/ApplicationMarker.tsx:496:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-4",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:483:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:497:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-wrap items-center justify-between gap-2 bg-muted/40 p-1.5 rounded-lg border border-border/50",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroup, {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:484:9",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:498:9",
 				"data-prohibitions": "[]",
 				type: "single",
 				value: tool,
@@ -34419,43 +34430,11 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 				disabled: isSigned,
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:490:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:504:11",
 						"data-prohibitions": "[]",
 						value: "point",
 						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:494:13",
-							"data-prohibitions": "[editContent]",
-							className: "h-4 w-4"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:495:13",
-							"data-prohibitions": "[]",
-							className: "text-xs font-medium",
-							children: "Ponto"
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:497:11",
-						"data-prohibitions": "[]",
-						value: "vector",
-						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:501:13",
-							"data-prohibitions": "[editContent]",
-							className: "h-4 w-4"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:502:13",
-							"data-prohibitions": "[]",
-							className: "text-xs font-medium",
-							children: "Vetor"
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:504:11",
-						"data-prohibitions": "[]",
-						value: "erase",
-						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eraser, {
 							"data-uid": "src/components/consultation/ApplicationMarker.tsx:508:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
@@ -34463,29 +34442,61 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 							"data-uid": "src/components/consultation/ApplicationMarker.tsx:509:13",
 							"data-prohibitions": "[]",
 							className: "text-xs font-medium",
+							children: "Ponto"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:511:11",
+						"data-prohibitions": "[]",
+						value: "vector",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:515:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:516:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
+							children: "Vetor"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:518:11",
+						"data-prohibitions": "[]",
+						value: "erase",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eraser, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:522:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:523:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
 							children: "Borracha"
 						})]
 					})
 				]
 			}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:513:11",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:527:11",
 				"data-prohibitions": "[]",
 				variant: "ghost",
 				size: "sm",
 				onClick: () => onChange([], []),
 				className: "text-destructive h-8 px-3 hover:bg-destructive/10",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-					"data-uid": "src/components/consultation/ApplicationMarker.tsx:519:13",
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:533:13",
 					"data-prohibitions": "[editContent]",
 					className: "h-4 w-4 mr-1.5"
 				}), " Limpar"]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:523:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:537:7",
 			"data-prohibitions": "[editContent]",
-			className: "relative aspect-square w-full max-w-lg mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden",
+			className: "relative aspect-square w-full max-w-2xl mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:524:9",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:538:9",
 				"data-prohibitions": "[editContent]",
 				ref: svgRef,
 				viewBox: "0 0 500 500",
@@ -34496,10 +34507,10 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 				onPointerLeave: onUp,
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("defs", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:533:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:547:11",
 						"data-prohibitions": "[]",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("marker", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:534:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:548:13",
 							"data-prohibitions": "[]",
 							id: "arr",
 							markerWidth: "6",
@@ -34508,7 +34519,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 							refY: "3",
 							orient: "auto",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
-								"data-uid": "src/components/consultation/ApplicationMarker.tsx:535:15",
+								"data-uid": "src/components/consultation/ApplicationMarker.tsx:549:15",
 								"data-prohibitions": "[editContent]",
 								points: "0 0, 6 3, 0 6",
 								fill: "hsl(var(--primary))"
@@ -34517,7 +34528,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 					}),
 					DIAGRAMS[area],
 					vectors.map((v) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:540:13",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:554:13",
 						"data-prohibitions": "[editContent]",
 						x1: v.startX,
 						y1: v.startY,
@@ -34529,7 +34540,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 						strokeLinecap: "round"
 					}, v.id)),
 					drawV && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:553:13",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:567:13",
 						"data-prohibitions": "[editContent]",
 						x1: drawV.sX,
 						y1: drawV.sY,
@@ -34542,7 +34553,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 						strokeLinecap: "round"
 					}),
 					points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:566:13",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:580:13",
 						"data-prohibitions": "[editContent]",
 						cx: p.x,
 						cy: p.y,
@@ -34552,7 +34563,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 					}, p.id))
 				]
 			}), points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:577:11",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:591:11",
 				"data-prohibitions": "[]",
 				style: {
 					left: `${p.x / 500 * 100}%`,
@@ -34561,7 +34572,7 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 				className: "absolute -translate-x-1/2 -translate-y-9 z-10",
 				onPointerDown: (e) => e.stopPropagation(),
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-					"data-uid": "src/components/consultation/ApplicationMarker.tsx:583:13",
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:597:13",
 					"data-prohibitions": "[editContent]",
 					value: p.units,
 					onChange: (e) => onChange(points.map((pt) => pt.id === p.id ? {
@@ -47075,4 +47086,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CKXMujns.js.map
+//# sourceMappingURL=index-DQt4i8Uu.js.map

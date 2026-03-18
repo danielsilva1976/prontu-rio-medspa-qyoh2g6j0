@@ -11,24 +11,39 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
     <>
       {/* Neck */}
       <path
-        d="M 160 430 L 140 500 M 340 430 L 360 500"
+        d="M 180 400 L 150 500 M 320 400 L 350 500"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
       />
-      {/* Face Contour */}
+      {/* Face Contour - High detail & realistic structure */}
       <path
-        d="M 250 40 C 140 40 90 140 90 240 C 90 320 120 380 160 420 C 190 450 220 470 250 470 C 280 470 310 450 340 420 C 380 380 410 320 410 240 C 410 140 360 40 250 40 Z"
+        d="M 250 30 C 190 30 150 50 135 100 C 120 140 125 180 130 210 C 135 240 145 260 150 280 C 155 310 170 340 190 370 C 210 400 230 430 250 430 C 270 430 290 400 310 370 C 330 340 345 310 350 280 C 355 260 365 240 370 210 C 375 180 380 140 365 100 C 350 50 310 30 250 30 Z"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* Ears */}
+      <path
+        d="M 130 200 C 100 190 95 240 110 260 C 120 270 135 270 145 260"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 370 200 C 400 190 405 240 390 260 C 380 270 365 270 355 260"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
       {/* Hairline */}
       <path
-        d="M 120 120 C 180 80 320 80 380 120"
+        d="M 135 100 C 180 60 320 60 365 100"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -38,14 +53,14 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
       />
       {/* Eyebrows */}
       <path
-        d="M 130 190 Q 170 170 210 185"
+        d="M 150 170 Q 185 160 215 175"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
       />
       <path
-        d="M 370 190 Q 330 170 290 185"
+        d="M 350 170 Q 315 160 285 175"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
@@ -53,32 +68,24 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
       />
       {/* Eyes */}
       <path
-        d="M 140 220 Q 175 205 200 225 Q 175 235 140 220"
+        d="M 155 205 Q 185 190 210 205 Q 185 215 155 205"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
-      <circle cx="170" cy="220" r="5" fill="currentColor" />
+      <circle cx="182" cy="205" r="5" fill="currentColor" />
       <path
-        d="M 360 220 Q 325 205 300 225 Q 325 235 360 220"
+        d="M 345 205 Q 315 190 290 205 Q 315 215 345 205"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
-      <circle cx="330" cy="220" r="5" fill="currentColor" />
-      {/* Nose Bridge & Tip */}
+      <circle cx="318" cy="205" r="5" fill="currentColor" />
+      {/* Nose */}
       <path
-        d="M 230 220 C 240 240 240 280 235 310"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity={0.6}
-      />
-      <path
-        d="M 270 220 C 260 240 260 280 265 310"
+        d="M 235 200 C 245 240 245 270 235 295"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -86,21 +93,29 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.6}
       />
       <path
-        d="M 235 320 C 235 335 265 335 265 320"
+        d="M 265 200 C 255 240 255 270 265 295"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.6}
+      />
+      <path
+        d="M 235 295 C 235 310 265 310 265 295"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M 215 315 Q 225 325 235 315"
+        d="M 220 290 Q 225 300 235 295"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M 285 315 Q 275 325 265 315"
+        d="M 280 290 Q 275 300 265 295"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -108,21 +123,21 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
       />
       {/* Lips */}
       <path
-        d="M 190 380 Q 220 365 250 375 Q 280 365 310 380"
+        d="M 200 345 Q 250 330 300 345"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M 190 380 Q 250 385 310 380"
+        d="M 200 345 Q 250 355 300 345"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
       />
       <path
-        d="M 195 385 Q 250 415 305 385"
+        d="M 205 350 Q 250 375 295 350"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -130,16 +145,16 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
       />
       {/* Chin crease */}
       <path
-        d="M 230 435 Q 250 445 270 435"
+        d="M 230 400 Q 250 410 270 400"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         opacity={0.5}
       />
-      {/* Topographical lines for precise aesthetic mapping */}
+      {/* Topographical aesthetic lines */}
       <path
-        d="M 180 140 Q 250 160 320 140"
+        d="M 220 290 Q 200 330 185 360"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -147,7 +162,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 220 315 Q 200 350 190 380"
+        d="M 280 290 Q 300 330 315 360"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -155,7 +170,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 280 315 Q 300 350 310 380"
+        d="M 195 365 Q 185 390 180 410"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -163,7 +178,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 170 240 Q 190 260 230 250"
+        d="M 305 365 Q 315 390 320 410"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -171,7 +186,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 330 240 Q 310 260 270 250"
+        d="M 155 220 Q 180 240 210 250"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -179,7 +194,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 180 400 Q 185 430 210 450"
+        d="M 345 220 Q 320 240 290 250"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -187,7 +202,16 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 320 400 Q 315 430 290 450"
+        d="M 170 120 Q 250 140 330 120"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeDasharray="4 4"
+        opacity={0.3}
+      />
+      {/* Cheekbone highlights */}
+      <path
+        d="M 140 240 Q 170 260 200 255"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -195,15 +219,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
         opacity={0.3}
       />
       <path
-        d="M 110 330 Q 160 380 230 420"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeDasharray="4 4"
-        opacity={0.3}
-      />
-      <path
-        d="M 390 330 Q 340 380 270 420"
+        d="M 360 240 Q 330 260 300 255"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -241,70 +257,68 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
   ),
   Braço: (
     <>
-      {/* Outer Profile of Arm (Shoulder -> Tricep -> Elbow -> Wrist) */}
+      {/* Flexed Arm Outline */}
       <path
-        d="M 60 250 C 100 200 180 250 200 320 C 220 390 240 450 280 450 C 320 450 380 350 420 200"
+        d="M 100 350 C 200 370 300 380 350 360 C 380 370 400 350 390 300 C 380 250 390 150 370 100 C 360 50 320 50 310 100 C 300 150 290 200 300 250 C 280 230 250 210 200 210 C 150 210 120 230 100 250 M 100 250 Q 140 300 100 350"
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      {/* Inner Profile (Armpit -> Bicep -> Inner Elbow -> Wrist) */}
+      {/* Bicep Definition */}
       <path
-        d="M 140 400 C 200 380 220 300 270 300 C 320 300 310 350 300 380 C 320 350 350 250 360 180"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      {/* Fist/Hand at top */}
-      <path
-        d="M 360 180 C 350 120 440 120 420 200"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      {/* Topographical / Muscle Definition Lines */}
-      <path
-        d="M 200 320 C 240 280 300 300 300 380"
+        d="M 200 210 C 230 260 280 270 300 250"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
-        opacity={0.5}
+        opacity={0.6}
       />
+      {/* Tricep Definition */}
       <path
-        d="M 280 450 C 300 400 350 320 360 280"
+        d="M 150 360 C 200 330 300 330 350 360"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
+        opacity={0.6}
+      />
+      {/* Elbow Crease */}
+      <path
+        d="M 295 260 Q 320 270 340 250"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* Forearm Brachioradialis */}
+      <path
+        d="M 310 230 C 330 230 350 180 340 120"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeDasharray="4 4"
         opacity={0.5}
       />
+      {/* Deltoid insertion */}
       <path
-        d="M 160 280 C 180 320 200 340 220 330"
+        d="M 140 215 C 160 250 150 290 120 310"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
+        strokeLinecap="round"
         strokeDasharray="4 4"
-        opacity={0.3}
+        opacity={0.5}
       />
+      {/* Wrist crease */}
       <path
-        d="M 180 350 C 220 380 260 400 280 450"
+        d="M 315 105 Q 340 115 365 105"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeDasharray="4 4"
-        opacity={0.3}
-      />
-      <path
-        d="M 300 380 C 330 330 370 280 380 220"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeDasharray="4 4"
-        opacity={0.3}
+        strokeWidth="2"
+        strokeLinecap="round"
       />
     </>
   ),
@@ -520,7 +534,7 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
           </Button>
         )}
       </div>
-      <div className="relative aspect-square w-full max-w-lg mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden">
+      <div className="relative aspect-square w-full max-w-2xl mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden">
         <svg
           ref={svgRef}
           viewBox="0 0 500 500"

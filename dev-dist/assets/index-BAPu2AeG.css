@@ -1204,6 +1204,9 @@ video {
   min-width: -moz-max-content;
   min-width: max-content;
 }
+.max-w-2xl {
+  max-width: 42rem;
+}
 .max-w-4xl {
   max-width: 56rem;
 }
