@@ -18,13 +18,25 @@ export type LayoutConfig = {
   disclaimer: string
 }
 
+export type IssuedDocument = {
+  id: string
+  patientId: string
+  type: 'receita' | 'laudo'
+  title: string
+  date: string
+  content: string
+  status: 'Assinado' | 'Rascunho'
+}
+
 type DocumentState = {
   templates: DocTemplate[]
   layout: LayoutConfig
+  issuedDocs: IssuedDocument[]
   addTemplate: (t: Omit<DocTemplate, 'id'>) => void
   updateTemplate: (id: string, t: Partial<DocTemplate>) => void
   removeTemplate: (id: string) => void
   updateLayout: (l: Partial<LayoutConfig>) => void
+  issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => void
 }
 
 const defaultLayout: LayoutConfig = {
@@ -56,11 +68,25 @@ const defaultTemplates: DocTemplate[] = [
   },
 ]
 
+const defaultIssuedDocs: IssuedDocument[] = [
+  {
+    id: 'doc-1',
+    patientId: 'p-001',
+    type: 'receita',
+    title: 'Receituário Skincare Routine',
+    date: '17/03/2026',
+    status: 'Assinado',
+    content:
+      'Uso Tópico:\n\n1. Ácido Retinóico 0.025% creme - 30g\n   Aplicar uma fina camada no rosto à noite, 3x na semana.\n\n2. Vitamina C 15% sérum - 30ml\n   Aplicar no rosto pela manhã, antes do protetor solar.\n\n3. Protetor Solar FPS 50+ toque seco\n   Aplicar generosamente pela manhã e reaplicar a cada 3 horas.',
+  },
+]
+
 const DocumentContext = createContext<DocumentState>({} as DocumentState)
 
 export const DocumentProvider = ({ children }: { children: ReactNode }) => {
   const [templates, setTemplates] = useState<DocTemplate[]>(defaultTemplates)
   const [layout, setLayout] = useState<LayoutConfig>(defaultLayout)
+  const [issuedDocs, setIssuedDocs] = useState<IssuedDocument[]>(defaultIssuedDocs)
 
   const addTemplate = (t: Omit<DocTemplate, 'id'>) => {
     setTemplates((prev) => [...prev, { ...t, id: `t-${Date.now()}` }])
@@ -78,10 +104,28 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
     setLayout((prev) => ({ ...prev, ...l }))
   }
 
+  const issueDocument = (doc: Omit<IssuedDocument, 'id' | 'date'>) => {
+    const newDoc: IssuedDocument = {
+      ...doc,
+      id: `doc-${Date.now()}`,
+      date: new Date().toLocaleDateString('pt-BR'),
+    }
+    setIssuedDocs((prev) => [newDoc, ...prev])
+  }
+
   return createElement(
     DocumentContext.Provider,
     {
-      value: { templates, layout, addTemplate, updateTemplate, removeTemplate, updateLayout },
+      value: {
+        templates,
+        layout,
+        issuedDocs,
+        addTemplate,
+        updateTemplate,
+        removeTemplate,
+        updateLayout,
+        issueDocument,
+      },
     },
     children,
   )

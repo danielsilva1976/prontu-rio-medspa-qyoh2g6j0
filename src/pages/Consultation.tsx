@@ -12,7 +12,7 @@ import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
-import { patients } from '@/lib/mock-data'
+import usePatientStore from '@/stores/usePatientStore'
 
 export default function Consultation() {
   const { id } = useParams()
@@ -20,6 +20,7 @@ export default function Consultation() {
   const patientId = id || 'p-001'
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
+  const { patients } = usePatientStore()
 
   const [isFinalized, setIsFinalized] = useState(false)
 
@@ -42,7 +43,7 @@ export default function Consultation() {
     if (!showAnamneseExame && (activeTab === 'anamnese' || activeTab === 'exame')) {
       setActiveTab('planejamento')
     }
-    if (!showDocs && activeTab === 'documentos') {
+    if (!showDocs && (activeTab === 'receitas' || activeTab === 'laudos')) {
       setActiveTab('planejamento')
     }
   }, [showAnamneseExame, showDocs, activeTab])
@@ -52,7 +53,6 @@ export default function Consultation() {
     addLog('Status alterado: Consulta Finalizada', patientId)
   }
 
-  // In a real app, we would fetch patient data based on ID
   const patient = patients.find((p) => p.id === patientId) || patients[0]
 
   return (
@@ -110,13 +110,22 @@ export default function Consultation() {
                 Evolução
               </TabsTrigger>
               {showDocs && (
-                <TabsTrigger
-                  value="documentos"
-                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-                >
-                  <FileText className="h-4 w-4 mr-2 inline-block" />
-                  Receitas & Laudos
-                </TabsTrigger>
+                <>
+                  <TabsTrigger
+                    value="receitas"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+                  >
+                    <FileText className="h-4 w-4 mr-2 inline-block" />
+                    Receitas
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="laudos"
+                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+                  >
+                    <FileText className="h-4 w-4 mr-2 inline-block" />
+                    Laudos
+                  </TabsTrigger>
+                </>
               )}
               <TabsTrigger
                 value="auditoria"
@@ -169,12 +178,20 @@ export default function Consultation() {
               <EvolutionTab isSigned={isFinalized} patientId={patientId} />
             </TabsContent>
             {showDocs && (
-              <TabsContent
-                value="documentos"
-                className="m-0 focus-visible:outline-none focus-visible:ring-0"
-              >
-                <DocumentsTab isSigned={isFinalized} patientId={patientId} />
-              </TabsContent>
+              <>
+                <TabsContent
+                  value="receitas"
+                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
+                >
+                  <DocumentsTab type="receita" isSigned={isFinalized} patientId={patientId} />
+                </TabsContent>
+                <TabsContent
+                  value="laudos"
+                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
+                >
+                  <DocumentsTab type="laudo" isSigned={isFinalized} patientId={patientId} />
+                </TabsContent>
+              </>
             )}
             <TabsContent
               value="auditoria"
