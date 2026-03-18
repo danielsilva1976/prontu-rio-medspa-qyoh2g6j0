@@ -6,6 +6,7 @@ import { SettingsProvider } from '@/stores/useSettingsStore'
 import { UserProvider } from '@/stores/useUserStore'
 import { AuditProvider } from '@/stores/useAuditStore'
 import { PatientProvider } from '@/stores/usePatientStore'
+import { DocumentProvider } from '@/stores/useDocumentStore'
 import Layout from './components/Layout'
 
 // Pages
@@ -22,23 +23,25 @@ const App = () => (
     <AuditProvider>
       <SettingsProvider>
         <PatientProvider>
-          <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route element={<Layout />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/pacientes" element={<Patients />} />
-                  <Route path="/prontuario/:id" element={<Consultation />} />
-                  <Route path="/documentos" element={<Documents />} />
-                  <Route path="/configuracoes" element={<Settings />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </TooltipProvider>
-          </BrowserRouter>
+          <DocumentProvider>
+            <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/pacientes" element={<Patients />} />
+                    <Route path="/prontuario/:id" element={<Consultation />} />
+                    <Route path="/documentos" element={<Documents />} />
+                    <Route path="/configuracoes" element={<Settings />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </TooltipProvider>
+            </BrowserRouter>
+          </DocumentProvider>
         </PatientProvider>
       </SettingsProvider>
     </AuditProvider>
