@@ -9,9 +9,11 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Trash2, Shield, User, ShieldAlert } from 'lucide-react'
 import useUserStore from '@/stores/useUserStore'
 import { AddUserDialog } from './AddUserDialog'
+import { EditUserDialog } from './EditUserDialog'
 
 interface UserManagementProps {
   title: string
@@ -35,7 +37,7 @@ export function UserManagement({ title, description }: UserManagementProps) {
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableHead>Nome</TableHead>
+                <TableHead>Profissional</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead>Nível de Acesso</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
@@ -45,7 +47,17 @@ export function UserManagement({ title, description }: UserManagementProps) {
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id} className="group transition-colors hover:bg-muted/10">
-                  <TableCell className="font-medium text-foreground">{user.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 border border-border">
+                        <AvatarImage src={user.avatar} className="object-cover" />
+                        <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">
+                          {user.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-foreground">{user.name}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground hidden md:table-cell">
                     {user.email}
                   </TableCell>
@@ -70,17 +82,20 @@ export function UserManagement({ title, description }: UserManagementProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {user.id !== currentUser.id && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeUser(user.id)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remover Usuário"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <EditUserDialog user={user} />
+                      {user.id !== currentUser.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeUser(user.id)}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Remover Usuário"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

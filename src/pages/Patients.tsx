@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Search, RefreshCw, Calendar, Clock, FileText, Plus } from 'lucide-react'
-import { patients } from '@/lib/mock-data'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Search, RefreshCw, Calendar, Clock, FileText, Plus, Edit2 } from 'lucide-react'
+import usePatientStore from '@/stores/usePatientStore'
+import { PatientDialog } from '@/components/patients/PatientDialog'
 
 export default function Patients() {
+  const { patients } = usePatientStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
 
@@ -28,12 +30,12 @@ export default function Patients() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif text-primary">Pacientes</h1>
-          <p className="text-muted-foreground mt-1">Integração base Belle Software</p>
+          <p className="text-muted-foreground mt-1">Gestão de pacientes e prontuários</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge
             variant="outline"
-            className="px-3 py-1.5 bg-success/10 text-success border-success/20 shadow-none"
+            className="px-3 py-1.5 bg-success/10 text-success border-success/20 shadow-none hidden sm:flex"
           >
             <span className="relative flex h-2 w-2 mr-2">
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
@@ -45,6 +47,7 @@ export default function Patients() {
               className={`w-4 h-4 text-muted-foreground ${isSyncing ? 'animate-spin' : ''}`}
             />
           </Button>
+          <PatientDialog />
         </div>
       </div>
 
@@ -53,7 +56,7 @@ export default function Patients() {
           <div className="relative mb-6">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome, CPF ou ID do Belle Software..."
+              placeholder="Buscar por nome ou ID..."
               className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -72,16 +75,32 @@ export default function Patients() {
                   className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group gap-4"
                 >
                   <div className="flex items-center gap-4 w-full xl:w-auto">
-                    <Avatar className="h-12 w-12 border border-border">
-                      <AvatarFallback className="bg-primary text-primary-foreground font-serif text-lg">
+                    <Avatar className="h-14 w-14 border border-border shrink-0">
+                      <AvatarImage src={patient.avatar} className="object-cover" />
+                      <AvatarFallback className="bg-primary/5 text-primary font-serif text-lg">
                         {patient.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
-                        {patient.name}
-                      </h3>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
+                          {patient.name}
+                        </h3>
+                        <PatientDialog
+                          patient={patient}
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Editar Paciente"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </Button>
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
                         <span>ID: {patient.id.toUpperCase()}</span>
                         <span>•</span>
                         <span>{patient.age} anos</span>

@@ -9,6 +9,7 @@ export type User = {
   email: string
   role: UserRole
   status: UserStatus
+  avatar?: string
 }
 
 type UserState = {
@@ -16,6 +17,7 @@ type UserState = {
   currentUser: User
   isAuthenticated: boolean
   addUser: (user: Omit<User, 'id' | 'status'>) => void
+  updateUser: (id: string, data: Partial<User>) => void
   toggleStatus: (id: string) => void
   removeUser: (id: string) => void
   switchUser: (id: string) => void
@@ -30,6 +32,7 @@ const defaultUsers: User[] = [
     email: 'fabiola@medspa.com',
     role: 'Médico',
     status: 'Ativo',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1',
   },
   {
     id: 'usr-2',
@@ -37,6 +40,7 @@ const defaultUsers: User[] = [
     email: 'sofia@medspa.com',
     role: 'Estético',
     status: 'Ativo',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=2',
   },
   {
     id: 'usr-3',
@@ -44,6 +48,7 @@ const defaultUsers: User[] = [
     email: 'mariana@medspa.com',
     role: 'Secretária',
     status: 'Ativo',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3',
   },
 ]
 
@@ -63,6 +68,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       status: 'Ativo',
     }
     setUsers((prev) => [...prev, newUser])
+  }
+
+  const updateUser = (id: string, data: Partial<User>) => {
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)))
   }
 
   const toggleStatus = (id: string) => {
@@ -92,6 +101,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         currentUser,
         isAuthenticated,
         addUser,
+        updateUser,
         toggleStatus,
         removeUser,
         switchUser,
