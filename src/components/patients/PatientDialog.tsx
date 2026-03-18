@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import usePatientStore, { Patient } from '@/stores/usePatientStore'
+import useAuditStore from '@/stores/useAuditStore'
 import { ImageUpload } from '@/components/ui/image-upload'
 
 const formSchema = z.object({
@@ -30,6 +31,12 @@ const formSchema = z.object({
   age: z.coerce.number().min(0, 'Idade inválida'),
   phone: z.string().min(10, 'Telefone inválido'),
   avatar: z.string().optional(),
+  cpf: z.string().optional(),
+  rg: z.string().optional(),
+  profissao: z.string().optional(),
+  estado_civil: z.string().optional(),
+  email: z.string().email('E-mail inválido').or(z.literal('')).optional(),
+  endereco: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -42,6 +49,7 @@ interface PatientDialogProps {
 export function PatientDialog({ patient, trigger }: PatientDialogProps) {
   const [open, setOpen] = useState(false)
   const { addPatient, updatePatient } = usePatientStore()
+  const { addLog } = useAuditStore()
   const { toast } = useToast()
 
   const isEdit = !!patient
@@ -53,57 +61,64 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
       age: patient?.age || 30,
       phone: patient?.phone || '',
       avatar: patient?.avatar || '',
+      cpf: patient?.cpf || '',
+      rg: patient?.rg || '',
+      profissao: patient?.profissao || '',
+      estado_civil: patient?.estado_civil || '',
+      email: patient?.email || '',
+      endereco: patient?.endereco || '',
     },
   })
 
   useEffect(() => {
-    if (open && patient) {
-      form.reset({
-        name: patient.name,
-        age: patient.age,
-        phone: patient.phone,
-        avatar: patient.avatar || '',
-      })
-    } else if (open && !patient) {
-      form.reset({
-        name: '',
-        age: 30,
-        phone: '',
-        avatar: '',
-      })
+    if (open) {
+      if (patient) {
+        form.reset({
+          name: patient.name,
+          age: patient.age,
+          phone: patient.phone,
+          avatar: patient.avatar || '',
+          cpf: patient.cpf || '',
+          rg: patient.rg || '',
+          profissao: patient.profissao || '',
+          estado_civil: patient.estado_civil || '',
+          email: patient.email || '',
+          endereco: patient.endereco || '',
+        })
+      } else {
+        form.reset({
+          name: '',
+          age: 30,
+          phone: '',
+          avatar: '',
+          cpf: '',
+          rg: '',
+          profissao: '',
+          estado_civil: '',
+          email: '',
+          endereco: '',
+        })
+      }
     }
   }, [open, patient, form])
 
   const onSubmit = (values: FormValues) => {
     if (isEdit && patient) {
-      updatePatient(patient.id, {
-        name: values.name,
-        age: values.age,
-        phone: values.phone,
-        avatar: values.avatar,
-      })
+      updatePatient(patient.id, values)
+      addLog('Dados do paciente editados', patient.id)
       toast({
         title: 'Paciente atualizado',
         description: `Os dados de ${values.name} foram atualizados.`,
       })
     } else {
       addPatient({
-        name: values.name,
-        age: values.age,
-        phone: values.phone,
-        avatar: values.avatar,
+        ...values,
         dob: '1990-01-01',
         lastVisit: new Date().toISOString().split('T')[0],
         nextAppointment: null,
         status: 'active',
         procedures: [],
         professional: null,
-        cpf: '',
-        rg: '',
-        profissao: '',
-        estado_civil: '',
-        email: '',
-        endereco: '',
       })
       toast({
         title: 'Paciente cadastrado',
@@ -125,14 +140,14 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl text-primary">
             {isEdit ? 'Editar Paciente' : 'Novo Paciente'}
           </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Atualize a foto e as informações básicas do paciente.'
+              ? 'Atualize a foto e as informações do paciente.'
               : 'Preencha os dados abaixo para cadastrar um novo paciente.'}
           </DialogDescription>
         </DialogHeader>
@@ -155,20 +170,20 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Maria Silva" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Nome Completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Maria Silva" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="age"
@@ -190,6 +205,84 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
                     <FormLabel>Telefone</FormLabel>
                     <FormControl>
                       <Input placeholder="(11) 90000-0000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF</FormLabel>
+                    <FormControl>
+                      <Input placeholder="000.000.000-00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>RG</FormLabel>
+                    <FormControl>
+                      <Input placeholder="00.000.000-0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="profissao"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profissão</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Engenheira" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="estado_civil"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado Civil</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Solteira" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>E-mail</FormLabel>
+                    <FormControl>
+                      <Input placeholder="paciente@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endereco"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Endereço Completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Rua das Flores, 123 - São Paulo/SP" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

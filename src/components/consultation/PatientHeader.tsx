@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -14,20 +14,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { ImageUpload } from '@/components/ui/image-upload'
 import CompleteHistoryModal from './CompleteHistoryModal'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
+import { PatientDialog } from '@/components/patients/PatientDialog'
 
 type Props = {
   patient: any
@@ -38,56 +28,12 @@ type Props = {
 
 export default function PatientHeader({ patient, id, isFinalized, onFinalize }: Props) {
   const { addLog } = useAuditStore()
-  const { patients, updatePatient } = usePatientStore()
+  const { patients } = usePatientStore()
 
   const storePatient = patients.find((p) => p.id === id)
   const displayPatient = storePatient || patient
 
-  const [editInfo, setEditInfo] = useState({
-    cpf: storePatient?.cpf || '123.456.789-00',
-    rg: storePatient?.rg || '12.345.678-9',
-    profissao: storePatient?.profissao || 'Engenheira de Software',
-    estado_civil: storePatient?.estado_civil || 'Casada',
-    telefone: storePatient?.phone || '(11) 98765-4321',
-    email: storePatient?.email || 'paciente@email.com',
-    endereco: storePatient?.endereco || 'Rua das Flores, 123 - São Paulo/SP',
-    avatar: storePatient?.avatar || '',
-  })
-
-  const [isOpen, setIsOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-
-  useEffect(() => {
-    if (storePatient && isOpen) {
-      setEditInfo({
-        cpf: storePatient.cpf || '',
-        rg: storePatient.rg || '',
-        profissao: storePatient.profissao || '',
-        estado_civil: storePatient.estado_civil || '',
-        telefone: storePatient.phone || '',
-        email: storePatient.email || '',
-        endereco: storePatient.endereco || '',
-        avatar: storePatient.avatar || '',
-      })
-    }
-  }, [storePatient, isOpen])
-
-  const handleSave = () => {
-    if (storePatient) {
-      updatePatient(id, {
-        cpf: editInfo.cpf,
-        rg: editInfo.rg,
-        profissao: editInfo.profissao,
-        estado_civil: editInfo.estado_civil,
-        phone: editInfo.telefone,
-        email: editInfo.email,
-        endereco: editInfo.endereco,
-        avatar: editInfo.avatar,
-      })
-    }
-    setIsOpen(false)
-    addLog('Dados do paciente editados', id)
-  }
 
   const handleOpenHistory = () => {
     setIsHistoryOpen(true)
@@ -136,8 +82,9 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
             )}
 
             {!isFinalized && (
-              <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>
+              <PatientDialog
+                patient={displayPatient}
+                trigger={
                   <Button
                     variant="ghost"
                     size="icon"
@@ -145,96 +92,8 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
                   >
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] rounded-xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="font-serif text-xl text-primary">
-                      Editar Dados do Paciente
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4">
-                    <div className="space-y-2">
-                      <Label>Foto de Perfil</Label>
-                      <ImageUpload
-                        value={editInfo.avatar}
-                        onChange={(val) => setEditInfo({ ...editInfo, avatar: val })}
-                        nameInitials={displayPatient.name}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="cpf">CPF</Label>
-                        <Input
-                          id="cpf"
-                          value={editInfo.cpf}
-                          onChange={(e) => setEditInfo({ ...editInfo, cpf: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="rg">RG</Label>
-                        <Input
-                          id="rg"
-                          value={editInfo.rg}
-                          onChange={(e) => setEditInfo({ ...editInfo, rg: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="profissao">Profissão</Label>
-                        <Input
-                          id="profissao"
-                          value={editInfo.profissao}
-                          onChange={(e) => setEditInfo({ ...editInfo, profissao: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="estado_civil">Estado Civil</Label>
-                        <Input
-                          id="estado_civil"
-                          value={editInfo.estado_civil}
-                          onChange={(e) =>
-                            setEditInfo({ ...editInfo, estado_civil: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="telefone">Telefone</Label>
-                        <Input
-                          id="telefone"
-                          value={editInfo.telefone}
-                          onChange={(e) => setEditInfo({ ...editInfo, telefone: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">E-mail</Label>
-                        <Input
-                          id="email"
-                          value={editInfo.email}
-                          onChange={(e) => setEditInfo({ ...editInfo, email: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="endereco">Endereço Completo</Label>
-                        <Input
-                          id="endereco"
-                          value={editInfo.endereco}
-                          onChange={(e) => setEditInfo({ ...editInfo, endereco: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      Salvar Alterações
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                }
+              />
             )}
           </div>
 
@@ -243,21 +102,18 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
               <Clock className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.age} anos
             </span>
             <span className="flex items-center gap-1.5">
-              <CreditCard className="h-3.5 w-3.5 text-primary/70" />{' '}
-              {storePatient?.cpf || editInfo.cpf}
+              <CreditCard className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.cpf}
             </span>
             <span className="flex items-center gap-1.5 hidden sm:flex">
-              <Briefcase className="h-3.5 w-3.5 text-primary/70" />{' '}
-              {storePatient?.profissao || editInfo.profissao}
+              <Briefcase className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.profissao}
             </span>
             <span className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5 text-primary/70" />{' '}
-              {storePatient?.phone || editInfo.telefone}
+              <Phone className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.phone}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/70" />
-            <span className="truncate">{storePatient?.endereco || editInfo.endereco}</span>
+            <span className="truncate">{displayPatient.endereco}</span>
           </div>
         </div>
       </div>
