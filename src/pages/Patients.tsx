@@ -9,6 +9,7 @@ import useAuditStore from '@/stores/useAuditStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
+import { fetchBelleClientes } from '@/lib/api/belle'
 
 export default function Patients() {
   const { patients, syncWithBelle } = usePatientStore()
@@ -28,7 +29,8 @@ export default function Patients() {
     if (!belleSoftware.url || !belleSoftware.token) {
       toast({
         title: 'Configuração Incompleta',
-        description: 'Configure a integração com o Belle Software nas configurações.',
+        description:
+          'Configure a integração com o Belle Software nas configurações antes de sincronizar.',
         variant: 'destructive',
       })
       return
@@ -36,35 +38,37 @@ export default function Patients() {
 
     setIsSyncing(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500)) // Mock API call
-      const mockBelleData = [
-        {
-          name: 'Ana Souza (Belle)',
-          cpf: '333.444.555-66',
-          email: 'ana@bellesoftware.com',
-          phone: '(11) 98888-7777',
-          age: 29,
-          avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=99',
-        },
-        {
-          name: 'Isabella Rodrigues (Atualizada pelo Belle)',
-          email: 'paciente0@email.com',
-          phone: '(11) 90000-1111',
-        },
-      ]
+      // Fetch data using API mapping
+      const rawClientes = await fetchBelleClientes(belleSoftware.url, belleSoftware.token)
 
-      const result = syncWithBelle(mockBelleData)
+      // Map Belle Cliente to Local Patient Partial structure
+      const mappedData = rawClientes.map((c) => ({
+        belleId: String(c.id),
+        name: c.nome,
+        cpf: c.cpf,
+        email: c.email,
+        phone: c.celular,
+        dob: c.data_nascimento,
+      }))
+
+      // Sync and deduplicate by CPF
+      const result = syncWithBelle(mappedData)
+
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Belle Software', 'SYSTEM')
+      addLog('Sincronização Belle Software (Pacientes)', 'SYSTEM')
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
+        description: `${result.added} pacientes importados, ${result.updated} atualizados com sucesso.`,
       })
     } catch (error) {
       setBelleLastSync('error', new Date().toISOString())
       addLog('Erro na Sincronização Belle Software', 'SYSTEM')
-      toast({ title: 'Erro', description: 'Falha na sincronização.', variant: 'destructive' })
+      toast({
+        title: 'Falha na Sincronização',
+        description: 'Não foi possível conectar à API do Belle Software. Verifique as credenciais.',
+        variant: 'destructive',
+      })
     } finally {
       setIsSyncing(false)
     }

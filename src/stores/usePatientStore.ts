@@ -9,12 +9,13 @@ export type Patient = (typeof initialPatients)[0] & {
   estado_civil?: string
   email?: string
   endereco?: string
+  belleId?: string
 }
 
 const defaultPatients: Patient[] = initialPatients.map((p, i) => ({
   ...p,
   avatar: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
-  cpf: '123.456.789-00',
+  cpf: '123.456.789-00', // Assigning standard mock CPF for matching
   rg: '12.345.678-9',
   profissao: i % 2 === 0 ? 'Engenheira' : 'Professora',
   estado_civil: 'Solteira',
@@ -52,17 +53,30 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     setPatients((prev) => {
       const next = [...prev]
       belleData.forEach((bp) => {
-        const idx = next.findIndex(
-          (p) => (bp.cpf && p.cpf === bp.cpf) || (bp.email && p.email === bp.email),
-        )
+        // Strip non-digits for robust CPF comparison
+        const cleanCpf = (c?: string) => c?.replace(/\D/g, '')
+
+        // Deduplicate primarily by CPF
+        const idx = next.findIndex((p) => bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf))
+
         if (idx >= 0) {
           next[idx] = { ...next[idx], ...bp }
           updated++
         } else {
+          // Calculate age from DOB if possible
+          let age = bp.age || 30
+          if (bp.dob) {
+            const birth = new Date(bp.dob)
+            if (!isNaN(birth.getTime())) {
+              const diff = Date.now() - birth.getTime()
+              age = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25))
+            }
+          }
+
           next.push({
             id: `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             name: bp.name || 'Sem Nome',
-            age: bp.age || 30,
+            age,
             phone: bp.phone || '',
             dob: bp.dob || '1990-01-01',
             lastVisit: new Date().toISOString().split('T')[0],

@@ -45,7 +45,7 @@ export function IntegrationSettings({
               <Label htmlFor="api-url">Base URL da API</Label>
               <Input
                 id="api-url"
-                placeholder="https://api.bellesoftware.com.br/v1"
+                placeholder="Ex: https://ebelle.vilarika.com.br"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="bg-white"
