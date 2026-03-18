@@ -14,10 +14,13 @@ export type User = {
 type UserState = {
   users: User[]
   currentUser: User
+  isAuthenticated: boolean
   addUser: (user: Omit<User, 'id' | 'status'>) => void
   toggleStatus: (id: string) => void
   removeUser: (id: string) => void
   switchUser: (id: string) => void
+  login: () => void
+  logout: () => void
 }
 
 const defaultUsers: User[] = [
@@ -49,6 +52,7 @@ const UserContext = createContext<UserState>({} as UserState)
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [users, setUsers] = useState<User[]>(defaultUsers)
   const [currentUserId, setCurrentUserId] = useState<string>(defaultUsers[0].id)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   const currentUser = users.find((u) => u.id === currentUserId) || users[0]
 
@@ -77,16 +81,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUserId(id)
   }
 
+  const login = () => setIsAuthenticated(true)
+  const logout = () => setIsAuthenticated(false)
+
   return createElement(
     UserContext.Provider,
     {
       value: {
         users,
         currentUser,
+        isAuthenticated,
         addUser,
         toggleStatus,
         removeUser,
         switchUser,
+        login,
+        logout,
       },
     },
     children,

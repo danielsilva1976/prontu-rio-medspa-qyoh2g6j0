@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -27,7 +27,11 @@ import useUserStore from '@/stores/useUserStore'
 
 export default function Layout() {
   const location = useLocation()
-  const { currentUser, users, switchUser } = useUserStore()
+  const { currentUser, users, switchUser, isAuthenticated, logout } = useUserStore()
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
 
   const navItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard, show: currentUser.role === 'Médico' },
@@ -206,7 +210,10 @@ export default function Layout() {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10">
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10"
+                  >
                     Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>

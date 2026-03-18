@@ -14,6 +14,7 @@ import Consultation from './pages/Consultation'
 import Documents from './pages/Documents'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
+import Login from './pages/Login'
 
 const App = () => (
   <UserProvider>
@@ -24,6 +25,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
+              <Route path="/login" element={<Login />} />
               <Route element={<Layout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/pacientes" element={<Patients />} />
