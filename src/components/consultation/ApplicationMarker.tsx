@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react'
-import { MapPin, ArrowUpRight, Eraser, Trash2 } from 'lucide-react'
+import { MapPin, ArrowUpRight, Eraser, Trash2, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 export type PointMark = { id: string; x: number; y: number; units: string }
 export type VectorMark = { id: string; startX: number; startY: number; endX: number; endY: number }
+export type LineMark = { id: string; startX: number; startY: number; endX: number; endY: number }
 
 const DIAGRAMS: Record<string, React.ReactNode> = {
   Face: (
@@ -409,12 +410,20 @@ type Props = {
   area: string
   points: PointMark[]
   vectors: VectorMark[]
+  lines: LineMark[]
   isSigned: boolean
-  onChange: (p: PointMark[], v: VectorMark[]) => void
+  onChange: (p: PointMark[], v: VectorMark[], l: LineMark[]) => void
 }
 
-export default function ApplicationMarker({ area, points, vectors, onChange, isSigned }: Props) {
-  const [tool, setTool] = useState<'point' | 'vector' | 'erase'>('point')
+export default function ApplicationMarker({
+  area,
+  points,
+  vectors,
+  lines,
+  onChange,
+  isSigned,
+}: Props) {
+  const [tool, setTool] = useState<'point' | 'vector' | 'line' | 'erase'>('point')
   const svgRef = useRef<SVGSVGElement>(null)
   const [drawV, setDrawV] = useState<{ sX: number; sY: number; eX: number; eY: number } | null>(
     null,
@@ -432,64 +441,110 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
   const onDown = (e: React.PointerEvent) => {
     if (isSigned) return
     const { x, y } = getCoords(e)
-    if (tool === 'point')
-      onChange([...points, { id: Math.random().toString(36).slice(2), x, y, units: '' }], vectors)
-    else if (tool === 'vector') setDrawV({ sX: x, sY: y, eX: x, eY: y })
-    else eraseNearest(x, y)
+    if (tool === 'point') {
+      onChange(
+        [...points, { id: Math.random().toString(36).slice(2), x, y, units: '' }],
+        vectors,
+        lines,
+      )
+    } else if (tool === 'vector' || tool === 'line') {
+      setDrawV({ sX: x, sY: y, eX: x, eY: y })
+    } else if (tool === 'erase') {
+      eraseNearest(x, y)
+    }
   }
 
   const onMove = (e: React.PointerEvent) => {
-    if (isSigned || !drawV || tool !== 'vector') return
+    if (isSigned || !drawV || (tool !== 'vector' && tool !== 'line')) return
     const { x, y } = getCoords(e)
     setDrawV({ ...drawV, eX: x, eY: y })
   }
 
   const onUp = () => {
-    if (isSigned || tool !== 'vector' || !drawV) return
-    if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 10) {
-      onChange(points, [
-        ...vectors,
-        {
-          id: Math.random().toString(36).slice(2),
-          startX: drawV.sX,
-          startY: drawV.sY,
-          endX: drawV.eX,
-          endY: drawV.eY,
-        },
-      ])
+    if (isSigned || !drawV) return
+    if ((tool === 'vector' || tool === 'line') && drawV) {
+      if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 5) {
+        if (tool === 'vector') {
+          onChange(
+            points,
+            [
+              ...vectors,
+              {
+                id: Math.random().toString(36).slice(2),
+                startX: drawV.sX,
+                startY: drawV.sY,
+                endX: drawV.eX,
+                endY: drawV.eY,
+              },
+            ],
+            lines,
+          )
+        } else {
+          onChange(points, vectors, [
+            ...lines,
+            {
+              id: Math.random().toString(36).slice(2),
+              startX: drawV.sX,
+              startY: drawV.sY,
+              endX: drawV.eX,
+              endY: drawV.eY,
+            },
+          ])
+        }
+      }
     }
     setDrawV(null)
   }
 
+  const checkLineIntersection = (
+    x: number,
+    y: number,
+    v: { startX: number; startY: number; endX: number; endY: number },
+  ) => {
+    const l2 = (v.endX - v.startX) ** 2 + (v.endY - v.startY) ** 2
+    if (l2 === 0) return Math.hypot(x - v.startX, y - v.startY) < 15
+    const t = Math.max(
+      0,
+      Math.min(
+        1,
+        ((x - v.startX) * (v.endX - v.startX) + (y - v.startY) * (v.endY - v.startY)) / l2,
+      ),
+    )
+    return (
+      Math.hypot(
+        x - (v.startX + t * (v.endX - v.startX)),
+        y - (v.startY + t * (v.endY - v.startY)),
+      ) < 15
+    )
+  }
+
   const eraseNearest = (x: number, y: number) => {
-    const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 25)
-    if (pt)
+    const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 15)
+    if (pt) {
       return onChange(
         points.filter((p) => p.id !== pt.id),
         vectors,
+        lines,
       )
-    const vec = vectors.find((v) => {
-      const l2 = (v.endX - v.startX) ** 2 + (v.endY - v.startY) ** 2
-      if (l2 === 0) return Math.hypot(x - v.startX, y - v.startY) < 25
-      const t = Math.max(
-        0,
-        Math.min(
-          1,
-          ((x - v.startX) * (v.endX - v.startX) + (y - v.startY) * (v.endY - v.startY)) / l2,
-        ),
-      )
-      return (
-        Math.hypot(
-          x - (v.startX + t * (v.endX - v.startX)),
-          y - (v.startY + t * (v.endY - v.startY)),
-        ) < 25
-      )
-    })
-    if (vec)
-      onChange(
+    }
+
+    const vec = vectors.find((v) => checkLineIntersection(x, y, v))
+    if (vec) {
+      return onChange(
         points,
         vectors.filter((v) => v.id !== vec.id),
+        lines,
       )
+    }
+
+    const lin = lines.find((l) => checkLineIntersection(x, y, l))
+    if (lin) {
+      return onChange(
+        points,
+        vectors,
+        lines.filter((l) => l.id !== lin.id),
+      )
+    }
   }
 
   return (
@@ -516,6 +571,13 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
             <span className="text-xs font-medium">Vetor</span>
           </ToggleGroupItem>
           <ToggleGroupItem
+            value="line"
+            className="gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            <Minus className="h-4 w-4 rotate-45" />
+            <span className="text-xs font-medium">Linha</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem
             value="erase"
             className="gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
           >
@@ -527,7 +589,7 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onChange([], [])}
+            onClick={() => onChange([], [], [])}
             className="text-destructive h-8 px-3 hover:bg-destructive/10"
           >
             <Trash2 className="h-4 w-4 mr-1.5" /> Limpar
@@ -545,11 +607,33 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
           onPointerLeave={onUp}
         >
           <defs>
-            <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <polygon points="0 0, 6 3, 0 6" fill="hsl(var(--primary))" />
+            <marker
+              id="arr"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+              markerUnits="strokeWidth"
+            >
+              <polygon points="0 0, 8 3, 0 6" fill="hsl(var(--primary))" />
             </marker>
           </defs>
           {DIAGRAMS[area]}
+
+          {lines.map((l) => (
+            <line
+              key={l.id}
+              x1={l.startX}
+              y1={l.startY}
+              x2={l.endX}
+              y2={l.endY}
+              stroke="hsl(var(--primary))"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          ))}
+
           {vectors.map((v) => (
             <line
               key={v.id}
@@ -558,31 +642,48 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
               x2={v.endX}
               y2={v.endY}
               stroke="hsl(var(--primary))"
-              strokeWidth="4"
+              strokeWidth="1.5"
               markerEnd="url(#arr)"
               strokeLinecap="round"
             />
           ))}
-          {drawV && (
+
+          {drawV && tool === 'vector' && (
             <line
               x1={drawV.sX}
               y1={drawV.sY}
               x2={drawV.eX}
               y2={drawV.eY}
               stroke="hsl(var(--primary))"
-              strokeWidth="4"
+              strokeWidth="1.5"
               markerEnd="url(#arr)"
               opacity={0.5}
               strokeLinecap="round"
             />
           )}
+
+          {drawV && tool === 'line' && (
+            <line
+              x1={drawV.sX}
+              y1={drawV.sY}
+              x2={drawV.eX}
+              y2={drawV.eY}
+              stroke="hsl(var(--primary))"
+              strokeWidth="1.5"
+              opacity={0.5}
+              strokeLinecap="round"
+            />
+          )}
+
           {points.map((p) => (
             <circle
               key={p.id}
               cx={p.x}
               cy={p.y}
-              r="7"
+              r="3.5"
               fill="hsl(var(--primary))"
+              stroke="white"
+              strokeWidth="1"
               className="drop-shadow-sm"
             />
           ))}
@@ -591,7 +692,7 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
           <div
             key={p.id}
             style={{ left: `${(p.x / 500) * 100}%`, top: `${(p.y / 500) * 100}%` }}
-            className="absolute -translate-x-1/2 -translate-y-9 z-10"
+            className="absolute -translate-x-1/2 -translate-y-6 z-10"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <input
@@ -600,6 +701,7 @@ export default function ApplicationMarker({ area, points, vectors, onChange, isS
                 onChange(
                   points.map((pt) => (pt.id === p.id ? { ...pt, units: e.target.value } : pt)),
                   vectors,
+                  lines,
                 )
               }
               disabled={isSigned}

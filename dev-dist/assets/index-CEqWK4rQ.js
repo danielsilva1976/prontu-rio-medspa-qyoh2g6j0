@@ -19490,6 +19490,10 @@ var Menu$1 = createLucideIcon("menu", [
 		key: "1djgab"
 	}]
 ]);
+var Minus = createLucideIcon("minus", [["path", {
+	d: "M5 12h14",
+	key: "1ays0h"
+}]]);
 var Package = createLucideIcon("package", [
 	["path", {
 		d: "M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z",
@@ -33870,7 +33874,7 @@ ToggleGroupItem.displayName = Item2.displayName;
 var DIAGRAMS = {
 	Face: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:13:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:14:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 180 400 L 150 500 M 320 400 L 350 500",
 			fill: "none",
@@ -33879,7 +33883,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:21:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:22:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 250 30 C 190 30 150 50 135 100 C 120 140 125 180 130 210 C 135 240 145 260 150 280 C 155 310 170 340 190 370 C 210 400 230 430 250 430 C 270 430 290 400 310 370 C 330 340 345 310 350 280 C 355 260 365 240 370 210 C 375 180 380 140 365 100 C 350 50 310 30 250 30 Z",
 			fill: "none",
@@ -33889,7 +33893,7 @@ var DIAGRAMS = {
 			strokeLinejoin: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:30:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:31:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 130 200 C 100 190 95 240 110 260 C 120 270 135 270 145 260",
 			fill: "none",
@@ -33898,7 +33902,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:37:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:38:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 370 200 C 400 190 405 240 390 260 C 380 270 365 270 355 260",
 			fill: "none",
@@ -33907,7 +33911,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:45:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:46:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 135 100 C 180 60 320 60 365 100",
 			fill: "none",
@@ -33918,7 +33922,7 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:55:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:56:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 150 170 Q 185 160 215 175",
 			fill: "none",
@@ -33927,7 +33931,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:62:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:63:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 350 170 Q 315 160 285 175",
 			fill: "none",
@@ -33936,7 +33940,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:70:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:71:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 155 205 Q 185 190 210 205 Q 185 215 155 205",
 			fill: "none",
@@ -33945,7 +33949,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:77:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:78:7",
 			"data-prohibitions": "[editContent]",
 			cx: "182",
 			cy: "205",
@@ -33953,7 +33957,7 @@ var DIAGRAMS = {
 			fill: "currentColor"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:78:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:79:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 345 205 Q 315 190 290 205 Q 315 215 345 205",
 			fill: "none",
@@ -33962,7 +33966,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:85:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:86:7",
 			"data-prohibitions": "[editContent]",
 			cx: "318",
 			cy: "205",
@@ -33970,7 +33974,7 @@ var DIAGRAMS = {
 			fill: "currentColor"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:87:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:88:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 235 200 C 245 240 245 270 235 295",
 			fill: "none",
@@ -33980,7 +33984,7 @@ var DIAGRAMS = {
 			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:95:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:96:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 265 200 C 255 240 255 270 265 295",
 			fill: "none",
@@ -33990,7 +33994,7 @@ var DIAGRAMS = {
 			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:103:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:104:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 235 295 C 235 310 265 310 265 295",
 			fill: "none",
@@ -33999,7 +34003,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:110:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:111:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 220 290 Q 225 300 235 295",
 			fill: "none",
@@ -34008,7 +34012,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:117:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:118:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 280 290 Q 275 300 265 295",
 			fill: "none",
@@ -34017,7 +34021,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:125:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:126:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 200 345 Q 250 330 300 345",
 			fill: "none",
@@ -34026,7 +34030,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:132:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:133:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 200 345 Q 250 355 300 345",
 			fill: "none",
@@ -34035,7 +34039,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:139:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:140:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 205 350 Q 250 375 295 350",
 			fill: "none",
@@ -34044,7 +34048,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:147:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:148:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 230 400 Q 250 410 270 400",
 			fill: "none",
@@ -34054,7 +34058,7 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:156:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:157:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 220 290 Q 200 330 185 360",
 			fill: "none",
@@ -34064,7 +34068,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:164:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:165:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 280 290 Q 300 330 315 360",
 			fill: "none",
@@ -34074,7 +34078,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:172:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:173:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 195 365 Q 185 390 180 410",
 			fill: "none",
@@ -34084,7 +34088,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:180:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:181:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 305 365 Q 315 390 320 410",
 			fill: "none",
@@ -34094,7 +34098,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:188:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:189:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 155 220 Q 180 240 210 250",
 			fill: "none",
@@ -34104,7 +34108,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:196:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:197:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 345 220 Q 320 240 290 250",
 			fill: "none",
@@ -34114,7 +34118,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:204:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:205:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 170 120 Q 250 140 330 120",
 			fill: "none",
@@ -34124,7 +34128,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:213:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:214:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 140 240 Q 170 260 200 255",
 			fill: "none",
@@ -34134,7 +34138,7 @@ var DIAGRAMS = {
 			opacity: .3
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:221:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:222:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 360 240 Q 330 260 300 255",
 			fill: "none",
@@ -34146,7 +34150,7 @@ var DIAGRAMS = {
 	] }),
 	Pescoço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:233:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:234:7",
 			"data-prohibitions": "[editContent]",
 			d: "M180 50 L180 180 C180 230 100 260 50 280 L50 400 M320 50 L320 180 C320 230 400 260 450 280 L450 400",
 			fill: "none",
@@ -34155,7 +34159,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:240:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:241:7",
 			"data-prohibitions": "[editContent]",
 			d: "M220 130 Q250 150 280 130 M200 230 Q250 260 300 230 M130 350 Q250 390 370 350",
 			fill: "none",
@@ -34165,7 +34169,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:248:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:249:7",
 			"data-prohibitions": "[editContent]",
 			d: "M250 160 L250 220",
 			fill: "none",
@@ -34177,7 +34181,7 @@ var DIAGRAMS = {
 	] }),
 	Braço: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:261:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:262:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 100 350 C 200 370 300 380 350 360 C 380 370 400 350 390 300 C 380 250 390 150 370 100 C 360 50 320 50 310 100 C 300 150 290 200 300 250 C 280 230 250 210 200 210 C 150 210 120 230 100 250 M 100 250 Q 140 300 100 350",
 			fill: "none",
@@ -34187,7 +34191,7 @@ var DIAGRAMS = {
 			strokeLinejoin: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:270:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:271:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 200 210 C 230 260 280 270 300 250",
 			fill: "none",
@@ -34197,7 +34201,7 @@ var DIAGRAMS = {
 			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:279:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:280:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 150 360 C 200 330 300 330 350 360",
 			fill: "none",
@@ -34207,7 +34211,7 @@ var DIAGRAMS = {
 			opacity: .6
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:288:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:289:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 295 260 Q 320 270 340 250",
 			fill: "none",
@@ -34216,7 +34220,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:296:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:297:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 310 230 C 330 230 350 180 340 120",
 			fill: "none",
@@ -34227,7 +34231,7 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:306:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:307:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 140 215 C 160 250 150 290 120 310",
 			fill: "none",
@@ -34238,7 +34242,7 @@ var DIAGRAMS = {
 			opacity: .5
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:316:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:317:7",
 			"data-prohibitions": "[editContent]",
 			d: "M 315 105 Q 340 115 365 105",
 			fill: "none",
@@ -34249,7 +34253,7 @@ var DIAGRAMS = {
 	] }),
 	Abdome: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:327:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:328:7",
 			"data-prohibitions": "[editContent]",
 			d: "M130 50 C140 150 110 300 140 450 M370 50 C360 150 390 300 360 450",
 			fill: "none",
@@ -34258,7 +34262,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:334:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:335:7",
 			"data-prohibitions": "[editContent]",
 			cx: "250",
 			cy: "270",
@@ -34268,7 +34272,7 @@ var DIAGRAMS = {
 			strokeWidth: "3"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:335:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:336:7",
 			"data-prohibitions": "[editContent]",
 			d: "M250 80 L250 240 M250 300 L250 450",
 			fill: "none",
@@ -34278,7 +34282,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:343:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:344:7",
 			"data-prohibitions": "[editContent]",
 			d: "M180 120 Q250 150 320 120 M160 180 Q250 210 340 180 M150 350 Q250 380 350 350",
 			fill: "none",
@@ -34290,7 +34294,7 @@ var DIAGRAMS = {
 	] }),
 	Coxas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:355:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:356:7",
 			"data-prohibitions": "[editContent]",
 			d: "M100 50 C80 200 120 400 150 480 M240 50 C250 200 230 400 230 480 M260 50 C250 200 270 400 270 480 M400 50 C420 200 380 400 350 480",
 			fill: "none",
@@ -34299,7 +34303,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:362:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:363:7",
 			"data-prohibitions": "[editContent]",
 			d: "M100 50 Q170 90 240 50 M260 50 Q330 90 400 50",
 			fill: "none",
@@ -34309,7 +34313,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:370:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:371:7",
 			"data-prohibitions": "[editContent]",
 			d: "M170 150 Q200 180 240 130 M330 150 Q300 180 260 130",
 			fill: "none",
@@ -34321,7 +34325,7 @@ var DIAGRAMS = {
 	] }),
 	Pernas: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:382:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:383:7",
 			"data-prohibitions": "[editContent]",
 			d: "M150 50 C110 200 100 350 120 450 M230 50 C250 200 200 350 180 450 M270 50 C250 200 300 350 320 450 M350 50 C390 200 400 350 380 450",
 			fill: "none",
@@ -34330,7 +34334,7 @@ var DIAGRAMS = {
 			strokeLinecap: "round"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:389:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:390:7",
 			"data-prohibitions": "[editContent]",
 			d: "M150 50 Q190 70 230 50 M270 50 Q310 70 350 50",
 			fill: "none",
@@ -34340,7 +34344,7 @@ var DIAGRAMS = {
 			strokeDasharray: "4 4"
 		}),
 		/* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:397:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:398:7",
 			"data-prohibitions": "[editContent]",
 			d: "M120 450 Q140 480 180 450 M380 450 Q360 480 320 450",
 			fill: "none",
@@ -34350,7 +34354,7 @@ var DIAGRAMS = {
 		})
 	] })
 };
-function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
+function ApplicationMarker({ area, points, vectors, lines, onChange, isSigned }) {
 	const [tool, setTool] = (0, import_react.useState)("point");
 	const svgRef = (0, import_react.useRef)(null);
 	const [drawV, setDrawV] = (0, import_react.useState)(null);
@@ -34373,17 +34377,17 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 			x,
 			y,
 			units: ""
-		}], vectors);
-		else if (tool === "vector") setDrawV({
+		}], vectors, lines);
+		else if (tool === "vector" || tool === "line") setDrawV({
 			sX: x,
 			sY: y,
 			eX: x,
 			eY: y
 		});
-		else eraseNearest(x, y);
+		else if (tool === "erase") eraseNearest(x, y);
 	};
 	const onMove = (e) => {
-		if (isSigned || !drawV || tool !== "vector") return;
+		if (isSigned || !drawV || tool !== "vector" && tool !== "line") return;
 		const { x, y } = getCoords(e);
 		setDrawV({
 			...drawV,
@@ -34392,37 +34396,49 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 		});
 	};
 	const onUp = () => {
-		if (isSigned || tool !== "vector" || !drawV) return;
-		if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 10) onChange(points, [...vectors, {
-			id: Math.random().toString(36).slice(2),
-			startX: drawV.sX,
-			startY: drawV.sY,
-			endX: drawV.eX,
-			endY: drawV.eY
-		}]);
+		if (isSigned || !drawV) return;
+		if ((tool === "vector" || tool === "line") && drawV) {
+			if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 5) if (tool === "vector") onChange(points, [...vectors, {
+				id: Math.random().toString(36).slice(2),
+				startX: drawV.sX,
+				startY: drawV.sY,
+				endX: drawV.eX,
+				endY: drawV.eY
+			}], lines);
+			else onChange(points, vectors, [...lines, {
+				id: Math.random().toString(36).slice(2),
+				startX: drawV.sX,
+				startY: drawV.sY,
+				endX: drawV.eX,
+				endY: drawV.eY
+			}]);
+		}
 		setDrawV(null);
 	};
+	const checkLineIntersection = (x, y, v) => {
+		const l2 = (v.endX - v.startX) ** 2 + (v.endY - v.startY) ** 2;
+		if (l2 === 0) return Math.hypot(x - v.startX, y - v.startY) < 15;
+		const t = Math.max(0, Math.min(1, ((x - v.startX) * (v.endX - v.startX) + (y - v.startY) * (v.endY - v.startY)) / l2));
+		return Math.hypot(x - (v.startX + t * (v.endX - v.startX)), y - (v.startY + t * (v.endY - v.startY))) < 15;
+	};
 	const eraseNearest = (x, y) => {
-		const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 25);
-		if (pt) return onChange(points.filter((p) => p.id !== pt.id), vectors);
-		const vec = vectors.find((v) => {
-			const l2 = (v.endX - v.startX) ** 2 + (v.endY - v.startY) ** 2;
-			if (l2 === 0) return Math.hypot(x - v.startX, y - v.startY) < 25;
-			const t = Math.max(0, Math.min(1, ((x - v.startX) * (v.endX - v.startX) + (y - v.startY) * (v.endY - v.startY)) / l2));
-			return Math.hypot(x - (v.startX + t * (v.endX - v.startX)), y - (v.startY + t * (v.endY - v.startY))) < 25;
-		});
-		if (vec) onChange(points, vectors.filter((v) => v.id !== vec.id));
+		const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 15);
+		if (pt) return onChange(points.filter((p) => p.id !== pt.id), vectors, lines);
+		const vec = vectors.find((v) => checkLineIntersection(x, y, v));
+		if (vec) return onChange(points, vectors.filter((v) => v.id !== vec.id), lines);
+		const lin = lines.find((l) => checkLineIntersection(x, y, l));
+		if (lin) return onChange(points, vectors, lines.filter((l) => l.id !== lin.id));
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/ApplicationMarker.tsx:496:5",
+		"data-uid": "src/components/consultation/ApplicationMarker.tsx:551:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-4",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:497:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:552:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-wrap items-center justify-between gap-2 bg-muted/40 p-1.5 rounded-lg border border-border/50",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroup, {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:498:9",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:553:9",
 				"data-prohibitions": "[]",
 				type: "single",
 				value: tool,
@@ -34430,48 +34446,64 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 				disabled: isSigned,
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:504:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:559:11",
 						"data-prohibitions": "[]",
 						value: "point",
 						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:508:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:563:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:509:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:564:13",
 							"data-prohibitions": "[]",
 							className: "text-xs font-medium",
 							children: "Ponto"
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:511:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:566:11",
 						"data-prohibitions": "[]",
 						value: "vector",
 						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowUpRight, {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:515:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:570:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:516:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:571:13",
 							"data-prohibitions": "[]",
 							className: "text-xs font-medium",
 							children: "Vetor"
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:518:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:573:11",
+						"data-prohibitions": "[]",
+						value: "line",
+						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Minus, {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:577:13",
+							"data-prohibitions": "[editContent]",
+							className: "h-4 w-4 rotate-45"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:578:13",
+							"data-prohibitions": "[]",
+							className: "text-xs font-medium",
+							children: "Linha"
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ToggleGroupItem, {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:580:11",
 						"data-prohibitions": "[]",
 						value: "erase",
 						className: "gap-2 px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eraser, {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:522:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:584:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-4 w-4"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:523:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:585:13",
 							"data-prohibitions": "[]",
 							className: "text-xs font-medium",
 							children: "Borracha"
@@ -34479,24 +34511,24 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 					})
 				]
 			}), !isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:527:11",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:589:11",
 				"data-prohibitions": "[]",
 				variant: "ghost",
 				size: "sm",
-				onClick: () => onChange([], []),
+				onClick: () => onChange([], [], []),
 				className: "text-destructive h-8 px-3 hover:bg-destructive/10",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-					"data-uid": "src/components/consultation/ApplicationMarker.tsx:533:13",
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:595:13",
 					"data-prohibitions": "[editContent]",
 					className: "h-4 w-4 mr-1.5"
 				}), " Limpar"]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/consultation/ApplicationMarker.tsx:537:7",
+			"data-uid": "src/components/consultation/ApplicationMarker.tsx:599:7",
 			"data-prohibitions": "[editContent]",
 			className: "relative aspect-square w-full max-w-2xl mx-auto border border-border/60 bg-white rounded-xl shadow-inner touch-none select-none overflow-hidden",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:538:9",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:600:9",
 				"data-prohibitions": "[editContent]",
 				ref: svgRef,
 				viewBox: "0 0 500 500",
@@ -34507,78 +34539,104 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 				onPointerLeave: onUp,
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("defs", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:547:11",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:609:11",
 						"data-prohibitions": "[]",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("marker", {
-							"data-uid": "src/components/consultation/ApplicationMarker.tsx:548:13",
+							"data-uid": "src/components/consultation/ApplicationMarker.tsx:610:13",
 							"data-prohibitions": "[]",
 							id: "arr",
-							markerWidth: "6",
+							markerWidth: "8",
 							markerHeight: "6",
-							refX: "5",
+							refX: "7",
 							refY: "3",
 							orient: "auto",
+							markerUnits: "strokeWidth",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", {
-								"data-uid": "src/components/consultation/ApplicationMarker.tsx:549:15",
+								"data-uid": "src/components/consultation/ApplicationMarker.tsx:619:15",
 								"data-prohibitions": "[editContent]",
-								points: "0 0, 6 3, 0 6",
+								points: "0 0, 8 3, 0 6",
 								fill: "hsl(var(--primary))"
 							})
 						})
 					}),
 					DIAGRAMS[area],
+					lines.map((l) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:625:13",
+						"data-prohibitions": "[editContent]",
+						x1: l.startX,
+						y1: l.startY,
+						x2: l.endX,
+						y2: l.endY,
+						stroke: "hsl(var(--primary))",
+						strokeWidth: "1.5",
+						strokeLinecap: "round"
+					}, l.id)),
 					vectors.map((v) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:554:13",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:638:13",
 						"data-prohibitions": "[editContent]",
 						x1: v.startX,
 						y1: v.startY,
 						x2: v.endX,
 						y2: v.endY,
 						stroke: "hsl(var(--primary))",
-						strokeWidth: "4",
+						strokeWidth: "1.5",
 						markerEnd: "url(#arr)",
 						strokeLinecap: "round"
 					}, v.id)),
-					drawV && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:567:13",
+					drawV && tool === "vector" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:652:13",
 						"data-prohibitions": "[editContent]",
 						x1: drawV.sX,
 						y1: drawV.sY,
 						x2: drawV.eX,
 						y2: drawV.eY,
 						stroke: "hsl(var(--primary))",
-						strokeWidth: "4",
+						strokeWidth: "1.5",
 						markerEnd: "url(#arr)",
 						opacity: .5,
 						strokeLinecap: "round"
 					}),
+					drawV && tool === "line" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", {
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:666:13",
+						"data-prohibitions": "[editContent]",
+						x1: drawV.sX,
+						y1: drawV.sY,
+						x2: drawV.eX,
+						y2: drawV.eY,
+						stroke: "hsl(var(--primary))",
+						strokeWidth: "1.5",
+						opacity: .5,
+						strokeLinecap: "round"
+					}),
 					points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", {
-						"data-uid": "src/components/consultation/ApplicationMarker.tsx:580:13",
+						"data-uid": "src/components/consultation/ApplicationMarker.tsx:679:13",
 						"data-prohibitions": "[editContent]",
 						cx: p.x,
 						cy: p.y,
-						r: "7",
+						r: "3.5",
 						fill: "hsl(var(--primary))",
+						stroke: "white",
+						strokeWidth: "1",
 						className: "drop-shadow-sm"
 					}, p.id))
 				]
 			}), points.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ApplicationMarker.tsx:591:11",
+				"data-uid": "src/components/consultation/ApplicationMarker.tsx:692:11",
 				"data-prohibitions": "[]",
 				style: {
 					left: `${p.x / 500 * 100}%`,
 					top: `${p.y / 500 * 100}%`
 				},
-				className: "absolute -translate-x-1/2 -translate-y-9 z-10",
+				className: "absolute -translate-x-1/2 -translate-y-6 z-10",
 				onPointerDown: (e) => e.stopPropagation(),
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-					"data-uid": "src/components/consultation/ApplicationMarker.tsx:597:13",
+					"data-uid": "src/components/consultation/ApplicationMarker.tsx:698:13",
 					"data-prohibitions": "[editContent]",
 					value: p.units,
 					onChange: (e) => onChange(points.map((pt) => pt.id === p.id ? {
 						...pt,
 						units: e.target.value
-					} : pt), vectors),
+					} : pt), vectors, lines),
 					disabled: isSigned,
 					className: "w-10 h-6 text-[10px] font-bold text-center text-primary-foreground border-none bg-primary/90 rounded shadow focus:ring-2 focus:ring-primary focus:bg-primary placeholder:text-primary-foreground/50 transition-colors",
 					placeholder: "Un"
@@ -34592,67 +34650,67 @@ function ApplicationMarker({ area, points, vectors, onChange, isSigned }) {
 function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 	const { procedures, areas, products, brands, technologies } = useSettingsStore();
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:44:5",
+		"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:49:5",
 		"data-prohibitions": "[editContent]",
 		className: "relative border border-border bg-muted/5 shadow-sm animate-fade-in",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:45:7",
+			"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:50:7",
 			"data-prohibitions": "[editContent]",
 			className: "p-6 pt-8",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:46:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:51:9",
 					"data-prohibitions": "[editContent]",
 					className: "absolute top-0 left-0 bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg",
 					children: ["Procedimento ", index + 1]
 				}),
 				!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:50:11",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:55:11",
 					"data-prohibitions": "[]",
 					variant: "ghost",
 					size: "icon",
 					className: "absolute top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors",
 					onClick: () => onRemove(entry.id),
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:56:13",
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:61:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4"
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:60:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:65:9",
 					"data-prohibitions": "[editContent]",
 					className: "grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:61:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:66:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2 md:col-span-2 lg:col-span-3",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:62:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:67:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Tipo de Procedimento"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:63:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:68:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.type,
 								onValueChange: (val) => onUpdate(entry.id, "type", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:68:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:73:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:69:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:74:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o procedimento..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:71:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:76:15",
 									"data-prohibitions": "[editContent]",
 									children: procedures.map((proc) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:73:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:78:19",
 										"data-prohibitions": "[editContent]",
 										value: proc,
 										children: proc
@@ -34661,34 +34719,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:81:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:86:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:82:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:87:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Área Aplicada"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:83:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:88:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.area,
 								onValueChange: (val) => onUpdate(entry.id, "area", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:88:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:93:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:89:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:94:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a área..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:91:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:96:15",
 									"data-prohibitions": "[editContent]",
 									children: areas.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:93:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:98:19",
 										"data-prohibitions": "[editContent]",
 										value: a,
 										children: a
@@ -34697,34 +34755,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:101:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:106:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:102:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:107:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Tecnologia"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:103:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:108:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.technology,
 								onValueChange: (val) => onUpdate(entry.id, "technology", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:108:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:113:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:109:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:114:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a tecnologia..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:111:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:116:15",
 									"data-prohibitions": "[editContent]",
 									children: technologies.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:113:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:118:19",
 										"data-prohibitions": "[editContent]",
 										value: t,
 										children: t
@@ -34733,34 +34791,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:121:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:126:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:122:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:127:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Produto"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:123:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:128:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.product,
 								onValueChange: (val) => onUpdate(entry.id, "product", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:128:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:133:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:129:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:134:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione o produto..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:131:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:136:15",
 									"data-prohibitions": "[editContent]",
 									children: products.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:133:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:138:19",
 										"data-prohibitions": "[editContent]",
 										value: p,
 										children: p
@@ -34769,34 +34827,34 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:141:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:146:11",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:142:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:147:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Marca"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:143:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:148:13",
 								"data-prohibitions": "[editContent]",
 								disabled: isSigned,
 								value: entry.brand,
 								onValueChange: (val) => onUpdate(entry.id, "brand", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:148:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:153:15",
 									"data-prohibitions": "[]",
 									className: "bg-white border-border rounded-xl focus:ring-primary shadow-sm",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:149:17",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:154:17",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a marca..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:151:15",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:156:15",
 									"data-prohibitions": "[editContent]",
 									children: brands.map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:153:19",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:158:19",
 										"data-prohibitions": "[editContent]",
 										value: b,
 										children: b
@@ -34805,16 +34863,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:161:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:166:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:162:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:167:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Lote"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:163:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:168:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: AB12345",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -34824,16 +34882,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:172:11",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:177:11",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:173:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:178:13",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Dose / Volume / Parâmetros"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:174:13",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:179:13",
 								"data-prohibitions": "[editContent]",
 								placeholder: "Ex: 50U, 1mL, 20J/cm²",
 								className: "bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm",
@@ -34845,99 +34903,99 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 					]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:185:9",
+					"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:190:9",
 					"data-prohibitions": "[editContent]",
 					className: "pt-6 mt-6 border-t border-border/60",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:186:11",
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:191:11",
 						"data-prohibitions": "[]",
 						className: "flex items-center justify-between",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:187:13",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:192:13",
 							"data-prohibitions": "[]",
 							className: "space-y-1",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:188:15",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:193:15",
 								"data-prohibitions": "[]",
 								className: "text-base font-semibold text-foreground",
 								children: "Módulo de Marcação de Aplicação"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:191:15",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:196:15",
 								"data-prohibitions": "[]",
 								className: "text-sm text-muted-foreground",
-								children: "Adicione esquemas visuais para detalhar pontos e vetores no corpo do paciente."
+								children: "Adicione esquemas visuais para detalhar pontos, vetores e linhas no corpo do paciente."
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Switch, {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:195:13",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:201:13",
 							"data-prohibitions": "[editContent]",
 							disabled: isSigned,
 							checked: entry.enableMarking || false,
 							onCheckedChange: (val) => onUpdate(entry.id, "enableMarking", val)
 						})]
 					}), entry.enableMarking && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:203:13",
+						"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:209:13",
 						"data-prohibitions": "[editContent]",
 						className: "mt-6 p-5 bg-white rounded-xl border border-border/50 shadow-sm animate-in fade-in slide-in-from-top-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:204:15",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:210:15",
 							"data-prohibitions": "[]",
 							className: "space-y-2 max-w-xs mb-6",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:205:17",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:211:17",
 								"data-prohibitions": "[]",
 								className: "text-foreground",
 								children: "Área Anatômica do Diagrama"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:206:17",
+								"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:212:17",
 								"data-prohibitions": "[]",
 								disabled: isSigned,
 								value: entry.markingArea,
 								onValueChange: (val) => onUpdate(entry.id, "markingArea", val),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:211:19",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:217:19",
 									"data-prohibitions": "[]",
 									className: "bg-muted/10 border-border rounded-xl",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:212:21",
+										"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:218:21",
 										"data-prohibitions": "[editContent]",
 										placeholder: "Selecione a área..."
 									})
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:214:19",
+									"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:220:19",
 									"data-prohibitions": "[]",
 									children: [
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:215:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:221:21",
 											"data-prohibitions": "[]",
 											value: "Face",
 											children: "Face"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:216:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:222:21",
 											"data-prohibitions": "[]",
 											value: "Pescoço",
 											children: "Pescoço"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:217:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:223:21",
 											"data-prohibitions": "[]",
 											value: "Braço",
 											children: "Braço"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:218:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:224:21",
 											"data-prohibitions": "[]",
 											value: "Abdome",
 											children: "Abdome"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:219:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:225:21",
 											"data-prohibitions": "[]",
 											value: "Coxas",
 											children: "Coxas"
 										}),
 										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:220:21",
+											"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:226:21",
 											"data-prohibitions": "[]",
 											value: "Pernas",
 											children: "Pernas"
@@ -34946,14 +35004,16 @@ function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }) {
 								})]
 							})]
 						}), entry.markingArea && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ApplicationMarker, {
-							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:226:17",
+							"data-uid": "src/components/consultation/ProcedureEntryCard.tsx:232:17",
 							"data-prohibitions": "[editContent]",
 							area: entry.markingArea,
 							points: entry.points || [],
 							vectors: entry.vectors || [],
-							onChange: (points, vectors) => {
+							lines: entry.lines || [],
+							onChange: (points, vectors, lines) => {
 								onUpdate(entry.id, "points", points);
 								onUpdate(entry.id, "vectors", vectors);
+								onUpdate(entry.id, "lines", lines);
 							},
 							isSigned
 						})]
@@ -34979,7 +35039,8 @@ function ProcedureTab({ isSigned, patientId }) {
 		enableMarking: false,
 		markingArea: "",
 		points: [],
-		vectors: []
+		vectors: [],
+		lines: []
 	}]);
 	const [generalNotes, setGeneralNotes] = (0, import_react.useState)("");
 	const addEntry = () => {
@@ -34995,7 +35056,8 @@ function ProcedureTab({ isSigned, patientId }) {
 			enableMarking: false,
 			markingArea: "",
 			points: [],
-			vectors: []
+			vectors: [],
+			lines: []
 		}]);
 	};
 	const removeEntry = (id) => {
@@ -35011,44 +35073,44 @@ function ProcedureTab({ isSigned, patientId }) {
 		addLog("Procedimentos atualizados", patientId);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/consultation/ProcedureTab.tsx:69:5",
+		"data-uid": "src/components/consultation/ProcedureTab.tsx:71:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle overflow-hidden animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:70:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:72:7",
 				"data-prohibitions": "[]",
 				className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:71:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:73:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:72:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:74:9",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary flex items-center gap-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Syringe, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:73:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:75:11",
 						"data-prohibitions": "[editContent]",
 						className: "w-5 h-5 text-primary"
 					}), " Registro Técnico"]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/consultation/ProcedureTab.tsx:75:9",
+					"data-uid": "src/components/consultation/ProcedureTab.tsx:77:9",
 					"data-prohibitions": "[]",
 					children: "Detalhes dos materiais utilizados e técnicas aplicadas."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/components/consultation/ProcedureTab.tsx:77:7",
+				"data-uid": "src/components/consultation/ProcedureTab.tsx:79:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6",
 				children: [
 					entries.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:79:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:81:11",
 						"data-prohibitions": "[editContent]",
 						className: "space-y-4",
 						children: entries.map((entry, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProcedureEntryCard, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:81:15",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:83:15",
 							"data-prohibitions": "[editContent]",
 							entry,
 							index,
@@ -35058,27 +35120,27 @@ function ProcedureTab({ isSigned, patientId }) {
 						}, entry.id))
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:94:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:96:11",
 						"data-prohibitions": "[]",
 						onClick: addEntry,
 						variant: "outline",
 						className: "w-full border-dashed border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/50 text-muted-foreground rounded-xl py-6 transition-colors",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:99:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:101:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-5 h-5 mr-2"
 						}), "Adicionar Novo Procedimento"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:104:9",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:106:9",
 						"data-prohibitions": "[]",
 						className: "space-y-2 pt-4 border-t border-border",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:105:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:107:11",
 							"data-prohibitions": "[]",
 							children: "Técnica de Aplicação e Observações Gerais"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:106:11",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:108:11",
 							"data-prohibitions": "[editContent]",
 							placeholder: "Descreva os planos de aplicação (supraperiosteal, derme profunda), uso de cânula ou agulha, intercorrências imediatas...",
 							className: "min-h-[120px] bg-muted/20 border-border focus-visible:ring-primary rounded-xl",
@@ -35088,16 +35150,16 @@ function ProcedureTab({ isSigned, patientId }) {
 						})]
 					}),
 					!isSigned && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/ProcedureTab.tsx:116:11",
+						"data-uid": "src/components/consultation/ProcedureTab.tsx:118:11",
 						"data-prohibitions": "[]",
 						className: "flex justify-end pt-4 mt-6 border-t border-border/50",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/components/consultation/ProcedureTab.tsx:117:13",
+							"data-uid": "src/components/consultation/ProcedureTab.tsx:119:13",
 							"data-prohibitions": "[]",
 							onClick: handleSave,
 							className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-								"data-uid": "src/components/consultation/ProcedureTab.tsx:121:15",
+								"data-uid": "src/components/consultation/ProcedureTab.tsx:123:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 mr-2"
 							}), " Salvar Registro"]
@@ -47086,4 +47148,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DQt4i8Uu.js.map
+//# sourceMappingURL=index-CEqWK4rQ.js.map

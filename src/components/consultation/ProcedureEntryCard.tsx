@@ -12,7 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Trash2 } from 'lucide-react'
 import useSettingsStore from '@/stores/useSettingsStore'
-import ApplicationMarker, { type PointMark, type VectorMark } from './ApplicationMarker'
+import ApplicationMarker, {
+  type PointMark,
+  type VectorMark,
+  type LineMark,
+} from './ApplicationMarker'
 
 export type ProcedureEntry = {
   id: string
@@ -27,6 +31,7 @@ export type ProcedureEntry = {
   markingArea?: string
   points?: PointMark[]
   vectors?: VectorMark[]
+  lines?: LineMark[]
 }
 
 type Props = {
@@ -189,7 +194,8 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
                 Módulo de Marcação de Aplicação
               </Label>
               <p className="text-sm text-muted-foreground">
-                Adicione esquemas visuais para detalhar pontos e vetores no corpo do paciente.
+                Adicione esquemas visuais para detalhar pontos, vetores e linhas no corpo do
+                paciente.
               </p>
             </div>
             <Switch
@@ -227,9 +233,11 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
                   area={entry.markingArea}
                   points={entry.points || []}
                   vectors={entry.vectors || []}
-                  onChange={(points, vectors) => {
+                  lines={entry.lines || []}
+                  onChange={(points, vectors, lines) => {
                     onUpdate(entry.id, 'points', points)
                     onUpdate(entry.id, 'vectors', vectors)
+                    onUpdate(entry.id, 'lines', lines)
                   }}
                   isSigned={isSigned}
                 />

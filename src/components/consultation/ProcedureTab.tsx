@@ -29,6 +29,7 @@ export default function ProcedureTab({
       markingArea: '',
       points: [],
       vectors: [],
+      lines: [],
     },
   ])
   const [generalNotes, setGeneralNotes] = useState('')
@@ -49,6 +50,7 @@ export default function ProcedureTab({
         markingArea: '',
         points: [],
         vectors: [],
+        lines: [],
       },
     ])
   }
