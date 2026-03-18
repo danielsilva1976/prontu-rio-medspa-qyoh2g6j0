@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
 import useUserStore from '@/stores/useUserStore'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 
@@ -11,13 +12,23 @@ export default function Login() {
   const [loginStr, setLoginStr] = useState('')
   const [password, setPassword] = useState('')
   const { login } = useUserStore()
+  const { toast } = useToast()
   const navigate = useNavigate()
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    // For demonstration purposes, any credential logs in
-    login()
-    navigate('/')
+
+    const success = login(loginStr, password)
+
+    if (success) {
+      navigate('/')
+    } else {
+      toast({
+        title: 'Acesso negado',
+        description: 'Credenciais incorretas.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (

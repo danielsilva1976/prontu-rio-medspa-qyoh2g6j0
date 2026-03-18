@@ -23,6 +23,8 @@ interface UserManagementProps {
 export function UserManagement({ title, description }: UserManagementProps) {
   const { users, currentUser, removeUser } = useUserStore()
 
+  const isAdmin = currentUser.email === 'daniel.nefro@gmail.com'
+
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
       <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4">
@@ -30,7 +32,7 @@ export function UserManagement({ title, description }: UserManagementProps) {
           <CardTitle className="text-xl text-primary font-serif">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </div>
-        <AddUserDialog />
+        {isAdmin && <AddUserDialog />}
       </CardHeader>
       <CardContent>
         <div className="border rounded-xl bg-white overflow-hidden shadow-sm">
@@ -41,7 +43,7 @@ export function UserManagement({ title, description }: UserManagementProps) {
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead>Nível de Acesso</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                {isAdmin && <TableHead className="text-right">Ações</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,22 +83,24 @@ export function UserManagement({ title, description }: UserManagementProps) {
                       {user.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <EditUserDialog user={user} />
-                      {user.id !== currentUser.id && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeUser(user.id)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Remover Usuário"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+                  {isAdmin && (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <EditUserDialog user={user} />
+                        {user.id !== currentUser.id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeUser(user.id)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="Remover Usuário"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

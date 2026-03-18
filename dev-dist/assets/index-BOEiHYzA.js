@@ -24891,6 +24891,14 @@ var defaultUsers = [
 		role: "Secretária",
 		status: "Ativo",
 		avatar: "https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3"
+	},
+	{
+		id: "usr-admin",
+		name: "Daniel Silva",
+		email: "daniel.nefro@gmail.com",
+		role: "Médico",
+		status: "Ativo",
+		avatar: "https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4"
 	}
 ];
 var UserContext = (0, import_react.createContext)({});
@@ -24925,7 +24933,21 @@ var UserProvider = ({ children }) => {
 	const switchUser = (id) => {
 		setCurrentUserId(id);
 	};
-	const login = () => setIsAuthenticated(true);
+	const login = (email, password) => {
+		if (email === "daniel.nefro@gmail.com") {
+			if (password === "Sucesso2026!") {
+				setCurrentUserId("usr-admin");
+				setIsAuthenticated(true);
+				return true;
+			}
+			return false;
+		}
+		const user = users.find((u) => u.email === email);
+		if (user) setCurrentUserId(user.id);
+		else setCurrentUserId(defaultUsers[0].id);
+		setIsAuthenticated(true);
+		return true;
+	};
 	const logout = () => setIsAuthenticated(false);
 	return (0, import_react.createElement)(UserContext.Provider, { value: {
 		users,
@@ -47872,74 +47894,75 @@ function EditUserDialog({ user }) {
 //#region src/components/settings/UserManagement.tsx
 function UserManagement({ title, description }) {
 	const { users, currentUser, removeUser } = useUserStore();
+	const isAdmin = currentUser.email === "daniel.nefro@gmail.com";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/UserManagement.tsx:27:5",
+		"data-uid": "src/components/settings/UserManagement.tsx:29:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/UserManagement.tsx:28:7",
+			"data-uid": "src/components/settings/UserManagement.tsx:30:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/UserManagement.tsx:29:9",
+				"data-uid": "src/components/settings/UserManagement.tsx:31:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/settings/UserManagement.tsx:30:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:32:11",
 					"data-prohibitions": "[editContent]",
 					className: "text-xl text-primary font-serif",
 					children: title
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/settings/UserManagement.tsx:31:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:33:11",
 					"data-prohibitions": "[editContent]",
 					children: description
 				})]
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AddUserDialog, {
-				"data-uid": "src/components/settings/UserManagement.tsx:33:9",
+			}), isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AddUserDialog, {
+				"data-uid": "src/components/settings/UserManagement.tsx:35:21",
 				"data-prohibitions": "[editContent]"
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/settings/UserManagement.tsx:35:7",
+			"data-uid": "src/components/settings/UserManagement.tsx:37:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/settings/UserManagement.tsx:36:9",
+				"data-uid": "src/components/settings/UserManagement.tsx:38:9",
 				"data-prohibitions": "[editContent]",
 				className: "border rounded-xl bg-white overflow-hidden shadow-sm",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-					"data-uid": "src/components/settings/UserManagement.tsx:37:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:39:11",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-						"data-uid": "src/components/settings/UserManagement.tsx:38:13",
-						"data-prohibitions": "[]",
+						"data-uid": "src/components/settings/UserManagement.tsx:40:13",
+						"data-prohibitions": "[editContent]",
 						className: "bg-muted/30",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/UserManagement.tsx:39:15",
-							"data-prohibitions": "[]",
+							"data-uid": "src/components/settings/UserManagement.tsx:41:15",
+							"data-prohibitions": "[editContent]",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:40:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:42:17",
 									"data-prohibitions": "[]",
 									children: "Profissional"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:41:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:43:17",
 									"data-prohibitions": "[]",
 									className: "hidden md:table-cell",
 									children: "Email"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:42:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:44:17",
 									"data-prohibitions": "[]",
 									children: "Nível de Acesso"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:43:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:45:17",
 									"data-prohibitions": "[]",
 									className: "hidden sm:table-cell",
 									children: "Status"
 								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:44:17",
+								isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
+									"data-uid": "src/components/settings/UserManagement.tsx:46:29",
 									"data-prohibitions": "[]",
 									className: "text-right",
 									children: "Ações"
@@ -47947,37 +47970,37 @@ function UserManagement({ title, description }) {
 							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-						"data-uid": "src/components/settings/UserManagement.tsx:47:13",
+						"data-uid": "src/components/settings/UserManagement.tsx:49:13",
 						"data-prohibitions": "[editContent]",
 						children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/UserManagement.tsx:49:17",
+							"data-uid": "src/components/settings/UserManagement.tsx:51:17",
 							"data-prohibitions": "[editContent]",
 							className: "group transition-colors hover:bg-muted/10",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:50:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:52:19",
 									"data-prohibitions": "[editContent]",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/UserManagement.tsx:51:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:53:21",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-3",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Avatar, {
-											"data-uid": "src/components/settings/UserManagement.tsx:52:23",
+											"data-uid": "src/components/settings/UserManagement.tsx:54:23",
 											"data-prohibitions": "[editContent]",
 											className: "h-9 w-9 border border-border",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarImage, {
-												"data-uid": "src/components/settings/UserManagement.tsx:53:25",
+												"data-uid": "src/components/settings/UserManagement.tsx:55:25",
 												"data-prohibitions": "[editContent]",
 												src: user.avatar,
 												className: "object-cover"
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-												"data-uid": "src/components/settings/UserManagement.tsx:54:25",
+												"data-uid": "src/components/settings/UserManagement.tsx:56:25",
 												"data-prohibitions": "[editContent]",
 												className: "bg-primary/5 text-primary text-sm font-medium",
 												children: user.name.substring(0, 2).toUpperCase()
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											"data-uid": "src/components/settings/UserManagement.tsx:58:23",
+											"data-uid": "src/components/settings/UserManagement.tsx:60:23",
 											"data-prohibitions": "[editContent]",
 											className: "font-medium text-foreground",
 											children: user.name
@@ -47985,32 +48008,32 @@ function UserManagement({ title, description }) {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:61:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:63:19",
 									"data-prohibitions": "[editContent]",
 									className: "text-muted-foreground hidden md:table-cell",
 									children: user.email
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:64:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:66:19",
 									"data-prohibitions": "[editContent]",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-										"data-uid": "src/components/settings/UserManagement.tsx:65:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:67:21",
 										"data-prohibitions": "[editContent]",
 										variant: "secondary",
 										className: "bg-primary/5 text-primary border-none",
 										children: [
 											user.role === "Médico" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, {
-												"data-uid": "src/components/settings/UserManagement.tsx:66:50",
+												"data-uid": "src/components/settings/UserManagement.tsx:68:50",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
 											user.role === "Estético" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Shield, {
-												"data-uid": "src/components/settings/UserManagement.tsx:67:52",
+												"data-uid": "src/components/settings/UserManagement.tsx:69:52",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
 											user.role === "Secretária" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(User, {
-												"data-uid": "src/components/settings/UserManagement.tsx:68:54",
+												"data-uid": "src/components/settings/UserManagement.tsx:70:54",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
@@ -48019,31 +48042,31 @@ function UserManagement({ title, description }) {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:72:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:74:19",
 									"data-prohibitions": "[editContent]",
 									className: "hidden sm:table-cell",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/components/settings/UserManagement.tsx:73:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:75:21",
 										"data-prohibitions": "[editContent]",
 										variant: "outline",
 										className: user.status === "Ativo" ? "text-success border-success/30" : "text-muted-foreground",
 										children: user.status
 									})
 								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:84:19",
+								isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+									"data-uid": "src/components/settings/UserManagement.tsx:87:21",
 									"data-prohibitions": "[editContent]",
 									className: "text-right",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/UserManagement.tsx:85:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:88:23",
 										"data-prohibitions": "[editContent]",
 										className: "flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EditUserDialog, {
-											"data-uid": "src/components/settings/UserManagement.tsx:86:23",
+											"data-uid": "src/components/settings/UserManagement.tsx:89:25",
 											"data-prohibitions": "[editContent]",
 											user
 										}), user.id !== currentUser.id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/UserManagement.tsx:88:25",
+											"data-uid": "src/components/settings/UserManagement.tsx:91:27",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "icon",
@@ -48051,7 +48074,7 @@ function UserManagement({ title, description }) {
 											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
 											title: "Remover Usuário",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-												"data-uid": "src/components/settings/UserManagement.tsx:95:27",
+												"data-uid": "src/components/settings/UserManagement.tsx:98:29",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})
@@ -48231,41 +48254,46 @@ function Login() {
 	const [loginStr, setLoginStr] = (0, import_react.useState)("");
 	const [password, setPassword] = (0, import_react.useState)("");
 	const { login } = useUserStore();
+	const { toast } = useToast();
 	const navigate = useNavigate();
 	const handleLogin = (e) => {
 		e.preventDefault();
-		login();
-		navigate("/");
+		if (login(loginStr, password)) navigate("/");
+		else toast({
+			title: "Acesso negado",
+			description: "Credenciais incorretas.",
+			variant: "destructive"
+		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-		"data-uid": "src/pages/Login.tsx:24:5",
+		"data-uid": "src/pages/Login.tsx:35:5",
 		"data-prohibitions": "[editContent]",
 		className: "min-h-screen bg-white flex flex-col items-center justify-center p-4 sm:p-8",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Login.tsx:25:7",
+			"data-uid": "src/pages/Login.tsx:36:7",
 			"data-prohibitions": "[editContent]",
 			className: "w-full max-w-[420px] space-y-8 animate-fade-in-up",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Login.tsx:26:9",
+					"data-uid": "src/pages/Login.tsx:37:9",
 					"data-prohibitions": "[]",
 					className: "flex flex-col items-center justify-center text-center",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-							"data-uid": "src/pages/Login.tsx:27:11",
+							"data-uid": "src/pages/Login.tsx:38:11",
 							"data-prohibitions": "[editContent]",
 							src: marca_principal_page_0001_2e968_default,
 							alt: "Clínica MEDSPA",
 							className: "h-28 w-auto object-contain mix-blend-multiply mb-4 hover:scale-105 transition-transform duration-500"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-							"data-uid": "src/pages/Login.tsx:32:11",
+							"data-uid": "src/pages/Login.tsx:43:11",
 							"data-prohibitions": "[]",
 							className: "text-2xl font-serif text-primary tracking-tight",
 							children: "Acesso Restrito"
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							"data-uid": "src/pages/Login.tsx:33:11",
+							"data-uid": "src/pages/Login.tsx:44:11",
 							"data-prohibitions": "[]",
 							className: "text-sm text-muted-foreground mt-2",
 							children: "Identifique-se para acessar o sistema"
@@ -48273,31 +48301,31 @@ function Login() {
 					]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Login.tsx:38:9",
+					"data-uid": "src/pages/Login.tsx:49:9",
 					"data-prohibitions": "[]",
 					className: "border border-border/50 shadow-elevation bg-white rounded-2xl overflow-hidden",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-						"data-uid": "src/pages/Login.tsx:39:11",
+						"data-uid": "src/pages/Login.tsx:50:11",
 						"data-prohibitions": "[]",
 						className: "p-6 sm:p-8",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
-							"data-uid": "src/pages/Login.tsx:40:13",
+							"data-uid": "src/pages/Login.tsx:51:13",
 							"data-prohibitions": "[]",
 							onSubmit: handleLogin,
 							className: "space-y-5",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Login.tsx:41:15",
+									"data-uid": "src/pages/Login.tsx:52:15",
 									"data-prohibitions": "[]",
 									className: "space-y-2.5",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/pages/Login.tsx:42:17",
+										"data-uid": "src/pages/Login.tsx:53:17",
 										"data-prohibitions": "[]",
 										htmlFor: "login",
 										className: "text-foreground/80 font-medium",
 										children: "E-mail ou Login"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/pages/Login.tsx:45:17",
+										"data-uid": "src/pages/Login.tsx:56:17",
 										"data-prohibitions": "[editContent]",
 										id: "login",
 										type: "text",
@@ -48309,28 +48337,28 @@ function Login() {
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Login.tsx:55:15",
+									"data-uid": "src/pages/Login.tsx:66:15",
 									"data-prohibitions": "[]",
 									className: "space-y-2.5",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Login.tsx:56:17",
+										"data-uid": "src/pages/Login.tsx:67:17",
 										"data-prohibitions": "[]",
 										className: "flex justify-between items-center",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/pages/Login.tsx:57:19",
+											"data-uid": "src/pages/Login.tsx:68:19",
 											"data-prohibitions": "[]",
 											htmlFor: "password",
 											className: "text-foreground/80 font-medium",
 											children: "Senha"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-											"data-uid": "src/pages/Login.tsx:60:19",
+											"data-uid": "src/pages/Login.tsx:71:19",
 											"data-prohibitions": "[]",
 											href: "#",
 											className: "text-sm font-medium text-primary hover:text-primary/80 transition-colors",
 											children: "Esqueceu a senha?"
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/pages/Login.tsx:67:17",
+										"data-uid": "src/pages/Login.tsx:78:17",
 										"data-prohibitions": "[editContent]",
 										id: "password",
 										type: "password",
@@ -48342,11 +48370,11 @@ function Login() {
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Login.tsx:77:15",
+									"data-uid": "src/pages/Login.tsx:88:15",
 									"data-prohibitions": "[]",
 									className: "pt-2",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/pages/Login.tsx:78:17",
+										"data-uid": "src/pages/Login.tsx:89:17",
 										"data-prohibitions": "[]",
 										type: "submit",
 										className: "w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all sm:hover:scale-[1.02]",
@@ -48358,11 +48386,11 @@ function Login() {
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/pages/Login.tsx:89:9",
+					"data-uid": "src/pages/Login.tsx:100:9",
 					"data-prohibitions": "[editContent]",
 					className: "text-center pt-4",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-						"data-uid": "src/pages/Login.tsx:90:11",
+						"data-uid": "src/pages/Login.tsx:101:11",
 						"data-prohibitions": "[editContent]",
 						className: "text-[11px] text-muted-foreground uppercase tracking-widest font-medium",
 						children: [
@@ -48503,4 +48531,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DESMTCl3.js.map
+//# sourceMappingURL=index-BOEiHYzA.js.map

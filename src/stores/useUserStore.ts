@@ -21,7 +21,7 @@ type UserState = {
   toggleStatus: (id: string) => void
   removeUser: (id: string) => void
   switchUser: (id: string) => void
-  login: () => void
+  login: (email?: string, password?: string) => boolean
   logout: () => void
 }
 
@@ -49,6 +49,14 @@ const defaultUsers: User[] = [
     role: 'Secretária',
     status: 'Ativo',
     avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3',
+  },
+  {
+    id: 'usr-admin',
+    name: 'Daniel Silva',
+    email: 'daniel.nefro@gmail.com',
+    role: 'Médico',
+    status: 'Ativo',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
   },
 ]
 
@@ -90,7 +98,28 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUserId(id)
   }
 
-  const login = () => setIsAuthenticated(true)
+  const login = (email?: string, password?: string) => {
+    // Admin strict check
+    if (email === 'daniel.nefro@gmail.com') {
+      if (password === 'Sucesso2026!') {
+        setCurrentUserId('usr-admin')
+        setIsAuthenticated(true)
+        return true
+      }
+      return false
+    }
+
+    // Demo fallback for other users
+    const user = users.find((u) => u.email === email)
+    if (user) {
+      setCurrentUserId(user.id)
+    } else {
+      setCurrentUserId(defaultUsers[0].id)
+    }
+    setIsAuthenticated(true)
+    return true
+  }
+
   const logout = () => setIsAuthenticated(false)
 
   return createElement(
