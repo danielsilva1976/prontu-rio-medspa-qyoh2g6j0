@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Stethoscope, Save } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import useAuditStore from '@/stores/useAuditStore'
 import {
@@ -120,6 +121,7 @@ export default function AnamnesisTab({
 }) {
   const [formData, setFormData] = useState(MOCK_DATA)
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
 
   const handleChange = (id: string, value: string) => {
     setFormData((prev) => ({ ...prev, [id]: value }))
@@ -127,6 +129,10 @@ export default function AnamnesisTab({
 
   const handleSave = () => {
     addLog('Anamnese atualizada', patientId)
+    toast({
+      title: 'Anamnese salva',
+      description: 'As informações do histórico clínico foram atualizadas.',
+    })
   }
 
   return (

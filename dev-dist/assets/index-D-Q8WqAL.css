@@ -2250,6 +2250,9 @@ video {
 .text-destructive-foreground {
   color: hsl(var(--destructive-foreground));
 }
+.text-destructive\/90 {
+  color: hsl(var(--destructive) / 0.9);
+}
 .text-emerald-700 {
   --tw-text-opacity: 1;
   color: rgb(4 120 87 / var(--tw-text-opacity, 1));

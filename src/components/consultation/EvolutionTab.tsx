@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { History, Save } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
 
 export default function EvolutionTab({
@@ -13,11 +14,16 @@ export default function EvolutionTab({
   patientId: string
 }) {
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
   const [note, setNote] = useState('')
 
   const handleSave = () => {
     if (!note.trim()) return
     addLog('Evolução adicionada', patientId)
+    toast({
+      title: 'Evolução salva',
+      description: 'O registro de evolução clínica foi adicionado com sucesso.',
+    })
   }
 
   return (

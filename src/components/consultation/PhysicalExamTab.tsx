@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
 import {
   Select,
@@ -22,6 +23,8 @@ export default function PhysicalExamTab({
   patientId: string
 }) {
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
+
   const [examData, setExamData] = useState({
     // Facial
     fototipo: '',
@@ -47,6 +50,10 @@ export default function PhysicalExamTab({
 
   const handleSave = () => {
     addLog('Exame Físico atualizado', patientId)
+    toast({
+      title: 'Exame físico salvo',
+      description: 'As avaliações e classificações clínicas foram registradas.',
+    })
   }
 
   return (

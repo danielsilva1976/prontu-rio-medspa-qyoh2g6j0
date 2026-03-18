@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ClipboardList } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import PlanningForm, { type SavedPlan } from './PlanningForm'
 import PlanningList from './PlanningList'
 
@@ -12,6 +13,7 @@ export default function PlanningTab({
   patientId: string
 }) {
   const [isCreating, setIsCreating] = useState(false)
+  const { toast } = useToast()
 
   // Starting with mock data to showcase the end-to-end functionality
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([
@@ -54,6 +56,10 @@ export default function PlanningTab({
   const handleSavePlan = (newPlan: SavedPlan) => {
     setSavedPlans((prev) => [newPlan, ...prev])
     setIsCreating(false)
+    toast({
+      title: 'Planejamento Salvo',
+      description: 'O plano estratégico foi salvo com sucesso.',
+    })
   }
 
   return (

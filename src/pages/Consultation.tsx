@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams, useLocation } from 'react-router-dom'
-import { Clock, FileText, Activity, Syringe, ClipboardList, ShieldCheck } from 'lucide-react'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
+import {
+  Clock,
+  FileText,
+  Activity,
+  Syringe,
+  ClipboardList,
+  ShieldCheck,
+  AlertCircle,
+} from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import PatientHeader from '@/components/consultation/PatientHeader'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
 import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
@@ -15,9 +24,10 @@ import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
 
 export default function Consultation() {
-  const { id } = useParams()
-  const location = useLocation()
-  const patientId = id || 'p-001'
+  const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const patientId = id || ''
+
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
   const { patients } = usePatientStore()
@@ -28,36 +38,64 @@ export default function Consultation() {
   const showDocs = currentUser.role === 'Médico'
   const showAudit = currentUser.id === 'usr-admin'
 
-  // Check URL for specific tab request (e.g. ?tab=evolucao for Novo Atendimento)
-  const searchParams = new URLSearchParams(location.search)
   const tabParam = searchParams.get('tab')
-
   const defaultTab = tabParam || (showAnamneseExame ? 'anamnese' : 'planejamento')
   const [activeTab, setActiveTab] = useState(defaultTab)
 
-  useEffect(() => {
-    addLog('Prontuário visualizado', patientId)
-  }, [patientId, addLog])
+  const patient = patients.find((p) => p.id === patientId)
 
-  // Ensure active tab updates if user switches role and loses access to current tab
   useEffect(() => {
+    if (patientId && patient) {
+      addLog('Prontuário visualizado', patientId)
+    }
+  }, [patientId, patient, addLog])
+
+  // Sync tab state with URL and ensure tab access is valid for role
+  useEffect(() => {
+    let newTab = activeTab
     if (!showAnamneseExame && (activeTab === 'anamnese' || activeTab === 'exame')) {
-      setActiveTab('planejamento')
+      newTab = 'planejamento'
     }
     if (!showDocs && (activeTab === 'receitas' || activeTab === 'laudos')) {
-      setActiveTab('planejamento')
+      newTab = 'planejamento'
     }
     if (!showAudit && activeTab === 'auditoria') {
-      setActiveTab('planejamento')
+      newTab = 'planejamento'
     }
-  }, [showAnamneseExame, showDocs, showAudit, activeTab])
+
+    if (newTab !== activeTab || newTab !== tabParam) {
+      setActiveTab(newTab)
+      setSearchParams({ tab: newTab }, { replace: true })
+    }
+  }, [showAnamneseExame, showDocs, showAudit, activeTab, tabParam, setSearchParams])
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    setSearchParams({ tab: value }, { replace: true })
+  }
 
   const handleFinalize = () => {
     setIsFinalized(true)
     addLog('Status alterado: Consulta Finalizada', patientId)
   }
 
-  const patient = patients.find((p) => p.id === patientId) || patients[0]
+  // Graceful error state if patient doesn't exist
+  if (!patient) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] bg-muted/20 p-6 animate-fade-in text-center">
+        <div className="w-20 h-20 bg-white border border-border rounded-full flex items-center justify-center mb-6 shadow-sm">
+          <AlertCircle className="w-10 h-10 text-muted-foreground/50" />
+        </div>
+        <h2 className="text-2xl font-serif text-primary mb-2">Prontuário não encontrado</h2>
+        <p className="text-muted-foreground mb-8 max-w-md">
+          O paciente que você está tentando acessar não existe ou o identificador é inválido.
+        </p>
+        <Button asChild className="rounded-xl shadow-sm">
+          <Link to="/pacientes">Voltar para a Lista de Pacientes</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -72,7 +110,7 @@ export default function Consultation() {
 
         {/* Custom Branded Tabs Navigation */}
         <div className="px-6 overflow-x-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-max">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-w-max">
             <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto">
               {showAnamneseExame && (
                 <>

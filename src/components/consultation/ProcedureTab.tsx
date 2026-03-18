@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Syringe, Plus, Save } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import ProcedureEntryCard, { type ProcedureEntry } from './ProcedureEntryCard'
 import useAuditStore from '@/stores/useAuditStore'
 
@@ -15,6 +16,8 @@ export default function ProcedureTab({
   patientId: string
 }) {
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
+
   const [entries, setEntries] = useState<ProcedureEntry[]>(() => [
     {
       id: Math.random().toString(36).slice(2),
@@ -65,6 +68,10 @@ export default function ProcedureTab({
 
   const handleSave = () => {
     addLog('Procedimentos atualizados', patientId)
+    toast({
+      title: 'Procedimentos salvos',
+      description: 'O registro técnico das aplicações foi atualizado.',
+    })
   }
 
   return (

@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Loader2, Calendar, Clock, RefreshCw, AlertCircle } from 'lucide-react'
@@ -45,7 +46,9 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
     }
 
     if (!belleSoftware.url || !belleSoftware.token) {
-      setError('Integração com Belle Software não configurada.')
+      setError(
+        'A integração com o Belle Software não está configurada. Acesse as Configurações para adicionar suas credenciais e habilitar a sincronização.',
+      )
       return
     }
 
@@ -58,10 +61,10 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
       const sorted = data.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
       setAppointments(sorted)
     } catch (err) {
-      setError('Falha ao conectar com a API do Belle Software.')
+      setError('Não foi possível conectar à API do Belle Software para recuperar os agendamentos.')
       toast({
         title: 'Erro de Sincronização',
-        description: 'Não foi possível carregar o histórico de agendamentos.',
+        description: 'Falha ao processar a requisição de histórico.',
         variant: 'destructive',
       })
     } finally {
@@ -123,9 +126,14 @@ export default function CompleteHistoryModal({ isOpen, onClose, patient }: Props
               <p>Buscando histórico na API...</p>
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-muted/20">
-              <AlertCircle className="w-8 h-8 mb-4 opacity-50" />
-              <p className="text-center max-w-sm">{error}</p>
+            <div className="p-6">
+              <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle className="text-destructive font-semibold">
+                  Falha na Sincronização
+                </AlertTitle>
+                <AlertDescription className="text-destructive/90">{error}</AlertDescription>
+              </Alert>
             </div>
           ) : appointments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-muted/10">
