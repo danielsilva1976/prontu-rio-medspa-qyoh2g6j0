@@ -1,7 +1,7 @@
 import { useState, useContext, createContext, ReactNode, createElement } from 'react'
 import { patients as initialPatients } from '@/lib/mock-data'
 
-export type Patient = (typeof initialPatients)[0] & {
+export type Patient = Omit<(typeof initialPatients)[0], 'procedures'> & {
   avatar?: string
   cpf?: string
   rg?: string
@@ -10,12 +10,14 @@ export type Patient = (typeof initialPatients)[0] & {
   email?: string
   endereco?: string
   belleId?: string
+  procedures: string[]
 }
 
 const defaultPatients: Patient[] = initialPatients.map((p, i) => ({
   ...p,
+  procedures: p.procedures || [],
   avatar: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
-  cpf: '123.456.789-00', // Assigning standard mock CPF for matching
+  cpf: '123.456.789-00', // Mock standard for matching testing
   rg: '12.345.678-9',
   profissao: i % 2 === 0 ? 'Engenheira' : 'Professora',
   estado_civil: 'Solteira',
@@ -53,17 +55,33 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     setPatients((prev) => {
       const next = [...prev]
       belleData.forEach((bp) => {
-        // Strip non-digits for robust CPF comparison
+        // Strip non-digits for robust CPF comparison to guarantee identity
         const cleanCpf = (c?: string) => c?.replace(/\D/g, '')
 
-        // Deduplicate primarily by CPF
-        const idx = next.findIndex((p) => bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf))
+        const idx = next.findIndex(
+          (p) =>
+            (bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf)) ||
+            (bp.belleId && p.belleId === bp.belleId),
+        )
 
         if (idx >= 0) {
-          next[idx] = { ...next[idx], ...bp }
+          // Merge procedures to keep history intact while updating from Belle
+          const mergedProcedures = Array.from(
+            new Set([...(next[idx].procedures || []), ...(bp.procedures || [])]),
+          )
+
+          next[idx] = {
+            ...next[idx],
+            ...bp,
+            // Preserve existing local edits if Belle data is empty
+            endereco: next[idx].endereco || bp.endereco,
+            procedures: mergedProcedures,
+            // Update nextAppointment strictly from Belle's schedule data if provided
+            nextAppointment:
+              bp.nextAppointment !== undefined ? bp.nextAppointment : next[idx].nextAppointment,
+          }
           updated++
         } else {
-          // Calculate age from DOB if possible
           let age = bp.age || 30
           if (bp.dob) {
             const birth = new Date(bp.dob)
@@ -79,10 +97,10 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
             age,
             phone: bp.phone || '',
             dob: bp.dob || '1990-01-01',
-            lastVisit: new Date().toISOString().split('T')[0],
-            nextAppointment: null,
-            status: 'active',
-            procedures: [],
+            lastVisit: bp.lastVisit || new Date().toISOString().split('T')[0],
+            nextAppointment: bp.nextAppointment || null,
+            status: bp.nextAppointment ? 'scheduled' : 'active',
+            procedures: bp.procedures || [],
             professional: null,
             ...bp,
           })

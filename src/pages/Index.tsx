@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarClock, CheckCircle2, Clock, ChevronRight } from 'lucide-react'
-import { mockDashboardStats, patients } from '@/lib/mock-data'
 import useUserStore from '@/stores/useUserStore'
+import usePatientStore from '@/stores/usePatientStore'
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import {
 
 export default function Index() {
   const { currentUser } = useUserStore()
+  const { patients } = usePatientStore()
   const isMedico = currentUser.role === 'Médico'
 
   const today = new Date()
@@ -35,11 +36,16 @@ export default function Index() {
     .sort((a, b) => (a.nextAppointment! > b.nextAppointment! ? 1 : -1))
 
   const todaysAppointments = todaysAppointmentsList.length
-  const totalAppointments = mockDashboardStats.scheduledToday
-  const finalizedRecords = mockDashboardStats.completedRecords
-  const pendingRecords = totalAppointments - finalizedRecords
 
-  const pendingPatients = patients.filter((p) => p.status === 'scheduled')
+  // Dynamic metrics based on actual store data (syncs with Belle)
+  const finalizedRecords = todaysAppointmentsList.filter(
+    (p) => p.status === 'inactive' || p.lastVisit === todayStr,
+  ).length
+  const pendingRecords = todaysAppointments - finalizedRecords
+
+  const pendingPatients = todaysAppointmentsList.filter(
+    (p) => p.status !== 'inactive' && p.lastVisit !== todayStr,
+  )
 
   const formatDateTime = (dateString: string | null) => {
     if (!dateString) return 'Data não definida'
@@ -173,7 +179,7 @@ export default function Index() {
                       {formatTime(apt.nextAppointment!)}
                     </TableCell>
                     <TableCell>{apt.name}</TableCell>
-                    <TableCell>{apt.procedures.join(', ')}</TableCell>
+                    <TableCell>{apt.procedures?.join(', ') || '-'}</TableCell>
                     <TableCell>{apt.professional || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button

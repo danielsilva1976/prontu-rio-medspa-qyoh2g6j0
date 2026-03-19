@@ -19698,6 +19698,28 @@ var Search = createLucideIcon("search", [["path", {
 	r: "8",
 	key: "4ej97u"
 }]]);
+var ServerCrash = createLucideIcon("server-crash", [
+	["path", {
+		d: "M6 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2",
+		key: "4b9dqc"
+	}],
+	["path", {
+		d: "M6 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2",
+		key: "22nnkd"
+	}],
+	["path", {
+		d: "M6 6h.01",
+		key: "1utrut"
+	}],
+	["path", {
+		d: "M6 18h.01",
+		key: "uhywen"
+	}],
+	["path", {
+		d: "m13 6-4 6h6l-4 6",
+		key: "14hqih"
+	}]
+]);
 var Settings$1 = createLucideIcon("settings", [["path", {
 	d: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915",
 	key: "1i5ecw"
@@ -25124,7 +25146,9 @@ var todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2
 var tomorrow = new Date(today);
 tomorrow.setDate(tomorrow.getDate() + 1);
 var tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-var patients = [
+//#endregion
+//#region src/stores/usePatientStore.ts
+var defaultPatients = [
 	{
 		id: "p-001",
 		name: "Isabella Rodrigues",
@@ -25185,16 +25209,9 @@ var patients = [
 		procedures: ["Transplante Capilar - Acompanhamento"],
 		professional: "Dr. Marcos Silva"
 	}
-];
-var mockDashboardStats = {
-	scheduledToday: 8,
-	completedRecords: 3,
-	newPatients: 2
-};
-//#endregion
-//#region src/stores/usePatientStore.ts
-var defaultPatients = patients.map((p, i) => ({
+].map((p, i) => ({
 	...p,
+	procedures: p.procedures || [],
 	avatar: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
 	cpf: "123.456.789-00",
 	rg: "12.345.678-9",
@@ -25226,11 +25243,15 @@ var PatientProvider = ({ children }) => {
 			const next = [...prev];
 			belleData.forEach((bp) => {
 				const cleanCpf = (c) => c?.replace(/\D/g, "");
-				const idx = next.findIndex((p) => bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf));
+				const idx = next.findIndex((p) => bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf) || bp.belleId && p.belleId === bp.belleId);
 				if (idx >= 0) {
+					const mergedProcedures = Array.from(new Set([...next[idx].procedures || [], ...bp.procedures || []]));
 					next[idx] = {
 						...next[idx],
-						...bp
+						...bp,
+						endereco: next[idx].endereco || bp.endereco,
+						procedures: mergedProcedures,
+						nextAppointment: bp.nextAppointment !== void 0 ? bp.nextAppointment : next[idx].nextAppointment
 					};
 					updated++;
 				} else {
@@ -25248,10 +25269,10 @@ var PatientProvider = ({ children }) => {
 						age,
 						phone: bp.phone || "",
 						dob: bp.dob || "1990-01-01",
-						lastVisit: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
-						nextAppointment: null,
-						status: "active",
-						procedures: [],
+						lastVisit: bp.lastVisit || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+						nextAppointment: bp.nextAppointment || null,
+						status: bp.nextAppointment ? "scheduled" : "active",
+						procedures: bp.procedures || [],
 						professional: null,
 						...bp
 					});
@@ -29055,15 +29076,15 @@ TableCaption.displayName = "TableCaption";
 //#region src/pages/Index.tsx
 function Index() {
 	const { currentUser } = useUserStore();
+	const { patients } = usePatientStore();
 	const isMedico = currentUser.role === "Médico";
 	const today = /* @__PURE__ */ new Date();
 	const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 	const todaysAppointmentsList = patients.filter((p) => p.nextAppointment && p.nextAppointment.startsWith(todayStr)).sort((a, b) => a.nextAppointment > b.nextAppointment ? 1 : -1);
 	const todaysAppointments = todaysAppointmentsList.length;
-	const totalAppointments = mockDashboardStats.scheduledToday;
-	const finalizedRecords = mockDashboardStats.completedRecords;
-	const pendingRecords = totalAppointments - finalizedRecords;
-	const pendingPatients = patients.filter((p) => p.status === "scheduled");
+	const finalizedRecords = todaysAppointmentsList.filter((p) => p.status === "inactive" || p.lastVisit === todayStr).length;
+	const pendingRecords = todaysAppointments - finalizedRecords;
+	const pendingPatients = todaysAppointmentsList.filter((p) => p.status !== "inactive" && p.lastVisit !== todayStr);
 	const formatDateTime = (dateString) => {
 		if (!dateString) return "Data não definida";
 		const date = new Date(dateString);
@@ -29082,67 +29103,67 @@ function Index() {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Index.tsx:64:5",
+		"data-uid": "src/pages/Index.tsx:70:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-8 animate-slide-up px-4 sm:px-6 lg:px-8 pt-6 pb-8",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:65:7",
+				"data-uid": "src/pages/Index.tsx:71:7",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col gap-2",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", {
-					"data-uid": "src/pages/Index.tsx:66:9",
+					"data-uid": "src/pages/Index.tsx:72:9",
 					"data-prohibitions": "[editContent]",
 					className: "text-3xl md:text-4xl text-primary",
 					children: [
 						isMedico ? "Bom dia," : "Olá,",
 						" ",
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/pages/Index.tsx:68:11",
+							"data-uid": "src/pages/Index.tsx:74:11",
 							"data-prohibitions": "[editContent]",
 							className: "font-serif italic text-primary/80",
 							children: currentUser.name.split(" ")[0]
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Index.tsx:72:9",
+					"data-uid": "src/pages/Index.tsx:78:9",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground",
 					children: "Aqui está o resumo da sua agenda para hoje."
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:75:7",
+				"data-uid": "src/pages/Index.tsx:81:7",
 				"data-prohibitions": "[editContent]",
 				className: "grid gap-4 md:grid-cols-3",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Index.tsx:76:9",
+						"data-uid": "src/pages/Index.tsx:82:9",
 						"data-prohibitions": "[editContent]",
 						className: "border-none shadow-subtle bg-white",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Index.tsx:77:11",
+							"data-uid": "src/pages/Index.tsx:83:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6 flex items-center gap-4",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:78:13",
+								"data-uid": "src/pages/Index.tsx:84:13",
 								"data-prohibitions": "[]",
 								className: "p-3 bg-blue-50 text-blue-600 rounded-2xl",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CalendarClock, {
-									"data-uid": "src/pages/Index.tsx:79:15",
+									"data-uid": "src/pages/Index.tsx:85:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-6 h-6"
 								})
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:81:13",
+								"data-uid": "src/pages/Index.tsx:87:13",
 								"data-prohibitions": "[editContent]",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:82:15",
+									"data-uid": "src/pages/Index.tsx:88:15",
 									"data-prohibitions": "[]",
 									className: "text-sm font-medium text-muted-foreground",
 									children: "Agendamentos do Dia"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-									"data-uid": "src/pages/Index.tsx:83:15",
+									"data-uid": "src/pages/Index.tsx:89:15",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-bold font-serif",
 									children: todaysAppointments
@@ -29151,32 +29172,32 @@ function Index() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-						"data-uid": "src/pages/Index.tsx:88:9",
+						"data-uid": "src/pages/Index.tsx:94:9",
 						"data-prohibitions": "[editContent]",
 						className: "border-none shadow-subtle bg-white",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-							"data-uid": "src/pages/Index.tsx:89:11",
+							"data-uid": "src/pages/Index.tsx:95:11",
 							"data-prohibitions": "[editContent]",
 							className: "p-6 flex items-center gap-4",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:90:13",
+								"data-uid": "src/pages/Index.tsx:96:13",
 								"data-prohibitions": "[]",
 								className: "p-3 bg-green-50 text-green-600 rounded-2xl",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-									"data-uid": "src/pages/Index.tsx:91:15",
+									"data-uid": "src/pages/Index.tsx:97:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-6 h-6"
 								})
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/pages/Index.tsx:93:13",
+								"data-uid": "src/pages/Index.tsx:99:13",
 								"data-prohibitions": "[editContent]",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/pages/Index.tsx:94:15",
+									"data-uid": "src/pages/Index.tsx:100:15",
 									"data-prohibitions": "[]",
 									className: "text-sm font-medium text-muted-foreground",
 									children: "Prontuários Finalizados"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-									"data-uid": "src/pages/Index.tsx:95:15",
+									"data-uid": "src/pages/Index.tsx:101:15",
 									"data-prohibitions": "[editContent]",
 									className: "text-2xl font-bold font-serif",
 									children: finalizedRecords
@@ -29185,40 +29206,40 @@ function Index() {
 						})
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-						"data-uid": "src/pages/Index.tsx:100:9",
+						"data-uid": "src/pages/Index.tsx:106:9",
 						"data-prohibitions": "[editContent]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-							"data-uid": "src/pages/Index.tsx:101:11",
+							"data-uid": "src/pages/Index.tsx:107:11",
 							"data-prohibitions": "[editContent]",
 							asChild: true,
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-								"data-uid": "src/pages/Index.tsx:102:13",
+								"data-uid": "src/pages/Index.tsx:108:13",
 								"data-prohibitions": "[editContent]",
 								className: "border-none shadow-subtle bg-white cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-									"data-uid": "src/pages/Index.tsx:103:15",
+									"data-uid": "src/pages/Index.tsx:109:15",
 									"data-prohibitions": "[editContent]",
 									className: "p-6 flex items-center gap-4",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/pages/Index.tsx:104:17",
+										"data-uid": "src/pages/Index.tsx:110:17",
 										"data-prohibitions": "[]",
 										className: "p-3 bg-amber-50 text-amber-600 rounded-2xl",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-											"data-uid": "src/pages/Index.tsx:105:19",
+											"data-uid": "src/pages/Index.tsx:111:19",
 											"data-prohibitions": "[editContent]",
 											className: "w-6 h-6"
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Index.tsx:107:17",
+										"data-uid": "src/pages/Index.tsx:113:17",
 										"data-prohibitions": "[editContent]",
 										className: "text-left",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Index.tsx:108:19",
+											"data-uid": "src/pages/Index.tsx:114:19",
 											"data-prohibitions": "[]",
 											className: "text-sm font-medium text-muted-foreground",
 											children: "Prontuários Pendentes"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-											"data-uid": "src/pages/Index.tsx:109:19",
+											"data-uid": "src/pages/Index.tsx:115:19",
 											"data-prohibitions": "[editContent]",
 											className: "text-2xl font-bold font-serif",
 											children: pendingRecords
@@ -29227,63 +29248,63 @@ function Index() {
 								})
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-							"data-uid": "src/pages/Index.tsx:114:11",
+							"data-uid": "src/pages/Index.tsx:120:11",
 							"data-prohibitions": "[editContent]",
 							className: "sm:max-w-md md:max-w-2xl rounded-xl",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-								"data-uid": "src/pages/Index.tsx:115:13",
+								"data-uid": "src/pages/Index.tsx:121:13",
 								"data-prohibitions": "[]",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-									"data-uid": "src/pages/Index.tsx:116:15",
+									"data-uid": "src/pages/Index.tsx:122:15",
 									"data-prohibitions": "[]",
 									className: "font-serif text-xl text-primary",
 									children: "Prontuários Pendentes"
 								})
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								"data-uid": "src/pages/Index.tsx:120:13",
+								"data-uid": "src/pages/Index.tsx:126:13",
 								"data-prohibitions": "[editContent]",
 								className: "space-y-3 mt-2 max-h-[60vh] overflow-y-auto pr-2",
 								children: pendingPatients.length > 0 ? pendingPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/pages/Index.tsx:123:19",
+									"data-uid": "src/pages/Index.tsx:129:19",
 									"data-prohibitions": "[editContent]",
 									className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-border/50 rounded-xl bg-card hover:border-primary/30 hover:shadow-sm transition-all",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/pages/Index.tsx:127:21",
+										"data-uid": "src/pages/Index.tsx:133:21",
 										"data-prohibitions": "[editContent]",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											"data-uid": "src/pages/Index.tsx:128:23",
+											"data-uid": "src/pages/Index.tsx:134:23",
 											"data-prohibitions": "[editContent]",
 											className: "font-semibold text-foreground",
 											children: patient.name
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-											"data-uid": "src/pages/Index.tsx:129:23",
+											"data-uid": "src/pages/Index.tsx:135:23",
 											"data-prohibitions": "[editContent]",
 											className: "text-sm text-muted-foreground",
 											children: ["Agendado para: ", formatDateTime(patient.nextAppointment)]
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/pages/Index.tsx:133:21",
+										"data-uid": "src/pages/Index.tsx:139:21",
 										"data-prohibitions": "[]",
 										asChild: true,
 										variant: "outline",
 										className: "shrink-0 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link$1, {
-											"data-uid": "src/pages/Index.tsx:138:23",
+											"data-uid": "src/pages/Index.tsx:144:23",
 											"data-prohibitions": "[]",
 											to: `/prontuario/${patient.id}`,
 											children: ["Abrir Prontuário", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, {
-												"data-uid": "src/pages/Index.tsx:140:25",
+												"data-uid": "src/pages/Index.tsx:146:25",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4 ml-1"
 											})]
 										})
 									})]
 								}, patient.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/pages/Index.tsx:146:17",
+									"data-uid": "src/pages/Index.tsx:152:17",
 									"data-prohibitions": "[]",
 									className: "text-center py-8",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/pages/Index.tsx:147:19",
+										"data-uid": "src/pages/Index.tsx:153:19",
 										"data-prohibitions": "[]",
 										className: "text-muted-foreground",
 										children: "Nenhum prontuário pendente."
@@ -29295,52 +29316,52 @@ function Index() {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Index.tsx:155:7",
+				"data-uid": "src/pages/Index.tsx:161:7",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-4 pt-4",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-					"data-uid": "src/pages/Index.tsx:156:9",
+					"data-uid": "src/pages/Index.tsx:162:9",
 					"data-prohibitions": "[]",
 					className: "text-xl font-serif text-primary",
 					children: "Agenda de Hoje"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-					"data-uid": "src/pages/Index.tsx:157:9",
+					"data-uid": "src/pages/Index.tsx:163:9",
 					"data-prohibitions": "[editContent]",
 					className: "border-none shadow-subtle bg-white overflow-hidden",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-						"data-uid": "src/pages/Index.tsx:158:11",
+						"data-uid": "src/pages/Index.tsx:164:11",
 						"data-prohibitions": "[editContent]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-							"data-uid": "src/pages/Index.tsx:159:13",
+							"data-uid": "src/pages/Index.tsx:165:13",
 							"data-prohibitions": "[]",
 							className: "bg-muted/50",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/pages/Index.tsx:160:15",
+								"data-uid": "src/pages/Index.tsx:166:15",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Index.tsx:161:17",
+										"data-uid": "src/pages/Index.tsx:167:17",
 										"data-prohibitions": "[]",
 										className: "w-[100px]",
 										children: "Horário"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Index.tsx:162:17",
+										"data-uid": "src/pages/Index.tsx:168:17",
 										"data-prohibitions": "[]",
 										children: "Paciente"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Index.tsx:163:17",
+										"data-uid": "src/pages/Index.tsx:169:17",
 										"data-prohibitions": "[]",
 										children: "Procedimento"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Index.tsx:164:17",
+										"data-uid": "src/pages/Index.tsx:170:17",
 										"data-prohibitions": "[]",
 										children: "Profissional"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-										"data-uid": "src/pages/Index.tsx:165:17",
+										"data-uid": "src/pages/Index.tsx:171:17",
 										"data-prohibitions": "[]",
 										className: "text-right",
 										children: "Ação"
@@ -29348,46 +29369,46 @@ function Index() {
 								]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-							"data-uid": "src/pages/Index.tsx:168:13",
+							"data-uid": "src/pages/Index.tsx:174:13",
 							"data-prohibitions": "[editContent]",
 							children: todaysAppointmentsList.length > 0 ? todaysAppointmentsList.map((apt) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-								"data-uid": "src/pages/Index.tsx:171:19",
+								"data-uid": "src/pages/Index.tsx:177:19",
 								"data-prohibitions": "[editContent]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Index.tsx:172:21",
+										"data-uid": "src/pages/Index.tsx:178:21",
 										"data-prohibitions": "[editContent]",
 										className: "font-medium",
 										children: formatTime(apt.nextAppointment)
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Index.tsx:175:21",
+										"data-uid": "src/pages/Index.tsx:181:21",
 										"data-prohibitions": "[editContent]",
 										children: apt.name
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Index.tsx:176:21",
+										"data-uid": "src/pages/Index.tsx:182:21",
 										"data-prohibitions": "[editContent]",
-										children: apt.procedures.join(", ")
+										children: apt.procedures?.join(", ") || "-"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Index.tsx:177:21",
+										"data-uid": "src/pages/Index.tsx:183:21",
 										"data-prohibitions": "[editContent]",
 										children: apt.professional || "-"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-										"data-uid": "src/pages/Index.tsx:178:21",
+										"data-uid": "src/pages/Index.tsx:184:21",
 										"data-prohibitions": "[]",
 										className: "text-right",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/pages/Index.tsx:179:23",
+											"data-uid": "src/pages/Index.tsx:185:23",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "sm",
 											className: "text-primary hover:text-primary/80",
 											asChild: true,
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link$1, {
-												"data-uid": "src/pages/Index.tsx:185:25",
+												"data-uid": "src/pages/Index.tsx:191:25",
 												"data-prohibitions": "[]",
 												to: `/prontuario/${apt.id}`,
 												children: "Abrir"
@@ -29396,10 +29417,10 @@ function Index() {
 									})
 								]
 							}, apt.id)) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-								"data-uid": "src/pages/Index.tsx:191:17",
+								"data-uid": "src/pages/Index.tsx:197:17",
 								"data-prohibitions": "[]",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/pages/Index.tsx:192:19",
+									"data-uid": "src/pages/Index.tsx:198:19",
 									"data-prohibitions": "[]",
 									colSpan: 5,
 									className: "text-center py-8 text-muted-foreground",
@@ -36020,15 +36041,17 @@ var mockClientes = [
 		cpf: "333.444.555-66",
 		email: "ana@bellesoftware.com",
 		celular: "(11) 98888-7777",
-		data_nascimento: "1990-05-20"
+		data_nascimento: "1990-05-20",
+		historico_clinico: "Paciente com histórico de melasma."
 	},
 	{
 		id: 102,
-		nome: "Isabella Rodrigues",
+		nome: "Isabella Rodrigues (Atualizada)",
 		cpf: "123.456.789-00",
 		email: "isa@email.com",
 		celular: "(11) 98765-4321",
-		data_nascimento: "1989-05-12"
+		data_nascimento: "1989-05-12",
+		historico_clinico: "Alergia a dipirona relatada na última consulta."
 	},
 	{
 		id: 103,
@@ -36042,6 +36065,8 @@ var mockClientes = [
 var mockAgendamentos = [
 	{
 		id: 1001,
+		cliente_id: 101,
+		cpf_cliente: "333.444.555-66",
 		data: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 		hora_inicio: "14:00",
 		servico: "Toxina Botulínica - Terço Superior",
@@ -36050,6 +36075,8 @@ var mockAgendamentos = [
 	},
 	{
 		id: 1002,
+		cliente_id: 101,
+		cpf_cliente: "333.444.555-66",
 		data: (/* @__PURE__ */ new Date(Date.now() - 720 * 60 * 60 * 1e3)).toISOString().split("T")[0],
 		hora_inicio: "10:00",
 		servico: "Avaliação Facial",
@@ -36058,60 +36085,85 @@ var mockAgendamentos = [
 	},
 	{
 		id: 1003,
+		cliente_id: 103,
+		cpf_cliente: "111.222.333-44",
 		data: new Date(Date.now() + 360 * 60 * 60 * 1e3).toISOString().split("T")[0],
 		hora_inicio: "16:30",
 		servico: "Retorno Pós-Procedimento",
 		profissional: "Dra. Sofia Mendes",
 		status: "Agendado"
+	},
+	{
+		id: 1004,
+		cliente_id: 102,
+		cpf_cliente: "123.456.789-00",
+		data: new Date(Date.now() + 2880 * 60 * 1e3).toISOString().split("T")[0],
+		hora_inicio: "09:00",
+		servico: "Bioestimulador de Colágeno",
+		profissional: "Dra. Fabíola Kleinert",
+		status: "Agendado"
 	}
 ];
 /**
-* Fetch patients from Belle Software API
-* Throws an error if configured with real credentials to ensure UI handles it gracefully.
+* Normaliza a URL base para garantir que aponte para o endpoint api.php correto
+*/
+var getApiEndpoint = (url) => {
+	const cleanUrl = url.trim().replace(/\/$/, "");
+	return cleanUrl.endsWith("api.php") ? cleanUrl : `${cleanUrl}/api.php`;
+};
+/**
+* Função genérica para chamadas na api.php do Belle Software
+*/
+var belleApiCall = async (url, token, action, payload = {}) => {
+	const endpoint = getApiEndpoint(url);
+	const response = await fetch(endpoint, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+			"X-Auth-Token": token
+		},
+		body: JSON.stringify({
+			token,
+			acao: action,
+			...payload
+		})
+	});
+	if (!response.ok) throw new Error(`Erro de comunicação com Belle Software: ${response.status}`);
+	const result = await response.json();
+	if (result.status === "erro" || result.status === false || result.error) throw new Error(result.mensagem || result.message || "Erro desconhecido retornado pela API.");
+	return result.data || result.dados || result;
+};
+/**
+* Fetch patients from Belle Software API via api.php
 */
 var fetchBelleClientes = async (url, token) => {
 	if (!url || !token || url.includes("mock")) {
-		console.info("Usando mock de clientes (integração não configurada).");
+		console.info("Usando mock de clientes (integração não configurada ou em modo demo).");
+		await new Promise((resolve) => setTimeout(resolve, 800));
 		return mockClientes;
 	}
 	try {
-		const response = await fetch(`${url.replace(/\/$/, "")}/api/v1/clientes`, {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
-		if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
-		const data = await response.json();
-		return Array.isArray(data) ? data : data.data || [];
+		const data = await belleApiCall(url, token, "listar_clientes");
+		return Array.isArray(data) ? data : [];
 	} catch (error) {
-		console.error("Falha na integração Belle Software:", error);
+		console.error("Falha na integração de clientes Belle Software:", error);
 		throw error;
 	}
 };
 /**
-* Fetch appointment history from Belle Software API for a specific CPF
-* Throws an error if configured with real credentials to ensure UI handles it gracefully.
+* Fetch appointment history from Belle Software API via api.php
 */
 var fetchBelleAgendamentos = async (url, token, cpf) => {
 	if (!url || !token || url.includes("mock")) {
-		console.info("Usando mock de agendamentos (integração não configurada).");
-		return mockAgendamentos;
+		console.info("Usando mock de agendamentos (integração não configurada ou em modo demo).");
+		return cpf ? mockAgendamentos.filter((a) => a.cpf_cliente === cpf) : mockAgendamentos;
 	}
 	try {
-		const response = await fetch(`${url.replace(/\/$/, "")}/api/v1/agendamentos?cpf=${cpf}`, {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		});
-		if (!response.ok) throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
-		const data = await response.json();
-		return Array.isArray(data) ? data : data.data || [];
+		const data = await belleApiCall(url, token, "listar_agendamentos", cpf ? { cpf } : { periodo: "recentes" });
+		return Array.isArray(data) ? data : [];
 	} catch (error) {
-		console.error("Falha na integração Belle Software:", error);
+		console.error("Falha na integração de agendamentos Belle Software:", error);
 		throw error;
 	}
 };
@@ -36121,41 +36173,71 @@ function Patients() {
 	const { patients, syncWithBelle } = usePatientStore();
 	const { belleSoftware, setBelleLastSync } = useSettingsStore();
 	const { addLog } = useAuditStore();
+	const { currentUser } = useUserStore();
 	const { toast } = useToast();
 	const [searchTerm, setSearchTerm] = (0, import_react.useState)("");
 	const [isSyncing, setIsSyncing] = (0, import_react.useState)(false);
-	const filteredPatients = patients.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.id.toLowerCase().includes(searchTerm.toLowerCase()));
+	const canSync = currentUser.role === "Médico" || currentUser.email === "daniel.nefro@gmail.com";
+	const filteredPatients = patients.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.id.toLowerCase().includes(searchTerm.toLowerCase()) || p.cpf && p.cpf.includes(searchTerm));
 	const handleSync = async () => {
+		if (!canSync) {
+			toast({
+				title: "Acesso Negado",
+				description: "Apenas usuários autorizados podem sincronizar dados.",
+				variant: "destructive"
+			});
+			return;
+		}
 		if (!belleSoftware.url || !belleSoftware.token) {
 			toast({
 				title: "Configuração Incompleta",
-				description: "Configure a integração com o Belle Software nas configurações antes de sincronizar.",
+				description: "Configure a URL e o Token do Belle Software nas configurações antes de sincronizar.",
 				variant: "destructive"
 			});
 			return;
 		}
 		setIsSyncing(true);
 		try {
-			const result = syncWithBelle((await fetchBelleClientes(belleSoftware.url, belleSoftware.token)).map((c) => ({
-				belleId: String(c.id),
-				name: c.nome,
-				cpf: c.cpf,
-				email: c.email,
-				phone: c.celular,
-				dob: c.data_nascimento
-			})));
+			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(belleSoftware.url, belleSoftware.token), fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token)]);
+			const now = /* @__PURE__ */ new Date();
+			const result = syncWithBelle(rawClientes.map((c) => {
+				const clientAppts = rawAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && a.cliente_id === c.id);
+				let lastVisit = c.data_nascimento ? new Date(c.data_nascimento).toISOString().split("T")[0] : "2023-01-01";
+				let nextAppointment = null;
+				const procedures = /* @__PURE__ */ new Set();
+				clientAppts.forEach((a) => {
+					if (a.servico) procedures.add(a.servico);
+					const apptDateStr = `${a.data}T${a.hora_inicio}:00`;
+					const apptDate = new Date(apptDateStr);
+					if (apptDate < now) {
+						if (!lastVisit || apptDate > new Date(lastVisit)) lastVisit = a.data;
+					} else if (!nextAppointment || apptDate < new Date(nextAppointment)) nextAppointment = apptDateStr;
+				});
+				return {
+					belleId: String(c.id),
+					name: c.nome,
+					cpf: c.cpf,
+					email: c.email,
+					phone: c.celular,
+					dob: c.data_nascimento,
+					lastVisit,
+					nextAppointment,
+					procedures: Array.from(procedures),
+					endereco: c.historico_clinico ? `Nota Belle: ${c.historico_clinico}` : void 0
+				};
+			}));
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
-			addLog("Sincronização Belle Software (Pacientes)", "SYSTEM");
+			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
 			toast({
 				title: "Sincronização Concluída",
-				description: `${result.added} pacientes importados, ${result.updated} atualizados com sucesso.`
+				description: `${result.added} novos pacientes, ${result.updated} atualizados. Agendas vinculadas com sucesso.`
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			addLog("Erro na Sincronização Belle Software", "SYSTEM");
 			toast({
-				title: "Falha na Sincronização",
-				description: "Não foi possível conectar à API do Belle Software. Verifique as credenciais.",
+				title: "Falha na Sincronização API",
+				description: error.message || "Não foi possível completar a requisição ao api.php do Belle.",
 				variant: "destructive"
 			});
 		} finally {
@@ -36163,110 +36245,119 @@ function Patients() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Patients.tsx:78:5",
+		"data-uid": "src/pages/Patients.tsx:135:5",
 		"data-prohibitions": "[editContent]",
-		className: "space-y-6 animate-slide-up",
+		className: "space-y-6 animate-slide-up p-6 lg:p-8",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Patients.tsx:79:7",
+			"data-uid": "src/pages/Patients.tsx:136:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-end justify-between gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:80:9",
+				"data-uid": "src/pages/Patients.tsx:137:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-					"data-uid": "src/pages/Patients.tsx:81:11",
+					"data-uid": "src/pages/Patients.tsx:138:11",
 					"data-prohibitions": "[]",
-					className: "text-3xl font-serif text-primary",
+					className: "text-3xl font-serif text-primary tracking-tight",
 					children: "Pacientes"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Patients.tsx:82:11",
+					"data-uid": "src/pages/Patients.tsx:139:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground mt-1",
-					children: "Gestão de pacientes e prontuários"
+					children: "Gestão unificada com integração bidirecional Belle"
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:84:9",
+				"data-uid": "src/pages/Patients.tsx:143:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex items-center gap-3",
 				children: [
-					belleSoftware.lastSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Patients.tsx:86:13",
+					belleSoftware.lastSync && canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/pages/Patients.tsx:145:13",
 						"data-prohibitions": "[editContent]",
 						className: "hidden sm:flex flex-col items-end mr-1 text-xs",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-uid": "src/pages/Patients.tsx:87:15",
+							"data-uid": "src/pages/Patients.tsx:146:15",
 							"data-prohibitions": "[editContent]",
 							className: `flex items-center gap-1 font-medium ${belleSoftware.lastSyncStatus === "success" ? "text-success" : "text-destructive"}`,
 							children: [belleSoftware.lastSyncStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/Patients.tsx:93:19",
+								"data-uid": "src/pages/Patients.tsx:152:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-								"data-uid": "src/pages/Patients.tsx:95:19",
+								"data-uid": "src/pages/Patients.tsx:154:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}), belleSoftware.lastSyncStatus === "success" ? "Sincronizado" : "Falha na Sync"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/pages/Patients.tsx:99:15",
+							"data-uid": "src/pages/Patients.tsx:158:15",
 							"data-prohibitions": "[editContent]",
 							className: "text-muted-foreground",
 							children: new Date(belleSoftware.lastSync).toLocaleString("pt-BR")
 						})]
 					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/pages/Patients.tsx:104:11",
+					canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						"data-uid": "src/pages/Patients.tsx:164:13",
 						"data-prohibitions": "[editContent]",
 						variant: "outline",
-						className: "bg-white",
+						className: "bg-white border-primary/20 text-primary hover:bg-primary/5",
 						onClick: handleSync,
 						disabled: isSyncing,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-							"data-uid": "src/pages/Patients.tsx:105:13",
+							"data-uid": "src/pages/Patients.tsx:170:15",
 							"data-prohibitions": "[editContent]",
 							className: `w-4 h-4 mr-2 ${isSyncing ? "animate-spin" : ""}`
 						}), "Sincronizar Belle"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientDialog, {
-						"data-uid": "src/pages/Patients.tsx:108:11",
+						"data-uid": "src/pages/Patients.tsx:174:11",
 						"data-prohibitions": "[editContent]"
 					})
 				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-			"data-uid": "src/pages/Patients.tsx:112:7",
+			"data-uid": "src/pages/Patients.tsx:178:7",
 			"data-prohibitions": "[editContent]",
 			className: "border-none shadow-subtle",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/pages/Patients.tsx:113:9",
+				"data-uid": "src/pages/Patients.tsx:179:9",
 				"data-prohibitions": "[editContent]",
 				className: "p-4 sm:p-6",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Patients.tsx:114:11",
+					"data-uid": "src/pages/Patients.tsx:180:11",
 					"data-prohibitions": "[]",
 					className: "relative mb-6",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-						"data-uid": "src/pages/Patients.tsx:115:13",
+						"data-uid": "src/pages/Patients.tsx:181:13",
 						"data-prohibitions": "[editContent]",
 						className: "absolute left-3 top-3 h-5 w-5 text-muted-foreground"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/pages/Patients.tsx:116:13",
+						"data-uid": "src/pages/Patients.tsx:182:13",
 						"data-prohibitions": "[editContent]",
-						placeholder: "Buscar por nome ou ID...",
-						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary",
+						placeholder: "Buscar por nome, CPF ou ID do paciente...",
+						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all",
 						value: searchTerm,
 						onChange: (e) => setSearchTerm(e.target.value)
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/pages/Patients.tsx:124:11",
+					"data-uid": "src/pages/Patients.tsx:190:11",
 					"data-prohibitions": "[editContent]",
 					className: "grid gap-4",
-					children: filteredPatients.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/pages/Patients.tsx:126:15",
+					children: filteredPatients.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/pages/Patients.tsx:192:15",
 						"data-prohibitions": "[]",
-						className: "text-center py-12 text-muted-foreground",
-						children: "Nenhum paciente encontrado."
+						className: "text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
+							"data-uid": "src/pages/Patients.tsx:193:17",
+							"data-prohibitions": "[editContent]",
+							className: "w-10 h-10 text-muted-foreground/30 mx-auto mb-3"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							"data-uid": "src/pages/Patients.tsx:194:17",
+							"data-prohibitions": "[]",
+							className: "text-muted-foreground",
+							children: "Nenhum paciente encontrado na busca."
+						})]
 					}) : filteredPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientCard, {
-						"data-uid": "src/pages/Patients.tsx:130:49",
+						"data-uid": "src/pages/Patients.tsx:197:49",
 						"data-prohibitions": "[editContent]",
 						patient
 					}, patient.id))
@@ -50219,7 +50310,7 @@ function IntegrationSettings({ title, description }) {
 		updateBelleConfig(url, token);
 		toast({
 			title: "Configurações salvas",
-			description: "Credenciais do Belle Software atualizadas com sucesso."
+			description: "Credenciais e endpoint do Belle Software atualizados com sucesso."
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
@@ -50249,78 +50340,104 @@ function IntegrationSettings({ title, description }) {
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					"data-uid": "src/components/settings/IntegrationSettings.tsx:38:11",
 					"data-prohibitions": "[]",
-					className: "bg-muted/30 p-4 rounded-xl border border-border/50 space-y-4",
+					className: "bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							"data-uid": "src/components/settings/IntegrationSettings.tsx:39:13",
 							"data-prohibitions": "[]",
 							className: "flex items-center gap-2 text-primary font-medium mb-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ServerCrash, {
 								"data-uid": "src/components/settings/IntegrationSettings.tsx:40:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-5 h-5"
-							}), "Conexão com API Belle Software"]
+							}), "Conexão com Protocolo api.php"]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							"data-uid": "src/components/settings/IntegrationSettings.tsx:44:13",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:45:15",
-								"data-prohibitions": "[]",
-								htmlFor: "api-url",
-								children: "Base URL da API"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:46:15",
-								"data-prohibitions": "[editContent]",
-								id: "api-url",
-								placeholder: "Ex: https://ebelle.vilarika.com.br",
-								value: url,
-								onChange: (e) => setUrl(e.target.value),
-								className: "bg-white"
-							})]
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:45:15",
+									"data-prohibitions": "[]",
+									htmlFor: "api-url",
+									children: "URL Base do Belle Software"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:46:15",
+									"data-prohibitions": "[editContent]",
+									id: "api-url",
+									placeholder: "Ex: https://app.bellesoftware.com.br",
+									value: url,
+									onChange: (e) => setUrl(e.target.value),
+									className: "bg-white font-mono text-sm"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:53:15",
+									"data-prohibitions": "[]",
+									className: "text-xs text-muted-foreground mt-1",
+									children: [
+										"O sistema anexará automaticamente ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:54:51",
+											"data-prohibitions": "[]",
+											children: "/api.php"
+										}),
+										" ao final da URL caso necessário."
+									]
+								})
+							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:55:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:59:13",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:56:15",
-								"data-prohibitions": "[]",
-								htmlFor: "api-token",
-								children: "Token de Acesso (API Key)"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:57:15",
-								"data-prohibitions": "[]",
-								className: "relative",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Key, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:58:17",
-									"data-prohibitions": "[editContent]",
-									className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:59:17",
-									"data-prohibitions": "[editContent]",
-									id: "api-token",
-									type: "password",
-									placeholder: "Cole seu token de integração aqui...",
-									value: token,
-									onChange: (e) => setToken(e.target.value),
-									className: "bg-white pl-9"
-								})]
-							})]
+							children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:60:15",
+									"data-prohibitions": "[]",
+									htmlFor: "api-token",
+									children: "Access Token (Chave de API)"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:61:15",
+									"data-prohibitions": "[]",
+									className: "relative",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Key, {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:62:17",
+										"data-prohibitions": "[editContent]",
+										className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:63:17",
+										"data-prohibitions": "[editContent]",
+										id: "api-token",
+										type: "password",
+										placeholder: "Cole seu token gerado no Belle...",
+										value: token,
+										onChange: (e) => setToken(e.target.value),
+										className: "bg-white pl-9 font-mono text-sm"
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:72:15",
+									"data-prohibitions": "[]",
+									className: "text-xs text-muted-foreground mt-1",
+									children: "Autenticação enviada via Body Payload e Bearer Header de forma compatível."
+								})
+							]
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:71:11",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:78:11",
 					"data-prohibitions": "[]",
 					className: "flex justify-end",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:72:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:79:13",
 						"data-prohibitions": "[]",
 						onClick: handleSave,
 						className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:76:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:83:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), "Salvar Configurações"]
@@ -50966,4 +51083,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D1Ce8Uz4.js.map
+//# sourceMappingURL=index-BO1N_dPM.js.map

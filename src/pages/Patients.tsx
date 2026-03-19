@@ -2,35 +2,51 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Search, RefreshCw, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react'
 import usePatientStore from '@/stores/usePatientStore'
 import useSettingsStore from '@/stores/useSettingsStore'
 import useAuditStore from '@/stores/useAuditStore'
+import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
-import { fetchBelleClientes } from '@/lib/api/belle'
+import { fetchBelleClientes, fetchBelleAgendamentos } from '@/lib/api/belle'
 
 export default function Patients() {
   const { patients, syncWithBelle } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
   const { addLog } = useAuditStore()
+  const { currentUser } = useUserStore()
   const { toast } = useToast()
+
   const [searchTerm, setSearchTerm] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
+
+  // Security Compliance: Only authenticated Admin/Médico can trigger sync
+  const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
 
   const filteredPatients = patients.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchTerm.toLowerCase()),
+      p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.cpf && p.cpf.includes(searchTerm)),
   )
 
   const handleSync = async () => {
+    if (!canSync) {
+      toast({
+        title: 'Acesso Negado',
+        description: 'Apenas usuários autorizados podem sincronizar dados.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (!belleSoftware.url || !belleSoftware.token) {
       toast({
         title: 'Configuração Incompleta',
         description:
-          'Configure a integração com o Belle Software nas configurações antes de sincronizar.',
+          'Configure a URL e o Token do Belle Software nas configurações antes de sincronizar.',
         variant: 'destructive',
       })
       return
@@ -38,35 +54,76 @@ export default function Patients() {
 
     setIsSyncing(true)
     try {
-      // Fetch data using API mapping
-      const rawClientes = await fetchBelleClientes(belleSoftware.url, belleSoftware.token)
+      // Fetch both clients and generic appointments via api.php protocol
+      const [rawClientes, rawAgendamentos] = await Promise.all([
+        fetchBelleClientes(belleSoftware.url, belleSoftware.token),
+        fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token),
+      ])
 
-      // Map Belle Cliente to Local Patient Partial structure
-      const mappedData = rawClientes.map((c) => ({
-        belleId: String(c.id),
-        name: c.nome,
-        cpf: c.cpf,
-        email: c.email,
-        phone: c.celular,
-        dob: c.data_nascimento,
-      }))
+      const now = new Date()
 
-      // Sync and deduplicate by CPF
+      // Map Belle Data to Local Patient Partial structure with history inference
+      const mappedData = rawClientes.map((c) => {
+        // Find appointments belonging to this specific client
+        const clientAppts = rawAgendamentos.filter(
+          (a) =>
+            (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
+            (a.cliente_id && a.cliente_id === c.id),
+        )
+
+        let lastVisit = c.data_nascimento
+          ? new Date(c.data_nascimento).toISOString().split('T')[0]
+          : '2023-01-01'
+        let nextAppointment = null
+        const procedures = new Set<string>()
+
+        // Calculate last visit, next appointment, and extract procedures
+        clientAppts.forEach((a) => {
+          if (a.servico) procedures.add(a.servico)
+          const apptDateStr = `${a.data}T${a.hora_inicio}:00`
+          const apptDate = new Date(apptDateStr)
+
+          if (apptDate < now) {
+            if (!lastVisit || apptDate > new Date(lastVisit)) lastVisit = a.data
+          } else {
+            if (!nextAppointment || apptDate < new Date(nextAppointment))
+              nextAppointment = apptDateStr
+          }
+        })
+
+        return {
+          belleId: String(c.id),
+          name: c.nome,
+          cpf: c.cpf,
+          email: c.email,
+          phone: c.celular,
+          dob: c.data_nascimento,
+          // Infer history data
+          lastVisit,
+          nextAppointment,
+          procedures: Array.from(procedures),
+          // Store specific clinical history note if Belle provides it
+          endereco: c.historico_clinico ? `Nota Belle: ${c.historico_clinico}` : undefined,
+        }
+      })
+
+      // Sync and deduplicate by CPF, applying mapped schedules
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Belle Software (Pacientes)', 'SYSTEM')
+      addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${result.added} pacientes importados, ${result.updated} atualizados com sucesso.`,
+        description: `${result.added} novos pacientes, ${result.updated} atualizados. Agendas vinculadas com sucesso.`,
       })
-    } catch (error) {
+    } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
       addLog('Erro na Sincronização Belle Software', 'SYSTEM')
       toast({
-        title: 'Falha na Sincronização',
-        description: 'Não foi possível conectar à API do Belle Software. Verifique as credenciais.',
+        title: 'Falha na Sincronização API',
+        description:
+          error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
     } finally {
@@ -75,14 +132,16 @@ export default function Patients() {
   }
 
   return (
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6 animate-slide-up p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif text-primary">Pacientes</h1>
-          <p className="text-muted-foreground mt-1">Gestão de pacientes e prontuários</p>
+          <h1 className="text-3xl font-serif text-primary tracking-tight">Pacientes</h1>
+          <p className="text-muted-foreground mt-1">
+            Gestão unificada com integração bidirecional Belle
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          {belleSoftware.lastSync && (
+          {belleSoftware.lastSync && canSync && (
             <div className="hidden sm:flex flex-col items-end mr-1 text-xs">
               <span
                 className={`flex items-center gap-1 font-medium ${
@@ -101,10 +160,17 @@ export default function Patients() {
               </span>
             </div>
           )}
-          <Button variant="outline" className="bg-white" onClick={handleSync} disabled={isSyncing}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-            Sincronizar Belle
-          </Button>
+          {canSync && (
+            <Button
+              variant="outline"
+              className="bg-white border-primary/20 text-primary hover:bg-primary/5"
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              Sincronizar Belle
+            </Button>
+          )}
           <PatientDialog />
         </div>
       </div>
@@ -114,8 +180,8 @@ export default function Patients() {
           <div className="relative mb-6">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome ou ID..."
-              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary"
+              placeholder="Buscar por nome, CPF ou ID do paciente..."
+              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -123,8 +189,9 @@ export default function Patients() {
 
           <div className="grid gap-4">
             {filteredPatients.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                Nenhum paciente encontrado.
+              <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
+                <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">Nenhum paciente encontrado na busca.</p>
               </div>
             ) : (
               filteredPatients.map((patient) => <PatientCard key={patient.id} patient={patient} />)
