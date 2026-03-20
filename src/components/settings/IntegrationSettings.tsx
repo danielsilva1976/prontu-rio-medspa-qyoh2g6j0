@@ -85,9 +85,11 @@ export function IntegrationSettings({
 
     setIsTesting(true)
 
+    // Save locally immediately to persist while testing
+    updateBelleConfig(url, token, estabelecimento)
+
     try {
       await testBelleConnection(url, token, estabelecimento)
-      updateBelleConfig(url, token, estabelecimento)
       setBelleLastSync('success', new Date().toISOString())
 
       toast({
@@ -126,7 +128,7 @@ export function IntegrationSettings({
         {isConnected ? (
           <Badge
             variant="outline"
-            className="bg-success/10 text-success border-success/20 py-1.5 px-3"
+            className="bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium"
           >
             <Wifi className="w-3.5 h-3.5 mr-1.5" />
             Conectado
@@ -134,7 +136,7 @@ export function IntegrationSettings({
         ) : (
           <Badge
             variant="outline"
-            className="bg-destructive/10 text-destructive border-destructive/20 py-1.5 px-3"
+            className="bg-red-500/10 text-red-600 border-red-500/20 py-1.5 px-3 font-medium"
           >
             <WifiOff className="w-3.5 h-3.5 mr-1.5" />
             Desconectado

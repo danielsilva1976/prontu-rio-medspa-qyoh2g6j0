@@ -154,12 +154,16 @@ const belleApiCall = async (
     clearTimeout(timeoutId)
 
     if (response.type === 'opaqueredirect' || response.status === 301 || response.status === 302) {
-      throw new Error('URL Base or Credentials Incorrect')
+      throw new Error(
+        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+      )
     }
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Token de Autenticação Inválido')
+        throw new Error(
+          'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+        )
       }
       if (response.status === 404) {
         throw new Error('URL Base não encontrada. Verifique o endereço')
@@ -182,7 +186,9 @@ const belleApiCall = async (
       lowerText.includes('<title>login') ||
       lowerText.includes('user/login')
     ) {
-      throw new Error('URL Base or Credentials Incorrect')
+      throw new Error(
+        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+      )
     }
 
     const result = JSON.parse(text)
@@ -192,9 +198,14 @@ const belleApiCall = async (
       if (
         msg.toLowerCase().includes('token') ||
         msg.toLowerCase().includes('autentica') ||
-        msg.toLowerCase().includes('auth')
+        msg.toLowerCase().includes('auth') ||
+        msg.toLowerCase().includes('login') ||
+        msg.toLowerCase().includes('invali') ||
+        msg.toLowerCase().includes('senha')
       ) {
-        throw new Error('Token de Autenticação Inválido')
+        throw new Error(
+          'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+        )
       }
       throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
@@ -202,8 +213,13 @@ const belleApiCall = async (
     return result.data || result.dados || result
   } catch (error: any) {
     clearTimeout(timeoutId)
-    if (error.message === 'URL Base or Credentials Incorrect') {
-      throw error
+    if (
+      error.message === 'URL Base or Credentials Incorrect' ||
+      error.message === 'URL Base ou Credenciais Incorretas'
+    ) {
+      throw new Error(
+        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+      )
     }
     if (
       error.name === 'AbortError' ||
@@ -229,12 +245,14 @@ export const testBelleConnection = async (
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
-      throw new Error('Token de Autenticação Inválido')
+      throw new Error(
+        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
+      )
     }
     return true
   }
 
-  await belleApiCall(url, token, '/api.php', {}, estabelecimento)
+  await belleApiCall(url, token, '/api.php', null, estabelecimento)
   return true
 }
 
