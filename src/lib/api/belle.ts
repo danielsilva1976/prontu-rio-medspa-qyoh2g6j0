@@ -96,7 +96,7 @@ const ERROR_INVALID_TOKEN =
   'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
 const ERROR_403_FORBIDDEN =
-  'Erro 403: Acesso negado. Verifique as permissões do Token no Belle Software ou se há restrições de acesso na API.'
+  'Erro 403: Acesso negado pelo servidor. Por favor, verifique se o Token possui as permissões necessárias no painel do Belle Software.'
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -135,12 +135,15 @@ const belleApiCall = async (
 
   try {
     const params = new URLSearchParams()
-    if (token) params.append('token', token)
-    if (estabelecimento) params.append('estabelecimento', estabelecimento)
+    if (token) params.append('token', token.trim())
+    if (estabelecimento) params.append('estabelecimento', estabelecimento.trim())
 
     if (payload && typeof payload === 'object') {
       for (const [key, value] of Object.entries(payload)) {
-        params.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value))
+        params.append(
+          key,
+          typeof value === 'object' ? JSON.stringify(value).trim() : String(value).trim(),
+        )
       }
     }
 
@@ -148,7 +151,10 @@ const belleApiCall = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
+        Accept: 'application/json, text/plain, */*',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Origin: window.location.origin || 'https://prontuario-medspa.app',
       },
       body: params.toString(),
       signal: controller.signal,
@@ -169,13 +175,21 @@ const belleApiCall = async (
         responseHeaders[key] = value
       })
 
-      console.log('[Bug Scanner] Belle API Response:', {
-        status: response.status,
-        headers: responseHeaders,
-        body: text,
-        url: endpoint,
-        payload: params.toString(),
-      })
+      if (response.status === 403) {
+        console.error('[Bug Scanner] Status Code 403: Acesso Negado.', {
+          status: response.status,
+          destinationUrl: endpoint,
+          body: text,
+        })
+      } else {
+        console.log('[Bug Scanner] Belle API Response:', {
+          status: response.status,
+          headers: responseHeaders,
+          body: text,
+          url: endpoint,
+          payload: params.toString(),
+        })
+      }
     } catch (e) {
       console.error('[Bug Scanner] Failed to read response text', e)
     }

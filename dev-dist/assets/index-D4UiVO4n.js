@@ -36178,7 +36178,7 @@ var mockAgendamentos = [
 	}
 ];
 var ERROR_INVALID_TOKEN = "falha na conexão: token de autenticação invalido. Verifique dados no Belle software";
-var ERROR_403_FORBIDDEN = "Erro 403: Acesso negado. Verifique as permissões do Token no Belle Software ou se há restrições de acesso na API.";
+var ERROR_403_FORBIDDEN = "Erro 403: Acesso negado pelo servidor. Por favor, verifique se o Token possui as permissões necessárias no painel do Belle Software.";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -36198,14 +36198,16 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 	const timeoutId = setTimeout(() => controller.abort(), 15e3);
 	try {
 		const params = new URLSearchParams();
-		if (token) params.append("token", token);
-		if (estabelecimento) params.append("estabelecimento", estabelecimento);
-		if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value) : String(value));
+		if (token) params.append("token", token.trim());
+		if (estabelecimento) params.append("estabelecimento", estabelecimento.trim());
+		if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
 		const options = {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
-				Accept: "application/json"
+				Accept: "application/json, text/plain, */*",
+				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+				Origin: window.location.origin || "https://prontuario-medspa.app"
 			},
 			body: params.toString(),
 			signal: controller.signal,
@@ -36220,7 +36222,12 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 			response.headers.forEach((value, key) => {
 				responseHeaders[key] = value;
 			});
-			console.log("[Bug Scanner] Belle API Response:", {
+			if (response.status === 403) console.error("[Bug Scanner] Status Code 403: Acesso Negado.", {
+				status: response.status,
+				destinationUrl: endpoint,
+				body: text
+			});
+			else console.log("[Bug Scanner] Belle API Response:", {
 				status: response.status,
 				headers: responseHeaders,
 				body: text,
@@ -51385,4 +51392,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-B2EZwP5E.js.map
+//# sourceMappingURL=index-D4UiVO4n.js.map
