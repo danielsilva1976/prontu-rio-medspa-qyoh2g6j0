@@ -24992,9 +24992,9 @@ var defaultData = {
 		"Luz Pulsada (LIP)": "450"
 	},
 	belleSoftware: {
-		url: "",
-		token: "",
-		estabelecimento: ""
+		url: "https://app.bellesoftware.com.br",
+		token: "1787cad7ac7dd71ac2fbbdaf823928fd",
+		estabelecimento: "1"
 	}
 };
 var SettingsContext = (0, import_react.createContext)({});
@@ -50621,7 +50621,7 @@ function IntegrationSettings({ title, description }) {
 										"data-uid": "src/components/settings/IntegrationSettings.tsx:173:19",
 										"data-prohibitions": "[editContent]",
 										id: "api-token",
-										type: "password",
+										type: "text",
 										placeholder: "Cole seu token gerado...",
 										value: token,
 										onChange: (e) => setToken(e.target.value),
@@ -51331,4 +51331,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-QplnTPE4.js.map
+//# sourceMappingURL=index-oBpkjG2k.js.map

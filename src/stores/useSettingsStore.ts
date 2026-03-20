@@ -53,7 +53,11 @@ const defaultData = {
     Fotona: '2500',
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
-  belleSoftware: { url: '', token: '', estabelecimento: '' },
+  belleSoftware: {
+    url: 'https://app.bellesoftware.com.br',
+    token: '1787cad7ac7dd71ac2fbbdaf823928fd',
+    estabelecimento: '1',
+  },
 }
 
 const SettingsContext = createContext<SettingsState>({} as SettingsState)

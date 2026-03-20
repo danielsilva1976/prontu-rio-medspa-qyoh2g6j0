@@ -172,7 +172,7 @@ export function IntegrationSettings({
                   <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="api-token"
-                    type="password"
+                    type="text"
                     placeholder="Cole seu token gerado..."
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
