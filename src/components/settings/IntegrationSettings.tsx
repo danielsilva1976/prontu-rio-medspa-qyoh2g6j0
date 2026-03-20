@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
-import { Link, Key, Save, ServerCrash } from 'lucide-react'
+import { Key, Save, ServerCrash } from 'lucide-react'
 
 export function IntegrationSettings({
   title,
@@ -51,8 +51,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                O sistema anexará automaticamente <strong>/api.php</strong> ao final da URL caso
-                necessário.
+                O sistema anexará automaticamente <strong>/api.php</strong> ao final da URL e
+                forçará o uso de <strong>HTTPS</strong> para evitar erros de conexão e bloqueios.
               </p>
             </div>
 

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Search, RefreshCw, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react'
+import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 import usePatientStore from '@/stores/usePatientStore'
 import useSettingsStore from '@/stores/useSettingsStore'
 import useAuditStore from '@/stores/useAuditStore'
@@ -62,10 +62,13 @@ export default function Patients() {
 
       const now = new Date()
 
+      const validClientes = Array.isArray(rawClientes) ? rawClientes : []
+      const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : []
+
       // Map Belle Data to Local Patient Partial structure with history inference
-      const mappedData = rawClientes.map((c) => {
+      const mappedData = validClientes.map((c) => {
         // Find appointments belonging to this specific client
-        const clientAppts = rawAgendamentos.filter(
+        const clientAppts = validAgendamentos.filter(
           (a) =>
             (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
             (a.cliente_id && a.cliente_id === c.id),
@@ -74,26 +77,38 @@ export default function Patients() {
         let lastVisit = c.data_nascimento
           ? new Date(c.data_nascimento).toISOString().split('T')[0]
           : '2023-01-01'
-        let nextAppointment = null
+        let nextAppointment: string | null = null
         const procedures = new Set<string>()
 
-        // Calculate last visit, next appointment, and extract procedures
+        // Calculate last visit, next appointment, and extract procedures gracefully
         clientAppts.forEach((a) => {
           if (a.servico) procedures.add(a.servico)
-          const apptDateStr = `${a.data}T${a.hora_inicio}:00`
-          const apptDate = new Date(apptDateStr)
+          if (a.data) {
+            const hora = a.hora_inicio || '00:00'
+            const apptDateStr = `${a.data}T${hora}:00`
+            const apptDate = new Date(apptDateStr)
 
-          if (apptDate < now) {
-            if (!lastVisit || apptDate > new Date(lastVisit)) lastVisit = a.data
-          } else {
-            if (!nextAppointment || apptDate < new Date(nextAppointment))
-              nextAppointment = apptDateStr
+            if (!isNaN(apptDate.getTime())) {
+              if (apptDate < now) {
+                if (
+                  !lastVisit ||
+                  isNaN(new Date(lastVisit).getTime()) ||
+                  apptDate > new Date(lastVisit)
+                ) {
+                  lastVisit = a.data
+                }
+              } else {
+                if (!nextAppointment || apptDate < new Date(nextAppointment)) {
+                  nextAppointment = apptDateStr
+                }
+              }
+            }
           }
         })
 
         return {
           belleId: String(c.id),
-          name: c.nome,
+          name: c.nome || 'Paciente sem nome',
           cpf: c.cpf,
           email: c.email,
           phone: c.celular,
@@ -120,10 +135,15 @@ export default function Patients() {
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
       addLog('Erro na Sincronização Belle Software', 'SYSTEM')
+
+      const isNetworkError =
+        error.message?.includes('Failed to fetch') || error.message?.includes('Falha de rede')
+
       toast({
-        title: 'Falha na Sincronização API',
-        description:
-          error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
+        title: isNetworkError ? 'Conexão Bloqueada (CORS/Rede)' : 'Falha na Sincronização API',
+        description: isNetworkError
+          ? 'Não foi possível conectar ao servidor (Failed to fetch). Verifique se a URL em Configurações usa HTTPS e se o servidor permite acesso.'
+          : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
     } finally {

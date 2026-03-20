@@ -94,9 +94,18 @@ const mockAgendamentos: BelleAgendamento[] = [
 
 /**
  * Normaliza a URL base para garantir que aponte para o endpoint api.php correto
+ * e força o uso de HTTPS para evitar bloqueios de conteúdo misto (Mixed Content)
  */
 const getApiEndpoint = (url: string) => {
-  const cleanUrl = url.trim().replace(/\/$/, '')
+  let cleanUrl = url.trim().replace(/\/$/, '')
+
+  // Força HTTPS
+  if (cleanUrl.startsWith('http://')) {
+    cleanUrl = cleanUrl.replace('http://', 'https://')
+  } else if (!cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`
+  }
+
   return cleanUrl.endsWith('api.php') ? cleanUrl : `${cleanUrl}/api.php`
 }
 
@@ -106,32 +115,42 @@ const getApiEndpoint = (url: string) => {
 const belleApiCall = async (url: string, token: string, action: string, payload: any = {}) => {
   const endpoint = getApiEndpoint(url)
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'X-Auth-Token': token, // Suporte a variações de headers
-    },
-    body: JSON.stringify({
-      token: token, // Suporte a token no body (comum em versões legadas api.php)
-      acao: action,
-      ...payload,
-    }),
-  })
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'X-Auth-Token': token, // Suporte a variações de headers
+      },
+      body: JSON.stringify({
+        token: token, // Suporte a token no body (comum em versões legadas api.php)
+        acao: action,
+        ...payload,
+      }),
+    })
 
-  if (!response.ok) {
-    throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
+    if (!response.ok) {
+      throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
+    }
+
+    const result = await response.json()
+
+    // Tratamento de respostas de erro da API do Belle
+    if (result.status === 'erro' || result.status === false || result.error) {
+      throw new Error(result.mensagem || result.message || 'Erro desconhecido retornado pela API.')
+    }
+
+    return result.data || result.dados || result
+  } catch (error: any) {
+    // Tratamento específico para erros de rede/CORS
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error(
+        'Falha de rede (Failed to fetch). O servidor pode estar inacessível ou bloqueando a requisição por CORS.',
+      )
+    }
+    throw error
   }
-
-  const result = await response.json()
-
-  // Tratamento de respostas de erro da API do Belle
-  if (result.status === 'erro' || result.status === false || result.error) {
-    throw new Error(result.mensagem || result.message || 'Erro desconhecido retornado pela API.')
-  }
-
-  return result.data || result.dados || result
 }
 
 /**

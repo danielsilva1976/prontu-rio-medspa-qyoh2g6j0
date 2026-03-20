@@ -36106,9 +36106,12 @@ var mockAgendamentos = [
 ];
 /**
 * Normaliza a URL base para garantir que aponte para o endpoint api.php correto
+* e força o uso de HTTPS para evitar bloqueios de conteúdo misto (Mixed Content)
 */
 var getApiEndpoint = (url) => {
-	const cleanUrl = url.trim().replace(/\/$/, "");
+	let cleanUrl = url.trim().replace(/\/$/, "");
+	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
+	else if (!cleanUrl.startsWith("https://")) cleanUrl = `https://${cleanUrl}`;
 	return cleanUrl.endsWith("api.php") ? cleanUrl : `${cleanUrl}/api.php`;
 };
 /**
@@ -36116,23 +36119,28 @@ var getApiEndpoint = (url) => {
 */
 var belleApiCall = async (url, token, action, payload = {}) => {
 	const endpoint = getApiEndpoint(url);
-	const response = await fetch(endpoint, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
-			"X-Auth-Token": token
-		},
-		body: JSON.stringify({
-			token,
-			acao: action,
-			...payload
-		})
-	});
-	if (!response.ok) throw new Error(`Erro de comunicação com Belle Software: ${response.status}`);
-	const result = await response.json();
-	if (result.status === "erro" || result.status === false || result.error) throw new Error(result.mensagem || result.message || "Erro desconhecido retornado pela API.");
-	return result.data || result.dados || result;
+	try {
+		const response = await fetch(endpoint, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+				"X-Auth-Token": token
+			},
+			body: JSON.stringify({
+				token,
+				acao: action,
+				...payload
+			})
+		});
+		if (!response.ok) throw new Error(`Erro de comunicação com Belle Software: ${response.status}`);
+		const result = await response.json();
+		if (result.status === "erro" || result.status === false || result.error) throw new Error(result.mensagem || result.message || "Erro desconhecido retornado pela API.");
+		return result.data || result.dados || result;
+	} catch (error) {
+		if (error.name === "TypeError" && error.message === "Failed to fetch") throw new Error("Falha de rede (Failed to fetch). O servidor pode estar inacessível ou bloqueando a requisição por CORS.");
+		throw error;
+	}
 };
 /**
 * Fetch patients from Belle Software API via api.php
@@ -36200,22 +36208,29 @@ function Patients() {
 		try {
 			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(belleSoftware.url, belleSoftware.token), fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token)]);
 			const now = /* @__PURE__ */ new Date();
-			const result = syncWithBelle(rawClientes.map((c) => {
-				const clientAppts = rawAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && a.cliente_id === c.id);
+			const validClientes = Array.isArray(rawClientes) ? rawClientes : [];
+			const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : [];
+			const result = syncWithBelle(validClientes.map((c) => {
+				const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && a.cliente_id === c.id);
 				let lastVisit = c.data_nascimento ? new Date(c.data_nascimento).toISOString().split("T")[0] : "2023-01-01";
 				let nextAppointment = null;
 				const procedures = /* @__PURE__ */ new Set();
 				clientAppts.forEach((a) => {
 					if (a.servico) procedures.add(a.servico);
-					const apptDateStr = `${a.data}T${a.hora_inicio}:00`;
-					const apptDate = new Date(apptDateStr);
-					if (apptDate < now) {
-						if (!lastVisit || apptDate > new Date(lastVisit)) lastVisit = a.data;
-					} else if (!nextAppointment || apptDate < new Date(nextAppointment)) nextAppointment = apptDateStr;
+					if (a.data) {
+						const hora = a.hora_inicio || "00:00";
+						const apptDateStr = `${a.data}T${hora}:00`;
+						const apptDate = new Date(apptDateStr);
+						if (!isNaN(apptDate.getTime())) {
+							if (apptDate < now) {
+								if (!lastVisit || isNaN(new Date(lastVisit).getTime()) || apptDate > new Date(lastVisit)) lastVisit = a.data;
+							} else if (!nextAppointment || apptDate < new Date(nextAppointment)) nextAppointment = apptDateStr;
+						}
+					}
 				});
 				return {
 					belleId: String(c.id),
-					name: c.nome,
+					name: c.nome || "Paciente sem nome",
 					cpf: c.cpf,
 					email: c.email,
 					phone: c.celular,
@@ -36235,9 +36250,10 @@ function Patients() {
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			addLog("Erro na Sincronização Belle Software", "SYSTEM");
+			const isNetworkError = error.message?.includes("Failed to fetch") || error.message?.includes("Falha de rede");
 			toast({
-				title: "Falha na Sincronização API",
-				description: error.message || "Não foi possível completar a requisição ao api.php do Belle.",
+				title: isNetworkError ? "Conexão Bloqueada (CORS/Rede)" : "Falha na Sincronização API",
+				description: isNetworkError ? "Não foi possível conectar ao servidor (Failed to fetch). Verifique se a URL em Configurações usa HTTPS e se o servidor permite acesso." : error.message || "Não foi possível completar a requisição ao api.php do Belle.",
 				variant: "destructive"
 			});
 		} finally {
@@ -36245,93 +36261,93 @@ function Patients() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Patients.tsx:135:5",
+		"data-uid": "src/pages/Patients.tsx:155:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-slide-up p-6 lg:p-8",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Patients.tsx:136:7",
+			"data-uid": "src/pages/Patients.tsx:156:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-end justify-between gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:137:9",
+				"data-uid": "src/pages/Patients.tsx:157:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-					"data-uid": "src/pages/Patients.tsx:138:11",
+					"data-uid": "src/pages/Patients.tsx:158:11",
 					"data-prohibitions": "[]",
 					className: "text-3xl font-serif text-primary tracking-tight",
 					children: "Pacientes"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Patients.tsx:139:11",
+					"data-uid": "src/pages/Patients.tsx:159:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground mt-1",
 					children: "Gestão unificada com integração bidirecional Belle"
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:143:9",
+				"data-uid": "src/pages/Patients.tsx:163:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex items-center gap-3",
 				children: [
 					belleSoftware.lastSync && canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Patients.tsx:145:13",
+						"data-uid": "src/pages/Patients.tsx:165:13",
 						"data-prohibitions": "[editContent]",
 						className: "hidden sm:flex flex-col items-end mr-1 text-xs",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-uid": "src/pages/Patients.tsx:146:15",
+							"data-uid": "src/pages/Patients.tsx:166:15",
 							"data-prohibitions": "[editContent]",
 							className: `flex items-center gap-1 font-medium ${belleSoftware.lastSyncStatus === "success" ? "text-success" : "text-destructive"}`,
 							children: [belleSoftware.lastSyncStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/Patients.tsx:152:19",
+								"data-uid": "src/pages/Patients.tsx:172:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-								"data-uid": "src/pages/Patients.tsx:154:19",
+								"data-uid": "src/pages/Patients.tsx:174:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}), belleSoftware.lastSyncStatus === "success" ? "Sincronizado" : "Falha na Sync"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/pages/Patients.tsx:158:15",
+							"data-uid": "src/pages/Patients.tsx:178:15",
 							"data-prohibitions": "[editContent]",
 							className: "text-muted-foreground",
 							children: new Date(belleSoftware.lastSync).toLocaleString("pt-BR")
 						})]
 					}),
 					canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/pages/Patients.tsx:164:13",
+						"data-uid": "src/pages/Patients.tsx:184:13",
 						"data-prohibitions": "[editContent]",
 						variant: "outline",
 						className: "bg-white border-primary/20 text-primary hover:bg-primary/5",
 						onClick: handleSync,
 						disabled: isSyncing,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-							"data-uid": "src/pages/Patients.tsx:170:15",
+							"data-uid": "src/pages/Patients.tsx:190:15",
 							"data-prohibitions": "[editContent]",
 							className: `w-4 h-4 mr-2 ${isSyncing ? "animate-spin" : ""}`
 						}), "Sincronizar Belle"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientDialog, {
-						"data-uid": "src/pages/Patients.tsx:174:11",
+						"data-uid": "src/pages/Patients.tsx:194:11",
 						"data-prohibitions": "[editContent]"
 					})
 				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-			"data-uid": "src/pages/Patients.tsx:178:7",
+			"data-uid": "src/pages/Patients.tsx:198:7",
 			"data-prohibitions": "[editContent]",
 			className: "border-none shadow-subtle",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/pages/Patients.tsx:179:9",
+				"data-uid": "src/pages/Patients.tsx:199:9",
 				"data-prohibitions": "[editContent]",
 				className: "p-4 sm:p-6",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Patients.tsx:180:11",
+					"data-uid": "src/pages/Patients.tsx:200:11",
 					"data-prohibitions": "[]",
 					className: "relative mb-6",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-						"data-uid": "src/pages/Patients.tsx:181:13",
+						"data-uid": "src/pages/Patients.tsx:201:13",
 						"data-prohibitions": "[editContent]",
 						className: "absolute left-3 top-3 h-5 w-5 text-muted-foreground"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/pages/Patients.tsx:182:13",
+						"data-uid": "src/pages/Patients.tsx:202:13",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Buscar por nome, CPF ou ID do paciente...",
 						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all",
@@ -36339,25 +36355,25 @@ function Patients() {
 						onChange: (e) => setSearchTerm(e.target.value)
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/pages/Patients.tsx:190:11",
+					"data-uid": "src/pages/Patients.tsx:210:11",
 					"data-prohibitions": "[editContent]",
 					className: "grid gap-4",
 					children: filteredPatients.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Patients.tsx:192:15",
+						"data-uid": "src/pages/Patients.tsx:212:15",
 						"data-prohibitions": "[]",
 						className: "text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-							"data-uid": "src/pages/Patients.tsx:193:17",
+							"data-uid": "src/pages/Patients.tsx:213:17",
 							"data-prohibitions": "[editContent]",
 							className: "w-10 h-10 text-muted-foreground/30 mx-auto mb-3"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							"data-uid": "src/pages/Patients.tsx:194:17",
+							"data-uid": "src/pages/Patients.tsx:214:17",
 							"data-prohibitions": "[]",
 							className: "text-muted-foreground",
 							children: "Nenhum paciente encontrado na busca."
 						})]
 					}) : filteredPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientCard, {
-						"data-uid": "src/pages/Patients.tsx:197:49",
+						"data-uid": "src/pages/Patients.tsx:217:49",
 						"data-prohibitions": "[editContent]",
 						patient
 					}, patient.id))
@@ -50383,7 +50399,13 @@ function IntegrationSettings({ title, description }) {
 											"data-prohibitions": "[]",
 											children: "/api.php"
 										}),
-										" ao final da URL caso necessário."
+										" ao final da URL e forçará o uso de ",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:55:34",
+											"data-prohibitions": "[]",
+											children: "HTTPS"
+										}),
+										" para evitar erros de conexão e bloqueios."
 									]
 								})
 							]
@@ -51083,4 +51105,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BO1N_dPM.js.map
+//# sourceMappingURL=index-Ve5VBNfO.js.map
