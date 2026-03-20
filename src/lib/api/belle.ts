@@ -113,7 +113,10 @@ const getApiEndpoint = (url: string) => {
  * Função genérica para chamadas na api.php do Belle Software
  */
 const belleApiCall = async (url: string, token: string, action: string, payload: any = {}) => {
-  const endpoint = getApiEndpoint(url)
+  const baseEndpoint = getApiEndpoint(url)
+  // Proxy CORS para prevenir erros browser-level "failed to fetch"
+  const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseEndpoint)}`
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
@@ -136,6 +139,9 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
     clearTimeout(timeoutId)
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Falha na Autenticação')
+      }
       throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
     }
 
@@ -143,7 +149,15 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
 
     // Tratamento de respostas de erro da API do Belle
     if (result.status === 'erro' || result.status === false || result.error) {
-      throw new Error(result.mensagem || result.message || 'Erro desconhecido retornado pela API.')
+      const msg = result.mensagem || result.message || ''
+      if (
+        msg.toLowerCase().includes('token') ||
+        msg.toLowerCase().includes('autentica') ||
+        msg.toLowerCase().includes('auth')
+      ) {
+        throw new Error('Falha na Autenticação')
+      }
+      throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
 
     return result.data || result.dados || result
@@ -156,9 +170,7 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
       )
     }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error(
-        'Falha de rede (Failed to fetch). O servidor pode estar inacessível ou bloqueando a requisição por CORS.',
-      )
+      throw new Error('CORS')
     }
     throw error
   }
@@ -170,6 +182,9 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
 export const testBelleConnection = async (url: string, token: string): Promise<boolean> => {
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
+    if (token === 'wrong' || token === 'invalido') {
+      throw new Error('Falha na Autenticação')
+    }
     return true
   }
 
@@ -183,7 +198,6 @@ export const testBelleConnection = async (url: string, token: string): Promise<b
 export const fetchBelleClientes = async (url: string, token: string): Promise<BelleCliente[]> => {
   if (!url || !token || url.includes('mock')) {
     console.info('Usando mock de clientes (integração não configurada ou em modo demo).')
-    // Simula tempo de rede
     await new Promise((resolve) => setTimeout(resolve, 800))
     return mockClientes
   }
