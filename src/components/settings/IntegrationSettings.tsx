@@ -6,7 +6,16 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
-import { Key, Save, ServerCrash, RefreshCw, CheckCircle2, Wifi, WifiOff } from 'lucide-react'
+import {
+  Key,
+  Save,
+  ServerCrash,
+  RefreshCw,
+  CheckCircle2,
+  Wifi,
+  WifiOff,
+  Building2,
+} from 'lucide-react'
 import { testBelleConnection } from '@/lib/api/belle'
 
 export function IntegrationSettings({
@@ -19,6 +28,7 @@ export function IntegrationSettings({
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
+  const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '')
   const [isTesting, setIsTesting] = useState(false)
   const { toast } = useToast()
 
@@ -64,11 +74,20 @@ export function IntegrationSettings({
       return
     }
 
+    if (!estabelecimento) {
+      toast({
+        title: 'Código Requerido',
+        description: 'Preencha o Código do Estabelecimento.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsTesting(true)
 
     try {
-      await testBelleConnection(url, token)
-      updateBelleConfig(url, token)
+      await testBelleConnection(url, token, estabelecimento)
+      updateBelleConfig(url, token, estabelecimento)
       setBelleLastSync('success', new Date().toISOString())
 
       toast({
@@ -90,7 +109,7 @@ export function IntegrationSettings({
   }
 
   const handleSave = () => {
-    updateBelleConfig(url, token)
+    updateBelleConfig(url, token, estabelecimento)
     toast({
       title: 'Configurações salvas',
       description: 'As credenciais foram atualizadas localmente.',
@@ -146,18 +165,35 @@ export function IntegrationSettings({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="api-token">Token de Acesso</Label>
-              <div className="relative">
-                <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="api-token"
-                  type="password"
-                  placeholder="Cole seu token gerado no Belle..."
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  className="bg-white pl-9 font-mono text-sm"
-                />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="api-token">Token de Acesso</Label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="api-token"
+                    type="password"
+                    placeholder="Cole seu token gerado..."
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    className="bg-white pl-9 font-mono text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="api-estabelecimento">Código do Estabelecimento</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="api-estabelecimento"
+                    type="number"
+                    placeholder="Ex: 1"
+                    value={estabelecimento}
+                    onChange={(e) => setEstabelecimento(e.target.value)}
+                    className="bg-white pl-9 font-mono text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>

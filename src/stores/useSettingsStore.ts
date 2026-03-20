@@ -5,6 +5,7 @@ export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands' | 
 type BelleConfig = {
   url: string
   token: string
+  estabelecimento: string
   lastSync?: string
   lastSyncStatus?: 'success' | 'error'
 }
@@ -20,7 +21,7 @@ type SettingsState = {
   addItem: (category: SettingsCategory, item: string, price?: string) => void
   removeItem: (category: SettingsCategory, item: string) => void
   updateItem: (category: SettingsCategory, oldItem: string, newItem: string, price?: string) => void
-  updateBelleConfig: (url: string, token: string) => void
+  updateBelleConfig: (url: string, token: string, estabelecimento?: string) => void
   setBelleLastSync: (status: 'success' | 'error', date: string) => void
 }
 
@@ -52,7 +53,7 @@ const defaultData = {
     Fotona: '2500',
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
-  belleSoftware: { url: '', token: '' },
+  belleSoftware: { url: '', token: '', estabelecimento: '' },
 }
 
 const SettingsContext = createContext<SettingsState>({} as SettingsState)
@@ -102,8 +103,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const updateBelleConfig = (url: string, token: string) => {
-    setData((prev) => ({ ...prev, belleSoftware: { ...prev.belleSoftware, url, token } }))
+  const updateBelleConfig = (url: string, token: string, estabelecimento: string = '') => {
+    setData((prev) => ({
+      ...prev,
+      belleSoftware: { ...prev.belleSoftware, url, token, estabelecimento },
+    }))
   }
 
   const setBelleLastSync = (status: 'success' | 'error', date: string) => {

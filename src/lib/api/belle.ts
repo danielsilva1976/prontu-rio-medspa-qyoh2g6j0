@@ -92,14 +92,9 @@ const mockAgendamentos: BelleAgendamento[] = [
   },
 ]
 
-/**
- * Normaliza a URL base para garantir que aponte para a API e não termine com barras
- * e força o uso de HTTPS para evitar bloqueios de conteúdo misto (Mixed Content)
- */
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
-  // Força HTTPS
   if (cleanUrl.startsWith('http://')) {
     cleanUrl = cleanUrl.replace('http://', 'https://')
   } else if (!cleanUrl.startsWith('https://')) {
@@ -113,7 +108,6 @@ const getApiEndpoint = (url: string, path: string) => {
   }
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`
-
   return `${cleanUrl}${cleanPath}`
 }
 
@@ -124,34 +118,44 @@ const belleApiCall = async (
   url: string,
   token: string,
   path: string,
-  method: string = 'GET',
   payload: any = null,
+  estabelecimento: string = '',
 ) => {
   const baseEndpoint = getApiEndpoint(url, path)
-  // Proxy CORS para prevenir erros browser-level "failed to fetch" e políticas de segurança
   const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseEndpoint)}`
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    const options: RequestInit = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Token: token, // Header exigido (case-sensitive) para autenticação
-      },
-      signal: controller.signal,
+    const params = new URLSearchParams()
+    if (token) params.append('token', token)
+    if (estabelecimento) params.append('estabelecimento', estabelecimento)
+
+    if (payload && typeof payload === 'object') {
+      for (const [key, value] of Object.entries(payload)) {
+        params.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value))
+      }
     }
 
-    if (payload && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      options.body = JSON.stringify(payload)
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
+      body: params.toString(),
+      signal: controller.signal,
+      redirect: 'manual',
     }
 
     const response = await fetch(endpoint, options)
 
     clearTimeout(timeoutId)
+
+    if (response.type === 'opaqueredirect' || response.status === 301 || response.status === 302) {
+      throw new Error('URL Base or Credentials Incorrect')
+    }
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
@@ -171,9 +175,18 @@ const belleApiCall = async (
     const text = await response.text()
     if (!text) return null
 
+    const lowerText = text.toLowerCase()
+    if (
+      lowerText.trim().startsWith('<!doctype html>') ||
+      lowerText.trim().startsWith('<html') ||
+      lowerText.includes('<title>login') ||
+      lowerText.includes('user/login')
+    ) {
+      throw new Error('URL Base or Credentials Incorrect')
+    }
+
     const result = JSON.parse(text)
 
-    // Tratamento de respostas de erro da API do Belle
     if (result.status === 'erro' || result.status === false || result.error) {
       const msg = result.mensagem || result.message || ''
       if (
@@ -189,7 +202,9 @@ const belleApiCall = async (
     return result.data || result.dados || result
   } catch (error: any) {
     clearTimeout(timeoutId)
-    // Tratamento avançado e mapeamento de erros de rede/CORS
+    if (error.message === 'URL Base or Credentials Incorrect') {
+      throw error
+    }
     if (
       error.name === 'AbortError' ||
       error.message === 'TIMEOUT_ERROR' ||
@@ -206,7 +221,11 @@ const belleApiCall = async (
 /**
  * Valida a conexão com o Belle Software
  */
-export const testBelleConnection = async (url: string, token: string): Promise<boolean> => {
+export const testBelleConnection = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '',
+): Promise<boolean> => {
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
@@ -215,21 +234,25 @@ export const testBelleConnection = async (url: string, token: string): Promise<b
     return true
   }
 
-  await belleApiCall(url, token, '/api.php', 'POST', {})
+  await belleApiCall(url, token, '/api.php', {}, estabelecimento)
   return true
 }
 
 /**
  * Busca os pacientes via Belle Software API REST
  */
-export const fetchBelleClientes = async (url: string, token: string): Promise<BelleCliente[]> => {
+export const fetchBelleClientes = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '',
+): Promise<BelleCliente[]> => {
   if (!url || !token || url.includes('mock')) {
     console.info('Usando mock de pacientes (integração não configurada ou em modo demo).')
     await new Promise((resolve) => setTimeout(resolve, 800))
     return mockClientes
   }
 
-  const data = await belleApiCall(url, token, '/api/v1/pacientes', 'GET')
+  const data = await belleApiCall(url, token, '/api/v1/pacientes', null, estabelecimento)
   return Array.isArray(data) ? data : data.pacientes || data.clientes || []
 }
 
@@ -240,6 +263,7 @@ export const fetchBelleAgendamentos = async (
   url: string,
   token: string,
   cpf?: string,
+  estabelecimento: string = '',
 ): Promise<BelleAgendamento[]> => {
   if (!url || !token || url.includes('mock')) {
     console.info('Usando mock de agendamentos (integração não configurada ou em modo demo).')
@@ -247,6 +271,6 @@ export const fetchBelleAgendamentos = async (
   }
 
   const path = cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : '/api/v1/agendamentos'
-  const data = await belleApiCall(url, token, path, 'GET')
+  const data = await belleApiCall(url, token, path, null, estabelecimento)
   return Array.isArray(data) ? data : data.agendamentos || []
 }
