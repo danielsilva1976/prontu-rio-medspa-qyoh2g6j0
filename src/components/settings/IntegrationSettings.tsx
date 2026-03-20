@@ -72,21 +72,28 @@ export function IntegrationSettings({
 
       const errorMessage = error.message || ''
 
-      if (
-        errorMessage === 'CORS_NETWORK_ERROR' ||
-        errorMessage === 'TIMEOUT_ERROR' ||
-        errorMessage.includes('Erro de comunicação')
-      ) {
+      if (errorMessage === 'URL Inválida') {
         toast({
-          title: 'Erro de Conexão',
-          description:
-            'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base',
+          title: 'URL Inválida',
+          description: 'Não foi possível encontrar o servidor. Verifique o endereço base da API.',
           variant: 'destructive',
         })
-      } else if (errorMessage.includes('Autenticação')) {
+      } else if (errorMessage === 'Token Inválido') {
         toast({
-          title: 'Erro de Autenticação',
-          description: 'Falha na Autenticação. Verifique se o Token de Acesso está correto.',
+          title: 'Token Inválido',
+          description:
+            'A autenticação falhou. Verifique se o Token de Acesso fornecido está correto.',
+          variant: 'destructive',
+        })
+      } else if (
+        errorMessage === 'Erro de Rede (CORS)' ||
+        errorMessage === 'TIMEOUT_ERROR' ||
+        errorMessage.includes('CORS')
+      ) {
+        toast({
+          title: 'Erro de Rede (CORS)',
+          description:
+            'A requisição falhou devido a restrições de rede ou CORS. Verifique se a URL Base está correta e se o ambiente permite conexões externas.',
           variant: 'destructive',
         })
       } else {
@@ -139,22 +146,22 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão com Protocolo api.php
+              Conexão com a API (v1)
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="api-url">URL Base do Belle Software</Label>
               <Input
                 id="api-url"
-                placeholder="Ex: https://app.bellesoftware.com.br"
+                placeholder="Ex: https://api.bellesoftware.com.br"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={handleUrlBlur}
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                O sistema anexará automaticamente <strong>/api.php</strong> ao final da URL e
-                forçará o uso de <strong>HTTPS</strong>.
+                O sistema anexará automaticamente os <strong>endpoints da API</strong> (ex:
+                /api/v1/pacientes) ao final da URL e forçará o uso de <strong>HTTPS</strong>.
               </p>
             </div>
 

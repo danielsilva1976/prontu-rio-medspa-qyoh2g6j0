@@ -93,10 +93,10 @@ const mockAgendamentos: BelleAgendamento[] = [
 ]
 
 /**
- * Normaliza a URL base para garantir que aponte para o endpoint api.php correto
+ * Normaliza a URL base para garantir que aponte para a API e não termine com barras
  * e força o uso de HTTPS para evitar bloqueios de conteúdo misto (Mixed Content)
  */
-const getApiEndpoint = (url: string) => {
+const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
   // Força HTTPS
@@ -106,14 +106,29 @@ const getApiEndpoint = (url: string) => {
     cleanUrl = `https://${cleanUrl}`
   }
 
-  return cleanUrl.endsWith('api.php') ? cleanUrl : `${cleanUrl}/api.php`
+  // Remove chamadas legadas (api.php) caso o usuário copie a URL antiga
+  if (cleanUrl.endsWith('/api.php')) {
+    cleanUrl = cleanUrl.replace('/api.php', '')
+  } else if (cleanUrl.endsWith('api.php')) {
+    cleanUrl = cleanUrl.replace('api.php', '')
+  }
+
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+
+  return `${cleanUrl}${cleanPath}`
 }
 
 /**
- * Função genérica para chamadas na api.php do Belle Software com Proxy CORS
+ * Função genérica para chamadas na API REST do Belle Software com Proxy CORS
  */
-const belleApiCall = async (url: string, token: string, action: string, payload: any = {}) => {
-  const baseEndpoint = getApiEndpoint(url)
+const belleApiCall = async (
+  url: string,
+  token: string,
+  path: string,
+  method: string = 'GET',
+  payload: any = null,
+) => {
+  const baseEndpoint = getApiEndpoint(url, path)
   // Proxy CORS para prevenir erros browser-level "failed to fetch" e políticas de segurança
   const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseEndpoint)}`
 
@@ -121,30 +136,34 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
+    const options: RequestInit = {
+      method,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        'X-Auth-Token': token, // Suporte a variações de headers do Belle
+        Accept: 'application/json',
+        Token: token, // Header exigido (case-sensitive) para autenticação
       },
-      body: JSON.stringify({
-        token: token, // Suporte a token no body (comum em versões legadas api.php)
-        acao: action,
-        ...payload,
-      }),
       signal: controller.signal,
-    })
+    }
+
+    if (payload && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+      options.body = JSON.stringify(payload)
+    }
+
+    const response = await fetch(endpoint, options)
 
     clearTimeout(timeoutId)
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Falha na Autenticação')
+        throw new Error('Token Inválido')
       }
-      // Status >= 500 do proxy geralmente indica que o host de destino está inacessível ou inválido
+      if (response.status === 404) {
+        throw new Error('URL Inválida')
+      }
+      // Status >= 500 do proxy geralmente indica que o host de destino está inacessível ou bloqueado
       if (response.status >= 500) {
-        throw new Error('CORS_NETWORK_ERROR')
+        throw new Error('Erro de Rede (CORS)')
       }
       throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
     }
@@ -159,7 +178,7 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
         msg.toLowerCase().includes('autentica') ||
         msg.toLowerCase().includes('auth')
       ) {
-        throw new Error('Falha na Autenticação')
+        throw new Error('Token Inválido')
       }
       throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
@@ -172,7 +191,7 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
       throw new Error('TIMEOUT_ERROR')
     }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error('CORS_NETWORK_ERROR')
+      throw new Error('Erro de Rede (CORS)')
     }
     throw error
   }
@@ -185,31 +204,31 @@ export const testBelleConnection = async (url: string, token: string): Promise<b
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
-      throw new Error('Falha na Autenticação')
+      throw new Error('Token Inválido')
     }
     return true
   }
 
-  await belleApiCall(url, token, 'listar_clientes', { limit: 1 })
+  await belleApiCall(url, token, '/api/v1/pacientes?limit=1', 'GET')
   return true
 }
 
 /**
- * Busca os pacientes via Belle Software API
+ * Busca os pacientes via Belle Software API REST
  */
 export const fetchBelleClientes = async (url: string, token: string): Promise<BelleCliente[]> => {
   if (!url || !token || url.includes('mock')) {
-    console.info('Usando mock de clientes (integração não configurada ou em modo demo).')
+    console.info('Usando mock de pacientes (integração não configurada ou em modo demo).')
     await new Promise((resolve) => setTimeout(resolve, 800))
     return mockClientes
   }
 
-  const data = await belleApiCall(url, token, 'listar_clientes')
-  return Array.isArray(data) ? data : []
+  const data = await belleApiCall(url, token, '/api/v1/pacientes', 'GET')
+  return Array.isArray(data) ? data : data.pacientes || data.clientes || []
 }
 
 /**
- * Busca o histórico de agendamentos via Belle Software API
+ * Busca o histórico de agendamentos via Belle Software API REST
  */
 export const fetchBelleAgendamentos = async (
   url: string,
@@ -221,7 +240,7 @@ export const fetchBelleAgendamentos = async (
     return cpf ? mockAgendamentos.filter((a) => a.cpf_cliente === cpf) : mockAgendamentos
   }
 
-  const payload = cpf ? { cpf } : { periodo: 'recentes' }
-  const data = await belleApiCall(url, token, 'listar_agendamentos', payload)
-  return Array.isArray(data) ? data : []
+  const path = cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : '/api/v1/agendamentos'
+  const data = await belleApiCall(url, token, path, 'GET')
+  return Array.isArray(data) ? data : data.agendamentos || []
 }
