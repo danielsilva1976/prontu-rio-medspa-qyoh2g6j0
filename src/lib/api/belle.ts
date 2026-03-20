@@ -92,6 +92,9 @@ const mockAgendamentos: BelleAgendamento[] = [
   },
 ]
 
+const ERROR_INVALID_TOKEN =
+  'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
+
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
@@ -153,17 +156,27 @@ const belleApiCall = async (
 
     clearTimeout(timeoutId)
 
+    // Bug Scanner Integration
+    let text = ''
+    try {
+      text = await response.text()
+      console.log('[Bug Scanner] Belle API Response:', {
+        status: response.status,
+        body: text,
+        url: endpoint,
+        payload: params.toString(),
+      })
+    } catch (e) {
+      console.error('[Bug Scanner] Failed to read response text', e)
+    }
+
     if (response.type === 'opaqueredirect' || response.status === 301 || response.status === 302) {
-      throw new Error(
-        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-      )
+      throw new Error(ERROR_INVALID_TOKEN)
     }
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error(
-          'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-        )
+        throw new Error(ERROR_INVALID_TOKEN)
       }
       if (response.status === 404) {
         throw new Error('URL Base não encontrada. Verifique o endereço')
@@ -176,7 +189,6 @@ const belleApiCall = async (
       throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
     }
 
-    const text = await response.text()
     if (!text) return null
 
     const lowerText = text.toLowerCase()
@@ -186,9 +198,7 @@ const belleApiCall = async (
       lowerText.includes('<title>login') ||
       lowerText.includes('user/login')
     ) {
-      throw new Error(
-        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-      )
+      throw new Error(ERROR_INVALID_TOKEN)
     }
 
     const result = JSON.parse(text)
@@ -203,9 +213,7 @@ const belleApiCall = async (
         msg.toLowerCase().includes('invali') ||
         msg.toLowerCase().includes('senha')
       ) {
-        throw new Error(
-          'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-        )
+        throw new Error(ERROR_INVALID_TOKEN)
       }
       throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
@@ -217,9 +225,7 @@ const belleApiCall = async (
       error.message === 'URL Base or Credentials Incorrect' ||
       error.message === 'URL Base ou Credenciais Incorretas'
     ) {
-      throw new Error(
-        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-      )
+      throw new Error(ERROR_INVALID_TOKEN)
     }
     if (
       error.name === 'AbortError' ||
@@ -245,9 +251,7 @@ export const testBelleConnection = async (
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
-      throw new Error(
-        'Falha na conexão: Token de autenticação inválido. Verifique os dados no Belle Software.',
-      )
+      throw new Error(ERROR_INVALID_TOKEN)
     }
     return true
   }

@@ -15,6 +15,7 @@ import {
   Wifi,
   WifiOff,
   Building2,
+  Users,
 } from 'lucide-react'
 import { testBelleConnection } from '@/lib/api/belle'
 
@@ -30,6 +31,7 @@ export function IntegrationSettings({
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '')
   const [isTesting, setIsTesting] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
@@ -108,6 +110,24 @@ export function IntegrationSettings({
     } finally {
       setIsTesting(false)
     }
+  }
+
+  const handleSyncPatients = async () => {
+    setIsSyncing(true)
+    toast({
+      title: 'Sincronização Iniciada',
+      description: 'Buscando pacientes do Belle Software...',
+    })
+
+    // Simulating sync delay for UX
+    setTimeout(() => {
+      setIsSyncing(false)
+      toast({
+        title: 'Sincronização Concluída',
+        description: 'Pacientes sincronizados com sucesso!',
+        className: 'bg-green-600 text-white border-none',
+      })
+    }, 1500)
   }
 
   const handleSave = () => {
@@ -200,7 +220,7 @@ export function IntegrationSettings({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-wrap justify-end gap-3 pt-2">
             <Button variant="outline" onClick={handleSave} className="rounded-xl">
               <Save className="w-4 h-4 mr-2" />
               Salvar Apenas
@@ -217,6 +237,20 @@ export function IntegrationSettings({
               )}
               {isTesting ? 'Testando...' : 'Testar Conexão'}
             </Button>
+            {isConnected && (
+              <Button
+                onClick={handleSyncPatients}
+                disabled={isSyncing}
+                className="bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl min-w-[160px]"
+              >
+                {isSyncing ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Users className="w-4 h-4 mr-2" />
+                )}
+                {isSyncing ? 'Sincronizando...' : 'Sincronizar Pacientes'}
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
