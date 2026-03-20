@@ -106,11 +106,10 @@ const getApiEndpoint = (url: string, path: string) => {
     cleanUrl = `https://${cleanUrl}`
   }
 
-  // Remove chamadas legadas (api.php) caso o usuário copie a URL antiga
   if (cleanUrl.endsWith('/api.php')) {
-    cleanUrl = cleanUrl.replace('/api.php', '')
+    cleanUrl = cleanUrl.slice(0, -8)
   } else if (cleanUrl.endsWith('api.php')) {
-    cleanUrl = cleanUrl.replace('api.php', '')
+    cleanUrl = cleanUrl.slice(0, -7)
   }
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`
@@ -156,19 +155,23 @@ const belleApiCall = async (
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Token Inválido')
+        throw new Error('Token de Autenticação Inválido')
       }
       if (response.status === 404) {
-        throw new Error('URL Inválida')
+        throw new Error('URL Base não encontrada. Verifique o endereço')
       }
-      // Status >= 500 do proxy geralmente indica que o host de destino está inacessível ou bloqueado
       if (response.status >= 500) {
-        throw new Error('Erro de Rede (CORS)')
+        throw new Error(
+          'Erro de rede: Verifique sua conexão ou a disponibilidade do servidor Belle',
+        )
       }
       throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
     }
 
-    const result = await response.json()
+    const text = await response.text()
+    if (!text) return null
+
+    const result = JSON.parse(text)
 
     // Tratamento de respostas de erro da API do Belle
     if (result.status === 'erro' || result.status === false || result.error) {
@@ -178,7 +181,7 @@ const belleApiCall = async (
         msg.toLowerCase().includes('autentica') ||
         msg.toLowerCase().includes('auth')
       ) {
-        throw new Error('Token Inválido')
+        throw new Error('Token de Autenticação Inválido')
       }
       throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
@@ -187,29 +190,32 @@ const belleApiCall = async (
   } catch (error: any) {
     clearTimeout(timeoutId)
     // Tratamento avançado e mapeamento de erros de rede/CORS
-    if (error.name === 'AbortError') {
-      throw new Error('TIMEOUT_ERROR')
-    }
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error('Erro de Rede (CORS)')
+    if (
+      error.name === 'AbortError' ||
+      error.message === 'TIMEOUT_ERROR' ||
+      (error.name === 'TypeError' && error.message === 'Failed to fetch') ||
+      error.message.includes('Erro de rede') ||
+      error.message.includes('CORS')
+    ) {
+      throw new Error('Erro de rede: Verifique sua conexão ou a disponibilidade do servidor Belle')
     }
     throw error
   }
 }
 
 /**
- * Valida a conexão com o Belle Software testando a listagem com limite 1
+ * Valida a conexão com o Belle Software
  */
 export const testBelleConnection = async (url: string, token: string): Promise<boolean> => {
   if (!url || url.includes('mock')) {
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
-      throw new Error('Token Inválido')
+      throw new Error('Token de Autenticação Inválido')
     }
     return true
   }
 
-  await belleApiCall(url, token, '/api/v1/pacientes?limit=1', 'GET')
+  await belleApiCall(url, token, '/api.php', 'POST', {})
   return true
 }
 

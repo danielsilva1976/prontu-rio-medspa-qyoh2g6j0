@@ -26,12 +26,20 @@ export function IntegrationSettings({
 
   const handleUrlBlur = () => {
     if (!url) return
-    let cleanUrl = url.trim()
+    let cleanUrl = url.trim().replace(/\/+$/, '')
+
     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
       cleanUrl = `https://${cleanUrl}`
     } else if (cleanUrl.startsWith('http://')) {
       cleanUrl = cleanUrl.replace('http://', 'https://')
     }
+
+    if (cleanUrl.endsWith('/api.php')) {
+      cleanUrl = cleanUrl.slice(0, -8)
+    } else if (cleanUrl.endsWith('api.php')) {
+      cleanUrl = cleanUrl.slice(0, -7)
+    }
+
     if (cleanUrl !== url) {
       setUrl(cleanUrl)
     }
@@ -66,43 +74,16 @@ export function IntegrationSettings({
       toast({
         title: 'Conexão validada',
         description: 'Conexão estabelecida com sucesso!',
+        className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
 
-      const errorMessage = error.message || ''
-
-      if (errorMessage === 'URL Inválida') {
-        toast({
-          title: 'URL Inválida',
-          description: 'Não foi possível encontrar o servidor. Verifique o endereço base da API.',
-          variant: 'destructive',
-        })
-      } else if (errorMessage === 'Token Inválido') {
-        toast({
-          title: 'Token Inválido',
-          description:
-            'A autenticação falhou. Verifique se o Token de Acesso fornecido está correto.',
-          variant: 'destructive',
-        })
-      } else if (
-        errorMessage === 'Erro de Rede (CORS)' ||
-        errorMessage === 'TIMEOUT_ERROR' ||
-        errorMessage.includes('CORS')
-      ) {
-        toast({
-          title: 'Erro de Rede (CORS)',
-          description:
-            'A requisição falhou devido a restrições de rede ou CORS. Verifique se a URL Base está correta e se o ambiente permite conexões externas.',
-          variant: 'destructive',
-        })
-      } else {
-        toast({
-          title: 'Erro na Integração',
-          description: errorMessage || 'Ocorreu um erro desconhecido ao tentar conectar.',
-          variant: 'destructive',
-        })
-      }
+      toast({
+        title: 'Falha na Conexão',
+        description: error.message || 'Ocorreu um erro desconhecido ao tentar conectar.',
+        variant: 'destructive',
+      })
     } finally {
       setIsTesting(false)
     }
@@ -153,7 +134,7 @@ export function IntegrationSettings({
               <Label htmlFor="api-url">URL Base do Belle Software</Label>
               <Input
                 id="api-url"
-                placeholder="Ex: https://api.bellesoftware.com.br"
+                placeholder="Ex: https://dominio.bellesoftware.com.br"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={handleUrlBlur}
@@ -161,7 +142,7 @@ export function IntegrationSettings({
               />
               <p className="text-xs text-muted-foreground mt-1">
                 O sistema anexará automaticamente os <strong>endpoints da API</strong> (ex:
-                /api/v1/pacientes) ao final da URL e forçará o uso de <strong>HTTPS</strong>.
+                /api.php) ao final da URL e forçará o uso de <strong>HTTPS</strong>.
               </p>
             </div>
 
