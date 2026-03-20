@@ -95,6 +95,9 @@ const mockAgendamentos: BelleAgendamento[] = [
 const ERROR_INVALID_TOKEN =
   'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
+const ERROR_403_FORBIDDEN =
+  'Erro 403: Acesso negado. Verifique as permissões do Token no Belle Software ou se há restrições de acesso na API.'
+
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
@@ -160,8 +163,15 @@ const belleApiCall = async (
     let text = ''
     try {
       text = await response.text()
+
+      const responseHeaders: Record<string, string> = {}
+      response.headers.forEach((value, key) => {
+        responseHeaders[key] = value
+      })
+
       console.log('[Bug Scanner] Belle API Response:', {
         status: response.status,
+        headers: responseHeaders,
         body: text,
         url: endpoint,
         payload: params.toString(),
@@ -175,7 +185,10 @@ const belleApiCall = async (
     }
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 403) {
+        throw new Error(ERROR_403_FORBIDDEN)
+      }
+      if (response.status === 401) {
         throw new Error(ERROR_INVALID_TOKEN)
       }
       if (response.status === 404) {

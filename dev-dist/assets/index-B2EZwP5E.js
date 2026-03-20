@@ -36178,6 +36178,7 @@ var mockAgendamentos = [
 	}
 ];
 var ERROR_INVALID_TOKEN = "falha na conexão: token de autenticação invalido. Verifique dados no Belle software";
+var ERROR_403_FORBIDDEN = "Erro 403: Acesso negado. Verifique as permissões do Token no Belle Software ou se há restrições de acesso na API.";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -36215,8 +36216,13 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 		let text = "";
 		try {
 			text = await response.text();
+			const responseHeaders = {};
+			response.headers.forEach((value, key) => {
+				responseHeaders[key] = value;
+			});
 			console.log("[Bug Scanner] Belle API Response:", {
 				status: response.status,
+				headers: responseHeaders,
 				body: text,
 				url: endpoint,
 				payload: params.toString()
@@ -36226,7 +36232,8 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 		}
 		if (response.type === "opaqueredirect" || response.status === 301 || response.status === 302) throw new Error(ERROR_INVALID_TOKEN);
 		if (!response.ok) {
-			if (response.status === 401 || response.status === 403) throw new Error(ERROR_INVALID_TOKEN);
+			if (response.status === 403) throw new Error(ERROR_403_FORBIDDEN);
+			if (response.status === 401) throw new Error(ERROR_INVALID_TOKEN);
 			if (response.status === 404) throw new Error("URL Base não encontrada. Verifique o endereço");
 			if (response.status >= 500) throw new Error("Erro de rede: Verifique sua conexão ou a disponibilidade do servidor Belle");
 			throw new Error(`Erro de comunicação com Belle Software: ${response.status}`);
@@ -51378,4 +51385,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-C0miNO-b.js.map
+//# sourceMappingURL=index-B2EZwP5E.js.map
