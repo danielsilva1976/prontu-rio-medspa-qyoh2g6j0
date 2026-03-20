@@ -3,20 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
-import {
-  Key,
-  Save,
-  ServerCrash,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-  Wifi,
-  WifiOff,
-} from 'lucide-react'
+import { Key, Save, ServerCrash, RefreshCw, CheckCircle2, Wifi, WifiOff } from 'lucide-react'
 import { testBelleConnection } from '@/lib/api/belle'
 
 export function IntegrationSettings({
@@ -30,10 +20,22 @@ export function IntegrationSettings({
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
   const [isTesting, setIsTesting] = useState(false)
-  const [errorAlert, setErrorAlert] = useState<{ title: string; message: string } | null>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
+
+  const handleUrlBlur = () => {
+    if (!url) return
+    let cleanUrl = url.trim()
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = `https://${cleanUrl}`
+    } else if (cleanUrl.startsWith('http://')) {
+      cleanUrl = cleanUrl.replace('http://', 'https://')
+    }
+    if (cleanUrl !== url) {
+      setUrl(cleanUrl)
+    }
+  }
 
   const handleTestConnection = async () => {
     if (!url) {
@@ -55,7 +57,6 @@ export function IntegrationSettings({
     }
 
     setIsTesting(true)
-    setErrorAlert(null)
 
     try {
       await testBelleConnection(url, token)
@@ -63,6 +64,7 @@ export function IntegrationSettings({
       setBelleLastSync('success', new Date().toISOString())
 
       toast({
+        title: 'Conexão validada',
         description: 'Conexão estabelecida com sucesso!',
       })
     } catch (error: any) {
@@ -71,24 +73,27 @@ export function IntegrationSettings({
       const errorMessage = error.message || ''
 
       if (
-        errorMessage.includes('CORS') ||
-        errorMessage.includes('Rede') ||
-        errorMessage.includes('Failed to fetch')
+        errorMessage === 'CORS_NETWORK_ERROR' ||
+        errorMessage === 'TIMEOUT_ERROR' ||
+        errorMessage.includes('Erro de comunicação')
       ) {
-        setErrorAlert({
+        toast({
           title: 'Erro de Conexão',
-          message:
-            'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base.',
+          description:
+            'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base',
+          variant: 'destructive',
         })
       } else if (errorMessage.includes('Autenticação')) {
-        setErrorAlert({
+        toast({
           title: 'Erro de Autenticação',
-          message: 'Falha na Autenticação. Verifique se o Token de Acesso está correto.',
+          description: 'Falha na Autenticação. Verifique se o Token de Acesso está correto.',
+          variant: 'destructive',
         })
       } else {
-        setErrorAlert({
+        toast({
           title: 'Erro na Integração',
-          message: errorMessage || 'Ocorreu um erro desconhecido ao tentar conectar.',
+          description: errorMessage || 'Ocorreu um erro desconhecido ao tentar conectar.',
+          variant: 'destructive',
         })
       }
     } finally {
@@ -144,6 +149,7 @@ export function IntegrationSettings({
                 placeholder="Ex: https://app.bellesoftware.com.br"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                onBlur={handleUrlBlur}
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -168,17 +174,6 @@ export function IntegrationSettings({
             </div>
           </div>
 
-          {errorAlert && (
-            <Alert
-              variant="destructive"
-              className="animate-fade-in-up border-destructive/50 bg-destructive/5"
-            >
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{errorAlert.title}</AlertTitle>
-              <AlertDescription>{errorAlert.message}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={handleSave} className="rounded-xl">
               <Save className="w-4 h-4 mr-2" />
@@ -187,7 +182,7 @@ export function IntegrationSettings({
             <Button
               onClick={handleTestConnection}
               disabled={isTesting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]"
             >
               {isTesting ? (
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

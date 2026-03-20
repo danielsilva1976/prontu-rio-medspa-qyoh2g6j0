@@ -54,7 +54,7 @@ export default function Patients() {
 
     setIsSyncing(true)
     try {
-      // Fetch both clients and generic appointments via api.php protocol
+      // Fetch both clients and generic appointments via api.php protocol proxy
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token),
         fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token),
@@ -146,12 +146,14 @@ export default function Patients() {
       addLog(`Erro na Sincronização - Contexto: ${routeContext.path}`, 'SYSTEM')
 
       const isNetworkError =
-        error.message?.includes('Failed to fetch') || error.message?.includes('Falha de rede')
+        error.message === 'CORS_NETWORK_ERROR' ||
+        error.message === 'TIMEOUT_ERROR' ||
+        error.message?.includes('Erro de comunicação')
 
       toast({
         title: isNetworkError ? 'Erro de Conexão' : 'Falha na Sincronização API',
         description: isNetworkError
-          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor.'
+          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base'
           : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
@@ -192,7 +194,7 @@ export default function Patients() {
           {canSync && (
             <Button
               variant="outline"
-              className="bg-white border-primary/20 text-primary hover:bg-primary/5"
+              className="bg-white border-primary/20 text-primary hover:bg-primary/5 min-w-[170px]"
               onClick={handleSync}
               disabled={isSyncing}
             >
