@@ -117,8 +117,8 @@ export default function Patients() {
           lastVisit,
           nextAppointment,
           procedures: Array.from(procedures),
-          // Store specific clinical history note if Belle provides it
-          endereco: c.historico_clinico ? `Nota Belle: ${c.historico_clinico}` : undefined,
+          // Map history string
+          history: c.historico_clinico || '',
         }
       })
 
@@ -134,15 +134,24 @@ export default function Patients() {
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      addLog('Erro na Sincronização Belle Software', 'SYSTEM')
+
+      // Context Preservation for Diagnostics
+      const routeContext = { path: '/pacientes', component: 'Patients' }
+      console.error(
+        'Diagnostic Context:',
+        JSON.stringify({ currentRoute: routeContext }, null, 2),
+        error,
+      )
+
+      addLog(`Erro na Sincronização - Contexto: ${routeContext.path}`, 'SYSTEM')
 
       const isNetworkError =
         error.message?.includes('Failed to fetch') || error.message?.includes('Falha de rede')
 
       toast({
-        title: isNetworkError ? 'Conexão Bloqueada (CORS/Rede)' : 'Falha na Sincronização API',
+        title: isNetworkError ? 'Erro de Conexão' : 'Falha na Sincronização API',
         description: isNetworkError
-          ? 'Não foi possível conectar ao servidor (Failed to fetch). Verifique se a URL em Configurações usa HTTPS e se o servidor permite acesso.'
+          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor.'
           : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
@@ -188,7 +197,7 @@ export default function Patients() {
               disabled={isSyncing}
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-              Sincronizar Belle
+              {isSyncing ? 'Sincronizando...' : 'Sincronizar Belle'}
             </Button>
           )}
           <PatientDialog />

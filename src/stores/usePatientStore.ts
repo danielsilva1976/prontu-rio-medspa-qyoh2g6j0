@@ -9,6 +9,7 @@ export type Patient = Omit<(typeof initialPatients)[0], 'procedures'> & {
   estado_civil?: string
   email?: string
   endereco?: string
+  history?: string
   belleId?: string
   procedures: string[]
 }
@@ -75,6 +76,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
             ...bp,
             // Preserve existing local edits if Belle data is empty
             endereco: next[idx].endereco || bp.endereco,
+            history: bp.history !== undefined ? bp.history : next[idx].history,
             procedures: mergedProcedures,
             // Update nextAppointment strictly from Belle's schedule data if provided
             nextAppointment:

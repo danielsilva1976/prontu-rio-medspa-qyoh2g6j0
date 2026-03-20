@@ -114,6 +114,8 @@ const getApiEndpoint = (url: string) => {
  */
 const belleApiCall = async (url: string, token: string, action: string, payload: any = {}) => {
   const endpoint = getApiEndpoint(url)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
     const response = await fetch(endpoint, {
@@ -128,7 +130,10 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
         acao: action,
         ...payload,
       }),
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       throw new Error(`Erro de comunicação com Belle Software: ${response.status}`)
@@ -143,7 +148,13 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
 
     return result.data || result.dados || result
   } catch (error: any) {
+    clearTimeout(timeoutId)
     // Tratamento específico para erros de rede/CORS
+    if (error.name === 'AbortError') {
+      throw new Error(
+        'Falha de rede: Timeout da requisição. O servidor demorou muito para responder.',
+      )
+    }
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       throw new Error(
         'Falha de rede (Failed to fetch). O servidor pode estar inacessível ou bloqueando a requisição por CORS.',
@@ -151,6 +162,19 @@ const belleApiCall = async (url: string, token: string, action: string, payload:
     }
     throw error
   }
+}
+
+/**
+ * Validates Belle connection with a ping/auth check (using listar_clientes)
+ */
+export const testBelleConnection = async (url: string, token: string): Promise<boolean> => {
+  if (!url || url.includes('mock')) {
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    return true
+  }
+
+  await belleApiCall(url, token, 'listar_clientes', { limit: 1 })
+  return true
 }
 
 /**

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
-import { Key, Save, ServerCrash } from 'lucide-react'
+import { Key, Save, ServerCrash, RefreshCw } from 'lucide-react'
+import { testBelleConnection } from '@/lib/api/belle'
 
 export function IntegrationSettings({
   title,
@@ -17,14 +18,41 @@ export function IntegrationSettings({
   const { belleSoftware, updateBelleConfig } = useSettingsStore()
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
+  const [isValidating, setIsValidating] = useState(false)
   const { toast } = useToast()
 
-  const handleSave = () => {
-    updateBelleConfig(url, token)
-    toast({
-      title: 'Configurações salvas',
-      description: 'Credenciais e endpoint do Belle Software atualizados com sucesso.',
-    })
+  const handleSave = async () => {
+    if (!url) {
+      toast({
+        title: 'URL Requerida',
+        description: 'Preencha a URL base do Belle Software.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsValidating(true)
+    try {
+      await testBelleConnection(url, token)
+      updateBelleConfig(url, token)
+      toast({
+        title: 'Configurações salvas',
+        description: 'Credenciais e endpoint validados e atualizados com sucesso.',
+      })
+    } catch (error: any) {
+      const isNetworkError =
+        error.message?.includes('Failed to fetch') || error.message?.includes('Falha de rede')
+
+      toast({
+        title: 'Erro na Validação',
+        description: isNetworkError
+          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor.'
+          : error.message || 'Falha ao validar credenciais. Verifique a URL e o Token.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   return (
@@ -78,10 +106,15 @@ export function IntegrationSettings({
           <div className="flex justify-end">
             <Button
               onClick={handleSave}
+              disabled={isValidating}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
             >
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Configurações
+              {isValidating ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              {isValidating ? 'Validando...' : 'Salvar Configurações'}
             </Button>
           </div>
         </div>
