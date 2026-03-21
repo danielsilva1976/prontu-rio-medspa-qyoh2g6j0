@@ -36097,58 +36097,6 @@ var ERROR_USER_FRIENDLY = "Falha na comunicação. Verifique suas credenciais de
 var logToBugScanner = (context, details) => {
 	console.info(`[System Audit] ${context}:`, JSON.stringify(details, null, 2));
 };
-var generateMockClientes = () => [
-	{
-		id: 1,
-		nome: "Ana Clara Albuquerque",
-		cpf: "111.222.333-44",
-		email: "ana@example.com",
-		celular: "(11) 98888-7777",
-		data_nascimento: "1985-04-12",
-		historico_clinico: "Paciente relata sensibilidade a ácidos."
-	},
-	{
-		id: 2,
-		nome: "Carlos Eduardo Mendes",
-		cpf: "555.666.777-88",
-		email: "carlos@example.com",
-		celular: "(11) 97777-6666",
-		data_nascimento: "1979-08-25",
-		historico_clinico: "Sem alergias conhecidas."
-	},
-	{
-		id: 3,
-		nome: "Beatriz Souza",
-		cpf: "999.888.777-66",
-		email: "beatriz@example.com",
-		celular: "(11) 96666-5555",
-		data_nascimento: "1992-11-03",
-		historico_clinico: "Tratamento contínuo para melasma."
-	}
-];
-var generateMockAgendamentos = () => {
-	const today = /* @__PURE__ */ new Date();
-	const nextWeek = new Date(today);
-	nextWeek.setDate(today.getDate() + 7);
-	const formatDate = (date) => date.toISOString().split("T")[0];
-	return [{
-		id: 101,
-		cliente_id: 1,
-		data: formatDate(today),
-		hora_inicio: "14:30",
-		servico: "Toxina Botulínica",
-		profissional: "Dra. Fabíola Kleinert",
-		status: "Confirmado"
-	}, {
-		id: 102,
-		cliente_id: 2,
-		data: formatDate(nextWeek),
-		hora_inicio: "10:00",
-		servico: "Preenchimento com Ácido Hialurônico",
-		profissional: "Dra. Sofia Mendes",
-		status: "Agendado"
-	}];
-};
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -36201,14 +36149,15 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 	} catch (err) {
 		clearTimeout(timeoutId);
 		if (err.message?.includes("Bridge not found") || err.message?.includes("Erro 404") || err.message?.includes("Erro 405") || err.message?.includes("Failed to fetch") || err.name === "AbortError") {
-			logToBugScanner("Secure bridge unavailable. Falling back to mock data.", { targetEndpoint });
-			await new Promise((resolve) => setTimeout(resolve, 800));
+			logToBugScanner("Secure bridge unavailable.", { targetEndpoint });
 			if (cleanToken.length < 10) throw new BelleApiError({
 				error: "Token Inválido",
 				details: "O token de acesso informado é muito curto ou inválido. Verifique suas configurações."
 			});
-			if (payload?.acao === "get_agendamentos") return generateMockAgendamentos();
-			return generateMockClientes();
+			throw new BelleApiError({
+				error: "Ponte de Integração Indisponível",
+				details: "Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais."
+			});
 		}
 		if (err instanceof BelleApiError) throw err;
 		throw new BelleApiError({
@@ -36256,10 +36205,10 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 		});
 		return {
 			belleId: belleIdStr,
-			name: c.nome || "Paciente sem nome",
-			cpf: c.cpf || "",
-			email: c.email || "",
-			phone: c.celular || c.telefone || "",
+			name: (c.nome || "").trim() || "Paciente sem nome",
+			cpf: (c.cpf || "").trim(),
+			email: (c.email || "").trim(),
+			phone: (c.celular || c.telefone || "").trim(),
 			dob: c.data_nascimento,
 			lastVisit,
 			nextAppointment,
@@ -51460,4 +51409,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Clbz06qW.js.map
+//# sourceMappingURL=index-CfYGeWkb.js.map

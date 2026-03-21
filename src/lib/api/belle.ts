@@ -62,65 +62,6 @@ const logToBugScanner = (context: string, details: any) => {
   console.info(`[System Audit] ${context}:`, JSON.stringify(details, null, 2))
 }
 
-const generateMockClientes = (): BelleCliente[] => [
-  {
-    id: 1,
-    nome: 'Ana Clara Albuquerque',
-    cpf: '111.222.333-44',
-    email: 'ana@example.com',
-    celular: '(11) 98888-7777',
-    data_nascimento: '1985-04-12',
-    historico_clinico: 'Paciente relata sensibilidade a ácidos.',
-  },
-  {
-    id: 2,
-    nome: 'Carlos Eduardo Mendes',
-    cpf: '555.666.777-88',
-    email: 'carlos@example.com',
-    celular: '(11) 97777-6666',
-    data_nascimento: '1979-08-25',
-    historico_clinico: 'Sem alergias conhecidas.',
-  },
-  {
-    id: 3,
-    nome: 'Beatriz Souza',
-    cpf: '999.888.777-66',
-    email: 'beatriz@example.com',
-    celular: '(11) 96666-5555',
-    data_nascimento: '1992-11-03',
-    historico_clinico: 'Tratamento contínuo para melasma.',
-  },
-]
-
-const generateMockAgendamentos = (): BelleAgendamento[] => {
-  const today = new Date()
-  const nextWeek = new Date(today)
-  nextWeek.setDate(today.getDate() + 7)
-
-  const formatDate = (date: Date) => date.toISOString().split('T')[0]
-
-  return [
-    {
-      id: 101,
-      cliente_id: 1,
-      data: formatDate(today),
-      hora_inicio: '14:30',
-      servico: 'Toxina Botulínica',
-      profissional: 'Dra. Fabíola Kleinert',
-      status: 'Confirmado',
-    },
-    {
-      id: 102,
-      cliente_id: 2,
-      data: formatDate(nextWeek),
-      hora_inicio: '10:00',
-      servico: 'Preenchimento com Ácido Hialurônico',
-      profissional: 'Dra. Sofia Mendes',
-      status: 'Agendado',
-    },
-  ]
-}
-
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
@@ -224,11 +165,8 @@ const belleApiCall = async (
       err.message?.includes('Failed to fetch') ||
       err.name === 'AbortError'
 
-    // Local fallback when backend proxy isn't configured in the environment yet
     if (isMissingBridge) {
-      logToBugScanner('Secure bridge unavailable. Falling back to mock data.', { targetEndpoint })
-
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      logToBugScanner('Secure bridge unavailable.', { targetEndpoint })
 
       if (cleanToken.length < 10) {
         throw new BelleApiError({
@@ -238,10 +176,11 @@ const belleApiCall = async (
         })
       }
 
-      if (payload?.acao === 'get_agendamentos') {
-        return generateMockAgendamentos()
-      }
-      return generateMockClientes()
+      throw new BelleApiError({
+        error: 'Ponte de Integração Indisponível',
+        details:
+          'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+      })
     }
 
     if (err instanceof BelleApiError) {
@@ -332,10 +271,10 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
 
     return {
       belleId: belleIdStr,
-      name: c.nome || 'Paciente sem nome',
-      cpf: c.cpf || '',
-      email: c.email || '',
-      phone: c.celular || c.telefone || '',
+      name: (c.nome || '').trim() || 'Paciente sem nome',
+      cpf: (c.cpf || '').trim(),
+      email: (c.email || '').trim(),
+      phone: (c.celular || c.telefone || '').trim(),
       dob: c.data_nascimento,
       lastVisit,
       nextAppointment,
