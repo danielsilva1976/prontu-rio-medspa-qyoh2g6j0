@@ -25212,90 +25212,10 @@ function useAuditStore() {
 	return (0, import_react.useContext)(AuditContext);
 }
 //#endregion
-//#region src/lib/mock-data.ts
-var today = /* @__PURE__ */ new Date();
-var todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-var tomorrow = new Date(today);
-tomorrow.setDate(tomorrow.getDate() + 1);
-var tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-//#endregion
 //#region src/stores/usePatientStore.ts
-var defaultPatients = [
-	{
-		id: "p-001",
-		name: "Isabella Rodrigues",
-		age: 34,
-		dob: "1989-05-12",
-		lastVisit: "2023-09-15",
-		nextAppointment: `${todayStr}T10:00:00`,
-		status: "scheduled",
-		phone: "(11) 98765-4321",
-		procedures: ["Toxina Botulínica", "Bioestimulador"],
-		professional: "Dra. Fabíola Kleinert"
-	},
-	{
-		id: "p-002",
-		name: "Carolina Mendes Costa",
-		age: 42,
-		dob: "1981-10-02",
-		lastVisit: "2023-10-02",
-		nextAppointment: `${todayStr}T11:30:00`,
-		status: "scheduled",
-		phone: "(11) 99876-5432",
-		procedures: ["Preenchimento Labial", "Laser Lavieen"],
-		professional: "Dra. Sofia Mendes"
-	},
-	{
-		id: "p-003",
-		name: "Marina Silva Fontes",
-		age: 28,
-		dob: "1995-08-20",
-		lastVisit: "2023-08-20",
-		nextAppointment: `${tomorrowStr}T14:00:00`,
-		status: "scheduled",
-		phone: "(11) 91234-5678",
-		procedures: ["Peeling Químico"],
-		professional: "Dra. Fabíola Kleinert"
-	},
-	{
-		id: "p-004",
-		name: "Juliana Carvalho",
-		age: 45,
-		dob: "1978-11-01",
-		lastVisit: "2023-11-01",
-		nextAppointment: `${tomorrowStr}T15:30:00`,
-		status: "scheduled",
-		phone: "(11) 97777-8888",
-		procedures: ["MMP", "Toxina Botulínica"],
-		professional: null
-	},
-	{
-		id: "p-005",
-		name: "Roberto Alvarez",
-		age: 50,
-		dob: "1973-06-10",
-		lastVisit: "2023-06-10",
-		nextAppointment: null,
-		status: "inactive",
-		phone: "(11) 96666-5555",
-		procedures: ["Transplante Capilar - Acompanhamento"],
-		professional: "Dr. Marcos Silva"
-	}
-].map((p, i) => ({
-	...p,
-	procedures: p.procedures || [],
-	avatar: `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
-	cpf: "123.456.789-00",
-	rg: "12.345.678-9",
-	profissao: i % 2 === 0 ? "Engenheira" : "Professora",
-	estado_civil: "Solteira",
-	email: `paciente${i}@email.com`,
-	endereco: "Rua das Flores, 123 - São Paulo/SP",
-	isMock: true
-}));
 var PatientContext = (0, import_react.createContext)({});
 var PatientProvider = ({ children }) => {
-	const [patients, setPatients] = (0, import_react.useState)(defaultPatients);
+	const [patients, setPatients] = (0, import_react.useState)([]);
 	const addPatient = (patient) => {
 		const newPatient = {
 			...patient,
@@ -25310,55 +25230,41 @@ var PatientProvider = ({ children }) => {
 		} : p));
 	};
 	const syncWithBelle = (belleData) => {
-		let added = 0;
-		let updated = 0;
-		setPatients((prev) => {
-			const next = prev.filter((p) => !p.isMock);
-			belleData.forEach((bp) => {
-				const cleanCpf = (c) => c?.replace(/\D/g, "");
-				const idx = next.findIndex((p) => bp.cpf && p.cpf && cleanCpf(p.cpf) === cleanCpf(bp.cpf) || bp.belleId && p.belleId === bp.belleId);
-				if (idx >= 0) {
-					const mergedProcedures = Array.from(new Set([...next[idx].procedures || [], ...bp.procedures || []]));
-					next[idx] = {
-						...next[idx],
-						...bp,
-						id: bp.belleId ? String(bp.belleId) : next[idx].id,
-						endereco: next[idx].endereco || bp.endereco,
-						history: bp.history !== void 0 ? bp.history : next[idx].history,
-						procedures: mergedProcedures,
-						nextAppointment: bp.nextAppointment !== void 0 ? bp.nextAppointment : next[idx].nextAppointment
-					};
-					updated++;
-				} else {
-					let age = bp.age || 30;
-					if (bp.dob) {
-						const birth = new Date(bp.dob);
-						if (!isNaN(birth.getTime())) {
-							const diff = Date.now() - birth.getTime();
-							age = Math.floor(diff / (1e3 * 60 * 60 * 24 * 365.25));
-						}
-					}
-					next.push({
-						id: bp.belleId ? String(bp.belleId) : `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-						name: bp.name || "Sem Nome",
-						age,
-						phone: bp.phone || "",
-						dob: bp.dob || "1990-01-01",
-						lastVisit: bp.lastVisit || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
-						nextAppointment: bp.nextAppointment || null,
-						status: bp.nextAppointment ? "scheduled" : "active",
-						procedures: bp.procedures || [],
-						professional: null,
-						...bp
-					});
-					added++;
+		const freshPatients = belleData.map((bp, i) => {
+			let age = bp.age || 30;
+			if (bp.dob) {
+				const birth = new Date(bp.dob);
+				if (!isNaN(birth.getTime())) {
+					const diff = Date.now() - birth.getTime();
+					age = Math.floor(diff / (1e3 * 60 * 60 * 24 * 365.25));
 				}
-			});
-			return next;
+			}
+			return {
+				id: bp.belleId ? String(bp.belleId) : `p-belle-${Date.now()}-${i}`,
+				name: bp.name || "Sem Nome",
+				age,
+				phone: bp.phone || "",
+				dob: bp.dob || "1990-01-01",
+				lastVisit: bp.lastVisit || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+				nextAppointment: bp.nextAppointment || null,
+				status: bp.nextAppointment ? "scheduled" : "active",
+				procedures: bp.procedures || [],
+				professional: bp.professional || null,
+				avatar: bp.avatar || `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
+				cpf: bp.cpf || "",
+				rg: bp.rg || "",
+				profissao: bp.profissao || "",
+				estado_civil: bp.estado_civil || "",
+				email: bp.email || "",
+				endereco: bp.endereco || "",
+				history: bp.history || "",
+				belleId: bp.belleId
+			};
 		});
+		setPatients(freshPatients);
 		return {
-			added,
-			updated
+			added: freshPatients.length,
+			updated: 0
 		};
 	};
 	return (0, import_react.createElement)(PatientContext.Provider, { value: {
@@ -36407,8 +36313,8 @@ function Patients() {
 			return dateString.startsWith(todayStr);
 		};
 		return [...filteredPatients].sort((a, b) => {
-			const aToday = isToday(a.nextAppointment) || isToday(a.lastVisit) ? 1 : 0;
-			const bToday = isToday(b.nextAppointment) || isToday(b.lastVisit) ? 1 : 0;
+			const aToday = isToday(a.nextAppointment) ? 1 : 0;
+			const bToday = isToday(b.nextAppointment) ? 1 : 0;
 			if (aToday !== bToday) return bToday - aToday;
 			return a.name.localeCompare(b.name);
 		});
@@ -36435,23 +36341,18 @@ function Patients() {
 			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento), fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token, void 0, belleSoftware.estabelecimento)]);
 			const result = syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
-			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
+			addLog("Sincronização Completa Belle Software", "SYSTEM");
 			toast({
 				title: "Sincronização Concluída",
-				description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`
+				description: `Foram importados ${result.added} pacientes com sucesso da base do Belle Software.`
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
-			const routeContext = {
-				path: "/pacientes",
-				component: "Patients"
-			};
-			console.error("Diagnostic Context:", JSON.stringify({ currentRoute: routeContext }, null, 2), error);
-			addLog(`Erro na Sincronização - Contexto: ${routeContext.path}`, "SYSTEM");
+			addLog(`Erro na Sincronização`, "SYSTEM");
 			const isNetworkError = error.message === "CORS_NETWORK_ERROR" || error.message === "TIMEOUT_ERROR" || error.message?.includes("Erro de comunicação");
 			toast({
 				title: isNetworkError ? "Erro de Conexão" : "Falha na Sincronização API",
-				description: isNetworkError ? "Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base" : error.message || "Não foi possível completar a requisição ao api.php do Belle.",
+				description: isNetworkError ? "Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor." : error.message || "Não foi possível completar a requisição ao api.php do Belle.",
 				variant: "destructive"
 			});
 		} finally {
@@ -36459,119 +36360,143 @@ function Patients() {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Patients.tsx:134:5",
+		"data-uid": "src/pages/Patients.tsx:126:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-slide-up p-6 lg:p-8",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/pages/Patients.tsx:135:7",
+			"data-uid": "src/pages/Patients.tsx:127:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-end justify-between gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:136:9",
+				"data-uid": "src/pages/Patients.tsx:128:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-					"data-uid": "src/pages/Patients.tsx:137:11",
+					"data-uid": "src/pages/Patients.tsx:129:11",
 					"data-prohibitions": "[]",
 					className: "text-3xl font-serif text-primary tracking-tight",
 					children: "Pacientes"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Patients.tsx:138:11",
+					"data-uid": "src/pages/Patients.tsx:130:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground mt-1",
-					children: "Gestão unificada com integração bidirecional Belle"
+					children: "Base de clientes atualizada via integração com Belle Software"
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Patients.tsx:142:9",
+				"data-uid": "src/pages/Patients.tsx:134:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex items-center gap-3",
 				children: [
 					belleSoftware.lastSync && canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/pages/Patients.tsx:144:13",
+						"data-uid": "src/pages/Patients.tsx:136:13",
 						"data-prohibitions": "[editContent]",
 						className: "hidden sm:flex flex-col items-end mr-1 text-xs",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-uid": "src/pages/Patients.tsx:145:15",
+							"data-uid": "src/pages/Patients.tsx:137:15",
 							"data-prohibitions": "[editContent]",
 							className: `flex items-center gap-1 font-medium ${belleSoftware.lastSyncStatus === "success" ? "text-success" : "text-destructive"}`,
 							children: [belleSoftware.lastSyncStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-								"data-uid": "src/pages/Patients.tsx:151:19",
+								"data-uid": "src/pages/Patients.tsx:143:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-								"data-uid": "src/pages/Patients.tsx:153:19",
+								"data-uid": "src/pages/Patients.tsx:145:19",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}), belleSoftware.lastSyncStatus === "success" ? "Sincronizado" : "Falha na Sync"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/pages/Patients.tsx:157:15",
+							"data-uid": "src/pages/Patients.tsx:149:15",
 							"data-prohibitions": "[editContent]",
 							className: "text-muted-foreground",
 							children: new Date(belleSoftware.lastSync).toLocaleString("pt-BR")
 						})]
 					}),
 					canSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/pages/Patients.tsx:163:13",
+						"data-uid": "src/pages/Patients.tsx:155:13",
 						"data-prohibitions": "[editContent]",
 						variant: "outline",
 						className: "bg-white border-primary/20 text-primary hover:bg-primary/5 min-w-[170px]",
 						onClick: handleSync,
 						disabled: isSyncing,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-							"data-uid": "src/pages/Patients.tsx:169:15",
+							"data-uid": "src/pages/Patients.tsx:161:15",
 							"data-prohibitions": "[editContent]",
 							className: `w-4 h-4 mr-2 ${isSyncing ? "animate-spin" : ""}`
 						}), isSyncing ? "Sincronizando..." : "Sincronizar Belle"]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientDialog, {
-						"data-uid": "src/pages/Patients.tsx:173:11",
+						"data-uid": "src/pages/Patients.tsx:165:11",
 						"data-prohibitions": "[editContent]"
 					})
 				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
-			"data-uid": "src/pages/Patients.tsx:177:7",
+			"data-uid": "src/pages/Patients.tsx:169:7",
 			"data-prohibitions": "[editContent]",
 			className: "border-none shadow-subtle",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-				"data-uid": "src/pages/Patients.tsx:178:9",
+				"data-uid": "src/pages/Patients.tsx:170:9",
 				"data-prohibitions": "[editContent]",
 				className: "p-4 sm:p-6",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/pages/Patients.tsx:179:11",
+					"data-uid": "src/pages/Patients.tsx:171:11",
 					"data-prohibitions": "[]",
 					className: "relative mb-6",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-						"data-uid": "src/pages/Patients.tsx:180:13",
+						"data-uid": "src/pages/Patients.tsx:172:13",
 						"data-prohibitions": "[editContent]",
 						className: "absolute left-3 top-3 h-5 w-5 text-muted-foreground"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-						"data-uid": "src/pages/Patients.tsx:181:13",
+						"data-uid": "src/pages/Patients.tsx:173:13",
 						"data-prohibitions": "[editContent]",
 						placeholder: "Buscar por nome, CPF ou ID do paciente...",
 						className: "pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all",
 						value: searchTerm,
-						onChange: (e) => setSearchTerm(e.target.value)
+						onChange: (e) => setSearchTerm(e.target.value),
+						disabled: isSyncing || patients.length === 0
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/pages/Patients.tsx:189:11",
+					"data-uid": "src/pages/Patients.tsx:182:11",
 					"data-prohibitions": "[editContent]",
 					className: "grid gap-4",
-					children: sortedPatients.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					children: isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/pages/Patients.tsx:184:15",
+						"data-prohibitions": "[]",
+						className: "flex flex-col items-center justify-center py-16 bg-muted/10 rounded-xl border border-dashed border-border animate-pulse",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
+							"data-uid": "src/pages/Patients.tsx:185:17",
+							"data-prohibitions": "[editContent]",
+							className: "w-10 h-10 text-primary animate-spin mb-3 opacity-80"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+							"data-uid": "src/pages/Patients.tsx:186:17",
+							"data-prohibitions": "[]",
+							className: "text-muted-foreground font-medium",
+							children: "Baixando base de clientes completa do Belle Software..."
+						})]
+					}) : sortedPatients.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 						"data-uid": "src/pages/Patients.tsx:191:15",
 						"data-prohibitions": "[editContent]",
 						className: "text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
-							"data-uid": "src/pages/Patients.tsx:192:17",
-							"data-prohibitions": "[editContent]",
-							className: "w-10 h-10 text-muted-foreground/30 mx-auto mb-3"
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-							"data-uid": "src/pages/Patients.tsx:193:17",
-							"data-prohibitions": "[editContent]",
-							className: "text-muted-foreground",
-							children: patients.length === 0 ? "Nenhum paciente encontrado." : "Nenhum paciente encontrado na busca."
-						})]
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Search, {
+								"data-uid": "src/pages/Patients.tsx:192:17",
+								"data-prohibitions": "[editContent]",
+								className: "w-10 h-10 text-muted-foreground/30 mx-auto mb-3"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Patients.tsx:193:17",
+								"data-prohibitions": "[]",
+								className: "text-muted-foreground font-medium text-lg",
+								children: "Nenhum paciente encontrado"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								"data-uid": "src/pages/Patients.tsx:196:17",
+								"data-prohibitions": "[editContent]",
+								className: "text-muted-foreground/80 text-sm mt-1",
+								children: patients.length === 0 ? "A base local está vazia. Clique em \"Sincronizar Belle\" para carregar os dados reais." : "A busca não retornou resultados para o termo digitado."
+							})
+						]
 					}) : sortedPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientCard, {
-						"data-uid": "src/pages/Patients.tsx:200:47",
+						"data-uid": "src/pages/Patients.tsx:203:47",
 						"data-prohibitions": "[editContent]",
 						patient
 					}, patient.id))
@@ -51492,4 +51417,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DatYdCWC.js.map
+//# sourceMappingURL=index-iDcN8DBI.js.map

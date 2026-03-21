@@ -42,14 +42,14 @@ export default function Patients() {
     }
 
     return [...filteredPatients].sort((a, b) => {
-      const aToday = isToday(a.nextAppointment) || isToday(a.lastVisit) ? 1 : 0
-      const bToday = isToday(b.nextAppointment) || isToday(b.lastVisit) ? 1 : 0
+      const aToday = isToday(a.nextAppointment) ? 1 : 0
+      const bToday = isToday(b.nextAppointment) ? 1 : 0
 
       if (aToday !== bToday) {
         return bToday - aToday // Pin today's appointments to the top
       }
 
-      // Fallback: sort alphabetically
+      // Fallback: sort alphabetically (days without appointments will still list the full base)
       return a.name.localeCompare(b.name)
     })
   }, [filteredPatients])
@@ -76,7 +76,7 @@ export default function Patients() {
 
     setIsSyncing(true)
     try {
-      // Fetch both clients and generic appointments via api.php protocol proxy
+      // Fetch entire client database using get_clientes
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
         fetchBelleAgendamentos(
@@ -87,31 +87,23 @@ export default function Patients() {
         ),
       ])
 
-      // Map Belle Data to Local Patient Partial structure with history inference
+      // Map Belle Data to Local Patient structure
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      // Sync and deduplicate by CPF, applying mapped schedules
+      // Purge and replace the store with fresh API data
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
+      addLog('Sincronização Completa Belle Software', 'SYSTEM')
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`,
+        description: `Foram importados ${result.added} pacientes com sucesso da base do Belle Software.`,
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
 
-      // Context Preservation for Diagnostics
-      const routeContext = { path: '/pacientes', component: 'Patients' }
-      console.error(
-        'Diagnostic Context:',
-        JSON.stringify({ currentRoute: routeContext }, null, 2),
-        error,
-      )
-
-      addLog(`Erro na Sincronização - Contexto: ${routeContext.path}`, 'SYSTEM')
+      addLog(`Erro na Sincronização`, 'SYSTEM')
 
       const isNetworkError =
         error.message === 'CORS_NETWORK_ERROR' ||
@@ -121,7 +113,7 @@ export default function Patients() {
       toast({
         title: isNetworkError ? 'Erro de Conexão' : 'Falha na Sincronização API',
         description: isNetworkError
-          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor. Verifique a URL Base'
+          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor.'
           : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
@@ -136,7 +128,7 @@ export default function Patients() {
         <div>
           <h1 className="text-3xl font-serif text-primary tracking-tight">Pacientes</h1>
           <p className="text-muted-foreground mt-1">
-            Gestão unificada com integração bidirecional Belle
+            Base de clientes atualizada via integração com Belle Software
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -183,17 +175,28 @@ export default function Patients() {
               className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={isSyncing || patients.length === 0}
             />
           </div>
 
           <div className="grid gap-4">
-            {sortedPatients.length === 0 ? (
+            {isSyncing ? (
+              <div className="flex flex-col items-center justify-center py-16 bg-muted/10 rounded-xl border border-dashed border-border animate-pulse">
+                <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
+                <p className="text-muted-foreground font-medium">
+                  Baixando base de clientes completa do Belle Software...
+                </p>
+              </div>
+            ) : sortedPatients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
                 <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground font-medium text-lg">
+                  Nenhum paciente encontrado
+                </p>
+                <p className="text-muted-foreground/80 text-sm mt-1">
                   {patients.length === 0
-                    ? 'Nenhum paciente encontrado.'
-                    : 'Nenhum paciente encontrado na busca.'}
+                    ? 'A base local está vazia. Clique em "Sincronizar Belle" para carregar os dados reais.'
+                    : 'A busca não retornou resultados para o termo digitado.'}
                 </p>
               </div>
             ) : (
