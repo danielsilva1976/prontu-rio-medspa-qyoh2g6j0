@@ -12,6 +12,7 @@ export type Patient = Omit<(typeof initialPatients)[0], 'procedures'> & {
   history?: string
   belleId?: string
   procedures: string[]
+  isMock?: boolean
 }
 
 const defaultPatients: Patient[] = initialPatients.map((p, i) => ({
@@ -24,6 +25,7 @@ const defaultPatients: Patient[] = initialPatients.map((p, i) => ({
   estado_civil: 'Solteira',
   email: `paciente${i}@email.com`,
   endereco: 'Rua das Flores, 123 - São Paulo/SP',
+  isMock: true,
 }))
 
 type PatientState = {
@@ -54,7 +56,9 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     let added = 0
     let updated = 0
     setPatients((prev) => {
-      const next = [...prev]
+      // Remove all initial mock examples from the template upon successful sync
+      const next = prev.filter((p) => !p.isMock)
+
       belleData.forEach((bp) => {
         // Strip non-digits for robust CPF comparison to guarantee identity
         const cleanCpf = (c?: string) => c?.replace(/\D/g, '')

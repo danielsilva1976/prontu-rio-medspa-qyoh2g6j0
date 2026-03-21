@@ -10,7 +10,7 @@ import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
-import { fetchBelleClientes, fetchBelleAgendamentos } from '@/lib/api/belle'
+import { fetchBelleClientes, fetchBelleAgendamentos, mapBelleDataToPatients } from '@/lib/api/belle'
 
 export default function Patients() {
   const { patients, syncWithBelle } = usePatientStore()
@@ -56,71 +56,17 @@ export default function Patients() {
     try {
       // Fetch both clients and generic appointments via api.php protocol proxy
       const [rawClientes, rawAgendamentos] = await Promise.all([
-        fetchBelleClientes(belleSoftware.url, belleSoftware.token),
-        fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token),
+        fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
+        fetchBelleAgendamentos(
+          belleSoftware.url,
+          belleSoftware.token,
+          undefined,
+          belleSoftware.estabelecimento,
+        ),
       ])
 
-      const now = new Date()
-
-      const validClientes = Array.isArray(rawClientes) ? rawClientes : []
-      const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : []
-
       // Map Belle Data to Local Patient Partial structure with history inference
-      const mappedData = validClientes.map((c) => {
-        // Find appointments belonging to this specific client
-        const clientAppts = validAgendamentos.filter(
-          (a) =>
-            (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
-            (a.cliente_id && a.cliente_id === c.id),
-        )
-
-        let lastVisit = c.data_nascimento
-          ? new Date(c.data_nascimento).toISOString().split('T')[0]
-          : '2023-01-01'
-        let nextAppointment: string | null = null
-        const procedures = new Set<string>()
-
-        // Calculate last visit, next appointment, and extract procedures gracefully
-        clientAppts.forEach((a) => {
-          if (a.servico) procedures.add(a.servico)
-          if (a.data) {
-            const hora = a.hora_inicio || '00:00'
-            const apptDateStr = `${a.data}T${hora}:00`
-            const apptDate = new Date(apptDateStr)
-
-            if (!isNaN(apptDate.getTime())) {
-              if (apptDate < now) {
-                if (
-                  !lastVisit ||
-                  isNaN(new Date(lastVisit).getTime()) ||
-                  apptDate > new Date(lastVisit)
-                ) {
-                  lastVisit = a.data
-                }
-              } else {
-                if (!nextAppointment || apptDate < new Date(nextAppointment)) {
-                  nextAppointment = apptDateStr
-                }
-              }
-            }
-          }
-        })
-
-        return {
-          belleId: String(c.id),
-          name: c.nome || 'Paciente sem nome',
-          cpf: c.cpf,
-          email: c.email,
-          phone: c.celular,
-          dob: c.data_nascimento,
-          // Infer history data
-          lastVisit,
-          nextAppointment,
-          procedures: Array.from(procedures),
-          // Map history string
-          history: c.historico_clinico || '',
-        }
-      })
+      const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
       // Sync and deduplicate by CPF, applying mapped schedules
       const result = syncWithBelle(mappedData)
@@ -130,7 +76,7 @@ export default function Patients() {
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${result.added} novos pacientes, ${result.updated} atualizados. Agendas vinculadas com sucesso.`,
+        description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
@@ -222,7 +168,11 @@ export default function Patients() {
             {filteredPatients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
                 <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">Nenhum paciente encontrado na busca.</p>
+                <p className="text-muted-foreground">
+                  {patients.length === 0
+                    ? 'Nenhum paciente sincronizado ou cadastrado.'
+                    : 'Nenhum paciente encontrado na busca.'}
+                </p>
               </div>
             ) : (
               filteredPatients.map((patient) => <PatientCard key={patient.id} patient={patient} />)

@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
+import usePatientStore from '@/stores/usePatientStore'
+import useAuditStore from '@/stores/useAuditStore'
 import { cn } from '@/lib/utils'
 import {
   Key,
@@ -19,7 +21,12 @@ import {
   Users,
   AlertCircle,
 } from 'lucide-react'
-import { testBelleConnection } from '@/lib/api/belle'
+import {
+  testBelleConnection,
+  fetchBelleClientes,
+  fetchBelleAgendamentos,
+  mapBelleDataToPatients,
+} from '@/lib/api/belle'
 
 export function IntegrationSettings({
   title,
@@ -29,6 +36,9 @@ export function IntegrationSettings({
   description: string
 }) {
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
+  const { syncWithBelle } = usePatientStore()
+  const { addLog } = useAuditStore()
+
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
@@ -125,14 +135,36 @@ export function IntegrationSettings({
       description: 'Buscando pacientes do Belle Software...',
     })
 
-    setTimeout(() => {
-      setIsSyncing(false)
+    try {
+      const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
+      const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+      const [rawClientes, rawAgendamentos] = await Promise.all([
+        fetchBelleClientes(url, cleanToken, cleanEstab),
+        fetchBelleAgendamentos(url, cleanToken, undefined, cleanEstab),
+      ])
+
+      const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
+      const result = syncWithBelle(mappedData)
+
+      setBelleLastSync('success', new Date().toISOString())
+      addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
+
       toast({
         title: 'Sincronização Concluída',
-        description: 'Pacientes sincronizados com sucesso!',
+        description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
         className: 'bg-green-600 text-white border-none',
       })
-    }, 1500)
+    } catch (error: any) {
+      setBelleLastSync('error', new Date().toISOString())
+      toast({
+        title: 'Falha na Sincronização API',
+        description: error.message || 'Erro desconhecido ao sincronizar.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   const handleSave = () => {
