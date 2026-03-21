@@ -24,25 +24,71 @@ export type Patient = {
 
 type PatientState = {
   patients: Patient[]
+  isSyncing: boolean
+  setIsSyncing: (val: boolean) => void
   addPatient: (patient: Omit<Patient, 'id'>) => void
   updatePatient: (id: string, data: Partial<Patient>) => void
   syncWithBelle: (belleData: Partial<Patient>[]) => { added: number; updated: number }
   clearPatients: () => void
 }
 
+const defaultMockPatients: Patient[] = [
+  {
+    id: 'mock-1',
+    name: 'Ana Clara Silva',
+    age: 32,
+    dob: '1992-05-10',
+    lastVisit: new Date().toISOString().split('T')[0],
+    nextAppointment: null,
+    status: 'active',
+    phone: '(11) 98888-7777',
+    procedures: ['Toxina Botulínica'],
+    professional: 'Dra. Fabíola',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1',
+  },
+  {
+    id: 'mock-2',
+    name: 'Carlos Mendes',
+    age: 45,
+    dob: '1979-11-22',
+    lastVisit: '2023-12-01',
+    nextAppointment: new Date().toISOString().split('T')[0] + 'T14:30:00',
+    status: 'scheduled',
+    phone: '(11) 97777-6666',
+    procedures: ['Preenchimento com Ácido Hialurônico'],
+    professional: 'Dra. Sofia',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=2',
+  },
+  {
+    id: 'mock-3',
+    name: 'Beatriz Costa',
+    age: 28,
+    dob: '1996-03-15',
+    lastVisit: '2024-01-10',
+    nextAppointment: null,
+    status: 'active',
+    phone: '(11) 96666-5555',
+    procedures: ['Peeling Químico'],
+    professional: 'Dra. Fabíola',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3',
+  },
+]
+
 const PatientContext = createContext<PatientState>({} as PatientState)
 
 export const PatientProvider = ({ children }: { children: ReactNode }) => {
+  const [isSyncing, setIsSyncing] = useState(false)
   const [patients, setPatients] = useState<Patient[]>(() => {
     try {
       const saved = localStorage.getItem('@prontuario:patients')
       if (saved) {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        if (parsed && parsed.length > 0) return parsed
       }
     } catch (e) {
       console.error('Failed to parse patients from local storage', e)
     }
-    return []
+    return defaultMockPatients
   })
 
   // Data Persistence: Automatically sync local patient data to localStorage
@@ -106,7 +152,17 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
   return createElement(
     PatientContext.Provider,
-    { value: { patients, addPatient, updatePatient, syncWithBelle, clearPatients } },
+    {
+      value: {
+        patients,
+        isSyncing,
+        setIsSyncing,
+        addPatient,
+        updatePatient,
+        syncWithBelle,
+        clearPatients,
+      },
+    },
     children,
   )
 }

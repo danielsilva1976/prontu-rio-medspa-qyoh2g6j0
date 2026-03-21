@@ -37,14 +37,13 @@ export function IntegrationSettings({
   description: string
 }) {
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
-  const { syncWithBelle } = usePatientStore()
+  const { isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
   const { addLog } = useAuditStore()
 
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
-  const [isSyncing, setIsSyncing] = useState(false)
 
   // Safe state to prevent objects from being injected into the rendering cycle
   const [errorFeedback, setErrorFeedback] = useState<{ message: string; details: string } | null>(
@@ -154,7 +153,10 @@ export function IntegrationSettings({
 
       toast({
         title: 'Falha na Conexão',
-        description: parsedError.details || parsedError.message,
+        description:
+          parsedError.message === 'Ponte de Integração Indisponível'
+            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+            : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -200,7 +202,10 @@ export function IntegrationSettings({
 
       toast({
         title: 'Falha na Sincronização API',
-        description: parsedError.details || parsedError.message,
+        description:
+          parsedError.message === 'Ponte de Integração Indisponível'
+            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+            : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -314,9 +319,17 @@ export function IntegrationSettings({
               className="animate-fade-in text-sm overflow-hidden border-destructive/30"
             >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="font-semibold">{errorFeedback.message}</AlertTitle>
+              <AlertTitle className="font-semibold">
+                {errorFeedback.message === 'Ponte de Integração Indisponível'
+                  ? 'Ponte de Integração Indisponível'
+                  : errorFeedback.message}
+              </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
-                <p className="font-medium text-destructive/90">{errorFeedback.details}</p>
+                <p className="font-medium text-destructive/90">
+                  {errorFeedback.message === 'Ponte de Integração Indisponível'
+                    ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+                    : errorFeedback.details}
+                </p>
                 <div className="pt-2 border-t border-destructive/20">
                   <Button
                     variant="outline"

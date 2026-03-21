@@ -14,14 +14,13 @@ import { PatientCard } from '@/components/patients/PatientCard'
 import { fetchBelleClientes, fetchBelleAgendamentos, mapBelleDataToPatients } from '@/lib/api/belle'
 
 export default function Patients() {
-  const { patients, syncWithBelle } = usePatientStore()
+  const { patients, isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
   const { addLog } = useAuditStore()
   const { currentUser } = useUserStore()
   const { toast } = useToast()
 
   const [searchTerm, setSearchTerm] = useState('')
-  const [isSyncing, setIsSyncing] = useState(false)
 
   // Security Compliance: Only authenticated Admin/Médico can trigger sync
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
@@ -108,7 +107,9 @@ export default function Patients() {
       toast({
         title: 'Falha na Sincronização',
         description:
-          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
+          error.message === 'Ponte de Integração Indisponível'
+            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+            : 'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
         variant: 'destructive',
       })
     } finally {

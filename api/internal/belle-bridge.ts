@@ -26,8 +26,12 @@ export default async function handler(req: any, res: any) {
       bodyStr = req.body
     } else if (req.body instanceof Buffer) {
       bodyStr = req.body.toString('utf-8')
-    } else if (typeof req.body === 'object') {
-      bodyStr = new URLSearchParams(req.body).toString()
+    } else if (typeof req.body === 'object' && req.body !== null) {
+      const p = new URLSearchParams()
+      for (const [k, v] of Object.entries(req.body)) {
+        p.append(k, String(v))
+      }
+      bodyStr = p.toString()
     } else {
       return res.status(400).json({
         error: 'Formato inválido',
@@ -53,11 +57,12 @@ export default async function handler(req: any, res: any) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json, text/plain, */*',
       },
       body: params.toString(),
     })
 
-    const data = await externalResponse.text()
+    const text = await externalResponse.text()
 
     // Forward the exact status and content from Belle Software
     res.status(externalResponse.status)
@@ -65,7 +70,7 @@ export default async function handler(req: any, res: any) {
       'Content-Type',
       externalResponse.headers.get('Content-Type') || 'application/json',
     )
-    return res.send(data)
+    return res.send(text)
   } catch (error: any) {
     return res.status(500).json({
       error: 'Falha no Bridge Interno',

@@ -123,6 +123,14 @@ const belleApiCall = async (
     clearTimeout(timeoutId)
 
     if (!response.ok) {
+      if (response.status === 404 || response.status === 405 || response.status === 502) {
+        throw new BelleApiError({
+          error: 'Ponte de Integração Indisponível',
+          details:
+            'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+        })
+      }
+
       let errPayload: any = {
         error: `Erro ${response.status}`,
         details: 'Falha na ponte de comunicação interna.',
@@ -142,7 +150,11 @@ const belleApiCall = async (
     const text = await response.text()
 
     if (text.trim().startsWith('<')) {
-      throw new Error('Bridge not found (HTML response)')
+      throw new BelleApiError({
+        error: 'Ponte de Integração Indisponível',
+        details:
+          'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+      })
     }
 
     const result = JSON.parse(text)
