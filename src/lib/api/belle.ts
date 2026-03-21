@@ -66,36 +66,40 @@ const belleApiCall = async (
   estabelecimento: string = '1',
 ) => {
   const endpoint = getApiEndpoint(url, path)
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
+  const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  try {
-    const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
-    const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
+  const params = new URLSearchParams()
+  if (cleanToken) params.append('token', cleanToken)
+  if (cleanEstab) params.append('estabelecimento', cleanEstab)
 
-    const params = new URLSearchParams()
-    if (cleanToken) params.append('token', cleanToken)
-    if (cleanEstab) params.append('estabelecimento', cleanEstab)
-
-    if (payload && typeof payload === 'object') {
-      for (const [key, value] of Object.entries(payload)) {
-        params.append(
-          key,
-          typeof value === 'object' ? JSON.stringify(value).trim() : String(value).trim(),
-        )
-      }
+  if (payload && typeof payload === 'object') {
+    for (const [key, value] of Object.entries(payload)) {
+      params.append(
+        key,
+        typeof value === 'object' ? JSON.stringify(value).trim() : String(value).trim(),
+      )
     }
+  }
 
-    const requestBody = params.toString()
+  const requestBody = params.toString()
 
-    // Utilize reliable CORS Proxy to bypass browser restrictions for the Belle API
-    const proxyBaseUrl = import.meta.env.VITE_CORS_PROXY_URL || 'https://corsproxy.org/?'
-    const fetchUrl = `${proxyBaseUrl}${encodeURIComponent(endpoint)}`
+  // Proxies array provides reliable fallbacks to fix CORS / Failed to fetch errors
+  const proxyList = [
+    'https://corsproxy.io/?',
+    import.meta.env.VITE_CORS_PROXY_URL || 'https://corsproxy.org/?',
+    '', // Attempt direct request as a last resort
+  ]
 
-    let response: Response
+  let lastError: any = null
+
+  for (const proxy of proxyList) {
+    const fetchUrl = proxy ? `${proxy}${encodeURIComponent(endpoint)}` : endpoint
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      response = await fetch(fetchUrl, {
+      const response = await fetch(fetchUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -104,93 +108,63 @@ const belleApiCall = async (
         body: requestBody,
         signal: controller.signal,
       })
-    } catch (err: any) {
-      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+
+      clearTimeout(timeoutId)
+
+      const text = await response.text()
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}: ${text.substring(0, 100)}`)
+      }
+
+      const lowerText = text.toLowerCase()
+      if (
+        lowerText.trim().startsWith('<!doctype html>') ||
+        lowerText.trim().startsWith('<html') ||
+        lowerText.includes('<title>login') ||
+        lowerText.includes('user/login')
+      ) {
+        throw new Error('Invalid Response Format (HTML expected JSON)')
+      }
+
+      const result = JSON.parse(text)
+
+      if (result.status === 'erro' || result.status === false || result.error) {
         throw new BelleProxyError({
           url: endpoint,
           method: 'POST',
-          error: 'Proxy Connection Failed',
+          error: result.error || result.mensagem || 'Belle API Error',
           details: ERROR_USER_FRIENDLY,
         })
       }
-      throw err
+
+      return result.data || result.dados || result
+    } catch (err: any) {
+      clearTimeout(timeoutId)
+      lastError = err
+
+      if (err instanceof BelleProxyError) {
+        // Break early if it's a logical API error from Belle (invalid token, etc)
+        throw err
+      }
+
+      console.warn(`[Proxy attempt failed] ${fetchUrl}:`, err.message)
+      continue
     }
-
-    clearTimeout(timeoutId)
-
-    let text = ''
-    try {
-      text = await response.text()
-    } catch (e) {
-      console.error('Failed to read response text', e)
-    }
-
-    if (!response.ok) {
-      logToBugScanner('Failed Belle API Connection', {
-        endpoint,
-        status: response.status,
-        requestBody,
-        responseBody: text,
-      })
-
-      throw new BelleProxyError({
-        url: endpoint,
-        method: 'POST',
-        error: `Status ${response.status}`,
-        details: ERROR_USER_FRIENDLY,
-      })
-    }
-
-    if (!text) return null
-
-    const lowerText = text.toLowerCase()
-    if (
-      lowerText.trim().startsWith('<!doctype html>') ||
-      lowerText.trim().startsWith('<html') ||
-      lowerText.includes('<title>login') ||
-      lowerText.includes('user/login')
-    ) {
-      throw new BelleProxyError({
-        url: endpoint,
-        method: 'POST',
-        error: 'Invalid Response Format',
-        details: ERROR_USER_FRIENDLY,
-      })
-    }
-
-    const result = JSON.parse(text)
-
-    if (result.status === 'erro' || result.status === false || result.error) {
-      throw new BelleProxyError({
-        url: endpoint,
-        method: 'POST',
-        error: 'Belle API Error',
-        details: ERROR_USER_FRIENDLY,
-      })
-    }
-
-    return result.data || result.dados || result
-  } catch (error: any) {
-    clearTimeout(timeoutId)
-
-    if (error.name === 'BelleProxyError') {
-      throw error
-    }
-
-    if (
-      error.name === 'AbortError' ||
-      error.message === 'TIMEOUT_ERROR' ||
-      error.message.includes('Erro de rede')
-    ) {
-      throw new BelleProxyError({
-        url: endpoint,
-        method: 'POST',
-        error: 'Network Timeout',
-        details: ERROR_USER_FRIENDLY,
-      })
-    }
-    throw error
   }
+
+  logToBugScanner('Failed Belle API Connection after all retries', {
+    endpoint,
+    requestBody,
+    lastError: lastError?.message,
+  })
+
+  throw new BelleProxyError({
+    url: endpoint,
+    method: 'POST',
+    error: lastError?.message || 'Proxy Connection Failed',
+    details: ERROR_USER_FRIENDLY,
+  })
 }
 
 export const testBelleConnection = async (
@@ -198,7 +172,8 @@ export const testBelleConnection = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<boolean> => {
-  await belleApiCall(url, token, '/api.php', null, estabelecimento)
+  // Use a low-impact read action to validate credentials reliably
+  await belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento)
   return true
 }
 
@@ -217,9 +192,12 @@ export const fetchBelleAgendamentos = async (
   cpf?: string,
   estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
-  const path = cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : '/api/v1/agendamentos'
-  const data = await belleApiCall(url, token, path, null, estabelecimento)
-  return Array.isArray(data) ? data : data?.agendamentos || []
+  // Align strictly with api.php and POST action payload according to AC
+  const payload: any = { acao: 'get_agendamentos' }
+  if (cpf) payload.cpf = cpf
+
+  const data = await belleApiCall(url, token, '/api.php', payload, estabelecimento)
+  return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
 }
 
 export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) => {

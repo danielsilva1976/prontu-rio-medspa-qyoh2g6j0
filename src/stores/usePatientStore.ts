@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, ReactNode, createElement } from 'react'
+import { useState, useEffect, useContext, createContext, ReactNode, createElement } from 'react'
 
 export type Patient = {
   id: string
@@ -31,11 +31,23 @@ type PatientState = {
 
 const PatientContext = createContext<PatientState>({} as PatientState)
 
-// Emptied initial state to ensure legacy mock data is completely bypassed
-const initialMockPatients: Patient[] = []
-
 export const PatientProvider = ({ children }: { children: ReactNode }) => {
-  const [patients, setPatients] = useState<Patient[]>(initialMockPatients)
+  const [patients, setPatients] = useState<Patient[]>(() => {
+    try {
+      const saved = localStorage.getItem('@prontuario:patients')
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch (e) {
+      console.error('Failed to parse patients from local storage', e)
+    }
+    return []
+  })
+
+  // Data Persistence: Automatically sync local patient data to localStorage
+  useEffect(() => {
+    localStorage.setItem('@prontuario:patients', JSON.stringify(patients))
+  }, [patients])
 
   const addPatient = (patient: Omit<Patient, 'id'>) => {
     const newPatient = {

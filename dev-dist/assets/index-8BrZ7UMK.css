@@ -1694,6 +1694,12 @@ video {
 .border-destructive {
   border-color: hsl(var(--destructive));
 }
+.border-destructive\/20 {
+  border-color: hsl(var(--destructive) / 0.2);
+}
+.border-destructive\/30 {
+  border-color: hsl(var(--destructive) / 0.3);
+}
 .border-destructive\/50 {
   border-color: hsl(var(--destructive) / 0.5);
 }

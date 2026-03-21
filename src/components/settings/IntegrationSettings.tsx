@@ -46,13 +46,14 @@ export function IntegrationSettings({
   const [isTesting, setIsTesting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
+  const [lastAction, setLastAction] = useState<'test' | 'sync' | null>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
   const USER_FRIENDLY_ERROR =
-    'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
+    'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais e tente novamente.'
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -90,6 +91,7 @@ export function IntegrationSettings({
 
     setToken(cleanToken)
     setEstabelecimento(cleanEstab)
+    setLastAction('test')
 
     setIsTesting(true)
     setErrorFeedback(null)
@@ -121,6 +123,7 @@ export function IntegrationSettings({
   }
 
   const handleSyncPatients = async () => {
+    setLastAction('sync')
     setIsSyncing(true)
     setErrorFeedback(null)
     toast({
@@ -138,6 +141,8 @@ export function IntegrationSettings({
       ])
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
+
+      // Perform hard reset of local patient state substituting with API data
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
@@ -145,7 +150,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Total de pacientes sincronizados: ${result.added + result.updated} registros. Dados desatualizados removidos.`,
+        description: `Total de pacientes sincronizados: ${result.added} registros. Dados desatualizados removidos.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -264,11 +269,28 @@ export function IntegrationSettings({
           </div>
 
           {errorFeedback && (
-            <Alert variant="destructive" className="animate-fade-in text-sm overflow-hidden">
+            <Alert
+              variant="destructive"
+              className="animate-fade-in text-sm overflow-hidden border-destructive/30"
+            >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Falha de Comunicação via Proxy</AlertTitle>
+              <AlertTitle className="font-semibold">Falha de Comunicação via Proxy</AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">{errorFeedback}</p>
+                <div className="pt-2 border-t border-destructive/20">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (lastAction === 'sync') handleSyncPatients()
+                      else handleTestConnection()
+                    }}
+                    className="bg-destructive/5 border-destructive/30 hover:bg-destructive/10 text-destructive h-8"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-2" />
+                    Tentar Novamente
+                  </Button>
+                </div>
               </AlertDescription>
             </Alert>
           )}
@@ -280,7 +302,9 @@ export function IntegrationSettings({
             </Button>
             <Button
               onClick={handleTestConnection}
-              disabled={isTesting || !url.trim() || !token.trim() || !estabelecimento.trim()}
+              disabled={
+                isTesting || isSyncing || !url.trim() || !token.trim() || !estabelecimento.trim()
+              }
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]"
             >
               {isTesting ? (
@@ -293,7 +317,7 @@ export function IntegrationSettings({
             {isConnected && (
               <Button
                 onClick={handleSyncPatients}
-                disabled={isSyncing}
+                disabled={isSyncing || isTesting}
                 className="bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl min-w-[160px]"
               >
                 {isSyncing ? (
