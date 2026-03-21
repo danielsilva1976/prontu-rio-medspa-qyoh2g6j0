@@ -45,9 +45,11 @@ export function IntegrationSettings({
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
 
-  const [errorFeedback, setErrorFeedback] = useState<{ message: string; details: string } | null>(
-    null,
-  )
+  const [errorFeedback, setErrorFeedback] = useState<{
+    message: string
+    details: string
+    title?: string
+  } | null>(null)
 
   const [lastAction, setLastAction] = useState<'test' | 'sync' | null>(null)
   const { toast } = useToast()
@@ -55,9 +57,10 @@ export function IntegrationSettings({
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
-  const parseError = (error: any): { message: string; details: string } => {
+  const parseError = (error: any): { message: string; details: string; title?: string } => {
     let message = 'Falha de Comunicação'
     let details = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
+    let title = undefined
 
     try {
       if (!error) return { message, details }
@@ -68,6 +71,9 @@ export function IntegrationSettings({
 
       if (error instanceof Error) {
         message = error.message
+        if ('errorTitle' in error && (error as any).errorTitle) {
+          title = (error as any).errorTitle
+        }
         if ('details' in error && (error as any).details) {
           const d = (error as any).details
           details = typeof d === 'string' ? d : JSON.stringify(d)
@@ -85,7 +91,7 @@ export function IntegrationSettings({
       details = 'Ocorreu um erro inesperado ao processar os detalhes da falha.'
     }
 
-    return { message: String(message), details: String(details) }
+    return { message: String(message), details: String(details), title }
   }
 
   const handleUrlBlur = () => {
@@ -150,8 +156,12 @@ export function IntegrationSettings({
         parsedError.message.toLowerCase().includes('autentica') ||
         parsedError.details.toLowerCase().includes('token')
 
+      const errorTitle = isAuthError
+        ? 'Falha na Autenticação'
+        : parsedError.title || 'Falha na Conexão'
+
       toast({
-        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Conexão',
+        title: errorTitle,
         description: isAuthError
           ? 'Verifique seu Token e Estabelecimento.'
           : parsedError.details || parsedError.message,
@@ -169,12 +179,14 @@ export function IntegrationSettings({
 
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes reais do Belle Software...',
+      description: 'Testando conexão e buscando pacientes...',
     })
 
     try {
       const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
       const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+      await testBelleConnection(url, cleanToken, cleanEstab)
 
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(url, cleanToken, cleanEstab),
@@ -202,8 +214,12 @@ export function IntegrationSettings({
         parsedError.message.toLowerCase().includes('autentica') ||
         parsedError.details.toLowerCase().includes('token')
 
+      const errorTitle = isAuthError
+        ? 'Falha na Autenticação'
+        : parsedError.title || 'Falha na Sincronização'
+
       toast({
-        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização',
+        title: errorTitle,
         description: isAuthError
           ? 'Verifique seu Token e Estabelecimento.'
           : parsedError.details || parsedError.message,
@@ -324,7 +340,7 @@ export function IntegrationSettings({
                 {errorFeedback.message.toLowerCase().includes('autentica') ||
                 errorFeedback.details.toLowerCase().includes('token')
                   ? 'Falha na Autenticação'
-                  : errorFeedback.message}
+                  : errorFeedback.title || errorFeedback.message}
               </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">{errorFeedback.details}</p>

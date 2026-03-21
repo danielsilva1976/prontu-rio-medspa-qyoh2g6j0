@@ -28,6 +28,7 @@ export interface BelleAgendamento {
 
 export class BelleApiError extends Error {
   public details: string
+  public errorTitle: string
 
   constructor(payload: any) {
     let message = 'Erro de API'
@@ -55,6 +56,7 @@ export class BelleApiError extends Error {
 
     super(message)
     this.name = 'BelleApiError'
+    this.errorTitle = message
     this.details = String(detailsStr)
   }
 }
@@ -115,85 +117,54 @@ const belleApiCall = async (
     const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      let response: Response | undefined
-      let usedFallback = false
+      const proxyParams = new URLSearchParams(params.toString())
+      proxyParams.append('target_url', targetEndpoint)
 
-      // Primary attempt: Internal proxy (bypassing CORS safely)
-      try {
-        const proxyParams = new URLSearchParams(params.toString())
-        proxyParams.append('target_url', targetEndpoint)
-
-        response = await fetch('/api/internal/belle-bridge', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: proxyParams.toString(),
-          signal: controller.signal,
-        })
-
-        // If internal bridge throws HTTP 405 (Nginx block), 404, or 502, we seamlessly failover
-        if (!response.ok && [404, 405, 502, 500].includes(response.status)) {
-          usedFallback = true
-        }
-      } catch (err) {
-        usedFallback = true
-      }
-
-      // Fallback Strategy: Resilient External Proxy -> Direct Connection
-      if (usedFallback) {
-        console.warn('Internal bridge unavailable. Initiating proxy failover mechanism...')
-        try {
-          response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetEndpoint)}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              Accept: 'application/json, text/plain, */*',
-            },
-            body: params.toString(),
-            signal: controller.signal,
-          })
-        } catch (fallbackErr) {
-          response = await fetch(targetEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              Accept: 'application/json, text/plain, */*',
-            },
-            body: params.toString(),
-            signal: controller.signal,
-          })
-        }
-      }
+      const response = await fetch('/api/internal/belle-bridge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json, text/plain, */*',
+        },
+        body: proxyParams.toString(),
+        signal: controller.signal,
+      })
 
       clearTimeout(timeoutId)
 
-      if (!response) {
-        throw new Error('Falha de rede')
-      }
-
       if (!response.ok) {
-        if (response.status >= 500 && attempt < retries) {
+        if (response.status >= 500 && response.status !== 502 && attempt < retries) {
           await sleep(1000 * attempt)
           continue
         }
 
         let errPayload: any = {
           error: `Erro HTTP ${response.status}`,
-          details: 'Falha na comunicação com a API.',
+          details: `Falha na comunicação com a API (Status: ${response.status}).`,
         }
 
-        try {
-          const text = await response.text()
-          if (text) {
-            errPayload.details = text
-            if (text.trim().startsWith('{')) {
+        if (response.status === 405) {
+          errPayload.error = 'Erro de Conexão (405)'
+          errPayload.details =
+            'Ponte de Integração Indisponível: O servidor bloqueou a requisição (Method Not Allowed).'
+        } else if (response.status === 404) {
+          errPayload.error = 'Erro de Conexão (404)'
+          errPayload.details = 'Ponte de Integração Indisponível: Rota não encontrada no servidor.'
+        } else if (response.status === 502) {
+          errPayload.error = 'Erro de Conexão (502)'
+          errPayload.details = 'Bad Gateway: Falha no proxy do servidor.'
+        } else {
+          try {
+            const text = await response.text()
+            if (text && text.trim().startsWith('{')) {
               const parsed = JSON.parse(text)
               errPayload = { ...errPayload, ...parsed }
+            } else if (text) {
+              errPayload.details = text
             }
+          } catch (e) {
+            // Ignore JSON parse errors on failure
           }
-        } catch (e) {
-          // Ignore JSON parse errors on failure
         }
 
         throw new BelleApiError(errPayload)
@@ -249,7 +220,7 @@ const belleApiCall = async (
         throw new BelleApiError({
           error: 'Falha de Conexão',
           details:
-            'Não foi possível conectar à API. Verifique sua conexão com a internet, proxy de rede ou se o servidor do Belle Software está disponível.',
+            'Não foi possível conectar à ponte de integração. Verifique sua conexão com a internet.',
         })
       }
 

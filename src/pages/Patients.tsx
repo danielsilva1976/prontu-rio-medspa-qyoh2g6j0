@@ -11,7 +11,12 @@ import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
-import { fetchBelleClientes, fetchBelleAgendamentos, mapBelleDataToPatients } from '@/lib/api/belle'
+import {
+  testBelleConnection,
+  fetchBelleClientes,
+  fetchBelleAgendamentos,
+  mapBelleDataToPatients,
+} from '@/lib/api/belle'
 
 export default function Patients() {
   const { patients, isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
@@ -78,6 +83,12 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
+      await testBelleConnection(
+        belleSoftware.url,
+        belleSoftware.token,
+        belleSoftware.estabelecimento,
+      )
+
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
         fetchBelleAgendamentos(
@@ -107,16 +118,19 @@ export default function Patients() {
         error.message?.toLowerCase().includes('autentica') ||
         error.details?.toLowerCase().includes('token')
 
+      const errorTitle =
+        error.errorTitle || (isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização')
+
       const displayError = isAuthError
         ? 'Falha na Autenticação: Verifique seu Token nas Configurações.'
         : error.details ||
           error.message ||
           'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
 
-      setErrorMsg(displayError)
+      setErrorMsg(`${errorTitle}: ${displayError}`)
 
       toast({
-        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização',
+        title: errorTitle,
         description: displayError,
         variant: 'destructive',
       })

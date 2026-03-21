@@ -87,3 +87,4 @@ export default async function handler(req: Request) {
 
 export const POST = handler
 export const OPTIONS = handler
+export const GET = handler
