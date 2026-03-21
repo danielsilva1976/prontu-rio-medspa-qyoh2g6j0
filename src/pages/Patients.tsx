@@ -115,14 +115,14 @@ export default function Patients() {
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      const result = syncWithBelle(mappedData)
+      syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
       addLog('Sincronização Completa Belle Software via Proxy', 'SYSTEM')
 
       toast({
-        title: 'Sincronização Concluída',
-        description: `Foram importados ${result.added} pacientes reais com sucesso.`,
+        title: 'Sucesso',
+        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())

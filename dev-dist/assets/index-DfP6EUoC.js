@@ -25264,7 +25264,7 @@ var PatientProvider = ({ children }) => {
 				dob: bp.dob || "1990-01-01",
 				lastVisit: bp.lastVisit || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 				nextAppointment: bp.nextAppointment || null,
-				status: bp.nextAppointment ? "scheduled" : "active",
+				status: bp.status || (bp.nextAppointment ? "scheduled" : "active"),
 				procedures: bp.procedures || [],
 				professional: bp.professional || null,
 				avatar: bp.avatar || `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
@@ -37201,15 +37201,18 @@ function PatientCard({ patient }) {
 var BelleApiError = class extends Error {
 	details;
 	errorTitle;
+	status;
 	constructor(payload) {
 		let message = "Erro de API";
 		let detailsStr = "Falha na comunicação com o servidor.";
+		let status = void 0;
 		try {
 			if (typeof payload === "string") {
 				message = payload;
 				detailsStr = payload;
 			} else if (payload && typeof payload === "object") {
 				message = String(payload.error || payload.message || message);
+				status = payload.status;
 				if (typeof payload.details === "string") detailsStr = payload.details;
 				else if (payload.details && typeof payload.details === "object") detailsStr = JSON.stringify(payload.details);
 				else if (!payload.details && payload.error) detailsStr = typeof payload.error === "string" ? payload.error : JSON.stringify(payload.error);
@@ -37221,6 +37224,7 @@ var BelleApiError = class extends Error {
 		this.name = "BelleApiError";
 		this.errorTitle = message;
 		this.details = String(detailsStr);
+		this.status = status;
 	}
 };
 var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -37241,21 +37245,20 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 	if (cleanToken) params.append("token", cleanToken);
 	if (cleanEstab) params.append("estabelecimento", cleanEstab);
 	if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
+	params.append("target_url", targetEndpoint);
 	let attempt = 0;
 	while (attempt < retries) {
 		attempt++;
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 15e3);
 		try {
-			const proxyParams = new URLSearchParams(params.toString());
-			proxyParams.append("target_url", targetEndpoint);
 			const response = await fetch("/api/internal/belle-bridge", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
 					Accept: "application/json, text/plain, */*"
 				},
-				body: proxyParams.toString(),
+				body: params.toString(),
 				signal: controller.signal
 			});
 			clearTimeout(timeoutId);
@@ -37266,11 +37269,18 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 				}
 				let errPayload = {
 					error: `Erro HTTP ${response.status}`,
-					details: `Falha na comunicação com a API (Status: ${response.status}).`
+					details: `Falha na comunicação com a API (Status: ${response.status}).`,
+					status: response.status
 				};
-				if (response.status === 405 || response.status === 404 || response.status === 502) {
-					errPayload.error = "Ponte de Integração Indisponível";
-					errPayload.details = "Ponte de Integração Indisponível - Erro de conexão com o servidor.";
+				if (response.status === 405) {
+					errPayload.error = "Method Not Allowed (405)";
+					errPayload.details = `A requisição POST foi recusada pela URL de destino (${targetEndpoint}). Verifique se a URL base está correta e se o servidor aceita POST. Um redirecionamento forçado no servidor pode estar bloqueando a conexão.`;
+				} else if (response.status === 404) {
+					errPayload.error = "Endpoint Não Encontrado (404)";
+					errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`;
+				} else if (response.status === 502) {
+					errPayload.error = "Bad Gateway (502)";
+					errPayload.details = `A ponte de integração não obteve resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`;
 				} else try {
 					const text = await response.text();
 					if (text && text.trim().startsWith("{")) {
@@ -37279,7 +37289,7 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 							...errPayload,
 							...parsed
 						};
-					} else if (text) errPayload.details = text;
+					} else if (text) errPayload.details = `Status ${response.status}: ${text}`;
 				} catch (e) {}
 				throw new BelleApiError(errPayload);
 			}
@@ -37290,8 +37300,8 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 					continue;
 				}
 				throw new BelleApiError({
-					error: "Ponte de Integração Indisponível",
-					details: "Ponte de Integração Indisponível - Erro de conexão com o servidor."
+					error: "Resposta HTML Inesperada",
+					details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`
 				});
 			}
 			let result;
@@ -37305,13 +37315,13 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 			}
 			if (result.status === "erro" || result.status === false || result.error) {
 				const errMsg = String(result.error || result.mensagem || "").toLowerCase();
-				if (errMsg.includes("token") || errMsg.includes("autentica") || errMsg.includes("estabelecimento")) throw new BelleApiError({
-					error: "Falha na Autenticação",
+				if (errMsg.includes("token") || errMsg.includes("autentica") || errMsg.includes("estabelecimento") || errMsg.includes("não autorizado")) throw new BelleApiError({
+					error: "Erro de Autenticação",
 					details: "Falha na Autenticação - Verifique seu Token e ID do Estabelecimento."
 				});
 				throw new BelleApiError({
-					error: result.error || result.mensagem || "Falha na Autenticação",
-					details: result.details || result.mensagem || "Ocorreu um erro na requisição."
+					error: result.error || result.mensagem || "Erro na API",
+					details: result.details || result.mensagem || "A API retornou um erro estrutural."
 				});
 			}
 			return result.data || result.dados || result;
@@ -37323,8 +37333,8 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 					continue;
 				}
 				throw new BelleApiError({
-					error: "Ponte de Integração Indisponível",
-					details: "Ponte de Integração Indisponível - Erro de conexão com o servidor."
+					error: "Erro de Conexão",
+					details: "Não foi possível conectar à ponte de integração. Verifique sua rede."
 				});
 			}
 			if (err instanceof BelleApiError) throw err;
@@ -37376,6 +37386,10 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 				}
 			}
 		});
+		let mappedStatus = nextAppointment ? "scheduled" : "active";
+		const rawStatus = String(c.status || c.situacao || "").toLowerCase();
+		if (rawStatus === "inativo") mappedStatus = "inactive";
+		else if (rawStatus === "ativo" && !nextAppointment) mappedStatus = "active";
 		return {
 			belleId: belleIdStr,
 			name: (c.nome || "").trim() || "Paciente sem nome",
@@ -37390,7 +37404,8 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 			rg: c.rg || "",
 			profissao: c.profissao || "",
 			estado_civil: c.estado_civil || "",
-			endereco: c.endereco || ""
+			endereco: c.endereco || "",
+			status: mappedStatus
 		};
 	});
 };
@@ -37450,12 +37465,12 @@ function Patients() {
 		try {
 			await testBelleConnection(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento);
 			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento), fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token, void 0, belleSoftware.estabelecimento)]);
-			const result = syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
+			syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
 			addLog("Sincronização Completa Belle Software via Proxy", "SYSTEM");
 			toast({
-				title: "Sincronização Concluída",
-				description: `Foram importados ${result.added} pacientes reais com sucesso.`
+				title: "Sucesso",
+				description: "Conexão estabelecida e dados sincronizados com sucesso."
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
@@ -50643,8 +50658,8 @@ function IntegrationSettings({ title, description }) {
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
 			setErrorFeedback(null);
 			toast({
-				title: "Conexão estabelecida com sucesso",
-				description: "Conexão validada com sucesso com a API do Belle Software!",
+				title: "Sucesso",
+				description: "Conexão estabelecida e dados sincronizados com sucesso.",
 				className: "bg-green-600 text-white border-none"
 			});
 		} catch (error) {
@@ -50673,12 +50688,12 @@ function IntegrationSettings({ title, description }) {
 			const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "");
 			await testBelleConnection(url, cleanToken, cleanEstab);
 			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(url, cleanToken, cleanEstab), fetchBelleAgendamentos(url, cleanToken, void 0, cleanEstab)]);
-			const result = syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
+			syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
 			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
 			toast({
-				title: "Sincronização concluída com sucesso",
-				description: `Total de pacientes sincronizados: ${result.added} registros reais.`,
+				title: "Sucesso",
+				description: "Conexão estabelecida e dados sincronizados com sucesso.",
 				className: "bg-green-600 text-white border-none"
 			});
 		} catch (error) {
@@ -51606,4 +51621,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-B98MRPp0.js.map
+//# sourceMappingURL=index-DfP6EUoC.js.map

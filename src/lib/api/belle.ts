@@ -12,6 +12,8 @@ export interface BelleCliente {
   profissao?: string
   estado_civil?: string
   endereco?: string
+  status?: string
+  situacao?: string
 }
 
 export interface BelleAgendamento {
@@ -29,10 +31,12 @@ export interface BelleAgendamento {
 export class BelleApiError extends Error {
   public details: string
   public errorTitle: string
+  public status?: number
 
   constructor(payload: any) {
     let message = 'Erro de API'
     let detailsStr = 'Falha na comunicação com o servidor.'
+    let status = undefined
 
     try {
       if (typeof payload === 'string') {
@@ -40,6 +44,7 @@ export class BelleApiError extends Error {
         detailsStr = payload
       } else if (payload && typeof payload === 'object') {
         message = String(payload.error || payload.message || message)
+        status = payload.status
 
         if (typeof payload.details === 'string') {
           detailsStr = payload.details
@@ -58,6 +63,7 @@ export class BelleApiError extends Error {
     this.name = 'BelleApiError'
     this.errorTitle = message
     this.details = String(detailsStr)
+    this.status = status
   }
 }
 
@@ -79,7 +85,6 @@ const getApiEndpoint = (url: string, path: string) => {
   }
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`
-  // Ensure we don't have trailing slashes which often cause 301 to GET and then 405 Method Not Allowed
   return `${cleanUrl}${cleanPath}`.replace(/\/$/, '')
 }
 
@@ -108,6 +113,9 @@ const belleApiCall = async (
     }
   }
 
+  // Enforce correct required structure
+  params.append('target_url', targetEndpoint)
+
   let attempt = 0
   while (attempt < retries) {
     attempt++
@@ -115,16 +123,13 @@ const belleApiCall = async (
     const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      const proxyParams = new URLSearchParams(params.toString())
-      proxyParams.append('target_url', targetEndpoint)
-
       const response = await fetch('/api/internal/belle-bridge', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           Accept: 'application/json, text/plain, */*',
         },
-        body: proxyParams.toString(),
+        body: params.toString(),
         signal: controller.signal,
       })
 
@@ -139,11 +144,18 @@ const belleApiCall = async (
         let errPayload: any = {
           error: `Erro HTTP ${response.status}`,
           details: `Falha na comunicação com a API (Status: ${response.status}).`,
+          status: response.status,
         }
 
-        if (response.status === 405 || response.status === 404 || response.status === 502) {
-          errPayload.error = 'Ponte de Integração Indisponível'
-          errPayload.details = 'Ponte de Integração Indisponível - Erro de conexão com o servidor.'
+        if (response.status === 405) {
+          errPayload.error = 'Method Not Allowed (405)'
+          errPayload.details = `A requisição POST foi recusada pela URL de destino (${targetEndpoint}). Verifique se a URL base está correta e se o servidor aceita POST. Um redirecionamento forçado no servidor pode estar bloqueando a conexão.`
+        } else if (response.status === 404) {
+          errPayload.error = 'Endpoint Não Encontrado (404)'
+          errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`
+        } else if (response.status === 502) {
+          errPayload.error = 'Bad Gateway (502)'
+          errPayload.details = `A ponte de integração não obteve resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`
         } else {
           try {
             const text = await response.text()
@@ -151,10 +163,10 @@ const belleApiCall = async (
               const parsed = JSON.parse(text)
               errPayload = { ...errPayload, ...parsed }
             } else if (text) {
-              errPayload.details = text
+              errPayload.details = `Status ${response.status}: ${text}`
             }
           } catch (e) {
-            // Ignore JSON parse errors on failure
+            // Ignore parse errors
           }
         }
 
@@ -169,8 +181,8 @@ const belleApiCall = async (
           continue
         }
         throw new BelleApiError({
-          error: 'Ponte de Integração Indisponível',
-          details: 'Ponte de Integração Indisponível - Erro de conexão com o servidor.',
+          error: 'Resposta HTML Inesperada',
+          details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
         })
       }
 
@@ -189,18 +201,19 @@ const belleApiCall = async (
         const isAuth =
           errMsg.includes('token') ||
           errMsg.includes('autentica') ||
-          errMsg.includes('estabelecimento')
+          errMsg.includes('estabelecimento') ||
+          errMsg.includes('não autorizado')
 
         if (isAuth) {
           throw new BelleApiError({
-            error: 'Falha na Autenticação',
+            error: 'Erro de Autenticação',
             details: 'Falha na Autenticação - Verifique seu Token e ID do Estabelecimento.',
           })
         }
 
         throw new BelleApiError({
-          error: result.error || result.mensagem || 'Falha na Autenticação',
-          details: result.details || result.mensagem || 'Ocorreu um erro na requisição.',
+          error: result.error || result.mensagem || 'Erro na API',
+          details: result.details || result.mensagem || 'A API retornou um erro estrutural.',
         })
       }
 
@@ -221,8 +234,8 @@ const belleApiCall = async (
         }
 
         throw new BelleApiError({
-          error: 'Ponte de Integração Indisponível',
-          details: 'Ponte de Integração Indisponível - Erro de conexão com o servidor.',
+          error: 'Erro de Conexão',
+          details: 'Não foi possível conectar à ponte de integração. Verifique sua rede.',
         })
       }
 
@@ -318,6 +331,15 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       }
     })
 
+    let mappedStatus = nextAppointment ? 'scheduled' : 'active'
+    const rawStatus = String(c.status || c.situacao || '').toLowerCase()
+
+    if (rawStatus === 'inativo') {
+      mappedStatus = 'inactive'
+    } else if (rawStatus === 'ativo' && !nextAppointment) {
+      mappedStatus = 'active'
+    }
+
     return {
       belleId: belleIdStr,
       name: (c.nome || '').trim() || 'Paciente sem nome',
@@ -333,6 +355,7 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       profissao: c.profissao || '',
       estado_civil: c.estado_civil || '',
       endereco: c.endereco || '',
+      status: mappedStatus,
     }
   })
 }

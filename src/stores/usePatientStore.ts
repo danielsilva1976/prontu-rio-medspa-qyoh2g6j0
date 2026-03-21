@@ -95,7 +95,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         dob: bp.dob || '1990-01-01',
         lastVisit: bp.lastVisit || new Date().toISOString().split('T')[0],
         nextAppointment: bp.nextAppointment || null,
-        status: bp.nextAppointment ? 'scheduled' : 'active',
+        status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
         procedures: bp.procedures || [],
         professional: bp.professional || null,
         avatar:

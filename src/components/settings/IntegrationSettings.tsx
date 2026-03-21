@@ -143,8 +143,8 @@ export function IntegrationSettings({
       setErrorFeedback(null)
 
       toast({
-        title: 'Conexão estabelecida com sucesso',
-        description: 'Conexão validada com sucesso com a API do Belle Software!',
+        title: 'Sucesso',
+        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -185,14 +185,14 @@ export function IntegrationSettings({
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      const result = syncWithBelle(mappedData)
+      syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
       addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
 
       toast({
-        title: 'Sincronização concluída com sucesso',
-        description: `Total de pacientes sincronizados: ${result.added} registros reais.`,
+        title: 'Sucesso',
+        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
