@@ -36055,70 +36055,6 @@ var BelleProxyError = class extends Error {
 		this.details = details;
 	}
 };
-var getLocalTodayStr = () => {
-	const d = /* @__PURE__ */ new Date();
-	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
-var mockClientes = [
-	{
-		codigo: 101,
-		nome: "Ana Souza (Belle)",
-		cpf: "333.444.555-66",
-		email: "ana@bellesoftware.com",
-		celular: "(11) 98888-7777",
-		data_nascimento: "1990-05-20",
-		historico_clinico: "Paciente com histórico de melasma."
-	},
-	{
-		codigo: 102,
-		nome: "Isabella Rodrigues (Atualizada)",
-		cpf: "123.456.789-00",
-		email: "isa@email.com",
-		celular: "(11) 98765-4321",
-		data_nascimento: "1989-05-12",
-		historico_clinico: "Alergia a dipirona relatada na última consulta."
-	},
-	{
-		codigo: 103,
-		nome: "Carlos Silva (Belle)",
-		cpf: "111.222.333-44",
-		email: "carlos@bellesoftware.com",
-		celular: "(11) 97777-6666",
-		data_nascimento: "1985-08-15"
-	}
-];
-var mockAgendamentos = [
-	{
-		id: 1001,
-		cliente_id: 101,
-		cpf_cliente: "333.444.555-66",
-		data: getLocalTodayStr(),
-		hora_inicio: "14:00",
-		servico: "Toxina Botulínica - Terço Superior",
-		profissional: "Dra. Fabíola Kleinert",
-		status: "Atendido"
-	},
-	{
-		id: 1002,
-		cliente_id: 101,
-		cpf_cliente: "333.444.555-66",
-		data: (/* @__PURE__ */ new Date(Date.now() - 720 * 60 * 60 * 1e3)).toISOString().split("T")[0],
-		hora_inicio: "10:00",
-		servico: "Avaliação Facial",
-		profissional: "Dra. Fabíola Kleinert",
-		status: "Atendido"
-	},
-	{
-		id: 1003,
-		cliente_id: 103,
-		cpf_cliente: "111.222.333-44",
-		data: new Date(Date.now() + 360 * 60 * 60 * 1e3).toISOString().split("T")[0],
-		hora_inicio: "16:30",
-		servico: "Retorno Pós-Procedimento",
-		profissional: "Dra. Sofia Mendes",
-		status: "Agendado"
-	}
-];
 var ERROR_INVALID_TOKEN = "Falha na conexão: token de autenticação invalido. Verifique dados no Belle software";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
@@ -36145,27 +36081,25 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 		if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
 		const requestBody = params.toString();
 		let response;
-		await new Promise((resolve) => setTimeout(resolve, 800));
-		if (cleanToken === "fail" || url.includes("fail")) throw new BelleProxyError({
-			url: endpoint,
-			method: "POST",
-			error: "Failed to fetch",
-			details: "Verifique a URL ou se o servidor bloqueou a requisição (CORS/IP)"
-		});
-		else if (cleanToken === "403") response = new Response(JSON.stringify({ mensagem: "Permissões insuficientes para este token ou IP bloqueado na whitelist do Belle Software." }), { status: 403 });
-		else if (cleanToken === "wrong" || cleanToken === "invalido") response = new Response(JSON.stringify({ mensagem: "Token de autenticação inválido." }), { status: 401 });
-		else if (path.includes("/pacientes") || requestBody.includes("get_clientes")) response = new Response(JSON.stringify({
-			status: true,
-			data: mockClientes
-		}), { status: 200 });
-		else if (path.includes("/agendamentos")) response = new Response(JSON.stringify({
-			status: true,
-			data: mockAgendamentos
-		}), { status: 200 });
-		else response = new Response(JSON.stringify({
-			status: true,
-			data: { success: true }
-		}), { status: 200 });
+		try {
+			response = await fetch(endpoint, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					Accept: "application/json"
+				},
+				body: requestBody,
+				signal: controller.signal
+			});
+		} catch (err) {
+			if (err.name === "TypeError" && err.message === "Failed to fetch") throw new BelleProxyError({
+				url: endpoint,
+				method: "POST",
+				error: "Failed to fetch",
+				details: "Erro de CORS ou rede. A API do Belle Software exige um Proxy configurado para acesso via navegador."
+			});
+			throw err;
+		}
 		clearTimeout(timeoutId);
 		let text = "";
 		try {
@@ -36250,11 +36184,11 @@ var testBelleConnection = async (url, token, estabelecimento = "1") => {
 };
 var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
-	return Array.isArray(data) ? data : data.pacientes || data.clientes || data.dados || [];
+	return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || [];
 };
 var fetchBelleAgendamentos = async (url, token, cpf, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : "/api/v1/agendamentos", null, estabelecimento);
-	return Array.isArray(data) ? data : data.agendamentos || [];
+	return Array.isArray(data) ? data : data?.agendamentos || [];
 };
 var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 	const now = /* @__PURE__ */ new Date();
@@ -51417,4 +51351,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-iDcN8DBI.js.map
+//# sourceMappingURL=index-BJnkXX6W.js.map
