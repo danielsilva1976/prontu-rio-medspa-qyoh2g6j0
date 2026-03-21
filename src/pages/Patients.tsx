@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -31,6 +31,28 @@ export default function Patients() {
       p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.cpf && p.cpf.includes(searchTerm)),
   )
+
+  const sortedPatients = useMemo(() => {
+    const today = new Date()
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+    const isToday = (dateString?: string | null) => {
+      if (!dateString) return false
+      return dateString.startsWith(todayStr)
+    }
+
+    return [...filteredPatients].sort((a, b) => {
+      const aToday = isToday(a.nextAppointment) || isToday(a.lastVisit) ? 1 : 0
+      const bToday = isToday(b.nextAppointment) || isToday(b.lastVisit) ? 1 : 0
+
+      if (aToday !== bToday) {
+        return bToday - aToday // Pin today's appointments to the top
+      }
+
+      // Fallback: sort alphabetically
+      return a.name.localeCompare(b.name)
+    })
+  }, [filteredPatients])
 
   const handleSync = async () => {
     if (!canSync) {
@@ -165,7 +187,7 @@ export default function Patients() {
           </div>
 
           <div className="grid gap-4">
-            {filteredPatients.length === 0 ? (
+            {sortedPatients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
                 <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground">
@@ -175,7 +197,7 @@ export default function Patients() {
                 </p>
               </div>
             ) : (
-              filteredPatients.map((patient) => <PatientCard key={patient.id} patient={patient} />)
+              sortedPatients.map((patient) => <PatientCard key={patient.id} patient={patient} />)
             )}
           </div>
         </CardContent>

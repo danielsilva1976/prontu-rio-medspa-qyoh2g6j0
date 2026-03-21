@@ -32,6 +32,11 @@ export class BelleProxyError extends Error {
   }
 }
 
+const getLocalTodayStr = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 const mockClientes: BelleCliente[] = [
   {
     codigo: 101,
@@ -66,7 +71,7 @@ const mockAgendamentos: BelleAgendamento[] = [
     id: 1001,
     cliente_id: 101,
     cpf_cliente: '333.444.555-66',
-    data: new Date().toISOString().split('T')[0],
+    data: getLocalTodayStr(),
     hora_inicio: '14:00',
     servico: 'Toxina Botulínica - Terço Superior',
     profissional: 'Dra. Fabíola Kleinert',

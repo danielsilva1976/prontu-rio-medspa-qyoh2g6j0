@@ -4,8 +4,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Calendar, Clock, FileText, Plus, Edit2 } from 'lucide-react'
 import { PatientDialog } from './PatientDialog'
 import { Patient } from '@/stores/usePatientStore'
+import { Badge } from '@/components/ui/badge'
 
 export function PatientCard({ patient }: { patient: Patient }) {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  const hasApptToday =
+    (patient.nextAppointment && patient.nextAppointment.startsWith(todayStr)) ||
+    (patient.lastVisit && patient.lastVisit.startsWith(todayStr))
+
   return (
     <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-4 border rounded-xl hover:border-primary/40 hover:shadow-subtle transition-all bg-white group gap-4">
       <div className="flex items-center gap-4 w-full xl:w-auto">
@@ -20,6 +28,14 @@ export function PatientCard({ patient }: { patient: Patient }) {
             <h3 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
               {patient.name}
             </h3>
+            {hasApptToday && (
+              <Badge
+                variant="outline"
+                className="bg-primary/10 text-primary border-primary/20 text-[10px] px-2 py-0 h-5"
+              >
+                Hoje
+              </Badge>
+            )}
             <PatientDialog
               patient={patient}
               trigger={
