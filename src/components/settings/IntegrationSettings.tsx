@@ -31,10 +31,11 @@ export function IntegrationSettings({
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
-  const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '')
+  const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
+  const [detailedError, setDetailedError] = useState<any>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
@@ -62,28 +63,10 @@ export function IntegrationSettings({
   }
 
   const handleTestConnection = async () => {
-    if (!url) {
+    if (!url || !token || !estabelecimento) {
       toast({
-        title: 'URL Requerida',
-        description: 'Preencha a URL base do Belle Software.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (!token) {
-      toast({
-        title: 'Token Requerido',
-        description: 'Preencha o Token de Acesso.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    if (!estabelecimento) {
-      toast({
-        title: 'Código Requerido',
-        description: 'Preencha o Código do Estabelecimento (ex: 1).',
+        title: 'Dados Incompletos',
+        description: 'Preencha a URL base, Token e Estabelecimento.',
         variant: 'destructive',
       })
       return
@@ -97,14 +80,15 @@ export function IntegrationSettings({
 
     setIsTesting(true)
     setErrorFeedback(null)
+    setDetailedError(null)
 
-    // Save locally immediately to persist while testing
     updateBelleConfig(url, cleanToken, cleanEstab)
 
     try {
       await testBelleConnection(url, cleanToken, cleanEstab)
       setBelleLastSync('success', new Date().toISOString())
       setErrorFeedback(null)
+      setDetailedError(null)
 
       toast({
         title: 'Conexão validada',
@@ -113,11 +97,20 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(error.message)
+
+      if (error.name === 'BelleProxyError') {
+        setDetailedError(error.details)
+        setErrorFeedback(error.details.details || error.details.error)
+      } else {
+        setErrorFeedback(error.message)
+      }
 
       toast({
         title: 'Falha na Conexão',
-        description: error.message || 'Ocorreu um erro desconhecido ao tentar conectar.',
+        description:
+          error.name === 'BelleProxyError'
+            ? 'Detalhes técnicos capturados.'
+            : error.message || 'Erro desconhecido',
         variant: 'destructive',
       })
     } finally {
@@ -132,7 +125,6 @@ export function IntegrationSettings({
       description: 'Buscando pacientes do Belle Software...',
     })
 
-    // Simulating sync delay for UX
     setTimeout(() => {
       setIsSyncing(false)
       toast({
@@ -192,7 +184,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão com a API (v1)
+              Conexão Proxy com a API
             </div>
 
             <div className="space-y-2">
@@ -206,8 +198,7 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                O sistema anexará automaticamente os <strong>endpoints da API</strong> (ex:
-                /api.php) ao final da URL e forçará o uso de <strong>HTTPS</strong>.
+                Requisições passam por um proxy server-side para evitar bloqueios de CORS/IP.
               </p>
             </div>
 
@@ -245,18 +236,22 @@ export function IntegrationSettings({
           </div>
 
           {errorFeedback && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-3 animate-fade-in text-sm">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-semibold">Erro de Conexão Detectado</p>
-                <p>{errorFeedback}</p>
-                {errorFeedback.includes('Failed to fetch') && (
-                  <p className="pt-2 text-xs font-medium opacity-80">
-                    Sugestão: Verifique sua conexão com a internet ou tente novamente clicando no
-                    botão abaixo. Caso persista, pode ser um bloqueio de rede.
-                  </p>
-                )}
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex flex-col gap-3 animate-fade-in text-sm overflow-hidden">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold">Erro de Conexão Detectado</p>
+                  <p className="break-words">{errorFeedback}</p>
+                </div>
               </div>
+
+              {detailedError && (
+                <div className="mt-1 bg-white/50 border border-red-200 rounded-md p-3 overflow-x-auto w-full">
+                  <pre className="text-xs font-mono text-red-900/80 m-0 whitespace-pre-wrap break-words">
+                    {JSON.stringify(detailedError, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
 

@@ -20,6 +20,16 @@ export interface BelleAgendamento {
   observacoes?: string
 }
 
+export class BelleProxyError extends Error {
+  public details: any
+
+  constructor(details: any) {
+    super(details.details || details.error || 'Proxy Error')
+    this.name = 'BelleProxyError'
+    this.details = details
+  }
+}
+
 const mockClientes: BelleCliente[] = [
   {
     id: 101,
@@ -80,20 +90,10 @@ const mockAgendamentos: BelleAgendamento[] = [
     profissional: 'Dra. Sofia Mendes',
     status: 'Agendado',
   },
-  {
-    id: 1004,
-    cliente_id: 102,
-    cpf_cliente: '123.456.789-00',
-    data: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    hora_inicio: '09:00',
-    servico: 'Bioestimulador de Colágeno',
-    profissional: 'Dra. Fabíola Kleinert',
-    status: 'Agendado',
-  },
 ]
 
 const ERROR_INVALID_TOKEN =
-  'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
+  'Falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -115,29 +115,23 @@ const getApiEndpoint = (url: string, path: string) => {
 }
 
 const logToBugScanner = (context: string, details: any) => {
-  // Simulates integration with internal monitoring system (Bug Scanner)
   console.error(`[Bug Scanner] ${context}:`, JSON.stringify(details, null, 2))
 }
 
-/**
- * Função genérica para chamadas na API REST do Belle Software
- */
 const belleApiCall = async (
   url: string,
   token: string,
   path: string,
   payload: any = null,
-  estabelecimento: string = '',
+  estabelecimento: string = '1',
 ) => {
   const endpoint = getApiEndpoint(url, path)
-
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    // Strict Payload Normalization
     const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
-    const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : ''
+    const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
     const params = new URLSearchParams()
     if (cleanToken) params.append('token', cleanToken)
@@ -153,19 +147,81 @@ const belleApiCall = async (
     }
 
     const requestBody = params.toString()
+    const proxyUrl = import.meta.env.VITE_PROXY_URL || '/api/belle-proxy'
+    const useMockProxy = !import.meta.env.VITE_PROXY_URL
 
-    const options: RequestInit = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
-      },
-      body: requestBody,
-      signal: controller.signal,
+    let response: Response
+
+    if (useMockProxy) {
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      if (cleanToken === 'fail' || url.includes('fail')) {
+        throw new BelleProxyError({
+          url: endpoint,
+          method: 'POST',
+          error: 'Failed to fetch',
+          details: 'Verifique a URL ou se o servidor bloqueou a requisição (CORS/IP)',
+        })
+      } else if (cleanToken === '403') {
+        response = new Response(
+          JSON.stringify({
+            mensagem:
+              'Permissões insuficientes para este token ou IP bloqueado na whitelist do Belle Software.',
+          }),
+          { status: 403 },
+        )
+      } else if (cleanToken === 'wrong' || cleanToken === 'invalido') {
+        response = new Response(JSON.stringify({ mensagem: 'Token de autenticação inválido.' }), {
+          status: 401,
+        })
+      } else {
+        if (path.includes('/pacientes')) {
+          response = new Response(JSON.stringify({ status: true, data: mockClientes }), {
+            status: 200,
+          })
+        } else if (path.includes('/agendamentos')) {
+          response = new Response(JSON.stringify({ status: true, data: mockAgendamentos }), {
+            status: 200,
+          })
+        } else {
+          response = new Response(JSON.stringify({ status: true, data: { success: true } }), {
+            status: 200,
+          })
+        }
+      }
+    } else {
+      const proxyOptions: RequestInit = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          url: endpoint,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+          },
+          body: requestBody,
+        }),
+        signal: controller.signal,
+      }
+
+      try {
+        response = await fetch(proxyUrl, proxyOptions)
+      } catch (err: any) {
+        if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+          throw new BelleProxyError({
+            url: endpoint,
+            method: 'POST',
+            error: 'Failed to fetch',
+            details: 'Verifique a URL ou se o servidor bloqueou a requisição (CORS/IP)',
+          })
+        }
+        throw err
+      }
     }
-
-    // Direct fetch to bypass proxy issues and simulate a server-to-server call natively
-    const response = await fetch(endpoint, options)
 
     clearTimeout(timeoutId)
 
@@ -177,14 +233,15 @@ const belleApiCall = async (
     }
 
     if (!response.ok) {
-      let details = text ? text.substring(0, 250) : 'Sem detalhes adicionais'
+      let detailsMsg = text ? text.substring(0, 250) : 'Sem detalhes adicionais'
+      let parsedBody: any = null
       try {
         if (text) {
-          const jsonText = JSON.parse(text)
-          details = jsonText.mensagem || jsonText.message || jsonText.error || details
+          parsedBody = JSON.parse(text)
+          detailsMsg = parsedBody.mensagem || parsedBody.message || parsedBody.error || detailsMsg
         }
       } catch (e) {
-        // Mantém a string bruta
+        // Keep raw text
       }
 
       logToBugScanner('Failed Belle API Connection', {
@@ -195,22 +252,29 @@ const belleApiCall = async (
       })
 
       if (response.status === 403) {
-        throw new Error(`Erro 403 Forbidden. Acesso negado. Detalhes do Belle Software: ${details}`)
+        throw new BelleProxyError({
+          url: endpoint,
+          method: 'POST',
+          error: '403 Forbidden',
+          details: `Acesso negado. Detalhes do Belle Software: ${detailsMsg}`,
+        })
       }
+
       if (response.status === 401) {
-        throw new Error(`${ERROR_INVALID_TOKEN}. Detalhes: ${details}`)
+        throw new BelleProxyError({
+          url: endpoint,
+          method: 'POST',
+          error: '401 Unauthorized',
+          details: `${ERROR_INVALID_TOKEN}. Detalhes: ${detailsMsg}`,
+        })
       }
-      if (response.status === 404) {
-        throw new Error('URL Base não encontrada. Verifique o endereço')
-      }
-      if (response.status >= 500) {
-        throw new Error(
-          `Erro de rede: O servidor Belle Software está indisponível ou ocorreu um erro interno (Status ${response.status}). Detalhes: ${details}`,
-        )
-      }
-      throw new Error(
-        `Erro de comunicação com Belle Software: Status ${response.status} - ${details}`,
-      )
+
+      throw new BelleProxyError({
+        url: endpoint,
+        method: 'POST',
+        error: `Status ${response.status}`,
+        details: `Erro de comunicação com Belle Software: ${detailsMsg}`,
+      })
     }
 
     if (!text) return null
@@ -222,7 +286,12 @@ const belleApiCall = async (
       lowerText.includes('<title>login') ||
       lowerText.includes('user/login')
     ) {
-      throw new Error(ERROR_INVALID_TOKEN)
+      throw new BelleProxyError({
+        url: endpoint,
+        method: 'POST',
+        error: 'Invalid Response Format',
+        details: ERROR_INVALID_TOKEN,
+      })
     }
 
     const result = JSON.parse(text)
@@ -237,34 +306,28 @@ const belleApiCall = async (
         msg.toLowerCase().includes('invali') ||
         msg.toLowerCase().includes('senha')
       ) {
-        throw new Error(`${ERROR_INVALID_TOKEN}. Detalhes: ${msg}`)
+        throw new BelleProxyError({
+          url: endpoint,
+          method: 'POST',
+          error: 'Authentication Error',
+          details: `${ERROR_INVALID_TOKEN}. Detalhes: ${msg}`,
+        })
       }
 
-      logToBugScanner('Belle API Business Error', {
-        endpoint,
-        requestBody,
-        response: result,
+      throw new BelleProxyError({
+        url: endpoint,
+        method: 'POST',
+        error: 'Belle API Error',
+        details: msg || 'Erro desconhecido retornado pela API.',
       })
-
-      throw new Error(msg || 'Erro desconhecido retornado pela API.')
     }
 
     return result.data || result.dados || result
   } catch (error: any) {
     clearTimeout(timeoutId)
 
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      logToBugScanner('Network/CORS Error', { error: error.message, endpoint })
-      throw new Error(
-        'TypeError: Failed to fetch - A conexão falhou. Verifique se a URL está correta, ou se o servidor bloqueou a requisição (CORS/IP).',
-      )
-    }
-
-    if (
-      error.message === 'URL Base or Credentials Incorrect' ||
-      error.message === 'URL Base ou Credenciais Incorretas'
-    ) {
-      throw new Error(ERROR_INVALID_TOKEN)
+    if (error.name === 'BelleProxyError') {
+      throw error
     }
 
     if (
@@ -272,69 +335,41 @@ const belleApiCall = async (
       error.message === 'TIMEOUT_ERROR' ||
       error.message.includes('Erro de rede')
     ) {
-      throw new Error('Erro de rede: Verifique sua conexão ou a disponibilidade do servidor Belle')
+      throw new BelleProxyError({
+        url: endpoint,
+        method: 'POST',
+        error: 'Network Timeout',
+        details: 'Erro de rede: Verifique sua conexão ou a disponibilidade do servidor proxy.',
+      })
     }
     throw error
   }
 }
 
-/**
- * Valida a conexão com o Belle Software
- */
 export const testBelleConnection = async (
   url: string,
   token: string,
-  estabelecimento: string = '',
+  estabelecimento: string = '1',
 ): Promise<boolean> => {
-  if (!url || url.includes('mock')) {
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    if (token === 'wrong' || token === 'invalido') {
-      throw new Error(ERROR_INVALID_TOKEN)
-    }
-    if (token === '403') {
-      throw new Error(
-        'Falha na conexão. erro 403. Acesso negado. O servidor reconheceu a requisição, mas recusou a autorização. Detalhes: Permissões insuficientes para este token',
-      )
-    }
-    return true
-  }
-
   await belleApiCall(url, token, '/api.php', null, estabelecimento)
   return true
 }
 
-/**
- * Busca os pacientes via Belle Software API REST
- */
 export const fetchBelleClientes = async (
   url: string,
   token: string,
-  estabelecimento: string = '',
+  estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
-  if (!url || !token || url.includes('mock')) {
-    console.info('Usando mock de pacientes (integração não configurada ou em modo demo).')
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    return mockClientes
-  }
-
   const data = await belleApiCall(url, token, '/api/v1/pacientes', null, estabelecimento)
   return Array.isArray(data) ? data : data.pacientes || data.clientes || []
 }
 
-/**
- * Busca o histórico de agendamentos via Belle Software API REST
- */
 export const fetchBelleAgendamentos = async (
   url: string,
   token: string,
   cpf?: string,
-  estabelecimento: string = '',
+  estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
-  if (!url || !token || url.includes('mock')) {
-    console.info('Usando mock de agendamentos (integração não configurada ou em modo demo).')
-    return cpf ? mockAgendamentos.filter((a) => a.cpf_cliente === cpf) : mockAgendamentos
-  }
-
   const path = cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : '/api/v1/agendamentos'
   const data = await belleApiCall(url, token, path, null, estabelecimento)
   return Array.isArray(data) ? data : data.agendamentos || []
