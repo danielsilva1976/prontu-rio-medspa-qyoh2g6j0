@@ -1,16 +1,18 @@
 export interface BelleCliente {
-  id: number
+  codigo?: number | string
+  id?: number | string
   nome: string
-  cpf: string
-  email: string
-  celular: string
-  data_nascimento: string
+  cpf?: string
+  email?: string
+  celular?: string
+  telefone?: string
+  data_nascimento?: string
   historico_clinico?: string
 }
 
 export interface BelleAgendamento {
   id: number
-  cliente_id?: number
+  cliente_id?: number | string
   cpf_cliente?: string
   data: string
   hora_inicio: string
@@ -32,7 +34,7 @@ export class BelleProxyError extends Error {
 
 const mockClientes: BelleCliente[] = [
   {
-    id: 101,
+    codigo: 101,
     nome: 'Ana Souza (Belle)',
     cpf: '333.444.555-66',
     email: 'ana@bellesoftware.com',
@@ -41,7 +43,7 @@ const mockClientes: BelleCliente[] = [
     historico_clinico: 'Paciente com histórico de melasma.',
   },
   {
-    id: 102,
+    codigo: 102,
     nome: 'Isabella Rodrigues (Atualizada)',
     cpf: '123.456.789-00',
     email: 'isa@email.com',
@@ -50,7 +52,7 @@ const mockClientes: BelleCliente[] = [
     historico_clinico: 'Alergia a dipirona relatada na última consulta.',
   },
   {
-    id: 103,
+    codigo: 103,
     nome: 'Carlos Silva (Belle)',
     cpf: '111.222.333-44',
     email: 'carlos@bellesoftware.com',
@@ -175,7 +177,7 @@ const belleApiCall = async (
           status: 401,
         })
       } else {
-        if (path.includes('/pacientes')) {
+        if (path.includes('/pacientes') || requestBody.includes('get_clientes')) {
           response = new Response(JSON.stringify({ status: true, data: mockClientes }), {
             status: 200,
           })
@@ -360,8 +362,8 @@ export const fetchBelleClientes = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
-  const data = await belleApiCall(url, token, '/api/v1/pacientes', null, estabelecimento)
-  return Array.isArray(data) ? data : data.pacientes || data.clientes || []
+  const data = await belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento)
+  return Array.isArray(data) ? data : data.pacientes || data.clientes || data.dados || []
 }
 
 export const fetchBelleAgendamentos = async (
@@ -381,10 +383,11 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
   const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : []
 
   return validClientes.map((c) => {
+    const belleIdStr = String(c.codigo || c.id || '')
     const clientAppts = validAgendamentos.filter(
       (a) =>
         (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
-        (a.cliente_id && a.cliente_id === c.id),
+        (a.cliente_id && String(a.cliente_id) === belleIdStr),
     )
 
     let lastVisit = c.data_nascimento
@@ -419,11 +422,11 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
     })
 
     return {
-      belleId: String(c.id),
+      belleId: belleIdStr,
       name: c.nome || 'Paciente sem nome',
-      cpf: c.cpf,
-      email: c.email,
-      phone: c.celular,
+      cpf: c.cpf || '',
+      email: c.email || '',
+      phone: c.celular || c.telefone || '',
       dob: c.data_nascimento,
       lastVisit,
       nextAppointment,

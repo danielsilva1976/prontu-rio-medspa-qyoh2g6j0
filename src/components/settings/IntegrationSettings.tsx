@@ -152,7 +152,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
+        description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {

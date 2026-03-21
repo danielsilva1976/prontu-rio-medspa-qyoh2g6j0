@@ -25322,6 +25322,7 @@ var PatientProvider = ({ children }) => {
 					next[idx] = {
 						...next[idx],
 						...bp,
+						id: bp.belleId ? String(bp.belleId) : next[idx].id,
 						endereco: next[idx].endereco || bp.endereco,
 						history: bp.history !== void 0 ? bp.history : next[idx].history,
 						procedures: mergedProcedures,
@@ -25338,7 +25339,7 @@ var PatientProvider = ({ children }) => {
 						}
 					}
 					next.push({
-						id: `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+						id: bp.belleId ? String(bp.belleId) : `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
 						name: bp.name || "Sem Nome",
 						age,
 						phone: bp.phone || "",
@@ -36118,7 +36119,7 @@ var BelleProxyError = class extends Error {
 };
 var mockClientes = [
 	{
-		id: 101,
+		codigo: 101,
 		nome: "Ana Souza (Belle)",
 		cpf: "333.444.555-66",
 		email: "ana@bellesoftware.com",
@@ -36127,7 +36128,7 @@ var mockClientes = [
 		historico_clinico: "Paciente com histórico de melasma."
 	},
 	{
-		id: 102,
+		codigo: 102,
 		nome: "Isabella Rodrigues (Atualizada)",
 		cpf: "123.456.789-00",
 		email: "isa@email.com",
@@ -36136,7 +36137,7 @@ var mockClientes = [
 		historico_clinico: "Alergia a dipirona relatada na última consulta."
 	},
 	{
-		id: 103,
+		codigo: 103,
 		nome: "Carlos Silva (Belle)",
 		cpf: "111.222.333-44",
 		email: "carlos@bellesoftware.com",
@@ -36211,7 +36212,7 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 		});
 		else if (cleanToken === "403") response = new Response(JSON.stringify({ mensagem: "Permissões insuficientes para este token ou IP bloqueado na whitelist do Belle Software." }), { status: 403 });
 		else if (cleanToken === "wrong" || cleanToken === "invalido") response = new Response(JSON.stringify({ mensagem: "Token de autenticação inválido." }), { status: 401 });
-		else if (path.includes("/pacientes")) response = new Response(JSON.stringify({
+		else if (path.includes("/pacientes") || requestBody.includes("get_clientes")) response = new Response(JSON.stringify({
 			status: true,
 			data: mockClientes
 		}), { status: 200 });
@@ -36306,8 +36307,8 @@ var testBelleConnection = async (url, token, estabelecimento = "1") => {
 	return true;
 };
 var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
-	const data = await belleApiCall(url, token, "/api/v1/pacientes", null, estabelecimento);
-	return Array.isArray(data) ? data : data.pacientes || data.clientes || [];
+	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
+	return Array.isArray(data) ? data : data.pacientes || data.clientes || data.dados || [];
 };
 var fetchBelleAgendamentos = async (url, token, cpf, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, cpf ? `/api/v1/agendamentos?cpf=${encodeURIComponent(cpf)}` : "/api/v1/agendamentos", null, estabelecimento);
@@ -36318,7 +36319,8 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 	const validClientes = Array.isArray(rawClientes) ? rawClientes : [];
 	const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : [];
 	return validClientes.map((c) => {
-		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && a.cliente_id === c.id);
+		const belleIdStr = String(c.codigo || c.id || "");
+		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && String(a.cliente_id) === belleIdStr);
 		let lastVisit = c.data_nascimento ? new Date(c.data_nascimento).toISOString().split("T")[0] : "2023-01-01";
 		let nextAppointment = null;
 		const procedures = /* @__PURE__ */ new Set();
@@ -36336,11 +36338,11 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 			}
 		});
 		return {
-			belleId: String(c.id),
+			belleId: belleIdStr,
 			name: c.nome || "Paciente sem nome",
-			cpf: c.cpf,
-			email: c.email,
-			phone: c.celular,
+			cpf: c.cpf || "",
+			email: c.email || "",
+			phone: c.celular || c.telefone || "",
 			dob: c.data_nascimento,
 			lastVisit,
 			nextAppointment,
@@ -36386,7 +36388,7 @@ function Patients() {
 			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
 			toast({
 				title: "Sincronização Concluída",
-				description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`
+				description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
@@ -36516,7 +36518,7 @@ function Patients() {
 							"data-uid": "src/pages/Patients.tsx:171:17",
 							"data-prohibitions": "[editContent]",
 							className: "text-muted-foreground",
-							children: patients.length === 0 ? "Nenhum paciente sincronizado ou cadastrado." : "Nenhum paciente encontrado na busca."
+							children: patients.length === 0 ? "Nenhum paciente encontrado." : "Nenhum paciente encontrado na busca."
 						})]
 					}) : filteredPatients.map((patient) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PatientCard, {
 						"data-uid": "src/pages/Patients.tsx:178:49",
@@ -50543,7 +50545,7 @@ function IntegrationSettings({ title, description }) {
 			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
 			toast({
 				title: "Sincronização Concluída",
-				description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
+				description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`,
 				className: "bg-green-600 text-white border-none"
 			});
 		} catch (error) {
@@ -51459,4 +51461,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BiZZGQdx.js.map
+//# sourceMappingURL=index-BazKjeS7.js.map

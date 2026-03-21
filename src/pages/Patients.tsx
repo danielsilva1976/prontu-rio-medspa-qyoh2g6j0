@@ -76,7 +76,7 @@ export default function Patients() {
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${result.added} pacientes adicionados, ${result.updated} atualizados.`,
+        description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`,
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
@@ -170,7 +170,7 @@ export default function Patients() {
                 <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground">
                   {patients.length === 0
-                    ? 'Nenhum paciente sincronizado ou cadastrado.'
+                    ? 'Nenhum paciente encontrado.'
                     : 'Nenhum paciente encontrado na busca.'}
                 </p>
               </div>

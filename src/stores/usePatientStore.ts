@@ -78,6 +78,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
           next[idx] = {
             ...next[idx],
             ...bp,
+            id: bp.belleId ? String(bp.belleId) : next[idx].id,
             // Preserve existing local edits if Belle data is empty
             endereco: next[idx].endereco || bp.endereco,
             history: bp.history !== undefined ? bp.history : next[idx].history,
@@ -98,7 +99,9 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
           }
 
           next.push({
-            id: `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: bp.belleId
+              ? String(bp.belleId)
+              : `p-belle-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             name: bp.name || 'Sem Nome',
             age,
             phone: bp.phone || '',
