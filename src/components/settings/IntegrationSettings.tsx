@@ -17,6 +17,7 @@ import {
   WifiOff,
   Building2,
   Users,
+  AlertCircle,
 } from 'lucide-react'
 import { testBelleConnection } from '@/lib/api/belle'
 
@@ -33,6 +34,7 @@ export function IntegrationSettings({
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '')
   const [isTesting, setIsTesting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
@@ -94,6 +96,7 @@ export function IntegrationSettings({
     setEstabelecimento(cleanEstab)
 
     setIsTesting(true)
+    setErrorFeedback(null)
 
     // Save locally immediately to persist while testing
     updateBelleConfig(url, cleanToken, cleanEstab)
@@ -101,6 +104,7 @@ export function IntegrationSettings({
     try {
       await testBelleConnection(url, cleanToken, cleanEstab)
       setBelleLastSync('success', new Date().toISOString())
+      setErrorFeedback(null)
 
       toast({
         title: 'Conexão validada',
@@ -109,6 +113,7 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
+      setErrorFeedback(error.message)
 
       toast({
         title: 'Falha na Conexão',
@@ -238,6 +243,22 @@ export function IntegrationSettings({
               </div>
             </div>
           </div>
+
+          {errorFeedback && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-3 animate-fade-in text-sm">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-semibold">Erro de Conexão Detectado</p>
+                <p>{errorFeedback}</p>
+                {errorFeedback.includes('Failed to fetch') && (
+                  <p className="pt-2 text-xs font-medium opacity-80">
+                    Sugestão: Verifique sua conexão com a internet ou tente novamente clicando no
+                    botão abaixo. Caso persista, pode ser um bloqueio de rede.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap justify-end gap-3 pt-2">
             <Button variant="outline" onClick={handleSave} className="rounded-xl">

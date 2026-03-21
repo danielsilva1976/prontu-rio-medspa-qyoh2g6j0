@@ -1725,6 +1725,10 @@ video {
 .border-primary\/50 {
   border-color: hsl(var(--primary) / 0.5);
 }
+.border-red-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));
+}
 .border-red-500\/20 {
   border-color: rgb(239 68 68 / 0.2);
 }
@@ -1837,6 +1841,10 @@ video {
 }
 .bg-primary\/5 {
   background-color: hsl(var(--primary) / 0.05);
+}
+.bg-red-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
 }
 .bg-red-500\/10 {
   background-color: rgb(239 68 68 / 0.1);
@@ -2352,6 +2360,10 @@ video {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 .text-secondary-foreground {
   color: hsl(var(--secondary-foreground));
