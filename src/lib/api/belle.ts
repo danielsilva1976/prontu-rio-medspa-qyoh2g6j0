@@ -61,9 +61,6 @@ export class BelleApiError extends Error {
   }
 }
 
-const ERROR_USER_FRIENDLY =
-  'Falha na comunicação. Verifique suas credenciais de acesso ao Belle Software.'
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const getApiEndpoint = (url: string, path: string) => {
@@ -82,7 +79,8 @@ const getApiEndpoint = (url: string, path: string) => {
   }
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`
-  return `${cleanUrl}${cleanPath}`
+  // Ensure we don't have trailing slashes which often cause 301 to GET and then 405 Method Not Allowed
+  return `${cleanUrl}${cleanPath}`.replace(/\/$/, '')
 }
 
 const belleApiCall = async (
@@ -143,16 +141,9 @@ const belleApiCall = async (
           details: `Falha na comunicação com a API (Status: ${response.status}).`,
         }
 
-        if (response.status === 405) {
-          errPayload.error = 'Erro de Conexão (405)'
-          errPayload.details =
-            'Ponte de Integração Indisponível: O servidor bloqueou a requisição (Method Not Allowed).'
-        } else if (response.status === 404) {
-          errPayload.error = 'Erro de Conexão (404)'
-          errPayload.details = 'Ponte de Integração Indisponível: Rota não encontrada no servidor.'
-        } else if (response.status === 502) {
-          errPayload.error = 'Erro de Conexão (502)'
-          errPayload.details = 'Bad Gateway: Falha no proxy do servidor.'
+        if (response.status === 405 || response.status === 404 || response.status === 502) {
+          errPayload.error = 'Ponte de Integração Indisponível'
+          errPayload.details = 'Ponte de Integração Indisponível - Erro de conexão com o servidor.'
         } else {
           try {
             const text = await response.text()
@@ -178,9 +169,8 @@ const belleApiCall = async (
           continue
         }
         throw new BelleApiError({
-          error: 'Resposta Inesperada (HTML)',
-          details:
-            'A API retornou uma página HTML em vez de JSON. Verifique a URL base configurada.',
+          error: 'Ponte de Integração Indisponível',
+          details: 'Ponte de Integração Indisponível - Erro de conexão com o servidor.',
         })
       }
 
@@ -195,9 +185,22 @@ const belleApiCall = async (
       }
 
       if (result.status === 'erro' || result.status === false || result.error) {
+        const errMsg = String(result.error || result.mensagem || '').toLowerCase()
+        const isAuth =
+          errMsg.includes('token') ||
+          errMsg.includes('autentica') ||
+          errMsg.includes('estabelecimento')
+
+        if (isAuth) {
+          throw new BelleApiError({
+            error: 'Falha na Autenticação',
+            details: 'Falha na Autenticação - Verifique seu Token e ID do Estabelecimento.',
+          })
+        }
+
         throw new BelleApiError({
           error: result.error || result.mensagem || 'Falha na Autenticação',
-          details: result.details || result.mensagem || ERROR_USER_FRIENDLY,
+          details: result.details || result.mensagem || 'Ocorreu um erro na requisição.',
         })
       }
 
@@ -218,9 +221,8 @@ const belleApiCall = async (
         }
 
         throw new BelleApiError({
-          error: 'Falha de Conexão',
-          details:
-            'Não foi possível conectar à ponte de integração. Verifique sua conexão com a internet.',
+          error: 'Ponte de Integração Indisponível',
+          details: 'Ponte de Integração Indisponível - Erro de conexão com o servidor.',
         })
       }
 

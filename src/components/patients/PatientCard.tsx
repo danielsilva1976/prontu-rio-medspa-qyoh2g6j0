@@ -52,6 +52,14 @@ export function PatientCard({ patient }: { patient: Patient }) {
                 Ativo
               </Badge>
             )}
+            {patient.status === 'inactive' && (
+              <Badge
+                variant="secondary"
+                className="bg-gray-500/10 text-gray-600 border-none text-[10px] px-2 py-0 h-5"
+              >
+                Inativo
+              </Badge>
+            )}
             <PatientDialog
               patient={patient}
               trigger={

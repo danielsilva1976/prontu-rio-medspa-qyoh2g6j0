@@ -152,19 +152,9 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
-      const isAuthError =
-        parsedError.message.toLowerCase().includes('autentica') ||
-        parsedError.details.toLowerCase().includes('token')
-
-      const errorTitle = isAuthError
-        ? 'Falha na Autenticação'
-        : parsedError.title || 'Falha na Conexão'
-
       toast({
-        title: errorTitle,
-        description: isAuthError
-          ? 'Verifique seu Token e Estabelecimento.'
-          : parsedError.details || parsedError.message,
+        title: parsedError.title || parsedError.message,
+        description: parsedError.details,
         variant: 'destructive',
       })
     } finally {
@@ -210,19 +200,9 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
-      const isAuthError =
-        parsedError.message.toLowerCase().includes('autentica') ||
-        parsedError.details.toLowerCase().includes('token')
-
-      const errorTitle = isAuthError
-        ? 'Falha na Autenticação'
-        : parsedError.title || 'Falha na Sincronização'
-
       toast({
-        title: errorTitle,
-        description: isAuthError
-          ? 'Verifique seu Token e Estabelecimento.'
-          : parsedError.details || parsedError.message,
+        title: parsedError.title || parsedError.message,
+        description: parsedError.details,
         variant: 'destructive',
       })
     } finally {
@@ -337,10 +317,7 @@ export function IntegrationSettings({
             >
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="font-semibold">
-                {errorFeedback.message.toLowerCase().includes('autentica') ||
-                errorFeedback.details.toLowerCase().includes('token')
-                  ? 'Falha na Autenticação'
-                  : errorFeedback.title || errorFeedback.message}
+                {errorFeedback.title || errorFeedback.message}
               </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">{errorFeedback.details}</p>

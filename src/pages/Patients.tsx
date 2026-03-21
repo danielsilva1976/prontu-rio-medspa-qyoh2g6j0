@@ -3,6 +3,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 import usePatientStore from '@/stores/usePatientStore'
 import useSettingsStore from '@/stores/useSettingsStore'
@@ -26,17 +33,24 @@ export default function Patients() {
   const { toast } = useToast()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('Todos')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const hasAttemptedAutoSync = useRef(false)
 
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
 
-  const filteredPatients = patients.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.cpf && p.cpf.includes(searchTerm)),
-  )
+  const filteredPatients = patients.filter((p) => {
+    const term = searchTerm.toLowerCase()
+    const matchesSearch =
+      p.name.toLowerCase().includes(term) || (p.cpf && p.cpf.includes(searchTerm))
+
+    if (!matchesSearch) return false
+
+    if (statusFilter === 'Ativos') return p.status === 'active' || p.status === 'scheduled'
+    if (statusFilter === 'Inativos') return p.status === 'inactive'
+
+    return true
+  })
 
   const sortedPatients = useMemo(() => {
     const today = new Date()
@@ -114,24 +128,15 @@ export default function Patients() {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro na Sincronização via API`, 'SYSTEM')
 
-      const isAuthError =
-        error.message?.toLowerCase().includes('autentica') ||
-        error.details?.toLowerCase().includes('token')
+      const title = error.errorTitle || error.error || 'Falha na Sincronização'
+      const details =
+        error.details || error.message || 'Não foi possível conectar ao Belle Software.'
 
-      const errorTitle =
-        error.errorTitle || (isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização')
-
-      const displayError = isAuthError
-        ? 'Falha na Autenticação: Verifique seu Token nas Configurações.'
-        : error.details ||
-          error.message ||
-          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
-
-      setErrorMsg(`${errorTitle}: ${displayError}`)
+      setErrorMsg(`${title}: ${details}`)
 
       toast({
-        title: errorTitle,
-        description: displayError,
+        title,
+        description: details,
         variant: 'destructive',
       })
     } finally {
@@ -199,15 +204,29 @@ export default function Patients() {
 
       <Card className="border-none shadow-subtle">
         <CardContent className="p-4 sm:p-6">
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, CPF ou ID do paciente..."
-              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={isSyncing}
-            />
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por Nome ou CPF"
+                className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={isSyncing}
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isSyncing}>
+                <SelectTrigger className="h-12 bg-white border-muted rounded-xl text-base focus:ring-primary">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todos">Todos</SelectItem>
+                  <SelectItem value="Ativos">Ativos</SelectItem>
+                  <SelectItem value="Inativos">Inativos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid gap-4">
@@ -250,7 +269,7 @@ export default function Patients() {
                 <p className="text-muted-foreground/80 text-sm mt-1">
                   {patients.length === 0
                     ? 'A base local está vazia. Clique em "Sincronizar Belle" para carregar os dados reais.'
-                    : 'A busca não retornou resultados para o termo digitado.'}
+                    : 'A busca não retornou resultados para os filtros aplicados.'}
                 </p>
               </div>
             ) : (

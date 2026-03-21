@@ -58,8 +58,10 @@ export default async function handler(req: Request) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json, text/plain, */*',
+        'User-Agent': 'BelleIntegrationProxy/1.0',
       },
       body: params.toString(),
+      redirect: 'follow', // Automatically follow potential HTTP to HTTPS redirects to avoid 405s
     })
 
     const text = await externalResponse.text()
@@ -74,11 +76,11 @@ export default async function handler(req: Request) {
   } catch (error: any) {
     return new Response(
       JSON.stringify({
-        error: 'Falha no Bridge Interno',
-        details: error.message || 'Erro inesperado ao conectar com a API externa.',
+        error: 'Ponte de Integração Indisponível',
+        details: 'Ponte de Integração Indisponível - Erro de conexão com o servidor.',
       }),
       {
-        status: 500,
+        status: 502,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       },
     )

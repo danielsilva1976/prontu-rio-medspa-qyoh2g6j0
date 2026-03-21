@@ -1813,6 +1813,9 @@ video {
 .bg-gray-100\/95 {
   background-color: rgb(243 244 246 / 0.95);
 }
+.bg-gray-500\/10 {
+  background-color: rgb(107 114 128 / 0.1);
+}
 .bg-green-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));
@@ -3637,6 +3640,10 @@ video {
 
   .sm\:w-40 {
     width: 10rem;
+  }
+
+  .sm\:w-48 {
+    width: 12rem;
   }
 
   .sm\:w-auto {
