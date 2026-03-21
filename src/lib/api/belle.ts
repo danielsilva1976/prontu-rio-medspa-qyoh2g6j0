@@ -192,7 +192,9 @@ const belleApiCall = async (
         if (text.trim().startsWith('{')) {
           errPayload = JSON.parse(text)
         }
-      } catch (e) {}
+      } catch (e) {
+        // ignore parsing errors
+      }
       throw new BelleApiError(errPayload)
     }
 
