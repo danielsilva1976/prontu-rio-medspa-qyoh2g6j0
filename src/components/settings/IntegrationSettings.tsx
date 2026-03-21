@@ -60,37 +60,38 @@ export function IntegrationSettings({
   const USER_FRIENDLY_ERROR =
     'Erro ao conectar com o Belle Software. Verifique suas credenciais e tente novamente.'
 
-  // Helper utility to safely extract a valid string message from any thrown error payload
+  // Highly resilient parser to guarantee strings for UI stability
   const parseError = (error: any): { message: string; details: string } => {
     let message = 'Falha de Comunicação'
     let details = USER_FRIENDLY_ERROR
 
-    if (!error) return { message, details }
+    try {
+      if (!error) return { message, details }
 
-    if (typeof error === 'string') {
-      return { message: 'Erro', details: error }
-    }
+      if (typeof error === 'string') {
+        return { message: 'Erro', details: String(error) }
+      }
 
-    if (error instanceof Error) {
-      message = error.message
-      if ('details' in error && error.details) {
-        if (typeof error.details === 'string') {
-          details = error.details
-        } else if (typeof error.details === 'object') {
-          const d = error.details as any
-          details = d.details || d.error || JSON.stringify(d)
+      if (error instanceof Error) {
+        message = error.message
+        if ('details' in error && (error as any).details) {
+          const d = (error as any).details
+          details = typeof d === 'string' ? d : JSON.stringify(d)
+        }
+      } else if (typeof error === 'object') {
+        message = String(error.error || error.message || message)
+        if (error.details) {
+          details =
+            typeof error.details === 'string' ? error.details : JSON.stringify(error.details)
+        } else {
+          details = JSON.stringify(error)
         }
       }
-    } else if (typeof error === 'object') {
-      message = error.error || error.message || message
-      if (typeof error.details === 'string') {
-        details = error.details
-      } else if (error.details && typeof error.details === 'object') {
-        details = error.details.details || error.details.error || JSON.stringify(error.details)
-      }
+    } catch (e) {
+      details = 'Ocorreu um erro inesperado ao processar os detalhes da falha.'
     }
 
-    return { message, details }
+    return { message: String(message), details: String(details) }
   }
 
   const handleUrlBlur = () => {

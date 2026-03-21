@@ -29,25 +29,29 @@ export class BelleApiError extends Error {
     let message = 'Erro de API'
     let detailsStr = 'Falha na comunicação com o servidor.'
 
-    if (typeof payload === 'string') {
-      message = payload
-      detailsStr = payload
-    } else if (payload && typeof payload === 'object') {
-      message = payload.error || payload.message || message
+    try {
+      if (typeof payload === 'string') {
+        message = payload
+        detailsStr = payload
+      } else if (payload && typeof payload === 'object') {
+        message = String(payload.error || payload.message || message)
 
-      if (typeof payload.details === 'string') {
-        detailsStr = payload.details
-      } else if (payload.details && typeof payload.details === 'object') {
-        detailsStr =
-          payload.details.details || payload.details.error || JSON.stringify(payload.details)
-      } else if (!payload.details && payload.error) {
-        detailsStr = payload.error
+        if (typeof payload.details === 'string') {
+          detailsStr = payload.details
+        } else if (payload.details && typeof payload.details === 'object') {
+          detailsStr = JSON.stringify(payload.details)
+        } else if (!payload.details && payload.error) {
+          detailsStr =
+            typeof payload.error === 'string' ? payload.error : JSON.stringify(payload.error)
+        }
       }
+    } catch (e) {
+      detailsStr = 'Não foi possível extrair os detalhes do erro.'
     }
 
     super(message)
     this.name = 'BelleApiError'
-    this.details = detailsStr
+    this.details = String(detailsStr)
   }
 }
 
@@ -162,7 +166,6 @@ const belleApiCall = async (
   }
 
   const requestBody = params.toString()
-
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
@@ -179,7 +182,18 @@ const belleApiCall = async (
     clearTimeout(timeoutId)
 
     if (!response.ok) {
-      throw new Error(`Bridge Error ${response.status}`)
+      let errPayload: any = {
+        error: `Erro ${response.status}`,
+        details: 'Falha na ponte de comunicação interna.',
+      }
+      try {
+        const text = await response.text()
+        if (text) errPayload.details = text
+        if (text.trim().startsWith('{')) {
+          errPayload = JSON.parse(text)
+        }
+      } catch (e) {}
+      throw new BelleApiError(errPayload)
     }
 
     const text = await response.text()
@@ -193,7 +207,7 @@ const belleApiCall = async (
     if (result.status === 'erro' || result.status === false || result.error) {
       throw new BelleApiError({
         error: result.error || result.mensagem || 'Erro na API do Belle Software',
-        details: ERROR_USER_FRIENDLY,
+        details: result.details || ERROR_USER_FRIENDLY,
       })
     }
 
@@ -201,11 +215,15 @@ const belleApiCall = async (
   } catch (err: any) {
     clearTimeout(timeoutId)
 
-    if (
-      err.message.includes('Bridge not found') ||
-      err.message.includes('Bridge Error 404') ||
-      err.message.includes('Failed to fetch')
-    ) {
+    const isMissingBridge =
+      err.message?.includes('Bridge not found') ||
+      err.message?.includes('Erro 404') ||
+      err.message?.includes('Erro 405') ||
+      err.message?.includes('Failed to fetch') ||
+      err.name === 'AbortError'
+
+    // Local fallback when backend proxy isn't configured in the environment yet
+    if (isMissingBridge) {
       logToBugScanner('Secure bridge unavailable. Falling back to mock data.', { targetEndpoint })
 
       await new Promise((resolve) => setTimeout(resolve, 800))
