@@ -37,7 +37,7 @@ export function IntegrationSettings({
   description: string
 }) {
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
-  const { syncWithBelle, clearPatients } = usePatientStore()
+  const { syncWithBelle } = usePatientStore()
   const { addLog } = useAuditStore()
 
   const [url, setUrl] = useState(belleSoftware.url)
@@ -52,7 +52,8 @@ export function IntegrationSettings({
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
-  const USER_FRIENDLY_ERROR = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
+  const USER_FRIENDLY_ERROR =
+    'Erro ao conectar com o Belle Software. Verifique suas credenciais e tente novamente.'
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -104,16 +105,16 @@ export function IntegrationSettings({
 
       toast({
         title: 'Conexão validada',
-        description: 'Conexão estabelecida com sucesso com a API do Belle Software!',
+        description: 'Conexão estabelecida com sucesso através da ponte de integração!',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(USER_FRIENDLY_ERROR)
+      setErrorFeedback(error.details || USER_FRIENDLY_ERROR)
 
       toast({
         title: 'Falha na Conexão',
-        description: USER_FRIENDLY_ERROR,
+        description: error.details || USER_FRIENDLY_ERROR,
         variant: 'destructive',
       })
     } finally {
@@ -125,6 +126,7 @@ export function IntegrationSettings({
     setLastAction('sync')
     setIsSyncing(true)
     setErrorFeedback(null)
+
     toast({
       title: 'Sincronização Iniciada',
       description: 'Buscando pacientes do Belle Software...',
@@ -134,9 +136,6 @@ export function IntegrationSettings({
       const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
       const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
 
-      // State Reset: clear the existing patient list before populating with new data
-      clearPatients()
-
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(url, cleanToken, cleanEstab),
         fetchBelleAgendamentos(url, cleanToken, undefined, cleanEstab),
@@ -144,7 +143,7 @@ export function IntegrationSettings({
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      // Perform hard reset of local patient state substituting with API data
+      // Performs hard reset atomically to avoid duplication
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
@@ -157,11 +156,11 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(USER_FRIENDLY_ERROR)
+      setErrorFeedback(error.details || USER_FRIENDLY_ERROR)
 
       toast({
         title: 'Falha na Sincronização API',
-        description: USER_FRIENDLY_ERROR,
+        description: error.details || USER_FRIENDLY_ERROR,
         variant: 'destructive',
       })
     } finally {
@@ -218,7 +217,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão Direta (API)
+              Conexão Segura
             </div>
 
             <div className="space-y-2">
@@ -232,7 +231,7 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                As requisições serão feitas diretamente para a API do Belle Software.
+                A integração agora utiliza uma ponte de comunicação interna para maior segurança.
               </p>
             </div>
 
