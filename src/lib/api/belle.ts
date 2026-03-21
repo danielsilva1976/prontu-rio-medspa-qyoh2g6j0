@@ -131,9 +131,6 @@ const belleApiCall = async (
 ) => {
   const endpoint = getApiEndpoint(url, path)
 
-  // CORS Bypass Strategy: Proxies the request to avoid browser block
-  const proxiedEndpoint = `https://corsproxy.io/?url=${encodeURIComponent(endpoint)}`
-
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
@@ -167,7 +164,8 @@ const belleApiCall = async (
       signal: controller.signal,
     }
 
-    const response = await fetch(proxiedEndpoint, options)
+    // Direct fetch to bypass proxy issues and simulate a server-to-server call natively
+    const response = await fetch(endpoint, options)
 
     clearTimeout(timeoutId)
 
@@ -191,7 +189,6 @@ const belleApiCall = async (
 
       logToBugScanner('Failed Belle API Connection', {
         endpoint,
-        proxiedEndpoint,
         status: response.status,
         requestBody,
         responseBody: text,
@@ -201,14 +198,14 @@ const belleApiCall = async (
         throw new Error(`Erro 403 Forbidden. Acesso negado. Detalhes do Belle Software: ${details}`)
       }
       if (response.status === 401) {
-        throw new Error(ERROR_INVALID_TOKEN)
+        throw new Error(`${ERROR_INVALID_TOKEN}. Detalhes: ${details}`)
       }
       if (response.status === 404) {
         throw new Error('URL Base não encontrada. Verifique o endereço')
       }
       if (response.status >= 500) {
         throw new Error(
-          'Erro de rede: O servidor Belle Software está indisponível ou ocorreu um erro interno.',
+          `Erro de rede: O servidor Belle Software está indisponível ou ocorreu um erro interno (Status ${response.status}). Detalhes: ${details}`,
         )
       }
       throw new Error(
@@ -240,7 +237,7 @@ const belleApiCall = async (
         msg.toLowerCase().includes('invali') ||
         msg.toLowerCase().includes('senha')
       ) {
-        throw new Error(ERROR_INVALID_TOKEN)
+        throw new Error(`${ERROR_INVALID_TOKEN}. Detalhes: ${msg}`)
       }
 
       logToBugScanner('Belle API Business Error', {
@@ -259,7 +256,7 @@ const belleApiCall = async (
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
       logToBugScanner('Network/CORS Error', { error: error.message, endpoint })
       throw new Error(
-        'TypeError: Failed to fetch - A conexão foi bloqueada por CORS ou problema de rede. Por favor, tente novamente.',
+        'TypeError: Failed to fetch - A conexão falhou. Verifique se a URL está correta, ou se o servidor bloqueou a requisição (CORS/IP).',
       )
     }
 
