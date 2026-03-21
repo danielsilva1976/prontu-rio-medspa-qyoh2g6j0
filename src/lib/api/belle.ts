@@ -32,8 +32,8 @@ export class BelleProxyError extends Error {
   }
 }
 
-const ERROR_INVALID_TOKEN =
-  'Falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
+const ERROR_USER_FRIENDLY =
+  'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -88,8 +88,8 @@ const belleApiCall = async (
 
     const requestBody = params.toString()
 
-    // Utilize CORS Proxy to bypass browser restrictions for the Belle API
-    const proxyBaseUrl = import.meta.env.VITE_CORS_PROXY_URL || 'https://corsproxy.io/?'
+    // Utilize reliable CORS Proxy to bypass browser restrictions for the Belle API
+    const proxyBaseUrl = import.meta.env.VITE_CORS_PROXY_URL || 'https://corsproxy.org/?'
     const fetchUrl = `${proxyBaseUrl}${encodeURIComponent(endpoint)}`
 
     let response: Response
@@ -110,8 +110,7 @@ const belleApiCall = async (
           url: endpoint,
           method: 'POST',
           error: 'Proxy Connection Failed',
-          details:
-            'Erro ao conectar via CORS Proxy. O serviço de proxy pode estar indisponível no momento.',
+          details: ERROR_USER_FRIENDLY,
         })
       }
       throw err
@@ -127,17 +126,6 @@ const belleApiCall = async (
     }
 
     if (!response.ok) {
-      let detailsMsg = text ? text.substring(0, 250) : 'Sem detalhes adicionais'
-      let parsedBody: any = null
-      try {
-        if (text) {
-          parsedBody = JSON.parse(text)
-          detailsMsg = parsedBody.mensagem || parsedBody.message || parsedBody.error || detailsMsg
-        }
-      } catch (e) {
-        // Keep raw text
-      }
-
       logToBugScanner('Failed Belle API Connection', {
         endpoint,
         status: response.status,
@@ -145,29 +133,11 @@ const belleApiCall = async (
         responseBody: text,
       })
 
-      if (response.status === 403) {
-        throw new BelleProxyError({
-          url: endpoint,
-          method: 'POST',
-          error: '403 Forbidden',
-          details: `Acesso negado. Detalhes do Belle Software: ${detailsMsg}`,
-        })
-      }
-
-      if (response.status === 401) {
-        throw new BelleProxyError({
-          url: endpoint,
-          method: 'POST',
-          error: '401 Unauthorized',
-          details: `${ERROR_INVALID_TOKEN}. Detalhes: ${detailsMsg}`,
-        })
-      }
-
       throw new BelleProxyError({
         url: endpoint,
         method: 'POST',
         error: `Status ${response.status}`,
-        details: `Erro de comunicação com Belle Software: ${detailsMsg}`,
+        details: ERROR_USER_FRIENDLY,
       })
     }
 
@@ -184,35 +154,18 @@ const belleApiCall = async (
         url: endpoint,
         method: 'POST',
         error: 'Invalid Response Format',
-        details: ERROR_INVALID_TOKEN,
+        details: ERROR_USER_FRIENDLY,
       })
     }
 
     const result = JSON.parse(text)
 
     if (result.status === 'erro' || result.status === false || result.error) {
-      const msg = result.mensagem || result.message || result.error || ''
-      if (
-        msg.toLowerCase().includes('token') ||
-        msg.toLowerCase().includes('autentica') ||
-        msg.toLowerCase().includes('auth') ||
-        msg.toLowerCase().includes('login') ||
-        msg.toLowerCase().includes('invali') ||
-        msg.toLowerCase().includes('senha')
-      ) {
-        throw new BelleProxyError({
-          url: endpoint,
-          method: 'POST',
-          error: 'Authentication Error',
-          details: `${ERROR_INVALID_TOKEN}. Detalhes: ${msg}`,
-        })
-      }
-
       throw new BelleProxyError({
         url: endpoint,
         method: 'POST',
         error: 'Belle API Error',
-        details: msg || 'Erro desconhecido retornado pela API.',
+        details: ERROR_USER_FRIENDLY,
       })
     }
 
@@ -233,7 +186,7 @@ const belleApiCall = async (
         url: endpoint,
         method: 'POST',
         error: 'Network Timeout',
-        details: 'Erro de rede: Verifique sua conexão ou a disponibilidade do servidor proxy.',
+        details: ERROR_USER_FRIENDLY,
       })
     }
     throw error

@@ -99,24 +99,16 @@ export default function Patients() {
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Dados fictícios removidos. Foram importados ${result.added} pacientes reais com sucesso.`,
+        description: `Foram importados ${result.added} pacientes reais com sucesso.`,
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-
       addLog(`Erro na Sincronização via Proxy`, 'SYSTEM')
 
-      const isNetworkError =
-        error.message === 'CORS_NETWORK_ERROR' ||
-        error.message === 'TIMEOUT_ERROR' ||
-        error.message?.includes('Erro de comunicação') ||
-        error.message?.includes('Proxy Fetch Error')
-
       toast({
-        title: isNetworkError ? 'Erro de Conexão Proxy' : 'Falha na Sincronização API',
-        description: isNetworkError
-          ? 'Conexão bloqueada ou proxy indisponível. Não foi possível conectar ao servidor.'
-          : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
+        title: 'Falha na Sincronização',
+        description:
+          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
         variant: 'destructive',
       })
     } finally {

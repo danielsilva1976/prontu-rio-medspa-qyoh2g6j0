@@ -31,48 +31,8 @@ type PatientState = {
 
 const PatientContext = createContext<PatientState>({} as PatientState)
 
-// Start with mock data that will be eliminated upon proxy synchronization
-const initialMockPatients: Patient[] = [
-  {
-    id: 'mock-1',
-    name: 'Maria Fernanda Silva (Dados Fictícios)',
-    age: 34,
-    phone: '(11) 98765-4321',
-    dob: '1990-05-15',
-    lastVisit: new Date(Date.now() - 86400000 * 10).toISOString().split('T')[0],
-    nextAppointment: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-    status: 'scheduled',
-    procedures: ['Toxina Botulínica'],
-    professional: 'Dra. Fabíola Kleinert',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=101',
-  },
-  {
-    id: 'mock-2',
-    name: 'João Pedro Costa (Dados Fictícios)',
-    age: 42,
-    phone: '(11) 91234-5678',
-    dob: '1982-10-20',
-    lastVisit: new Date(Date.now() - 86400000 * 30).toISOString().split('T')[0],
-    nextAppointment: null,
-    status: 'active',
-    procedures: ['Laser Fotona'],
-    professional: 'Dra. Fabíola Kleinert',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=102',
-  },
-  {
-    id: 'mock-3',
-    name: 'Ana Luiza Souza (Dados Fictícios)',
-    age: 28,
-    phone: '(11) 99999-8888',
-    dob: '1996-03-08',
-    lastVisit: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0],
-    nextAppointment: new Date(Date.now() + 86400000 * 15).toISOString().split('T')[0],
-    status: 'scheduled',
-    procedures: ['Preenchimento Labial'],
-    professional: 'Dra. Sofia Mendes',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=103',
-  },
-]
+// Emptied initial state to ensure legacy mock data is completely bypassed
+const initialMockPatients: Patient[] = []
 
 export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const [patients, setPatients] = useState<Patient[]>(initialMockPatients)

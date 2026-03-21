@@ -1694,9 +1694,6 @@ video {
 .border-destructive {
   border-color: hsl(var(--destructive));
 }
-.border-destructive\/20 {
-  border-color: hsl(var(--destructive) / 0.2);
-}
 .border-destructive\/50 {
   border-color: hsl(var(--destructive) / 0.5);
 }
@@ -1783,9 +1780,6 @@ video {
 }
 .bg-destructive {
   background-color: hsl(var(--destructive));
-}
-.bg-destructive\/10 {
-  background-color: hsl(var(--destructive) / 0.1);
 }
 .bg-destructive\/5 {
   background-color: hsl(var(--destructive) / 0.05);
@@ -2288,9 +2282,6 @@ video {
 }
 .text-destructive-foreground {
   color: hsl(var(--destructive-foreground));
-}
-.text-destructive\/80 {
-  color: hsl(var(--destructive) / 0.8);
 }
 .text-destructive\/90 {
   color: hsl(var(--destructive) / 0.9);

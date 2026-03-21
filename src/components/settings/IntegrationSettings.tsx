@@ -46,11 +46,13 @@ export function IntegrationSettings({
   const [isTesting, setIsTesting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
-  const [detailedError, setDetailedError] = useState<any>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
+
+  const USER_FRIENDLY_ERROR =
+    'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -91,7 +93,6 @@ export function IntegrationSettings({
 
     setIsTesting(true)
     setErrorFeedback(null)
-    setDetailedError(null)
 
     updateBelleConfig(url, cleanToken, cleanEstab)
 
@@ -99,7 +100,6 @@ export function IntegrationSettings({
       await testBelleConnection(url, cleanToken, cleanEstab)
       setBelleLastSync('success', new Date().toISOString())
       setErrorFeedback(null)
-      setDetailedError(null)
 
       toast({
         title: 'Conexão validada via Proxy',
@@ -108,17 +108,11 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-
-      if (error.name === 'BelleProxyError') {
-        setDetailedError(error.details)
-        setErrorFeedback(error.details?.details || error.details?.error || error.message)
-      } else {
-        setErrorFeedback(error.message)
-      }
+      setErrorFeedback(USER_FRIENDLY_ERROR)
 
       toast({
         title: 'Falha na Conexão Proxy',
-        description: 'Não foi possível conectar. Verifique o alerta para mais detalhes.',
+        description: USER_FRIENDLY_ERROR,
         variant: 'destructive',
       })
     } finally {
@@ -151,15 +145,16 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Total de pacientes sincronizados e dados fictícios removidos: ${result.added + result.updated} registros.`,
+        description: `Total de pacientes sincronizados: ${result.added + result.updated} registros. Dados desatualizados removidos.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(error.details?.details || error.details?.error || error.message)
+      setErrorFeedback(USER_FRIENDLY_ERROR)
+
       toast({
         title: 'Falha na Sincronização API',
-        description: 'Houve um problema de comunicação via Proxy. Verifique o painel.',
+        description: USER_FRIENDLY_ERROR,
         variant: 'destructive',
       })
     } finally {
@@ -274,13 +269,6 @@ export function IntegrationSettings({
               <AlertTitle>Falha de Comunicação via Proxy</AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">{errorFeedback}</p>
-                {detailedError && (
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 overflow-x-auto w-full">
-                    <pre className="text-xs font-mono text-destructive/80 m-0 whitespace-pre-wrap break-words">
-                      {JSON.stringify(detailedError, null, 2)}
-                    </pre>
-                  </div>
-                )}
               </AlertDescription>
             </Alert>
           )}
