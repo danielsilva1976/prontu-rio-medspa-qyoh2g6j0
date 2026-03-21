@@ -45,7 +45,12 @@ export function IntegrationSettings({
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
-  const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
+
+  // Safe state to prevent objects from being injected into the rendering cycle
+  const [errorFeedback, setErrorFeedback] = useState<{ message: string; details: string } | null>(
+    null,
+  )
+
   const [lastAction, setLastAction] = useState<'test' | 'sync' | null>(null)
   const { toast } = useToast()
 
@@ -54,6 +59,39 @@ export function IntegrationSettings({
 
   const USER_FRIENDLY_ERROR =
     'Erro ao conectar com o Belle Software. Verifique suas credenciais e tente novamente.'
+
+  // Helper utility to safely extract a valid string message from any thrown error payload
+  const parseError = (error: any): { message: string; details: string } => {
+    let message = 'Falha de Comunicação'
+    let details = USER_FRIENDLY_ERROR
+
+    if (!error) return { message, details }
+
+    if (typeof error === 'string') {
+      return { message: 'Erro', details: error }
+    }
+
+    if (error instanceof Error) {
+      message = error.message
+      if ('details' in error && error.details) {
+        if (typeof error.details === 'string') {
+          details = error.details
+        } else if (typeof error.details === 'object') {
+          const d = error.details as any
+          details = d.details || d.error || JSON.stringify(d)
+        }
+      }
+    } else if (typeof error === 'object') {
+      message = error.error || error.message || message
+      if (typeof error.details === 'string') {
+        details = error.details
+      } else if (error.details && typeof error.details === 'object') {
+        details = error.details.details || error.details.error || JSON.stringify(error.details)
+      }
+    }
+
+    return { message, details }
+  }
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -110,11 +148,12 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(error.details || USER_FRIENDLY_ERROR)
+      const parsedError = parseError(error)
+      setErrorFeedback(parsedError)
 
       toast({
         title: 'Falha na Conexão',
-        description: error.details || USER_FRIENDLY_ERROR,
+        description: parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -143,7 +182,6 @@ export function IntegrationSettings({
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      // Performs hard reset atomically to avoid duplication
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
@@ -156,11 +194,12 @@ export function IntegrationSettings({
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      setErrorFeedback(error.details || USER_FRIENDLY_ERROR)
+      const parsedError = parseError(error)
+      setErrorFeedback(parsedError)
 
       toast({
         title: 'Falha na Sincronização API',
-        description: error.details || USER_FRIENDLY_ERROR,
+        description: parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -274,9 +313,9 @@ export function IntegrationSettings({
               className="animate-fade-in text-sm overflow-hidden border-destructive/30"
             >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="font-semibold">Falha de Comunicação</AlertTitle>
+              <AlertTitle className="font-semibold">{errorFeedback.message}</AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
-                <p className="font-medium text-destructive/90">{errorFeedback}</p>
+                <p className="font-medium text-destructive/90">{errorFeedback.details}</p>
                 <div className="pt-2 border-t border-destructive/20">
                   <Button
                     variant="outline"

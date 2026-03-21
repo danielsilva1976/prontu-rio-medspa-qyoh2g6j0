@@ -23,12 +23,31 @@ export interface BelleAgendamento {
 }
 
 export class BelleApiError extends Error {
-  public details: any
+  public details: string
 
-  constructor(details: any) {
-    super(details.details || details.error || 'Erro de API')
+  constructor(payload: any) {
+    let message = 'Erro de API'
+    let detailsStr = 'Falha na comunicação com o servidor.'
+
+    if (typeof payload === 'string') {
+      message = payload
+      detailsStr = payload
+    } else if (payload && typeof payload === 'object') {
+      message = payload.error || payload.message || message
+
+      if (typeof payload.details === 'string') {
+        detailsStr = payload.details
+      } else if (payload.details && typeof payload.details === 'object') {
+        detailsStr =
+          payload.details.details || payload.details.error || JSON.stringify(payload.details)
+      } else if (!payload.details && payload.error) {
+        detailsStr = payload.error
+      }
+    }
+
+    super(message)
     this.name = 'BelleApiError'
-    this.details = details
+    this.details = detailsStr
   }
 }
 
