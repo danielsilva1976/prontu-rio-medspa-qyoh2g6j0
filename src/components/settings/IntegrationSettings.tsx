@@ -37,7 +37,7 @@ export function IntegrationSettings({
   description: string
 }) {
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
-  const { syncWithBelle } = usePatientStore()
+  const { syncWithBelle, clearPatients } = usePatientStore()
   const { addLog } = useAuditStore()
 
   const [url, setUrl] = useState(belleSoftware.url)
@@ -52,8 +52,7 @@ export function IntegrationSettings({
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
-  const USER_FRIENDLY_ERROR =
-    'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais e tente novamente.'
+  const USER_FRIENDLY_ERROR = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -104,7 +103,7 @@ export function IntegrationSettings({
       setErrorFeedback(null)
 
       toast({
-        title: 'Conexão validada via Proxy',
+        title: 'Conexão validada',
         description: 'Conexão estabelecida com sucesso com a API do Belle Software!',
         className: 'bg-green-600 text-white border-none',
       })
@@ -113,7 +112,7 @@ export function IntegrationSettings({
       setErrorFeedback(USER_FRIENDLY_ERROR)
 
       toast({
-        title: 'Falha na Conexão Proxy',
+        title: 'Falha na Conexão',
         description: USER_FRIENDLY_ERROR,
         variant: 'destructive',
       })
@@ -128,12 +127,15 @@ export function IntegrationSettings({
     setErrorFeedback(null)
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes do Belle Software via Proxy...',
+      description: 'Buscando pacientes do Belle Software...',
     })
 
     try {
       const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
       const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+      // State Reset: clear the existing patient list before populating with new data
+      clearPatients()
 
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(url, cleanToken, cleanEstab),
@@ -149,8 +151,8 @@ export function IntegrationSettings({
       addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
 
       toast({
-        title: 'Sincronização Concluída',
-        description: `Total de pacientes sincronizados: ${result.added} registros. Dados desatualizados removidos.`,
+        title: 'Sincronização concluída com sucesso',
+        description: `Total de pacientes sincronizados: ${result.added} registros.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -216,7 +218,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão via CORS Proxy
+              Conexão Direta (API)
             </div>
 
             <div className="space-y-2">
@@ -230,8 +232,7 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                As requisições utilizarão automaticamente um proxy para evitar bloqueios do
-                navegador.
+                As requisições serão feitas diretamente para a API do Belle Software.
               </p>
             </div>
 
@@ -274,7 +275,7 @@ export function IntegrationSettings({
               className="animate-fade-in text-sm overflow-hidden border-destructive/30"
             >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="font-semibold">Falha de Comunicação via Proxy</AlertTitle>
+              <AlertTitle className="font-semibold">Falha de Comunicação</AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">{errorFeedback}</p>
                 <div className="pt-2 border-t border-destructive/20">

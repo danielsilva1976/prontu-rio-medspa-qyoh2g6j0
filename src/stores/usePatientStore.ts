@@ -27,6 +27,7 @@ type PatientState = {
   addPatient: (patient: Omit<Patient, 'id'>) => void
   updatePatient: (id: string, data: Partial<Patient>) => void
   syncWithBelle: (belleData: Partial<Patient>[]) => { added: number; updated: number }
+  clearPatients: () => void
 }
 
 const PatientContext = createContext<PatientState>({} as PatientState)
@@ -60,6 +61,8 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const updatePatient = (id: string, data: Partial<Patient>) => {
     setPatients((prev) => prev.map((p) => (p.id === id ? { ...p, ...data } : p)))
   }
+
+  const clearPatients = () => setPatients([])
 
   const syncWithBelle = (belleData: Partial<Patient>[]) => {
     // Purge existing local/mock data and replace entirely with fresh payload from Belle API
@@ -103,7 +106,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
   return createElement(
     PatientContext.Provider,
-    { value: { patients, addPatient, updatePatient, syncWithBelle } },
+    { value: { patients, addPatient, updatePatient, syncWithBelle, clearPatients } },
     children,
   )
 }
