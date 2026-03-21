@@ -95,9 +95,6 @@ const mockAgendamentos: BelleAgendamento[] = [
 const ERROR_INVALID_TOKEN =
   'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
-const ERROR_403_FORBIDDEN =
-  'Erro 403: Acesso Negado. O servidor reconheceu a requisição, mas recusou a autorização. Verifique se o código do estabelecimento (ex: 1) está correto e se o token possui permissões ativas no Belle Software.'
-
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
 
@@ -118,7 +115,7 @@ const getApiEndpoint = (url: string, path: string) => {
 }
 
 /**
- * Função genérica para chamadas na API REST do Belle Software com Proxy CORS
+ * Função genérica para chamadas na API REST do Belle Software
  */
 const belleApiCall = async (
   url: string,
@@ -127,8 +124,7 @@ const belleApiCall = async (
   payload: any = null,
   estabelecimento: string = '',
 ) => {
-  const baseEndpoint = getApiEndpoint(url, path)
-  const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseEndpoint)}`
+  const endpoint = getApiEndpoint(url, path)
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
@@ -158,6 +154,8 @@ const belleApiCall = async (
       },
       body: params.toString(),
       signal: controller.signal,
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
     }
 
     const response = await fetch(endpoint, options)
@@ -167,52 +165,24 @@ const belleApiCall = async (
     let text = ''
     try {
       text = await response.text()
-
-      const responseHeaders: Record<string, string> = {}
-      response.headers.forEach((value, key) => {
-        responseHeaders[key] = value
-      })
-
-      if (response.status === 403) {
-        console.error('[Bug Scanner] Status Code 403: Acesso Negado.', {
-          status: response.status,
-          destinationUrl: endpoint,
-          body: text,
-        })
-      } else {
-        console.log('[Bug Scanner] Belle API Response:', {
-          status: response.status,
-          headers: responseHeaders,
-          body: text,
-          url: endpoint,
-          payload: params.toString(),
-        })
-      }
     } catch (e) {
-      console.error('[Bug Scanner] Failed to read response text', e)
-    }
-
-    if (response.type === 'opaqueredirect' || response.status === 301 || response.status === 302) {
-      throw new Error(ERROR_INVALID_TOKEN)
+      console.error('Failed to read response text', e)
     }
 
     if (!response.ok) {
       if (response.status === 403) {
+        let details = text ? text.substring(0, 250) : 'Sem detalhes adicionais'
         try {
           if (text) {
             const jsonText = JSON.parse(text)
-            if (jsonText.mensagem || jsonText.message) {
-              throw new Error(
-                `Erro 403: Acesso Negado. ${jsonText.mensagem || jsonText.message}. Verifique se o estabelecimento e o token estão corretos.`,
-              )
-            }
+            details = jsonText.mensagem || jsonText.message || jsonText.error || details
           }
         } catch (e) {
-          if (e instanceof Error && e.message.includes('Acesso Negado')) {
-            throw e
-          }
+          // Mantém a string bruta
         }
-        throw new Error(ERROR_403_FORBIDDEN)
+        throw new Error(
+          `Falha na conexão. erro 403. Acesso negado. O servidor reconheceu a requisição, mas recusou a autorização. Detalhes: ${details}`,
+        )
       }
       if (response.status === 401) {
         throw new Error(ERROR_INVALID_TOKEN)
@@ -291,6 +261,11 @@ export const testBelleConnection = async (
     await new Promise((resolve) => setTimeout(resolve, 800))
     if (token === 'wrong' || token === 'invalido') {
       throw new Error(ERROR_INVALID_TOKEN)
+    }
+    if (token === '403') {
+      throw new Error(
+        'Falha na conexão. erro 403. Acesso negado. O servidor reconheceu a requisição, mas recusou a autorização. Detalhes: Permissões insuficientes para este token',
+      )
     }
     return true
   }

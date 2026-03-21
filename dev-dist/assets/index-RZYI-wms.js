@@ -36178,7 +36178,6 @@ var mockAgendamentos = [
 	}
 ];
 var ERROR_INVALID_TOKEN = "falha na conexão: token de autenticação invalido. Verifique dados no Belle software";
-var ERROR_403_FORBIDDEN = "Erro 403: Acesso Negado. O servidor reconheceu a requisição, mas recusou a autorização. Verifique se o código do estabelecimento (ex: 1) está correto e se o token possui permissões ativas no Belle Software.";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -36189,11 +36188,10 @@ var getApiEndpoint = (url, path) => {
 	return `${cleanUrl}${cleanPath}`;
 };
 /**
-* Função genérica para chamadas na API REST do Belle Software com Proxy CORS
+* Função genérica para chamadas na API REST do Belle Software
 */
 var belleApiCall = async (url, token, path, payload = null, estabelecimento = "") => {
-	const baseEndpoint = getApiEndpoint(url, path);
-	const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseEndpoint)}`;
+	const endpoint = getApiEndpoint(url, path);
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), 15e3);
 	try {
@@ -36210,44 +36208,28 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 				Accept: "application/json"
 			},
 			body: params.toString(),
-			signal: controller.signal
+			signal: controller.signal,
+			credentials: "omit",
+			referrerPolicy: "no-referrer"
 		};
 		const response = await fetch(endpoint, options);
 		clearTimeout(timeoutId);
 		let text = "";
 		try {
 			text = await response.text();
-			const responseHeaders = {};
-			response.headers.forEach((value, key) => {
-				responseHeaders[key] = value;
-			});
-			if (response.status === 403) console.error("[Bug Scanner] Status Code 403: Acesso Negado.", {
-				status: response.status,
-				destinationUrl: endpoint,
-				body: text
-			});
-			else console.log("[Bug Scanner] Belle API Response:", {
-				status: response.status,
-				headers: responseHeaders,
-				body: text,
-				url: endpoint,
-				payload: params.toString()
-			});
 		} catch (e) {
-			console.error("[Bug Scanner] Failed to read response text", e);
+			console.error("Failed to read response text", e);
 		}
-		if (response.type === "opaqueredirect" || response.status === 301 || response.status === 302) throw new Error(ERROR_INVALID_TOKEN);
 		if (!response.ok) {
 			if (response.status === 403) {
+				let details = text ? text.substring(0, 250) : "Sem detalhes adicionais";
 				try {
 					if (text) {
 						const jsonText = JSON.parse(text);
-						if (jsonText.mensagem || jsonText.message) throw new Error(`Erro 403: Acesso Negado. ${jsonText.mensagem || jsonText.message}. Verifique se o estabelecimento e o token estão corretos.`);
+						details = jsonText.mensagem || jsonText.message || jsonText.error || details;
 					}
-				} catch (e) {
-					if (e instanceof Error && e.message.includes("Acesso Negado")) throw e;
-				}
-				throw new Error(ERROR_403_FORBIDDEN);
+				} catch (e) {}
+				throw new Error(`Falha na conexão. erro 403. Acesso negado. O servidor reconheceu a requisição, mas recusou a autorização. Detalhes: ${details}`);
 			}
 			if (response.status === 401) throw new Error(ERROR_INVALID_TOKEN);
 			if (response.status === 404) throw new Error("URL Base não encontrada. Verifique o endereço");
@@ -36278,6 +36260,7 @@ var testBelleConnection = async (url, token, estabelecimento = "") => {
 	if (!url || url.includes("mock")) {
 		await new Promise((resolve) => setTimeout(resolve, 800));
 		if (token === "wrong" || token === "invalido") throw new Error(ERROR_INVALID_TOKEN);
+		if (token === "403") throw new Error("Falha na conexão. erro 403. Acesso negado. O servidor reconheceu a requisição, mas recusou a autorização. Detalhes: Permissões insuficientes para este token");
 		return true;
 	}
 	await belleApiCall(url, token, "/api.php", null, estabelecimento);
@@ -51410,4 +51393,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D6DFHfww.js.map
+//# sourceMappingURL=index-RZYI-wms.js.map
