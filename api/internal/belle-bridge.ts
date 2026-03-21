@@ -1,29 +1,103 @@
-// Backend proxy route for Belle Software API integration
+export const OPTIONS = async (req: Request) => {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept',
+    },
+  })
+}
+
+export const POST = async (req: Request) => {
+  try {
+    let bodyText = await req.text().catch(() => '')
+
+    // Fallback for edge cases where parameters might be placed in the URL
+    if (!bodyText && req.url && req.url.includes('?')) {
+      bodyText = req.url.split('?')[1]
+    }
+
+    const params = new URLSearchParams(bodyText)
+    const targetUrl = params.get('target_url')
+
+    if (!targetUrl) {
+      return new Response(
+        JSON.stringify({
+          error: 'Parâmetro ausente',
+          details: 'O parâmetro target_url é obrigatório.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        },
+      )
+    }
+
+    params.delete('target_url')
+
+    const externalResponse = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json, text/plain, */*',
+      },
+      body: params.toString(),
+    })
+
+    const text = await externalResponse.text()
+
+    return new Response(text, {
+      status: externalResponse.status,
+      headers: {
+        'Content-Type': externalResponse.headers.get('Content-Type') || 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    })
+  } catch (error: any) {
+    return new Response(
+      JSON.stringify({
+        error: 'Falha no Bridge Interno',
+        details: error.message || 'Erro inesperado',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      },
+    )
+  }
+}
+
+// Universal handler compatible with both standard Node.js Express and modern Edge functions
 export default async function handler(req: any, res: any) {
-  // Set CORS headers
+  // Edge runtime generic check
+  if (req instanceof Request || (req.headers && typeof req.headers.get === 'function')) {
+    if (req.method === 'OPTIONS') return OPTIONS(req as Request)
+    if (req.method === 'POST') return POST(req as Request)
+    return new Response('Method Not Allowed', { status: 405 })
+  }
+
+  // Node.js Express / Serverless
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
 
   const method = (req.method || '').toUpperCase()
 
-  // Handle preflight requests
   if (method === 'OPTIONS') {
     return res.status(200).end()
   }
 
-  // Method Compatibility - Resolve 405 error by checking uppercase method
   if (method !== 'POST') {
     return res.status(405).json({
       error: 'Method Not Allowed',
-      details: `O endpoint /api/internal/belle-bridge aceita apenas requisições POST. Recebido: ${method}`,
+      details: `O endpoint aceita apenas requisições POST. Recebido: ${method}`,
     })
   }
 
   try {
     let bodyStr = ''
 
-    // Robust parsing to handle different body formats depending on the serverless runtime
     if (typeof req.body === 'string') {
       bodyStr = req.body
     } else if (Buffer.isBuffer(req.body)) {
@@ -34,10 +108,12 @@ export default async function handler(req: any, res: any) {
         p.append(k, String(v))
       }
       bodyStr = p.toString()
-    } else {
-      return res.status(400).json({
-        error: 'Formato inválido',
-        details: 'O corpo da requisição não pôde ser processado.',
+    } else if (req.on) {
+      bodyStr = await new Promise((resolve, reject) => {
+        let data = ''
+        req.on('data', (chunk: any) => (data += chunk))
+        req.on('end', () => resolve(data))
+        req.on('error', reject)
       })
     }
 
@@ -51,10 +127,8 @@ export default async function handler(req: any, res: any) {
       })
     }
 
-    // Remove internal routing param before forwarding
     params.delete('target_url')
 
-    // Secure Data Relay - Forward properly encoded URL parameters
     const externalResponse = await fetch(targetUrl, {
       method: 'POST',
       headers: {
@@ -66,7 +140,6 @@ export default async function handler(req: any, res: any) {
 
     const text = await externalResponse.text()
 
-    // Forward the exact status and content from Belle Software
     res.status(externalResponse.status)
     res.setHeader(
       'Content-Type',

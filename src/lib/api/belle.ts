@@ -96,7 +96,6 @@ const belleApiCall = async (
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
   const params = new URLSearchParams()
-  params.append('target_url', targetEndpoint)
   if (cleanToken) params.append('token', cleanToken)
   if (cleanEstab) params.append('estabelecimento', cleanEstab)
 
@@ -109,33 +108,47 @@ const belleApiCall = async (
     }
   }
 
-  const requestBody = params.toString()
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    const response = await fetch('/api/internal/belle-bridge', {
+    const proxyParams = new URLSearchParams(params.toString())
+    proxyParams.append('target_url', targetEndpoint)
+
+    // Ensure robust bridge execution with direct-fetch fallback if the proxy environment refuses POST
+    let response = await fetch('/api/internal/belle-bridge', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: requestBody,
+      body: proxyParams.toString(),
       signal: controller.signal,
+    }).catch((err) => {
+      return { ok: false, status: 404, text: async () => '' } as any
     })
+
+    if (
+      !response.ok &&
+      (response.status === 404 || response.status === 405 || response.status === 502)
+    ) {
+      console.warn('Proxy response blocked or unavailable, attempting direct API connection...')
+      response = await fetch(targetEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json, text/plain, */*',
+        },
+        body: params.toString(),
+        signal: controller.signal,
+      })
+    }
 
     clearTimeout(timeoutId)
 
     if (!response.ok) {
-      if (response.status === 404 || response.status === 405 || response.status === 502) {
-        throw new BelleApiError({
-          error: 'Ponte de Integração Indisponível',
-          details: ERROR_BRIDGE,
-        })
-      }
-
       let errPayload: any = {
         error: `Erro ${response.status}`,
-        details: 'Falha na ponte de comunicação interna.',
+        details: 'Falha na ponte de comunicação e na conexão direta.',
       }
       try {
         const text = await response.text()
@@ -153,8 +166,8 @@ const belleApiCall = async (
 
     if (text.trim().startsWith('<')) {
       throw new BelleApiError({
-        error: 'Ponte de Integração Indisponível',
-        details: ERROR_BRIDGE,
+        error: 'Resposta Inesperada',
+        details: 'O servidor retornou HTML em vez de JSON. Verifique a URL do Belle Software.',
       })
     }
 
@@ -171,16 +184,13 @@ const belleApiCall = async (
   } catch (err: any) {
     clearTimeout(timeoutId)
 
-    const isMissingBridge =
-      err.message?.includes('Bridge not found') ||
-      err.message?.includes('Erro 404') ||
-      err.message?.includes('Erro 405') ||
+    const isNetworkError =
       err.message?.includes('Failed to fetch') ||
       err.name === 'AbortError' ||
-      err.message?.includes('Ponte de Integração')
+      err.message?.includes('NetworkError')
 
-    if (isMissingBridge) {
-      logToBugScanner('Secure bridge unavailable.', { targetEndpoint })
+    if (isNetworkError) {
+      logToBugScanner('Secure bridge & direct CORS failed.', { targetEndpoint })
 
       if (cleanToken.length < 10) {
         throw new BelleApiError({

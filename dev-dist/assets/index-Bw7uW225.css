@@ -858,6 +858,9 @@ video {
 .mt-4 {
   margin-top: 1rem;
 }
+.mt-5 {
+  margin-top: 1.25rem;
+}
 .mt-6 {
   margin-top: 1.5rem;
 }
@@ -2298,6 +2301,12 @@ video {
 }
 .text-destructive-foreground {
   color: hsl(var(--destructive-foreground));
+}
+.text-destructive\/50 {
+  color: hsl(var(--destructive) / 0.5);
+}
+.text-destructive\/80 {
+  color: hsl(var(--destructive) / 0.8);
 }
 .text-destructive\/90 {
   color: hsl(var(--destructive) / 0.9);

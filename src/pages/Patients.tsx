@@ -24,6 +24,7 @@ export default function Patients() {
   const { toast } = useToast()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const hasAttemptedAutoSync = useRef(false)
 
   // Security Compliance: Only authenticated Admin/Médico can trigger sync
@@ -53,7 +54,7 @@ export default function Patients() {
         return bToday - aToday // Pin today's appointments to the top
       }
 
-      // Fallback: sort alphabetically (days without appointments will still list the full base)
+      // Fallback: sort alphabetically
       return a.name.localeCompare(b.name)
     })
   }, [filteredPatients])
@@ -79,8 +80,10 @@ export default function Patients() {
     }
 
     setIsSyncing(true)
+    setErrorMsg(null)
+
     try {
-      // Fetch entire client database using get_clientes via proxy
+      // Fetch entire client database using get_clientes via correctly setup integration
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
         fetchBelleAgendamentos(
@@ -106,18 +109,24 @@ export default function Patients() {
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      addLog(`Erro na Sincronização via Proxy`, 'SYSTEM')
+      addLog(`Erro na Sincronização via API`, 'SYSTEM')
 
       const isBridgeError =
         error.message?.includes('Ponte') ||
         error.details?.includes('Ponte') ||
         error.message?.includes('405')
 
+      const displayError = isBridgeError
+        ? ERROR_BRIDGE
+        : error.details ||
+          error.message ||
+          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
+
+      setErrorMsg(displayError)
+
       toast({
         title: 'Falha na Sincronização',
-        description: isBridgeError
-          ? ERROR_BRIDGE
-          : 'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
+        description: displayError,
         variant: 'destructive',
       })
     } finally {
@@ -203,7 +212,7 @@ export default function Patients() {
                 <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
                   <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
                   <p className="text-muted-foreground font-medium animate-pulse">
-                    Sincronizando... Conectando via Proxy e baixando base real de clientes...
+                    Sincronizando... Conectando à API e baixando base real de clientes...
                   </p>
                 </div>
                 <div className="space-y-4">
@@ -211,6 +220,22 @@ export default function Patients() {
                   <Skeleton className="h-32 w-full rounded-xl" />
                   <Skeleton className="h-32 w-full rounded-xl" />
                 </div>
+              </div>
+            ) : errorMsg ? (
+              <div className="text-center py-12 bg-destructive/5 rounded-xl border border-dashed border-destructive/30">
+                <AlertCircle className="w-10 h-10 text-destructive/50 mx-auto mb-3" />
+                <p className="text-destructive font-medium text-lg">
+                  Não foi possível carregar os dados
+                </p>
+                <p className="text-destructive/80 text-sm mt-2 max-w-md mx-auto">{errorMsg}</p>
+                <Button
+                  variant="outline"
+                  className="mt-5 border-destructive/30 text-destructive hover:bg-destructive/10"
+                  onClick={handleSync}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Tentar Novamente
+                </Button>
               </div>
             ) : sortedPatients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
