@@ -2,19 +2,21 @@
 export default async function handler(req: any, res: any) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
+
+  const method = (req.method || '').toUpperCase()
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
+  if (method === 'OPTIONS') {
     return res.status(200).end()
   }
 
-  // Method Compatibility - Resolve 405 error by strictly accepting POST
-  if (req.method !== 'POST') {
+  // Method Compatibility - Resolve 405 error by checking uppercase method
+  if (method !== 'POST') {
     return res.status(405).json({
       error: 'Method Not Allowed',
-      details: 'O endpoint /api/internal/belle-bridge aceita apenas requisições POST.',
+      details: `O endpoint /api/internal/belle-bridge aceita apenas requisições POST. Recebido: ${method}`,
     })
   }
 
@@ -24,7 +26,7 @@ export default async function handler(req: any, res: any) {
     // Robust parsing to handle different body formats depending on the serverless runtime
     if (typeof req.body === 'string') {
       bodyStr = req.body
-    } else if (req.body instanceof Buffer) {
+    } else if (Buffer.isBuffer(req.body)) {
       bodyStr = req.body.toString('utf-8')
     } else if (typeof req.body === 'object' && req.body !== null) {
       const p = new URLSearchParams()

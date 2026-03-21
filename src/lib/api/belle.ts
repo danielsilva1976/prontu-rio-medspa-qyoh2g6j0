@@ -58,6 +58,9 @@ export class BelleApiError extends Error {
 const ERROR_USER_FRIENDLY =
   'Falha na comunicação. Verifique suas credenciais de acesso ao Belle Software.'
 
+const ERROR_BRIDGE =
+  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+
 const logToBugScanner = (context: string, details: any) => {
   console.info(`[System Audit] ${context}:`, JSON.stringify(details, null, 2))
 }
@@ -126,8 +129,7 @@ const belleApiCall = async (
       if (response.status === 404 || response.status === 405 || response.status === 502) {
         throw new BelleApiError({
           error: 'Ponte de Integração Indisponível',
-          details:
-            'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+          details: ERROR_BRIDGE,
         })
       }
 
@@ -152,8 +154,7 @@ const belleApiCall = async (
     if (text.trim().startsWith('<')) {
       throw new BelleApiError({
         error: 'Ponte de Integração Indisponível',
-        details:
-          'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+        details: ERROR_BRIDGE,
       })
     }
 
@@ -175,7 +176,8 @@ const belleApiCall = async (
       err.message?.includes('Erro 404') ||
       err.message?.includes('Erro 405') ||
       err.message?.includes('Failed to fetch') ||
-      err.name === 'AbortError'
+      err.name === 'AbortError' ||
+      err.message?.includes('Ponte de Integração')
 
     if (isMissingBridge) {
       logToBugScanner('Secure bridge unavailable.', { targetEndpoint })
@@ -190,8 +192,7 @@ const belleApiCall = async (
 
       throw new BelleApiError({
         error: 'Ponte de Integração Indisponível',
-        details:
-          'Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.',
+        details: ERROR_BRIDGE,
       })
     }
 

@@ -29,6 +29,9 @@ import {
   mapBelleDataToPatients,
 } from '@/lib/api/belle'
 
+const ERROR_BRIDGE =
+  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+
 export function IntegrationSettings({
   title,
   description,
@@ -151,12 +154,14 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
+      const isBridgeError =
+        parsedError.message.includes('Ponte') ||
+        parsedError.details.includes('Ponte') ||
+        parsedError.message.includes('405')
+
       toast({
         title: 'Falha na Conexão',
-        description:
-          parsedError.message === 'Ponte de Integração Indisponível'
-            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-            : parsedError.details || parsedError.message,
+        description: isBridgeError ? ERROR_BRIDGE : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -200,12 +205,14 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
+      const isBridgeError =
+        parsedError.message.includes('Ponte') ||
+        parsedError.details.includes('Ponte') ||
+        parsedError.message.includes('405')
+
       toast({
         title: 'Falha na Sincronização API',
-        description:
-          parsedError.message === 'Ponte de Integração Indisponível'
-            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-            : parsedError.details || parsedError.message,
+        description: isBridgeError ? ERROR_BRIDGE : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -320,14 +327,16 @@ export function IntegrationSettings({
             >
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="font-semibold">
-                {errorFeedback.message === 'Ponte de Integração Indisponível'
+                {errorFeedback.message.includes('Ponte') || errorFeedback.message.includes('405')
                   ? 'Ponte de Integração Indisponível'
                   : errorFeedback.message}
               </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">
-                  {errorFeedback.message === 'Ponte de Integração Indisponível'
-                    ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+                  {errorFeedback.message.includes('Ponte') ||
+                  errorFeedback.details.includes('Ponte') ||
+                  errorFeedback.message.includes('405')
+                    ? ERROR_BRIDGE
                     : errorFeedback.details}
                 </p>
                 <div className="pt-2 border-t border-destructive/20">

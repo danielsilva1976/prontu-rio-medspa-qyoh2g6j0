@@ -24,7 +24,7 @@ export function PatientCard({ patient }: { patient: Patient }) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
             <h3 className="font-medium text-lg text-foreground group-hover:text-primary transition-colors">
               {patient.name}
             </h3>
@@ -36,13 +36,29 @@ export function PatientCard({ patient }: { patient: Patient }) {
                 Hoje
               </Badge>
             )}
+            {patient.status === 'scheduled' && (
+              <Badge
+                variant="secondary"
+                className="bg-blue-500/10 text-blue-600 border-none text-[10px] px-2 py-0 h-5"
+              >
+                Agendado
+              </Badge>
+            )}
+            {patient.status === 'active' && (
+              <Badge
+                variant="secondary"
+                className="bg-green-500/10 text-green-600 border-none text-[10px] px-2 py-0 h-5"
+              >
+                Ativo
+              </Badge>
+            )}
             <PatientDialog
               patient={patient}
               trigger={
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity ml-1"
                   title="Editar Paciente"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -50,7 +66,9 @@ export function PatientCard({ patient }: { patient: Patient }) {
               }
             />
           </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground mt-0.5">
+            {patient.cpf && <span>CPF: {patient.cpf}</span>}
+            {patient.cpf && <span>•</span>}
             <span>ID: {patient.id.toUpperCase()}</span>
             <span>•</span>
             <span>{patient.age} anos</span>

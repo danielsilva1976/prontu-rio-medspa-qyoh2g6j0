@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,6 +13,9 @@ import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
 import { fetchBelleClientes, fetchBelleAgendamentos, mapBelleDataToPatients } from '@/lib/api/belle'
 
+const ERROR_BRIDGE =
+  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
+
 export default function Patients() {
   const { patients, isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
@@ -21,6 +24,7 @@ export default function Patients() {
   const { toast } = useToast()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const hasAttemptedAutoSync = useRef(false)
 
   // Security Compliance: Only authenticated Admin/Médico can trigger sync
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
@@ -104,18 +108,37 @@ export default function Patients() {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro na Sincronização via Proxy`, 'SYSTEM')
 
+      const isBridgeError =
+        error.message?.includes('Ponte') ||
+        error.details?.includes('Ponte') ||
+        error.message?.includes('405')
+
       toast({
         title: 'Falha na Sincronização',
-        description:
-          error.message === 'Ponte de Integração Indisponível'
-            ? 'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-            : 'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
+        description: isBridgeError
+          ? ERROR_BRIDGE
+          : 'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.',
         variant: 'destructive',
       })
     } finally {
       setIsSyncing(false)
     }
   }
+
+  // Automatic Sync Check when accessing the route and list is empty
+  useEffect(() => {
+    if (
+      !hasAttemptedAutoSync.current &&
+      patients.length === 0 &&
+      canSync &&
+      belleSoftware.url &&
+      belleSoftware.token
+    ) {
+      hasAttemptedAutoSync.current = true
+      handleSync()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patients.length, canSync, belleSoftware.url, belleSoftware.token])
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
@@ -170,7 +193,7 @@ export default function Patients() {
               className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={isSyncing || patients.length === 0}
+              disabled={isSyncing}
             />
           </div>
 
@@ -180,7 +203,7 @@ export default function Patients() {
                 <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
                   <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
                   <p className="text-muted-foreground font-medium animate-pulse">
-                    Conectando via Proxy e baixando base real de clientes...
+                    Sincronizando... Conectando via Proxy e baixando base real de clientes...
                   </p>
                 </div>
                 <div className="space-y-4">
