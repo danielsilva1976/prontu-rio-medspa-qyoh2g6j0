@@ -36126,8 +36126,10 @@ var BelleApiError = class extends Error {
 };
 var ERROR_USER_FRIENDLY = "Falha na comunicação. Verifique suas credenciais de acesso ao Belle Software.";
 var ERROR_BRIDGE$2 = "Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.";
+var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 var logToBugScanner = (context, details) => {
-	console.info(`[System Audit] ${context}:`, JSON.stringify(details, null, 2));
+	const safeDetails = { ...details };
+	if (safeDetails.targetEndpoint) console.info(`[System Audit] ${context}:`, JSON.stringify(safeDetails, null, 2));
 };
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
@@ -36138,7 +36140,7 @@ var getApiEndpoint = (url, path) => {
 	const cleanPath = path.startsWith("/") ? path : `/${path}`;
 	return `${cleanUrl}${cleanPath}`;
 };
-var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1") => {
+var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1", retries = 3) => {
 	const targetEndpoint = getApiEndpoint(url, path);
 	const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, "") : "";
 	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
@@ -36146,77 +36148,119 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 	if (cleanToken) params.append("token", cleanToken);
 	if (cleanEstab) params.append("estabelecimento", cleanEstab);
 	if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), 15e3);
-	try {
-		const proxyParams = new URLSearchParams(params.toString());
-		proxyParams.append("target_url", targetEndpoint);
-		let response = await fetch("/api/internal/belle-bridge", {
-			method: "POST",
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: proxyParams.toString(),
-			signal: controller.signal
-		}).catch((err) => {
-			return {
-				ok: false,
-				status: 404,
-				text: async () => ""
-			};
-		});
-		if (!response.ok && (response.status === 404 || response.status === 405 || response.status === 502)) {
-			console.warn("Proxy response blocked or unavailable, attempting direct API connection...");
-			response = await fetch(targetEndpoint, {
+	let attempt = 0;
+	while (attempt < retries) {
+		attempt++;
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 15e3);
+		try {
+			const proxyParams = new URLSearchParams(params.toString());
+			proxyParams.append("target_url", targetEndpoint);
+			let response = await fetch("/api/internal/belle-bridge", {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					Accept: "application/json, text/plain, */*"
-				},
-				body: params.toString(),
+				headers: { "Content-Type": "application/x-www-form-urlencoded" },
+				body: proxyParams.toString(),
 				signal: controller.signal
+			}).catch(() => {
+				return {
+					ok: false,
+					status: 404,
+					text: async () => ""
+				};
 			});
-		}
-		clearTimeout(timeoutId);
-		if (!response.ok) {
-			let errPayload = {
-				error: `Erro ${response.status}`,
-				details: "Falha na ponte de comunicação e na conexão direta."
-			};
+			if (!response.ok && (response.status === 404 || response.status === 405 || response.status === 502)) {
+				console.warn("Proxy blocked or unavailable, attempting direct API connection...");
+				response = await fetch(targetEndpoint, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+						Accept: "application/json, text/plain, */*"
+					},
+					body: params.toString(),
+					signal: controller.signal
+				});
+			}
+			clearTimeout(timeoutId);
+			if (!response.ok) {
+				if (response.status >= 500 && attempt < retries) {
+					await sleep(1e3 * attempt);
+					continue;
+				}
+				let errPayload = {
+					error: `Erro HTTP ${response.status}`,
+					details: "Falha na comunicação com a API."
+				};
+				try {
+					const text = await response.text();
+					if (text) {
+						errPayload.details = text;
+						if (text.trim().startsWith("{")) {
+							const parsed = JSON.parse(text);
+							errPayload = {
+								...errPayload,
+								...parsed
+							};
+						}
+					}
+				} catch (e) {}
+				if (response.status === 405) {
+					errPayload.error = "Método Não Permitido (405)";
+					errPayload.details = "A API do Belle Software rejeitou a conexão. Verifique se a URL base termina em /api.php.";
+				}
+				throw new BelleApiError(errPayload);
+			}
+			const text = await response.text();
+			if (text.trim().startsWith("<")) {
+				if (attempt < retries) {
+					await sleep(1e3 * attempt);
+					continue;
+				}
+				throw new BelleApiError({
+					error: "Resposta Inesperada (HTML)",
+					details: "A API retornou uma página HTML em vez de JSON. Verifique a URL do Belle Software."
+				});
+			}
+			let result;
 			try {
-				const text = await response.text();
-				if (text) errPayload.details = text;
-				if (text.trim().startsWith("{")) errPayload = JSON.parse(text);
-			} catch (e) {}
-			throw new BelleApiError(errPayload);
-		}
-		const text = await response.text();
-		if (text.trim().startsWith("<")) throw new BelleApiError({
-			error: "Resposta Inesperada",
-			details: "O servidor retornou HTML em vez de JSON. Verifique a URL do Belle Software."
-		});
-		const result = JSON.parse(text);
-		if (result.status === "erro" || result.status === false || result.error) throw new BelleApiError({
-			error: result.error || result.mensagem || "Erro na API do Belle Software",
-			details: result.details || ERROR_USER_FRIENDLY
-		});
-		return result.data || result.dados || result;
-	} catch (err) {
-		clearTimeout(timeoutId);
-		if (err.message?.includes("Failed to fetch") || err.name === "AbortError" || err.message?.includes("NetworkError")) {
-			logToBugScanner("Secure bridge & direct CORS failed.", { targetEndpoint });
-			if (cleanToken.length < 10) throw new BelleApiError({
-				error: "Token Inválido",
-				details: "O token de acesso informado é muito curto ou inválido. Verifique suas configurações."
+				result = JSON.parse(text);
+			} catch (e) {
+				throw new BelleApiError({
+					error: "Resposta Inválida",
+					details: "A API não retornou um JSON válido."
+				});
+			}
+			if (result.status === "erro" || result.status === false || result.error) throw new BelleApiError({
+				error: result.error || result.mensagem || "Falha na Autenticação",
+				details: result.details || result.mensagem || ERROR_USER_FRIENDLY
 			});
+			return result.data || result.dados || result;
+		} catch (err) {
+			clearTimeout(timeoutId);
+			if (err.message?.includes("Failed to fetch") || err.name === "AbortError" || err.message?.includes("NetworkError")) {
+				logToBugScanner("Secure bridge & direct CORS failed.", { targetEndpoint });
+				if (attempt < retries) {
+					await sleep(1e3 * attempt);
+					continue;
+				}
+				if (cleanToken.length < 10) throw new BelleApiError({
+					error: "Falha na Autenticação",
+					details: "O token de acesso informado é muito curto ou inválido."
+				});
+				throw new BelleApiError({
+					error: "Ponte de Integração Indisponível",
+					details: ERROR_BRIDGE$2
+				});
+			}
+			if (err instanceof BelleApiError) throw err;
+			if (attempt < retries) {
+				await sleep(1e3 * attempt);
+				continue;
+			}
 			throw new BelleApiError({
-				error: "Ponte de Integração Indisponível",
-				details: ERROR_BRIDGE$2
+				error: "Erro Inesperado",
+				details: err?.message || "Falha na execução da requisição."
 			});
 		}
-		if (err instanceof BelleApiError) throw err;
-		throw new BelleApiError({
-			error: err?.message || "Falha na conexão com a API",
-			details: ERROR_USER_FRIENDLY
-		});
 	}
 };
 var testBelleConnection = async (url, token, estabelecimento = "1") => {
@@ -36266,7 +36310,11 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 			lastVisit,
 			nextAppointment,
 			procedures: Array.from(procedures),
-			history: c.historico_clinico || ""
+			history: c.historico_clinico || "",
+			rg: c.rg || "",
+			profissao: c.profissao || "",
+			estado_civil: c.estado_civil || "",
+			endereco: c.endereco || ""
 		};
 	});
 };
@@ -36329,10 +36377,12 @@ function Patients() {
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			addLog(`Erro na Sincronização via API`, "SYSTEM");
-			const displayError = error.message?.includes("Ponte") || error.details?.includes("Ponte") || error.message?.includes("405") ? ERROR_BRIDGE$1 : error.details || error.message || "Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.";
+			const isBridgeError = error.message?.includes("Ponte") || error.details?.includes("Ponte") || error.message?.includes("405");
+			const isAuthError = error.message?.toLowerCase().includes("autentica") || error.details?.toLowerCase().includes("token");
+			const displayError = isBridgeError ? ERROR_BRIDGE$1 : isAuthError ? "Falha na Autenticação: Verifique seu Token nas Configurações." : error.details || error.message || "Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.";
 			setErrorMsg(displayError);
 			toast({
-				title: "Falha na Sincronização",
+				title: isAuthError ? "Falha na Autenticação" : "Falha na Sincronização",
 				description: displayError,
 				variant: "destructive"
 			});
@@ -50552,16 +50602,18 @@ function IntegrationSettings({ title, description }) {
 			setErrorFeedback(null);
 			toast({
 				title: "Conexão validada",
-				description: "Conexão estabelecida com sucesso através da ponte de integração!",
+				description: "Conexão estabelecida com sucesso com a API do Belle Software!",
 				className: "bg-green-600 text-white border-none"
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			const parsedError = parseError(error);
 			setErrorFeedback(parsedError);
+			const isBridgeError = parsedError.message.includes("Ponte") || parsedError.details.includes("Ponte") || parsedError.message.includes("405");
+			const isAuthError = parsedError.message.toLowerCase().includes("autentica") || parsedError.details.toLowerCase().includes("token");
 			toast({
-				title: "Falha na Conexão",
-				description: parsedError.message.includes("Ponte") || parsedError.details.includes("Ponte") || parsedError.message.includes("405") ? ERROR_BRIDGE : parsedError.details || parsedError.message,
+				title: isAuthError ? "Falha na Autenticação" : "Falha na Conexão",
+				description: isBridgeError ? ERROR_BRIDGE : isAuthError ? "Verifique seu Token e Estabelecimento." : parsedError.details || parsedError.message,
 				variant: "destructive"
 			});
 		} finally {
@@ -50574,7 +50626,7 @@ function IntegrationSettings({ title, description }) {
 		setErrorFeedback(null);
 		toast({
 			title: "Sincronização Iniciada",
-			description: "Buscando pacientes do Belle Software..."
+			description: "Buscando pacientes reais do Belle Software..."
 		});
 		try {
 			const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, "");
@@ -50585,16 +50637,18 @@ function IntegrationSettings({ title, description }) {
 			addLog("Sincronização Belle Software (Pacientes e Agenda)", "SYSTEM");
 			toast({
 				title: "Sincronização concluída com sucesso",
-				description: `Total de pacientes sincronizados: ${result.added} registros.`,
+				description: `Total de pacientes sincronizados: ${result.added} registros reais.`,
 				className: "bg-green-600 text-white border-none"
 			});
 		} catch (error) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			const parsedError = parseError(error);
 			setErrorFeedback(parsedError);
+			const isBridgeError = parsedError.message.includes("Ponte") || parsedError.details.includes("Ponte") || parsedError.message.includes("405");
+			const isAuthError = parsedError.message.toLowerCase().includes("autentica") || parsedError.details.toLowerCase().includes("token");
 			toast({
-				title: "Falha na Sincronização API",
-				description: parsedError.message.includes("Ponte") || parsedError.details.includes("Ponte") || parsedError.message.includes("405") ? ERROR_BRIDGE : parsedError.details || parsedError.message,
+				title: isAuthError ? "Falha na Autenticação" : "Falha na Sincronização",
+				description: isBridgeError ? ERROR_BRIDGE : isAuthError ? "Verifique seu Token e Estabelecimento." : parsedError.details || parsedError.message,
 				variant: "destructive"
 			});
 		} finally {
@@ -50613,84 +50667,84 @@ function IntegrationSettings({ title, description }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/IntegrationSettings.tsx:238:5",
+		"data-uid": "src/components/settings/IntegrationSettings.tsx:252:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:239:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:253:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:240:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:254:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:241:11",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:255:11",
 					"data-prohibitions": "[editContent]",
 					className: "text-xl text-primary font-serif",
 					children: title
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:242:11",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:256:11",
 					"data-prohibitions": "[editContent]",
 					children: description
 				})]
 			}), isConnected ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:245:11",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:259:11",
 				"data-prohibitions": "[]",
 				variant: "outline",
 				className: "bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Wifi, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:249:13",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:263:13",
 					"data-prohibitions": "[editContent]",
 					className: "w-3.5 h-3.5 mr-1.5"
 				}), "Conectado"]
 			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:253:11",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:267:11",
 				"data-prohibitions": "[editContent]",
 				variant: "outline",
 				className: cn$1("py-1.5 px-3 font-medium", isError ? "bg-red-500/10 text-red-600 border-red-500/20" : "bg-muted/50 text-muted-foreground border-border/50"),
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(WifiOff, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:262:13",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:276:13",
 					"data-prohibitions": "[editContent]",
 					className: "w-3.5 h-3.5 mr-1.5"
 				}), isError ? "Falha na Conexão" : "Desconectado"]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:267:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:281:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:268:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:282:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6 max-w-xl",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:269:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:283:11",
 						"data-prohibitions": "[]",
 						className: "bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:270:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:284:13",
 								"data-prohibitions": "[]",
 								className: "flex items-center gap-2 text-primary font-medium mb-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ServerCrash, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:271:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:285:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-5 h-5"
 								}), "Conexão Segura"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:275:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:289:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:276:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:290:15",
 										"data-prohibitions": "[]",
 										htmlFor: "api-url",
 										children: "URL Base do Belle Software"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:277:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:291:15",
 										"data-prohibitions": "[editContent]",
 										id: "api-url",
 										placeholder: "Ex: https://dominio.bellesoftware.com.br",
@@ -50700,39 +50754,39 @@ function IntegrationSettings({ title, description }) {
 										className: "bg-white font-mono text-sm"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:285:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:299:15",
 										"data-prohibitions": "[]",
 										className: "text-xs text-muted-foreground mt-1",
-										children: "A integração agora utiliza uma ponte de comunicação interna para maior segurança."
+										children: "A integração suporta form-encoded payload seguindo a documentação oficial."
 									})
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:290:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:304:13",
 								"data-prohibitions": "[]",
 								className: "grid gap-4 sm:grid-cols-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:291:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:305:15",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:292:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:306:17",
 										"data-prohibitions": "[]",
 										htmlFor: "api-token",
 										children: "Token de Acesso"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:293:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:307:17",
 										"data-prohibitions": "[]",
 										className: "relative",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Key, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:294:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:308:19",
 											"data-prohibitions": "[editContent]",
 											className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:295:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:309:19",
 											"data-prohibitions": "[editContent]",
 											id: "api-token",
-											type: "text",
+											type: "password",
 											placeholder: "Cole seu token gerado...",
 											value: token,
 											onChange: (e) => setToken(e.target.value),
@@ -50740,24 +50794,24 @@ function IntegrationSettings({ title, description }) {
 										})]
 									})]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:306:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:320:15",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:307:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:321:17",
 										"data-prohibitions": "[]",
 										htmlFor: "api-estabelecimento",
 										children: "Código do Estabelecimento"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:308:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:322:17",
 										"data-prohibitions": "[]",
 										className: "relative",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Building2, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:309:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:323:19",
 											"data-prohibitions": "[editContent]",
 											className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:310:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:324:19",
 											"data-prohibitions": "[editContent]",
 											id: "api-estabelecimento",
 											type: "number",
@@ -50772,37 +50826,37 @@ function IntegrationSettings({ title, description }) {
 						]
 					}),
 					errorFeedback && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Alert, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:324:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:338:13",
 						"data-prohibitions": "[editContent]",
 						variant: "destructive",
 						className: "animate-fade-in text-sm overflow-hidden border-destructive/30",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:328:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:342:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-4 w-4"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertTitle, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:329:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:343:15",
 								"data-prohibitions": "[editContent]",
 								className: "font-semibold",
-								children: errorFeedback.message.includes("Ponte") || errorFeedback.message.includes("405") ? "Ponte de Integração Indisponível" : errorFeedback.message
+								children: errorFeedback.message.includes("Ponte") || errorFeedback.message.includes("405") ? "Ponte de Integração Indisponível" : errorFeedback.message.toLowerCase().includes("autentica") || errorFeedback.details.toLowerCase().includes("token") ? "Falha na Autenticação" : errorFeedback.message
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDescription, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:334:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:351:15",
 								"data-prohibitions": "[editContent]",
 								className: "space-y-3 mt-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:335:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:352:17",
 									"data-prohibitions": "[editContent]",
 									className: "font-medium text-destructive/90",
 									children: errorFeedback.message.includes("Ponte") || errorFeedback.details.includes("Ponte") || errorFeedback.message.includes("405") ? ERROR_BRIDGE : errorFeedback.details
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:342:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:359:17",
 									"data-prohibitions": "[]",
 									className: "pt-2 border-t border-destructive/20",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:343:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:360:19",
 										"data-prohibitions": "[]",
 										variant: "outline",
 										size: "sm",
@@ -50812,7 +50866,7 @@ function IntegrationSettings({ title, description }) {
 										},
 										className: "bg-destructive/5 border-destructive/30 hover:bg-destructive/10 text-destructive h-8",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:352:21",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:369:21",
 											"data-prohibitions": "[editContent]",
 											className: "w-3.5 h-3.5 mr-2"
 										}), "Tentar Novamente"]
@@ -50822,50 +50876,50 @@ function IntegrationSettings({ title, description }) {
 						]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:360:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:377:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap justify-end gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:361:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:378:13",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: handleSave,
 								className: "rounded-xl",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:362:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:379:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), "Salvar Apenas"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:365:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:382:13",
 								"data-prohibitions": "[editContent]",
 								onClick: handleTestConnection,
 								disabled: isTesting || isSyncing || !url.trim() || !token.trim() || !estabelecimento.trim(),
 								className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]",
 								children: [isTesting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:373:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:390:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:375:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:392:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isTesting ? "Testando..." : "Testar Conexão"]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:380:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:397:15",
 								"data-prohibitions": "[editContent]",
 								onClick: handleSyncPatients,
 								disabled: isSyncing || isTesting,
 								className: "bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl min-w-[160px]",
 								children: [isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:386:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:403:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:388:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:405:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isSyncing ? "Sincronizando..." : "Sincronizar Pacientes"]
@@ -51513,4 +51567,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BsXoQuh5.js.map
+//# sourceMappingURL=index-B0cLvfwG.js.map

@@ -48,7 +48,6 @@ export function IntegrationSettings({
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
 
-  // Safe state to prevent objects from being injected into the rendering cycle
   const [errorFeedback, setErrorFeedback] = useState<{ message: string; details: string } | null>(
     null,
   )
@@ -62,7 +61,6 @@ export function IntegrationSettings({
   const USER_FRIENDLY_ERROR =
     'Erro ao conectar com o Belle Software. Verifique suas credenciais e tente novamente.'
 
-  // Highly resilient parser to guarantee strings for UI stability
   const parseError = (error: any): { message: string; details: string } => {
     let message = 'Falha de Comunicação'
     let details = USER_FRIENDLY_ERROR
@@ -146,7 +144,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Conexão validada',
-        description: 'Conexão estabelecida com sucesso através da ponte de integração!',
+        description: 'Conexão estabelecida com sucesso com a API do Belle Software!',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -159,9 +157,17 @@ export function IntegrationSettings({
         parsedError.details.includes('Ponte') ||
         parsedError.message.includes('405')
 
+      const isAuthError =
+        parsedError.message.toLowerCase().includes('autentica') ||
+        parsedError.details.toLowerCase().includes('token')
+
       toast({
-        title: 'Falha na Conexão',
-        description: isBridgeError ? ERROR_BRIDGE : parsedError.details || parsedError.message,
+        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Conexão',
+        description: isBridgeError
+          ? ERROR_BRIDGE
+          : isAuthError
+            ? 'Verifique seu Token e Estabelecimento.'
+            : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -176,7 +182,7 @@ export function IntegrationSettings({
 
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes do Belle Software...',
+      description: 'Buscando pacientes reais do Belle Software...',
     })
 
     try {
@@ -197,7 +203,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sincronização concluída com sucesso',
-        description: `Total de pacientes sincronizados: ${result.added} registros.`,
+        description: `Total de pacientes sincronizados: ${result.added} registros reais.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -210,9 +216,17 @@ export function IntegrationSettings({
         parsedError.details.includes('Ponte') ||
         parsedError.message.includes('405')
 
+      const isAuthError =
+        parsedError.message.toLowerCase().includes('autentica') ||
+        parsedError.details.toLowerCase().includes('token')
+
       toast({
-        title: 'Falha na Sincronização API',
-        description: isBridgeError ? ERROR_BRIDGE : parsedError.details || parsedError.message,
+        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização',
+        description: isBridgeError
+          ? ERROR_BRIDGE
+          : isAuthError
+            ? 'Verifique seu Token e Estabelecimento.'
+            : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -283,7 +297,7 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                A integração agora utiliza uma ponte de comunicação interna para maior segurança.
+                A integração suporta form-encoded payload seguindo a documentação oficial.
               </p>
             </div>
 
@@ -294,7 +308,7 @@ export function IntegrationSettings({
                   <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="api-token"
-                    type="text"
+                    type="password"
                     placeholder="Cole seu token gerado..."
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
@@ -329,7 +343,10 @@ export function IntegrationSettings({
               <AlertTitle className="font-semibold">
                 {errorFeedback.message.includes('Ponte') || errorFeedback.message.includes('405')
                   ? 'Ponte de Integração Indisponível'
-                  : errorFeedback.message}
+                  : errorFeedback.message.toLowerCase().includes('autentica') ||
+                      errorFeedback.details.toLowerCase().includes('token')
+                    ? 'Falha na Autenticação'
+                    : errorFeedback.message}
               </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
                 <p className="font-medium text-destructive/90">

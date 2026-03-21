@@ -27,7 +27,6 @@ export default function Patients() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const hasAttemptedAutoSync = useRef(false)
 
-  // Security Compliance: Only authenticated Admin/Médico can trigger sync
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
 
   const filteredPatients = patients.filter(
@@ -51,10 +50,9 @@ export default function Patients() {
       const bToday = isToday(b.nextAppointment) ? 1 : 0
 
       if (aToday !== bToday) {
-        return bToday - aToday // Pin today's appointments to the top
+        return bToday - aToday
       }
 
-      // Fallback: sort alphabetically
       return a.name.localeCompare(b.name)
     })
   }, [filteredPatients])
@@ -83,7 +81,6 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
-      // Fetch entire client database using get_clientes via correctly setup integration
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
         fetchBelleAgendamentos(
@@ -94,10 +91,8 @@ export default function Patients() {
         ),
       ])
 
-      // Map Belle Data to Local Patient structure
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      // Purge mock data and replace the store with fresh API data
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
@@ -116,16 +111,22 @@ export default function Patients() {
         error.details?.includes('Ponte') ||
         error.message?.includes('405')
 
+      const isAuthError =
+        error.message?.toLowerCase().includes('autentica') ||
+        error.details?.toLowerCase().includes('token')
+
       const displayError = isBridgeError
         ? ERROR_BRIDGE
-        : error.details ||
-          error.message ||
-          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
+        : isAuthError
+          ? 'Falha na Autenticação: Verifique seu Token nas Configurações.'
+          : error.details ||
+            error.message ||
+            'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
 
       setErrorMsg(displayError)
 
       toast({
-        title: 'Falha na Sincronização',
+        title: isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização',
         description: displayError,
         variant: 'destructive',
       })
@@ -134,7 +135,6 @@ export default function Patients() {
     }
   }
 
-  // Automatic Sync Check when accessing the route and list is empty
   useEffect(() => {
     if (
       !hasAttemptedAutoSync.current &&

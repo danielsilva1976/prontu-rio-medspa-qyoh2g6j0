@@ -13,7 +13,6 @@ export const POST = async (req: Request) => {
   try {
     let bodyText = await req.text().catch(() => '')
 
-    // Fallback for edge cases where parameters might be placed in the URL
     if (!bodyText && req.url && req.url.includes('?')) {
       bodyText = req.url.split('?')[1]
     }
@@ -42,7 +41,7 @@ export const POST = async (req: Request) => {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json, text/plain, */*',
       },
-      body: params.toString(),
+      body: params.toString(), // Strictly form-encoded proxy forwarding
     })
 
     const text = await externalResponse.text()
@@ -68,16 +67,13 @@ export const POST = async (req: Request) => {
   }
 }
 
-// Universal handler compatible with both standard Node.js Express and modern Edge functions
 export default async function handler(req: any, res: any) {
-  // Edge runtime generic check
   if (req instanceof Request || (req.headers && typeof req.headers.get === 'function')) {
     if (req.method === 'OPTIONS') return OPTIONS(req as Request)
     if (req.method === 'POST') return POST(req as Request)
     return new Response('Method Not Allowed', { status: 405 })
   }
 
-  // Node.js Express / Serverless
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
@@ -135,7 +131,7 @@ export default async function handler(req: any, res: any) {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json, text/plain, */*',
       },
-      body: params.toString(),
+      body: params.toString(), // Strictly form-encoded proxy forwarding
     })
 
     const text = await externalResponse.text()
