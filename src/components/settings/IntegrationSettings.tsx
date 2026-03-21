@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -101,8 +102,8 @@ export function IntegrationSettings({
       setDetailedError(null)
 
       toast({
-        title: 'Conexão validada',
-        description: 'Conexão estabelecida com sucesso!',
+        title: 'Conexão validada via Proxy',
+        description: 'Conexão estabelecida com sucesso com a API do Belle Software!',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -110,17 +111,14 @@ export function IntegrationSettings({
 
       if (error.name === 'BelleProxyError') {
         setDetailedError(error.details)
-        setErrorFeedback(error.details.details || error.details.error)
+        setErrorFeedback(error.details?.details || error.details?.error || error.message)
       } else {
         setErrorFeedback(error.message)
       }
 
       toast({
-        title: 'Falha na Conexão',
-        description:
-          error.name === 'BelleProxyError'
-            ? 'Detalhes técnicos capturados.'
-            : error.message || 'Erro desconhecido',
+        title: 'Falha na Conexão Proxy',
+        description: 'Não foi possível conectar. Verifique o alerta para mais detalhes.',
         variant: 'destructive',
       })
     } finally {
@@ -130,9 +128,10 @@ export function IntegrationSettings({
 
   const handleSyncPatients = async () => {
     setIsSyncing(true)
+    setErrorFeedback(null)
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes do Belle Software...',
+      description: 'Buscando pacientes do Belle Software via Proxy...',
     })
 
     try {
@@ -152,14 +151,15 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Total de pacientes sincronizados: ${result.added + result.updated} (${result.added} novos, ${result.updated} atualizados).`,
+        description: `Total de pacientes sincronizados e dados fictícios removidos: ${result.added + result.updated} registros.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
+      setErrorFeedback(error.details?.details || error.details?.error || error.message)
       toast({
         title: 'Falha na Sincronização API',
-        description: error.message || 'Erro desconhecido ao sincronizar.',
+        description: 'Houve um problema de comunicação via Proxy. Verifique o painel.',
         variant: 'destructive',
       })
     } finally {
@@ -216,7 +216,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão Proxy com a API
+              Conexão via CORS Proxy
             </div>
 
             <div className="space-y-2">
@@ -230,7 +230,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Requisições passam por um proxy server-side para evitar bloqueios de CORS/IP.
+                As requisições utilizarão automaticamente um proxy para evitar bloqueios do
+                navegador.
               </p>
             </div>
 
@@ -268,23 +269,20 @@ export function IntegrationSettings({
           </div>
 
           {errorFeedback && (
-            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex flex-col gap-3 animate-fade-in text-sm overflow-hidden">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-semibold">Erro de Conexão Detectado</p>
-                  <p className="break-words">{errorFeedback}</p>
-                </div>
-              </div>
-
-              {detailedError && (
-                <div className="mt-1 bg-white/50 border border-red-200 rounded-md p-3 overflow-x-auto w-full">
-                  <pre className="text-xs font-mono text-red-900/80 m-0 whitespace-pre-wrap break-words">
-                    {JSON.stringify(detailedError, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
+            <Alert variant="destructive" className="animate-fade-in text-sm overflow-hidden">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Falha de Comunicação via Proxy</AlertTitle>
+              <AlertDescription className="space-y-3 mt-2">
+                <p className="font-medium text-destructive/90">{errorFeedback}</p>
+                {detailedError && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 overflow-x-auto w-full">
+                    <pre className="text-xs font-mono text-destructive/80 m-0 whitespace-pre-wrap break-words">
+                      {JSON.stringify(detailedError, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="flex flex-wrap justify-end gap-3 pt-2">

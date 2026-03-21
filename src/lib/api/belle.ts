@@ -87,66 +87,34 @@ const belleApiCall = async (
     }
 
     const requestBody = params.toString()
-    const proxyUrl = import.meta.env.VITE_PROXY_URL
+
+    // Utilize CORS Proxy to bypass browser restrictions for the Belle API
+    const proxyBaseUrl = import.meta.env.VITE_CORS_PROXY_URL || 'https://corsproxy.io/?'
+    const fetchUrl = `${proxyBaseUrl}${encodeURIComponent(endpoint)}`
 
     let response: Response
 
-    if (!proxyUrl) {
-      // Direct call fallback if no proxy is configured
-      try {
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Accept: 'application/json',
-          },
-          body: requestBody,
-          signal: controller.signal,
-        })
-      } catch (err: any) {
-        if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
-          throw new BelleProxyError({
-            url: endpoint,
-            method: 'POST',
-            error: 'Failed to fetch',
-            details:
-              'Erro de CORS ou rede. A API do Belle Software exige um Proxy configurado para acesso via navegador.',
-          })
-        }
-        throw err
-      }
-    } else {
-      const proxyOptions: RequestInit = {
+    try {
+      response = await fetch(fetchUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
+        body: requestBody,
+        signal: controller.signal,
+      })
+    } catch (err: any) {
+      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
+        throw new BelleProxyError({
           url: endpoint,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Accept: 'application/json',
-          },
-          body: requestBody,
-        }),
-        signal: controller.signal,
+          error: 'Proxy Connection Failed',
+          details:
+            'Erro ao conectar via CORS Proxy. O serviço de proxy pode estar indisponível no momento.',
+        })
       }
-
-      try {
-        response = await fetch(proxyUrl, proxyOptions)
-      } catch (err: any) {
-        if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
-          throw new BelleProxyError({
-            url: endpoint,
-            method: 'POST',
-            error: 'Failed to fetch',
-            details: 'Verifique a URL do proxy ou se o servidor bloqueou a requisição (CORS/IP)',
-          })
-        }
-        throw err
-      }
+      throw err
     }
 
     clearTimeout(timeoutId)

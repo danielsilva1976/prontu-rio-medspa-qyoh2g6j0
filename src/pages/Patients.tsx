@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 import usePatientStore from '@/stores/usePatientStore'
 import useSettingsStore from '@/stores/useSettingsStore'
@@ -76,7 +77,7 @@ export default function Patients() {
 
     setIsSyncing(true)
     try {
-      // Fetch entire client database using get_clientes
+      // Fetch entire client database using get_clientes via proxy
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
         fetchBelleAgendamentos(
@@ -90,30 +91,31 @@ export default function Patients() {
       // Map Belle Data to Local Patient structure
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      // Purge and replace the store with fresh API data
+      // Purge mock data and replace the store with fresh API data
       const result = syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Completa Belle Software', 'SYSTEM')
+      addLog('Sincronização Completa Belle Software via Proxy', 'SYSTEM')
 
       toast({
         title: 'Sincronização Concluída',
-        description: `Foram importados ${result.added} pacientes com sucesso da base do Belle Software.`,
+        description: `Dados fictícios removidos. Foram importados ${result.added} pacientes reais com sucesso.`,
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
 
-      addLog(`Erro na Sincronização`, 'SYSTEM')
+      addLog(`Erro na Sincronização via Proxy`, 'SYSTEM')
 
       const isNetworkError =
         error.message === 'CORS_NETWORK_ERROR' ||
         error.message === 'TIMEOUT_ERROR' ||
-        error.message?.includes('Erro de comunicação')
+        error.message?.includes('Erro de comunicação') ||
+        error.message?.includes('Proxy Fetch Error')
 
       toast({
-        title: isNetworkError ? 'Erro de Conexão' : 'Falha na Sincronização API',
+        title: isNetworkError ? 'Erro de Conexão Proxy' : 'Falha na Sincronização API',
         description: isNetworkError
-          ? 'Conexão bloqueada (CORS/Rede). Não foi possível conectar ao servidor.'
+          ? 'Conexão bloqueada ou proxy indisponível. Não foi possível conectar ao servidor.'
           : error.message || 'Não foi possível completar a requisição ao api.php do Belle.',
         variant: 'destructive',
       })
@@ -181,11 +183,18 @@ export default function Patients() {
 
           <div className="grid gap-4">
             {isSyncing ? (
-              <div className="flex flex-col items-center justify-center py-16 bg-muted/10 rounded-xl border border-dashed border-border animate-pulse">
-                <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
-                <p className="text-muted-foreground font-medium">
-                  Baixando base de clientes completa do Belle Software...
-                </p>
+              <div className="space-y-6">
+                <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
+                  <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
+                  <p className="text-muted-foreground font-medium animate-pulse">
+                    Conectando via Proxy e baixando base real de clientes...
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <Skeleton className="h-32 w-full rounded-xl" />
+                  <Skeleton className="h-32 w-full rounded-xl" />
+                  <Skeleton className="h-32 w-full rounded-xl" />
+                </div>
               </div>
             ) : sortedPatients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
