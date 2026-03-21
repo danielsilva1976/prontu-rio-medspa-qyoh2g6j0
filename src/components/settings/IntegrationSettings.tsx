@@ -227,7 +227,7 @@ export function IntegrationSettings({
             </Button>
             <Button
               onClick={handleTestConnection}
-              disabled={isTesting}
+              disabled={isTesting || !url.trim() || !token.trim() || !estabelecimento.trim()}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]"
             >
               {isTesting ? (

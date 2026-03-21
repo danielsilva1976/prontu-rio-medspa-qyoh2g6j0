@@ -36178,7 +36178,7 @@ var mockAgendamentos = [
 	}
 ];
 var ERROR_INVALID_TOKEN = "falha na conexão: token de autenticação invalido. Verifique dados no Belle software";
-var ERROR_403_FORBIDDEN = "Erro 403: Acesso negado pelo servidor. Por favor, verifique se o Token possui as permissões necessárias no painel do Belle Software.";
+var ERROR_403_FORBIDDEN = "Erro 403: Acesso Negado. Embora o token esteja correto, o servidor do Belle Software recusou a requisição. Verifique se o código do estabelecimento está correto.";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -36205,9 +36205,8 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = ""
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
-				Accept: "application/json, text/plain, */*",
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-				Origin: window.location.origin || "https://prontuario-medspa.app"
+				Accept: "application/json",
+				"User-Agent": navigator.userAgent
 			},
 			body: params.toString(),
 			signal: controller.signal,
@@ -50722,7 +50721,7 @@ function IntegrationSettings({ title, description }) {
 							"data-uid": "src/components/settings/IntegrationSettings.tsx:228:13",
 							"data-prohibitions": "[editContent]",
 							onClick: handleTestConnection,
-							disabled: isTesting,
+							disabled: isTesting || !url.trim() || !token.trim() || !estabelecimento.trim(),
 							className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]",
 							children: [isTesting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
 								"data-uid": "src/components/settings/IntegrationSettings.tsx:234:17",
@@ -51392,4 +51391,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D4UiVO4n.js.map
+//# sourceMappingURL=index-Cy48FDb1.js.map

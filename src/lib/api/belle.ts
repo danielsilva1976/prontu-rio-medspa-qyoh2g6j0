@@ -96,7 +96,7 @@ const ERROR_INVALID_TOKEN =
   'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
 const ERROR_403_FORBIDDEN =
-  'Erro 403: Acesso negado pelo servidor. Por favor, verifique se o Token possui as permissões necessárias no painel do Belle Software.'
+  'Erro 403: Acesso Negado. Embora o token esteja correto, o servidor do Belle Software recusou a requisição. Verifique se o código do estabelecimento está correto.'
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -151,10 +151,8 @@ const belleApiCall = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json, text/plain, */*',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Origin: window.location.origin || 'https://prontuario-medspa.app',
+        Accept: 'application/json',
+        'User-Agent': navigator.userAgent,
       },
       body: params.toString(),
       signal: controller.signal,
