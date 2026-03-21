@@ -96,7 +96,7 @@ const ERROR_INVALID_TOKEN =
   'falha na conexão: token de autenticação invalido. Verifique dados no Belle software'
 
 const ERROR_403_FORBIDDEN =
-  'Erro 403: Acesso Negado. Embora o token esteja correto, o servidor do Belle Software recusou a requisição. Verifique se o código do estabelecimento está correto.'
+  'Erro 403: Acesso Negado. O servidor reconheceu a requisição, mas recusou a autorização. Verifique se o código do estabelecimento (ex: 1) está correto e se o token possui permissões ativas no Belle Software.'
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -134,9 +134,12 @@ const belleApiCall = async (
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
+    const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
+    const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : ''
+
     const params = new URLSearchParams()
-    if (token) params.append('token', token.trim())
-    if (estabelecimento) params.append('estabelecimento', estabelecimento.trim())
+    if (cleanToken) params.append('token', cleanToken)
+    if (cleanEstab) params.append('estabelecimento', cleanEstab)
 
     if (payload && typeof payload === 'object') {
       for (const [key, value] of Object.entries(payload)) {
@@ -152,18 +155,15 @@ const belleApiCall = async (
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json',
-        'User-Agent': navigator.userAgent,
       },
       body: params.toString(),
       signal: controller.signal,
-      redirect: 'manual',
     }
 
     const response = await fetch(endpoint, options)
 
     clearTimeout(timeoutId)
 
-    // Bug Scanner Integration
     let text = ''
     try {
       text = await response.text()
@@ -198,6 +198,20 @@ const belleApiCall = async (
 
     if (!response.ok) {
       if (response.status === 403) {
+        try {
+          if (text) {
+            const jsonText = JSON.parse(text)
+            if (jsonText.mensagem || jsonText.message) {
+              throw new Error(
+                `Erro 403: Acesso Negado. ${jsonText.mensagem || jsonText.message}. Verifique se o estabelecimento e o token estão corretos.`,
+              )
+            }
+          }
+        } catch (e) {
+          if (e instanceof Error && e.message.includes('Acesso Negado')) {
+            throw e
+          }
+        }
         throw new Error(ERROR_403_FORBIDDEN)
       }
       if (response.status === 401) {

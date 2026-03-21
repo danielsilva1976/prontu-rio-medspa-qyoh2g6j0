@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
+import { cn } from '@/lib/utils'
 import {
   Key,
   Save,
@@ -35,6 +36,7 @@ export function IntegrationSettings({
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
+  const isError = belleSoftware.lastSyncStatus === 'error'
 
   const handleUrlBlur = () => {
     if (!url) return
@@ -79,19 +81,25 @@ export function IntegrationSettings({
     if (!estabelecimento) {
       toast({
         title: 'Código Requerido',
-        description: 'Preencha o Código do Estabelecimento.',
+        description: 'Preencha o Código do Estabelecimento (ex: 1).',
         variant: 'destructive',
       })
       return
     }
 
+    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
+    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+    setToken(cleanToken)
+    setEstabelecimento(cleanEstab)
+
     setIsTesting(true)
 
     // Save locally immediately to persist while testing
-    updateBelleConfig(url, token, estabelecimento)
+    updateBelleConfig(url, cleanToken, cleanEstab)
 
     try {
-      await testBelleConnection(url, token, estabelecimento)
+      await testBelleConnection(url, cleanToken, cleanEstab)
       setBelleLastSync('success', new Date().toISOString())
 
       toast({
@@ -131,7 +139,13 @@ export function IntegrationSettings({
   }
 
   const handleSave = () => {
-    updateBelleConfig(url, token, estabelecimento)
+    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
+    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+    setToken(cleanToken)
+    setEstabelecimento(cleanEstab)
+    updateBelleConfig(url, cleanToken, cleanEstab)
+
     toast({
       title: 'Configurações salvas',
       description: 'As credenciais foram atualizadas localmente.',
@@ -156,10 +170,15 @@ export function IntegrationSettings({
         ) : (
           <Badge
             variant="outline"
-            className="bg-red-500/10 text-red-600 border-red-500/20 py-1.5 px-3 font-medium"
+            className={cn(
+              'py-1.5 px-3 font-medium',
+              isError
+                ? 'bg-red-500/10 text-red-600 border-red-500/20'
+                : 'bg-muted/50 text-muted-foreground border-border/50',
+            )}
           >
             <WifiOff className="w-3.5 h-3.5 mr-1.5" />
-            Desconectado
+            {isError ? 'Falha na Conexão' : 'Desconectado'}
           </Badge>
         )}
       </CardHeader>
