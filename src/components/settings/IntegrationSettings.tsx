@@ -29,9 +29,6 @@ import {
   mapBelleDataToPatients,
 } from '@/lib/api/belle'
 
-const ERROR_BRIDGE =
-  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-
 export function IntegrationSettings({
   title,
   description,
@@ -58,12 +55,9 @@ export function IntegrationSettings({
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
-  const USER_FRIENDLY_ERROR =
-    'Erro ao conectar com o Belle Software. Verifique suas credenciais e tente novamente.'
-
   const parseError = (error: any): { message: string; details: string } => {
     let message = 'Falha de Comunicação'
-    let details = USER_FRIENDLY_ERROR
+    let details = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
 
     try {
       if (!error) return { message, details }
@@ -143,8 +137,8 @@ export function IntegrationSettings({
       setErrorFeedback(null)
 
       toast({
-        title: 'Conexão validada',
-        description: 'Conexão estabelecida com sucesso com a API do Belle Software!',
+        title: 'Conexão estabelecida com sucesso',
+        description: 'Conexão validada com sucesso com a API do Belle Software!',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -152,22 +146,15 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
-      const isBridgeError =
-        parsedError.message.includes('Ponte') ||
-        parsedError.details.includes('Ponte') ||
-        parsedError.message.includes('405')
-
       const isAuthError =
         parsedError.message.toLowerCase().includes('autentica') ||
         parsedError.details.toLowerCase().includes('token')
 
       toast({
         title: isAuthError ? 'Falha na Autenticação' : 'Falha na Conexão',
-        description: isBridgeError
-          ? ERROR_BRIDGE
-          : isAuthError
-            ? 'Verifique seu Token e Estabelecimento.'
-            : parsedError.details || parsedError.message,
+        description: isAuthError
+          ? 'Verifique seu Token e Estabelecimento.'
+          : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -211,22 +198,15 @@ export function IntegrationSettings({
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
 
-      const isBridgeError =
-        parsedError.message.includes('Ponte') ||
-        parsedError.details.includes('Ponte') ||
-        parsedError.message.includes('405')
-
       const isAuthError =
         parsedError.message.toLowerCase().includes('autentica') ||
         parsedError.details.toLowerCase().includes('token')
 
       toast({
         title: isAuthError ? 'Falha na Autenticação' : 'Falha na Sincronização',
-        description: isBridgeError
-          ? ERROR_BRIDGE
-          : isAuthError
-            ? 'Verifique seu Token e Estabelecimento.'
-            : parsedError.details || parsedError.message,
+        description: isAuthError
+          ? 'Verifique seu Token e Estabelecimento.'
+          : parsedError.details || parsedError.message,
         variant: 'destructive',
       })
     } finally {
@@ -283,7 +263,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão Segura
+              Conexão Segura API
             </div>
 
             <div className="space-y-2">
@@ -297,7 +277,7 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                A integração suporta form-encoded payload seguindo a documentação oficial.
+                Integração direta com endpoints JSON x-www-form-urlencoded.
               </p>
             </div>
 
@@ -341,21 +321,13 @@ export function IntegrationSettings({
             >
               <AlertCircle className="h-4 w-4" />
               <AlertTitle className="font-semibold">
-                {errorFeedback.message.includes('Ponte') || errorFeedback.message.includes('405')
-                  ? 'Ponte de Integração Indisponível'
-                  : errorFeedback.message.toLowerCase().includes('autentica') ||
-                      errorFeedback.details.toLowerCase().includes('token')
-                    ? 'Falha na Autenticação'
-                    : errorFeedback.message}
+                {errorFeedback.message.toLowerCase().includes('autentica') ||
+                errorFeedback.details.toLowerCase().includes('token')
+                  ? 'Falha na Autenticação'
+                  : errorFeedback.message}
               </AlertTitle>
               <AlertDescription className="space-y-3 mt-2">
-                <p className="font-medium text-destructive/90">
-                  {errorFeedback.message.includes('Ponte') ||
-                  errorFeedback.details.includes('Ponte') ||
-                  errorFeedback.message.includes('405')
-                    ? ERROR_BRIDGE
-                    : errorFeedback.details}
-                </p>
+                <p className="font-medium text-destructive/90">{errorFeedback.details}</p>
                 <div className="pt-2 border-t border-destructive/20">
                   <Button
                     variant="outline"

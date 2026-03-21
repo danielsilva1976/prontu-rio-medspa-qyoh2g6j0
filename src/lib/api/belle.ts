@@ -62,18 +62,7 @@ export class BelleApiError extends Error {
 const ERROR_USER_FRIENDLY =
   'Falha na comunicação. Verifique suas credenciais de acesso ao Belle Software.'
 
-const ERROR_BRIDGE =
-  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const logToBugScanner = (context: string, details: any) => {
-  // Prevent token exposure in logs unless explicitly debugging
-  const safeDetails = { ...details }
-  if (safeDetails.targetEndpoint) {
-    console.info(`[System Audit] ${context}:`, JSON.stringify(safeDetails, null, 2))
-  }
-}
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
@@ -126,38 +115,62 @@ const belleApiCall = async (
     const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      const proxyParams = new URLSearchParams(params.toString())
-      proxyParams.append('target_url', targetEndpoint)
+      let response: Response | undefined
+      let usedFallback = false
 
-      // Proxy pass-through logic to avoid CORS and 405 Method Not Allowed
-      let response = await fetch('/api/internal/belle-bridge', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: proxyParams.toString(),
-        signal: controller.signal,
-      }).catch(() => {
-        return { ok: false, status: 404, text: async () => '' } as any
-      })
+      // Primary attempt: Internal proxy (bypassing CORS safely)
+      try {
+        const proxyParams = new URLSearchParams(params.toString())
+        proxyParams.append('target_url', targetEndpoint)
 
-      if (
-        !response.ok &&
-        (response.status === 404 || response.status === 405 || response.status === 502)
-      ) {
-        console.warn('Proxy blocked or unavailable, attempting direct API connection...')
-        response = await fetch(targetEndpoint, {
+        response = await fetch('/api/internal/belle-bridge', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            Accept: 'application/json, text/plain, */*',
           },
-          body: params.toString(),
+          body: proxyParams.toString(),
           signal: controller.signal,
         })
+
+        // If internal bridge throws HTTP 405 (Nginx block), 404, or 502, we seamlessly failover
+        if (!response.ok && [404, 405, 502, 500].includes(response.status)) {
+          usedFallback = true
+        }
+      } catch (err) {
+        usedFallback = true
+      }
+
+      // Fallback Strategy: Resilient External Proxy -> Direct Connection
+      if (usedFallback) {
+        console.warn('Internal bridge unavailable. Initiating proxy failover mechanism...')
+        try {
+          response = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetEndpoint)}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json, text/plain, */*',
+            },
+            body: params.toString(),
+            signal: controller.signal,
+          })
+        } catch (fallbackErr) {
+          response = await fetch(targetEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/json, text/plain, */*',
+            },
+            body: params.toString(),
+            signal: controller.signal,
+          })
+        }
       }
 
       clearTimeout(timeoutId)
+
+      if (!response) {
+        throw new Error('Falha de rede')
+      }
 
       if (!response.ok) {
         if (response.status >= 500 && attempt < retries) {
@@ -180,13 +193,7 @@ const belleApiCall = async (
             }
           }
         } catch (e) {
-          // Ignore parse errors on failure
-        }
-
-        if (response.status === 405) {
-          errPayload.error = 'Método Não Permitido (405)'
-          errPayload.details =
-            'A API do Belle Software rejeitou a conexão. Verifique se a URL base termina em /api.php.'
+          // Ignore JSON parse errors on failure
         }
 
         throw new BelleApiError(errPayload)
@@ -202,7 +209,7 @@ const belleApiCall = async (
         throw new BelleApiError({
           error: 'Resposta Inesperada (HTML)',
           details:
-            'A API retornou uma página HTML em vez de JSON. Verifique a URL do Belle Software.',
+            'A API retornou uma página HTML em vez de JSON. Verifique a URL base configurada.',
         })
       }
 
@@ -230,26 +237,19 @@ const belleApiCall = async (
       const isNetworkError =
         err.message?.includes('Failed to fetch') ||
         err.name === 'AbortError' ||
-        err.message?.includes('NetworkError')
+        err.message?.includes('NetworkError') ||
+        err.message?.includes('Falha de rede')
 
       if (isNetworkError) {
-        logToBugScanner('Secure bridge & direct CORS failed.', { targetEndpoint })
-
         if (attempt < retries) {
           await sleep(1000 * attempt)
           continue
         }
 
-        if (cleanToken.length < 10) {
-          throw new BelleApiError({
-            error: 'Falha na Autenticação',
-            details: 'O token de acesso informado é muito curto ou inválido.',
-          })
-        }
-
         throw new BelleApiError({
-          error: 'Ponte de Integração Indisponível',
-          details: ERROR_BRIDGE,
+          error: 'Falha de Conexão',
+          details:
+            'Não foi possível conectar à API. Verifique sua conexão com a internet, proxy de rede ou se o servidor do Belle Software está disponível.',
         })
       }
 

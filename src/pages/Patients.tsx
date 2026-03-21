@@ -13,9 +13,6 @@ import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
 import { fetchBelleClientes, fetchBelleAgendamentos, mapBelleDataToPatients } from '@/lib/api/belle'
 
-const ERROR_BRIDGE =
-  'Ponte de Integração Indisponível - Não foi possível acessar a ponte de comunicação interna (proxy) para baixar os dados reais.'
-
 export default function Patients() {
   const { patients, isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
@@ -106,22 +103,15 @@ export default function Patients() {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro na Sincronização via API`, 'SYSTEM')
 
-      const isBridgeError =
-        error.message?.includes('Ponte') ||
-        error.details?.includes('Ponte') ||
-        error.message?.includes('405')
-
       const isAuthError =
         error.message?.toLowerCase().includes('autentica') ||
         error.details?.toLowerCase().includes('token')
 
-      const displayError = isBridgeError
-        ? ERROR_BRIDGE
-        : isAuthError
-          ? 'Falha na Autenticação: Verifique seu Token nas Configurações.'
-          : error.details ||
-            error.message ||
-            'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
+      const displayError = isAuthError
+        ? 'Falha na Autenticação: Verifique seu Token nas Configurações.'
+        : error.details ||
+          error.message ||
+          'Não foi possível conectar ao Belle Software. Verifique sua conexão ou credenciais.'
 
       setErrorMsg(displayError)
 
