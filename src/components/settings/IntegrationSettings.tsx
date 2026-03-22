@@ -45,12 +45,10 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
 
   const [mapping, setMapping] = useState({
-    acao: 'add_cliente',
-    nome: 'Paciente Teste API',
-    email: 'teste.api@bellesoftware.com',
-    celular: '11999999999',
-    observacao: 'Verificação Oficial de WAF Bypass',
-    origem: 'App',
+    cpf: '',
+    celular: '',
+    email: '',
+    id: '',
   })
 
   const [isTesting, setIsTesting] = useState(false)
@@ -79,7 +77,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     const clToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
     const clEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
 
-    if (!cleanUrl || !clToken || !mapping.nome.trim()) {
+    if (!cleanUrl || !clToken) {
       toast({ title: 'Dados Ausentes', variant: 'destructive' })
       return
     }
@@ -88,7 +86,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     setToken(clToken)
     setEstabelecimento(clEstab)
     setIsTesting(true)
-    updateBelleConfig(cleanUrl, clToken, clEstab, 'application/x-www-form-urlencoded')
+    updateBelleConfig(cleanUrl, clToken, clEstab, 'application/json')
 
     try {
       const res = await testBelleApiConnectionWithRetry(cleanUrl, clToken, clEstab, mapping)
@@ -99,7 +97,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
         title: 'Conexão API Estabelecida',
         message: `HTTP Status ${res.status}`,
         details:
-          'Conexão autorizada (HTTP 200 OK). Protocolo Ghost ativado com mascaramento via IP Residencial.',
+          'Conexão autorizada (HTTP 200 OK) utilizando Autenticação REST. Protocolo Ghost ativado com mascaramento de cabeçalhos.',
         diagnostics: res.diagnostics,
       })
       addLog('Sincronização Teste API Oficial', 'SYSTEM')
@@ -140,12 +138,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   }
 
   const handleSave = () => {
-    updateBelleConfig(
-      sanitizeUrl(url),
-      token.trim(),
-      estabelecimento.trim(),
-      'application/x-www-form-urlencoded',
-    )
+    updateBelleConfig(sanitizeUrl(url), token.trim(), estabelecimento.trim(), 'application/json')
     toast({ title: 'Configurações salvas' })
   }
 
@@ -164,28 +157,28 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <ShieldAlert className="w-5 h-5" /> Protocolo Ghost & Proxy Residencial
+                <ShieldAlert className="w-5 h-5" /> Autenticação REST & Protocolo Ghost
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                As chamadas utilizam formatação estrita{' '}
-                <code>application/x-www-form-urlencoded</code> roteadas através de proxy com
-                mimetismo de navegador para contornar bloqueios HTTP 405.
+                As chamadas utilizam requisições <code>GET</code> com cabeçalho de{' '}
+                <code>Authorization</code>. Roteadas através de proxy com mimetismo de navegador
+                para contornar bloqueios HTTP 405.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>URL Base / API</Label>
+              <Label>URL Base / API Endpoint</Label>
               <Input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={() => setUrl(sanitizeUrl(url))}
-                placeholder="https://app.bellesoftware.com.br/api.php"
+                placeholder="https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar"
                 className="bg-white font-mono text-sm"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Token de Acesso</Label>
+                <Label>Token de Integração (Authorization)</Label>
                 <Input
                   type="password"
                   value={token}
@@ -194,7 +187,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                 />
               </div>
               <div className="space-y-2">
-                <Label>Código do Estabelecimento (idEstabelecimento)</Label>
+                <Label>Código do Estabelecimento (codEstab)</Label>
                 <Input
                   value={estabelecimento}
                   onChange={(e) => setEstabelecimento(e.target.value)}
@@ -211,7 +204,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" className="w-full justify-between p-4 h-auto">
                   <div className="flex items-center font-medium">
-                    <Activity className="w-4 h-4 mr-2 text-primary" /> Payload Estruturado (Teste)
+                    <Activity className="w-4 h-4 mr-2 text-primary" /> Filtros Opcionais de Busca
                   </div>
                   {showMapping ? (
                     <ChevronUp className="w-4 h-4" />
@@ -227,11 +220,8 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                     <Input
                       value={(mapping as any)[key]}
                       onChange={(e) => setMapping({ ...mapping, [key]: e.target.value })}
-                      disabled={key === 'acao'}
-                      className={cn(
-                        'bg-white text-xs h-8',
-                        key === 'acao' && 'bg-muted opacity-80',
-                      )}
+                      placeholder={`Filtrar por ${key}`}
+                      className="bg-white text-xs h-8"
                     />
                   </div>
                 ))}

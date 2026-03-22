@@ -63,10 +63,10 @@ const defaultData = {
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
   belleSoftware: {
-    url: 'https://app.bellesoftware.com.br/api.php',
+    url: 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar',
     token: '1787cad7ac7dd71ac2fbbdaf823928fd',
     estabelecimento: '1',
-    webhookContentType: 'application/x-www-form-urlencoded' as const,
+    webhookContentType: 'application/json' as const,
   },
 }
 
@@ -124,7 +124,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     contentType:
       | 'application/x-www-form-urlencoded'
       | 'multipart/form-data'
-      | 'application/json' = 'application/x-www-form-urlencoded',
+      | 'application/json' = 'application/json',
   ) => {
     setData((prev) => ({
       ...prev,
