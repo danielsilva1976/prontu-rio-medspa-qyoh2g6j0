@@ -15,7 +15,6 @@ import {
   Save,
   ServerCrash,
   RefreshCw,
-  CheckCircle2,
   Wifi,
   WifiOff,
   Building2,
@@ -63,6 +62,7 @@ export function IntegrationSettings({
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
+  const isConnecting = isTesting || isTestingSimple || isSyncing
 
   const parseError = (
     error: any,
@@ -115,10 +115,10 @@ export function IntegrationSettings({
     if (!url) return
     let cleanUrl = url.trim().replace(/\/+$/, '')
 
-    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      cleanUrl = `https://${cleanUrl}`
-    } else if (cleanUrl.startsWith('http://')) {
+    if (cleanUrl.startsWith('http://')) {
       cleanUrl = cleanUrl.replace('http://', 'https://')
+    } else if (!cleanUrl.startsWith('https://')) {
+      cleanUrl = `https://${cleanUrl}`
     }
 
     if (cleanUrl.endsWith('/api.php')) {
@@ -163,7 +163,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Conexão Estabelecida com Sucesso',
-        description: `Resposta 200 OK. Pacientes validados: ${preview}${names.length > 3 ? '...' : ''}`,
+        description: `Resposta 200 OK do Belle Software. Pacientes validados: ${preview}${names.length > 3 ? '...' : ''}`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -295,13 +295,21 @@ export function IntegrationSettings({
           <CardTitle className="text-xl text-primary font-serif">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </div>
-        {isConnected ? (
+        {isConnecting ? (
+          <Badge
+            variant="outline"
+            className="bg-blue-500/10 text-blue-600 border-blue-500/20 py-1.5 px-3 font-medium"
+          >
+            <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+            Connecting...
+          </Badge>
+        ) : isConnected ? (
           <Badge
             variant="outline"
             className="bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium"
           >
             <Wifi className="w-3.5 h-3.5 mr-1.5" />
-            Conectado
+            Bridge Online
           </Badge>
         ) : (
           <Badge
@@ -314,7 +322,7 @@ export function IntegrationSettings({
             )}
           >
             <WifiOff className="w-3.5 h-3.5 mr-1.5" />
-            {isError ? 'Falha na Conexão' : 'Desconectado'}
+            {isError ? 'Connection Failed' : 'Desconectado'}
           </Badge>
         )}
       </CardHeader>
@@ -418,11 +426,10 @@ export function IntegrationSettings({
                               clínica.
                             </li>
                             <li>
-                              Redirecionamentos de HTTP para HTTPS podem transformar POST em GET,
-                              resultando em erro 405. Certifique-se de usar{' '}
-                              <strong>https://</strong>.
+                              Confirme o uso de <strong>https://</strong> (redirecionamentos podem
+                              alterar o método POST para GET).
                             </li>
-                            <li>Confirme se o endpoint não possui barras extras no final.</li>
+                            <li>Verifique a existência de barras extras no final da URL.</li>
                           </ul>
                         </div>
                       )}
@@ -464,14 +471,7 @@ export function IntegrationSettings({
             <Button
               variant="outline"
               onClick={handleTestConnectionSimple}
-              disabled={
-                isTesting ||
-                isTestingSimple ||
-                isSyncing ||
-                !url.trim() ||
-                !token.trim() ||
-                !estabelecimento.trim()
-              }
+              disabled={isConnecting || !url.trim() || !token.trim() || !estabelecimento.trim()}
               className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
             >
               {isTestingSimple ? (
@@ -485,7 +485,7 @@ export function IntegrationSettings({
             {isConnected && (
               <Button
                 onClick={handleSyncPatients}
-                disabled={isSyncing || isTesting || isTestingSimple}
+                disabled={isConnecting}
                 className="bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto"
               >
                 {isSyncing ? (

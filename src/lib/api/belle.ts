@@ -89,6 +89,9 @@ const getApiEndpoint = (url: string, path: string) => {
     cleanUrl = cleanUrl.slice(0, -7)
   }
 
+  // Ensure no trailing slash before appending path
+  cleanUrl = cleanUrl.replace(/\/+$/, '')
+
   const cleanPath = path.startsWith('/') ? path : `/${path}`
   return `${cleanUrl}${cleanPath}`.replace(/\/$/, '')
 }
@@ -102,6 +105,7 @@ export const belleApiCall = async (
   retries: number = 1,
 ): Promise<any> => {
   const targetEndpoint = getApiEndpoint(url, path)
+  const baseUrl = getApiEndpoint(url, '').replace(/\/api\.php$/, '')
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
@@ -144,6 +148,11 @@ export const belleApiCall = async (
       Accept: 'application/json, text/html, */*',
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
+      Origin: baseUrl,
+      Referer: `${baseUrl}/`,
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
     },
     data: requestData.toString(), // Strict Content-Type Handling
   }
@@ -196,7 +205,7 @@ export const belleApiCall = async (
         result = JSON.parse(text)
       } catch (e) {
         // Handle case where proxy returns 200 OK but inner payload is HTML containing 405 Error
-        if (text.includes('405 Not Allowed')) {
+        if (text.includes('405 Not Allowed') || text.includes('405 Method Not Allowed')) {
           throw new BelleApiError({
             error: `Erro HTTP 405`,
             details: `Falha na comunicação com o servidor. O endpoint retornou 405 Method Not Allowed.`,
