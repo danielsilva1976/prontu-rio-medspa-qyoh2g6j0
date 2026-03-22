@@ -184,7 +184,7 @@ export const testBelleApiConnectionWithRetry = async (
   url: string,
   token: string,
   estabelecimento: string,
-  testData: any,
+  testData: any = { acao: 'get_clientes', limit: 1 },
 ): Promise<{ success: boolean; status: number; data: any; diagnostics: DiagnosticLog[] }> => {
   const targetEndpoint = getApiEndpoint(url, '/api.php')
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
@@ -293,6 +293,25 @@ export const testBelleApiConnectionWithRetry = async (
       details: err.message,
       raw: { diagnostics: diagnosticLog },
     })
+  }
+}
+
+export const testBelleConnection = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '1',
+) => {
+  try {
+    const result = await belleApiCall(
+      url,
+      token,
+      '/api.php',
+      { acao: 'get_clientes', limit: 1 },
+      estabelecimento,
+    )
+    return { success: true, data: result }
+  } catch (error: any) {
+    return { success: false, error: error.message }
   }
 }
 
