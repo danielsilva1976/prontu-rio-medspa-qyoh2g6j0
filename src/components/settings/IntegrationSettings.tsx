@@ -92,9 +92,9 @@ export function IntegrationSettings({ description }: { title: string; descriptio
 
       setDiagnosticData({
         success: true,
-        title: 'Conexão API Estabelecida',
+        title: `Conexão API Estabelecida (HTTP ${res.status})`,
         message: `HTTP Status ${res.status}`,
-        details: 'Conexão autorizada (HTTP 200 OK) com a API do Belle Software.',
+        details: `Requisição bem-sucedida! A API retornou ${Array.isArray(res.data) ? res.data.length + ' registros' : 'dados válidos'}. Consulte o log de diagnóstico abaixo para os dados exatos recebidos.`,
         diagnostics: res.diagnostics,
       })
       addLog('Sincronização Teste API Oficial', 'SYSTEM')
@@ -105,7 +105,9 @@ export function IntegrationSettings({ description }: { title: string; descriptio
         success: false,
         title: err.errorTitle || `Erro de API (HTTP ${err.status || 'Desconhecido'})`,
         message: err.message,
-        details: err.details || 'Falha na comunicação direta com a API.',
+        details:
+          err.details ||
+          'Falha na comunicação direta com a API. Verifique os parâmetros e permissões.',
         diagnostics: err.raw?.diagnostics,
       })
     } finally {

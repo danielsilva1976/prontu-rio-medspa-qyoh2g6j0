@@ -154,17 +154,6 @@ export const belleApiCall = async (
         body: JSON.stringify(proxyPayload),
       })
 
-      if (response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-        return [
-          {
-            codigo: 999,
-            nome: 'Paciente de Teste (Proxy Mock)',
-            celular: '11999999999',
-            codEstab: cleanEstab,
-          },
-        ]
-      }
-
       if (!response.ok) {
         const text = await response.text()
         throw new BelleApiError({
@@ -203,16 +192,6 @@ export const belleApiCall = async (
       ) {
         await new Promise((res) => setTimeout(res, 1000 * attempt))
         continue
-      }
-      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        return [
-          {
-            codigo: 999,
-            nome: 'Paciente de Teste (Local Mock)',
-            celular: '11999999999',
-            codEstab: cleanEstab,
-          },
-        ]
       }
       if (err instanceof BelleApiError) throw err
       throw new BelleApiError({ error: 'Erro de Rede', details: err?.message, raw: err })
@@ -279,7 +258,7 @@ export const testBelleApiConnectionWithRetry = async (
   const diagnosticLog: DiagnosticLog[] = []
 
   try {
-    let response: Response | undefined
+    let response: Response
 
     try {
       response = await fetch(PROXY_ENDPOINT, {
@@ -288,25 +267,7 @@ export const testBelleApiConnectionWithRetry = async (
         body: JSON.stringify(proxyPayload),
       })
     } catch (networkErr: any) {
-      const mockBody = [{ codigo: 9999, nome: 'Simulado - Proxy Offline', codEstab: cleanEstab }]
-      diagnosticEntry.response = {
-        status: 200,
-        headers: { 'content-type': 'application/json', 'x-simulated-mock': 'true' },
-        body: mockBody,
-      }
-      diagnosticLog.push(diagnosticEntry)
-      return { success: true, status: 200, data: mockBody, diagnostics: diagnosticLog }
-    }
-
-    if (response && response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-      const mockBody = [{ codigo: 9999, nome: 'Simulado - Dev Local', codEstab: cleanEstab }]
-      diagnosticEntry.response = {
-        status: 200,
-        headers: { 'content-type': 'application/json', 'x-simulated-mock': 'true' },
-        body: mockBody,
-      }
-      diagnosticLog.push(diagnosticEntry)
-      return { success: true, status: 200, data: mockBody, diagnostics: diagnosticLog }
+      throw new Error(`Proxy offline ou erro de rede: ${networkErr.message}`)
     }
 
     const text = await response.text()
