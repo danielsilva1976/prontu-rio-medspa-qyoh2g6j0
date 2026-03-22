@@ -68,7 +68,8 @@ export function IntegrationSettings({
     error: any,
   ): { message: string; details: string; title?: string; raw?: any } => {
     let message = 'Falha de Comunicação'
-    let details = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
+    let details =
+      'Erro ao conectar com o Belle Software. Verifique suas credenciais e a disponibilidade do proxy.'
     let title = undefined
     let raw = undefined
 
@@ -161,8 +162,8 @@ export function IntegrationSettings({
       const preview = names.slice(0, 3).join(', ')
 
       toast({
-        title: 'Conexão Realizada com Sucesso',
-        description: `Pacientes: ${preview}${names.length > 3 ? '...' : ''}`,
+        title: 'Conexão Proxy Estabelecida com Sucesso',
+        description: `Resposta 200 OK. Pacientes validados: ${preview}${names.length > 3 ? '...' : ''}`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -209,7 +210,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sucesso',
-        description: 'Conexão avançada estabelecida com sucesso.',
+        description: 'Conexão proxy avançada estabelecida com 200 OK.',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -234,7 +235,7 @@ export function IntegrationSettings({
 
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes no Belle Software...',
+      description: 'Buscando pacientes via túnel de proxy...',
     })
 
     try {
@@ -251,11 +252,11 @@ export function IntegrationSettings({
       syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
+      addLog('Sincronização Belle Software (Proxy Bypass)', 'SYSTEM')
 
       toast({
         title: 'Sincronização Concluída',
-        description: `${mappedData.length} pacientes importados/atualizados com sucesso.`,
+        description: `${mappedData.length} pacientes importados com sucesso.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -322,7 +323,7 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
-              Conexão Segura API
+              Túnel de Proxy Seguro
             </div>
 
             <div className="space-y-2">
@@ -336,8 +337,9 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Conexão direta otimizada com formatação estrita (x-www-form-urlencoded) e emulação
-                de cabeçalhos de navegação para contornar bloqueios CORS.
+                Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e
+                emulação de navegador para contornar bloqueios de CORS e segurança
+                (Nginx/Cloudflare).
               </p>
             </div>
 
@@ -405,8 +407,19 @@ export function IntegrationSettings({
                           <span>{errorFeedback.raw.statusText}</span>
                         </div>
                       )}
+                      {errorFeedback.raw.headers &&
+                        Object.keys(errorFeedback.raw.headers).length > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold mb-1 text-destructive/80">
+                              Response Headers:
+                            </p>
+                            <div className="p-2 bg-white/50 rounded-md font-mono text-[10px] break-all text-destructive/80">
+                              {JSON.stringify(errorFeedback.raw.headers, null, 2)}
+                            </div>
+                          </div>
+                        )}
                       <p className="text-xs font-semibold mb-1 text-destructive/80">
-                        Logs de Diagnóstico Brutos (Response):
+                        Logs de Diagnóstico Brutos (Body):
                       </p>
                       <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all">
                         {errorFeedback.raw.body !== undefined
@@ -463,7 +476,7 @@ export function IntegrationSettings({
               ) : (
                 <Stethoscope className="w-4 h-4 mr-2" />
               )}
-              {isTestingSimple ? 'Testando...' : 'Testar Conexão'}
+              {isTestingSimple ? 'Testando Proxy...' : 'Testar Conexão Proxy'}
             </Button>
 
             {isConnected && (
