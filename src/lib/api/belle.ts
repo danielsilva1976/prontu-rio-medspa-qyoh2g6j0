@@ -341,7 +341,9 @@ export const testBelleWebhookConnection = async (
   let baseUrl = 'https://app.bellesoftware.com.br'
   try {
     baseUrl = new URL(cleanUrl).origin
-  } catch (e) {}
+  } catch (e) {
+    // ignore invalid URL
+  }
 
   const requestData = new URLSearchParams()
   requestData.append('token', token)
