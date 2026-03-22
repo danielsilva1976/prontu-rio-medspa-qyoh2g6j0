@@ -150,9 +150,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
       <CardHeader>
-        <CardTitle className="text-xl text-primary font-serif">
-          Belle Software Integration
-        </CardTitle>
+        <CardTitle className="text-xl text-primary font-serif">Integração Belle Software</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -190,7 +188,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                 />
               </div>
               <div className="space-y-2">
-                <Label>ID do Estabelecimento</Label>
+                <Label>Código do Estabelecimento (idEstabelecimento)</Label>
                 <Input
                   value={estabelecimento}
                   onChange={(e) => setEstabelecimento(e.target.value)}
@@ -300,7 +298,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
               ) : (
                 <Activity className="w-4 h-4 mr-2" />
               )}{' '}
-              Disparar Teste (Dispatcher)
+              Testar Conexão
             </Button>
             {isConnected && (
               <Button
