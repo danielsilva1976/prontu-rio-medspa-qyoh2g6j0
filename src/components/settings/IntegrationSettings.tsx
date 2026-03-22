@@ -107,7 +107,11 @@ export function IntegrationSettings({
     if (
       message.includes('Erro de Conexão') ||
       details.includes('Erro 405') ||
-      message.includes('405')
+      message.includes('405') ||
+      message.includes('404') ||
+      details.includes('404') ||
+      message.includes('HTTP') ||
+      message.includes('Failed to fetch')
     ) {
       message = 'Erro de Conexão'
       details =
@@ -343,7 +347,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Integração direta com endpoints JSON x-www-form-urlencoded.
+                Integração através de Proxy Interno (ignora CORS) com endpoints
+                x-www-form-urlencoded.
               </p>
             </div>
 
@@ -391,7 +396,9 @@ export function IntegrationSettings({
               </AlertTitle>
               <AlertDescription className="space-y-3">
                 <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
-                  {errorFeedback.details}
+                  {errorFeedback.message === 'Erro de Conexão'
+                    ? `Erro de Conexão: O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.`
+                    : errorFeedback.details}
                 </div>
                 {errorFeedback.raw && (
                   <div className="mt-2">

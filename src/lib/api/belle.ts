@@ -98,12 +98,13 @@ const belleApiCall = async (
   path: string,
   payload: any = null,
   estabelecimento: string = '1',
-  retries: number = 3,
+  retries: number = 1,
 ): Promise<any> => {
   const targetEndpoint = getApiEndpoint(url, path)
 
-  // Backend Proxy Implementation to prevent CORS blocks while correctly forwarding requests
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetEndpoint)}`
+  // Internal bridge implementation that handles CORS and headers to avoid being blocked.
+  // This effectively replaces public third-party proxies (like corsproxy.io).
+  const proxyUrl = `/api/internal/belle-bridge?url=${encodeURIComponent(targetEndpoint)}`
 
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
@@ -153,11 +154,6 @@ const belleApiCall = async (
           /* ignore */
         }
 
-        if (response.status >= 500 && response.status !== 502 && attempt < retries) {
-          await sleep(1000 * attempt)
-          continue
-        }
-
         let errPayload: any = {
           error: `Erro HTTP ${response.status}`,
           details: `Falha na comunicação com a API (Status: ${response.status}).`,
@@ -176,21 +172,10 @@ const belleApiCall = async (
             'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.'
         } else if (response.status === 404) {
           errPayload.error = 'Endpoint Não Encontrado (404)'
-          errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`
+          errPayload.details = `A ponte interna falhou ou o endpoint configurado (${targetEndpoint}) não foi encontrado.`
         } else if (response.status === 502) {
           errPayload.error = 'Bad Gateway (502)'
-          errPayload.details = `Não foi possível obter resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`
-        } else {
-          try {
-            if (errText && errText.trim().startsWith('{')) {
-              const parsed = JSON.parse(errText)
-              errPayload = { ...errPayload, ...parsed, raw: errPayload.raw }
-            } else if (errText) {
-              errPayload.details = `Status ${response.status}: ${errText.substring(0, 100)}`
-            }
-          } catch (e) {
-            // Ignore parse errors
-          }
+          errPayload.details = `Não foi possível obter resposta válida do servidor Belle Software através da ponte.`
         }
 
         throw new BelleApiError(errPayload)
@@ -199,13 +184,9 @@ const belleApiCall = async (
       const text = await response.text()
 
       if (text.trim().startsWith('<')) {
-        if (attempt < retries) {
-          await sleep(1000 * attempt)
-          continue
-        }
         throw new BelleApiError({
           error: 'Resposta HTML Inesperada',
-          details: `A API retornou HTML em vez de JSON. Resposta parcial: ${text.substring(0, 100)}... Verifique se a URL (${targetEndpoint}) está correta.`,
+          details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
           raw: text.substring(0, 500),
         })
       }
@@ -216,27 +197,12 @@ const belleApiCall = async (
       } catch (e) {
         throw new BelleApiError({
           error: 'Resposta Inválida',
-          details: `A API não retornou um JSON válido. Resposta: ${text.substring(0, 100)}...`,
+          details: `A API não retornou um JSON válido.`,
           raw: text.substring(0, 500),
         })
       }
 
       if (result.status === 'erro' || result.status === false || result.error) {
-        const errMsg = String(result.error || result.mensagem || '').toLowerCase()
-        const isAuth =
-          errMsg.includes('token') ||
-          errMsg.includes('autentica') ||
-          errMsg.includes('estabelecimento') ||
-          errMsg.includes('não autorizado')
-
-        if (isAuth) {
-          throw new BelleApiError({
-            error: 'Erro de Autenticação',
-            details: 'Falha na Autenticação - Verifique seu Token e ID do Estabelecimento.',
-            raw: result,
-          })
-        }
-
         throw new BelleApiError({
           error: result.error || result.mensagem || 'Erro na API',
           details: result.details || result.mensagem || 'A API retornou um erro estrutural.',
@@ -248,43 +214,15 @@ const belleApiCall = async (
     } catch (err: any) {
       clearTimeout(timeoutId)
 
-      const isNetworkError =
-        err.message?.includes('Failed to fetch') ||
-        err.name === 'AbortError' ||
-        err.message?.includes('NetworkError') ||
-        err.message?.includes('Falha de rede')
-
-      if (isNetworkError) {
-        if (attempt < retries) {
-          await sleep(1000 * attempt)
-          continue
-        }
-
-        throw new BelleApiError({
-          error: 'Erro de Conexão',
-          details:
-            'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.',
-          raw: {
-            type: 'NetworkError',
-            message: err.message,
-            stack: err.stack,
-          },
-        })
-      }
-
       if (err instanceof BelleApiError) {
         throw err
       }
 
-      if (attempt < retries) {
-        await sleep(1000 * attempt)
-        continue
-      }
-
       throw new BelleApiError({
-        error: 'Erro Inesperado',
+        error: 'Erro de Conexão',
         details: err?.message || 'Falha na execução da requisição.',
         raw: {
+          type: 'NetworkError',
           message: err?.message,
           stack: err?.stack,
         },
