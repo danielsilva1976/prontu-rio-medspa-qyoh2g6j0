@@ -21,9 +21,11 @@ import {
   Building2,
   Users,
   AlertCircle,
+  Stethoscope,
 } from 'lucide-react'
 import {
   testBelleConnection,
+  testBelleConnectionSimple,
   fetchBelleClientes,
   fetchBelleAgendamentos,
   mapBelleDataToPatients,
@@ -44,6 +46,7 @@ export function IntegrationSettings({
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
+  const [isTestingSimple, setIsTestingSimple] = useState(false)
 
   const [errorFeedback, setErrorFeedback] = useState<{
     message: string
@@ -51,7 +54,7 @@ export function IntegrationSettings({
     title?: string
   } | null>(null)
 
-  const [lastAction, setLastAction] = useState<'test' | 'sync' | null>(null)
+  const [lastAction, setLastAction] = useState<'test' | 'test-simple' | 'sync' | null>(null)
   const { toast } = useToast()
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
@@ -115,6 +118,53 @@ export function IntegrationSettings({
     }
   }
 
+  const handleTestConnectionSimple = async () => {
+    if (!url || !token || !estabelecimento) {
+      toast({
+        title: 'Dados Incompletos',
+        description: 'Preencha a URL base, Token e Estabelecimento.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
+    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+
+    setToken(cleanToken)
+    setEstabelecimento(cleanEstab)
+    setLastAction('test-simple')
+
+    setIsTestingSimple(true)
+    setErrorFeedback(null)
+
+    updateBelleConfig(url, cleanToken, cleanEstab)
+
+    try {
+      const names = await testBelleConnectionSimple(url, cleanToken, cleanEstab)
+      setBelleLastSync('success', new Date().toISOString())
+      setErrorFeedback(null)
+
+      toast({
+        title: 'Sucesso',
+        description: `Conexão estabelecida com sucesso! ${names.length} clientes encontrados.`,
+        className: 'bg-green-600 text-white border-none',
+      })
+    } catch (error: any) {
+      setBelleLastSync('error', new Date().toISOString())
+      const parsedError = parseError(error)
+      setErrorFeedback(parsedError)
+
+      toast({
+        title: parsedError.title || parsedError.message,
+        description: parsedError.details,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsTestingSimple(false)
+    }
+  }
+
   const handleTestConnection = async () => {
     if (!url || !token || !estabelecimento) {
       toast({
@@ -144,7 +194,7 @@ export function IntegrationSettings({
 
       toast({
         title: 'Sucesso',
-        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
+        description: 'Conexão avançada estabelecida com sucesso.',
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -169,14 +219,12 @@ export function IntegrationSettings({
 
     toast({
       title: 'Sincronização Iniciada',
-      description: 'Testando conexão e buscando pacientes...',
+      description: 'Buscando pacientes no Belle Software...',
     })
 
     try {
       const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
       const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-
-      await testBelleConnection(url, cleanToken, cleanEstab)
 
       const [rawClientes, rawAgendamentos] = await Promise.all([
         fetchBelleClientes(url, cleanToken, cleanEstab),
@@ -191,8 +239,8 @@ export function IntegrationSettings({
       addLog('Sincronização Belle Software (Pacientes e Agenda)', 'SYSTEM')
 
       toast({
-        title: 'Sucesso',
-        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
+        title: 'Sincronização Concluída',
+        description: `${mappedData.length} pacientes importados/atualizados com sucesso.`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -255,7 +303,7 @@ export function IntegrationSettings({
         )}
       </CardHeader>
       <CardContent>
-        <div className="space-y-6 max-w-xl">
+        <div className="space-y-6 max-w-2xl">
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
               <ServerCrash className="w-5 h-5" />
@@ -313,23 +361,26 @@ export function IntegrationSettings({
           {errorFeedback && (
             <Alert
               variant="destructive"
-              className="animate-fade-in text-sm overflow-hidden border-destructive/30"
+              className="animate-fade-in text-sm overflow-hidden border-destructive/30 bg-destructive/5"
             >
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="font-semibold">
+              <AlertCircle className="h-5 w-5" />
+              <AlertTitle className="font-semibold text-base mb-2">
                 {errorFeedback.title || errorFeedback.message}
               </AlertTitle>
-              <AlertDescription className="space-y-3 mt-2">
-                <p className="font-medium text-destructive/90">{errorFeedback.details}</p>
-                <div className="pt-2 border-t border-destructive/20">
+              <AlertDescription className="space-y-3">
+                <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
+                  {errorFeedback.details}
+                </div>
+                <div className="pt-2 border-t border-destructive/10 flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       if (lastAction === 'sync') handleSyncPatients()
+                      else if (lastAction === 'test-simple') handleTestConnectionSimple()
                       else handleTestConnection()
                     }}
-                    className="bg-destructive/5 border-destructive/30 hover:bg-destructive/10 text-destructive h-8"
+                    className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-2" />
                     Tentar Novamente
@@ -339,30 +390,58 @@ export function IntegrationSettings({
             </Alert>
           )}
 
-          <div className="flex flex-wrap justify-end gap-3 pt-2">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button variant="outline" onClick={handleSave} className="rounded-xl">
               <Save className="w-4 h-4 mr-2" />
               Salvar Apenas
             </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleTestConnectionSimple}
+              disabled={
+                isTesting ||
+                isTestingSimple ||
+                isSyncing ||
+                !url.trim() ||
+                !token.trim() ||
+                !estabelecimento.trim()
+              }
+              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
+            >
+              {isTestingSimple ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Stethoscope className="w-4 h-4 mr-2" />
+              )}
+              {isTestingSimple ? 'Testando...' : 'Testar Conexão Simples'}
+            </Button>
+
             <Button
               onClick={handleTestConnection}
               disabled={
-                isTesting || isSyncing || !url.trim() || !token.trim() || !estabelecimento.trim()
+                isTesting ||
+                isTestingSimple ||
+                isSyncing ||
+                !url.trim() ||
+                !token.trim() ||
+                !estabelecimento.trim()
               }
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl min-w-[160px]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
             >
               {isTesting ? (
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}
-              {isTesting ? 'Testando...' : 'Testar Conexão'}
+              {isTesting ? 'Testando...' : 'Testar Conexão Avançada'}
             </Button>
+
             {isConnected && (
               <Button
                 onClick={handleSyncPatients}
-                disabled={isSyncing || isTesting}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl min-w-[160px]"
+                disabled={isSyncing || isTesting || isTestingSimple}
+                className="bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto"
               >
                 {isSyncing ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

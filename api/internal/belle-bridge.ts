@@ -52,15 +52,16 @@ export default async function handler(req: Request) {
 
     params.delete('target_url')
 
-    // Request options ensuring Content-Type and Accept headers
+    // Prepare strictly application/x-www-form-urlencoded body
+    const outgoingBody = params.toString()
+
     const requestOptions: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json, text/plain, */*',
-        'User-Agent': 'BelleIntegrationProxy/1.0',
       },
-      body: params.toString(),
+      body: outgoingBody,
       // Prevent automatic redirect following to avoid automatic HTTP POST to GET downgrades
       redirect: 'manual',
     }
@@ -76,6 +77,8 @@ export default async function handler(req: Request) {
       if (!redirectUrl) break
 
       currentUrl = new URL(redirectUrl, currentUrl).toString()
+
+      // Re-issue POST with the same body to the new URL to avoid 405 Method Not Allowed
       externalResponse = await fetch(currentUrl, requestOptions)
       maxRedirects--
     }
@@ -93,7 +96,7 @@ export default async function handler(req: Request) {
     return new Response(
       JSON.stringify({
         error: 'Ponte de Integração Indisponível',
-        details: `Ponte de Integração Indisponível - Erro de proxy: ${error.message}`,
+        details: `Erro de proxy: ${error.message}`,
       }),
       {
         status: 502,

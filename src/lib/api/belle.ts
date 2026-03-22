@@ -182,7 +182,7 @@ const belleApiCall = async (
         }
         throw new BelleApiError({
           error: 'Resposta HTML Inesperada',
-          details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
+          details: `A API retornou HTML em vez de JSON. Resposta parcial: ${text.substring(0, 100)}... Verifique se a URL (${targetEndpoint}) está correta.`,
         })
       }
 
@@ -192,7 +192,7 @@ const belleApiCall = async (
       } catch (e) {
         throw new BelleApiError({
           error: 'Resposta Inválida',
-          details: 'A API não retornou um JSON válido.',
+          details: `A API não retornou um JSON válido. Resposta: ${text.substring(0, 100)}...`,
         })
       }
 
@@ -254,6 +254,18 @@ const belleApiCall = async (
       })
     }
   }
+}
+
+export const testBelleConnectionSimple = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '1',
+): Promise<string[]> => {
+  const data = await belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento)
+  const clientes = Array.isArray(data)
+    ? data
+    : data?.pacientes || data?.clientes || data?.dados || []
+  return clientes.map((c: any) => c.nome || c.name || 'Sem Nome')
 }
 
 export const testBelleConnection = async (
