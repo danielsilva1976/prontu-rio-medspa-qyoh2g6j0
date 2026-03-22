@@ -108,7 +108,6 @@ export const belleApiCall = async (
   retries: number = 3,
 ): Promise<any> => {
   const targetEndpoint = getApiEndpoint(url, path)
-  const baseUrl = getApiEndpoint(url, '').replace(/\/api\.php$/, '')
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
@@ -129,16 +128,12 @@ export const belleApiCall = async (
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-      'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"Windows"',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'cross-site',
+      Origin: 'https://app.bellesoftware.com.br',
+      Referer: 'https://app.bellesoftware.com.br/',
       Accept: 'application/json, text/plain, */*',
-      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-      Origin: baseUrl,
-      Referer: `${baseUrl}/`,
+      'Sec-Fetch-Site': 'cross-site',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Dest': 'empty',
     },
     data: requestData.toString(),
   }
@@ -182,8 +177,8 @@ export const belleApiCall = async (
 }
 
 /**
- * Direct API Integration Handler with Auto-Retry and Full Diagnostics
- * Implements strict Postman documentation structure with WAF bypass
+ * Direct API Integration Handler with single format
+ * Implements specific headers to bypass Cloudflare/Nginx 405 errors
  */
 export const testBelleApiConnectionWithRetry = async (
   url: string,
@@ -192,155 +187,113 @@ export const testBelleApiConnectionWithRetry = async (
   testData: any,
 ): Promise<{ success: boolean; status: number; data: any; diagnostics: DiagnosticLog[] }> => {
   const targetEndpoint = getApiEndpoint(url, '/api.php')
-  const baseUrl = getApiEndpoint(url, '').replace(/\/api\.php$/, '')
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  const baseHeaders: Record<string, string> = {
+  // Adhering to the browser emulation and required content type rules for WAF bypass
+  const headers: Record<string, string> = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-    'Sec-Ch-Ua-Mobile': '?0',
-    'Sec-Ch-Ua-Platform': '"Windows"',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'cross-site',
+    Origin: 'https://app.bellesoftware.com.br',
+    Referer: 'https://app.bellesoftware.com.br/',
     Accept: 'application/json, text/plain, */*',
-    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-    Origin: baseUrl,
-    Referer: `${baseUrl}/`,
+    'Sec-Fetch-Site': 'cross-site',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Dest': 'empty',
+    'Content-Type': 'application/x-www-form-urlencoded',
   }
 
-  const buildRequest = (contentType: string) => {
-    let bodyData = ''
-    const finalHeaders = { ...baseHeaders }
-
-    const payload = {
-      token: cleanToken,
-      estabelecimento: cleanEstab,
-      ...testData,
-    }
-
-    if (contentType === 'application/x-www-form-urlencoded') {
-      const params = new URLSearchParams()
-      Object.entries(payload).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
-      })
-      bodyData = params.toString()
-      finalHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
-    } else if (contentType === 'multipart/form-data') {
-      const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
-      let multipartBody = ''
-      Object.entries(payload).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') {
-          multipartBody += `--${boundary}\r\n`
-          multipartBody += `Content-Disposition: form-data; name="${k}"\r\n\r\n`
-          multipartBody += `${v}\r\n`
-        }
-      })
-      multipartBody += `--${boundary}--\r\n`
-      bodyData = multipartBody
-      finalHeaders['Content-Type'] = `multipart/form-data; boundary=${boundary}`
-    } else if (contentType === 'application/json') {
-      bodyData = JSON.stringify(payload)
-      finalHeaders['Content-Type'] = 'application/json'
-    }
-
-    return { headers: finalHeaders, bodyData }
+  const payload = {
+    token: cleanToken,
+    estabelecimento: cleanEstab,
+    ...testData,
   }
 
-  const contentTypesToTry = [
-    'application/x-www-form-urlencoded',
-    'multipart/form-data',
-    'application/json',
-  ]
+  // Proper URL encoding handling as per acceptance criteria
+  const params = new URLSearchParams()
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
+  })
+  const bodyData = params.toString()
+
+  const safeHeaders = { ...headers }
+  safeHeaders['token'] = '***REDACTED***'
+
+  const diagnosticEntry: DiagnosticLog = {
+    request: {
+      url: targetEndpoint,
+      method: 'POST',
+      headers: safeHeaders,
+      body: bodyData,
+    },
+    response: null,
+  }
+
   const diagnosticLog: DiagnosticLog[] = []
 
-  for (const cType of contentTypesToTry) {
-    const { headers, bodyData } = buildRequest(cType)
-
-    const safeHeaders = { ...headers }
-    if (safeHeaders['token']) safeHeaders['token'] = '***REDACTED***'
-
-    const diagnosticEntry: DiagnosticLog = {
-      request: {
-        url: targetEndpoint,
-        method: 'POST',
-        headers: safeHeaders,
-        body: bodyData,
-      },
-      response: null,
+  try {
+    const proxyPayload = {
+      targetUrl: targetEndpoint,
+      method: 'POST',
+      headers,
+      data: bodyData,
     }
 
+    const response = await fetch(PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(proxyPayload),
+    })
+
+    const text = await response.text()
+    let parsedBody = text
     try {
-      const proxyPayload = {
-        targetUrl: targetEndpoint,
-        method: 'POST',
-        headers,
-        data: bodyData,
-      }
-
-      const response = await fetch(PROXY_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(proxyPayload),
-      })
-
-      const text = await response.text()
-      let parsedBody = text
-      try {
-        parsedBody = JSON.parse(text)
-      } catch (e) {
-        // Ignored as it might not be JSON
-      }
-
-      diagnosticEntry.response = {
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: parsedBody,
-      }
-
-      diagnosticLog.push(diagnosticEntry)
-
-      // Auto-retry on WAF blocks (usually 405, 403, or 406)
-      if (response.status === 405 || response.status === 403 || response.status === 406) {
-        continue
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      return {
-        success: true,
-        status: response.status,
-        data: parsedBody,
-        diagnostics: diagnosticLog,
-      }
-    } catch (err: any) {
-      if (!diagnosticEntry.response) {
-        diagnosticEntry.response = { error: err.message }
-      }
-      if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry)
-      // On network errors, try the next format just in case it's a protocol issue
+      parsedBody = JSON.parse(text)
+    } catch (e) {
+      // Ignored: Keep as plain text/html if not JSON
     }
+
+    diagnosticEntry.response = {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: parsedBody,
+    }
+
+    diagnosticLog.push(diagnosticEntry)
+
+    if (!response.ok) {
+      if (response.status === 405 || response.status === 403 || response.status === 406) {
+        throw new BelleApiError({
+          error: `Erro HTTP ${response.status} (WAF Bloqueio)`,
+          details: 'Bloqueio de segurança detectado pelo servidor web.',
+          raw: { diagnostics: diagnosticLog, status: response.status },
+        })
+      }
+      throw new BelleApiError({
+        error: `Erro HTTP ${response.status}`,
+        details: 'O servidor retornou um erro.',
+        raw: { diagnostics: diagnosticLog, status: response.status },
+      })
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      data: parsedBody,
+      diagnostics: diagnosticLog,
+    }
+  } catch (err: any) {
+    if (!diagnosticEntry.response) {
+      diagnosticEntry.response = { error: err.message }
+      if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry)
+    }
+    if (err instanceof BelleApiError) throw err
+    throw new BelleApiError({
+      error: 'Falha na Conexão',
+      details: err.message,
+      raw: { diagnostics: diagnosticLog },
+    })
   }
-
-  throw new BelleApiError({
-    error: 'Falha na Conexão após múltiplas tentativas (WAF Bloqueio).',
-    details:
-      'Tentamos vários formatos (URL Encoded, Multipart, JSON) mas o servidor web continuou bloqueando a requisição.',
-    raw: { diagnostics: diagnosticLog },
-  })
-}
-
-export const testBelleConnection = async (
-  url: string,
-  token: string,
-  estabelecimento: string = '1',
-): Promise<boolean> => {
-  await fetchBelleClientes(url, token, estabelecimento)
-  return true
 }
 
 export const fetchBelleClientes = async (
