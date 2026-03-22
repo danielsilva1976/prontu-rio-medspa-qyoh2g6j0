@@ -37281,22 +37281,23 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 			stack: "TypeError: Failed to fetch\n    at proxyCall (src/lib/api/belle.ts:123:45)"
 		}
 	});
+	const requestData = new URLSearchParams();
+	requestData.append("token", cleanToken);
+	requestData.append("estabelecimento", cleanEstab);
+	if (payload) Object.entries(payload).forEach(([key, value]) => {
+		if (value !== void 0 && value !== null) requestData.append(key, String(value));
+	});
 	const proxyPayload = {
 		targetUrl: targetEndpoint,
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-			Referer: "https://app.bellesoftware.com.br/",
-			"Sec-Fetch-Mode": "navigate",
-			"Sec-Fetch-Site": "same-origin",
-			"Sec-Fetch-Dest": "document"
+			Accept: "application/json, text/html, */*",
+			"Cache-Control": "no-cache",
+			Pragma: "no-cache"
 		},
-		data: {
-			token: cleanToken,
-			estabelecimento: cleanEstab,
-			...payload
-		}
+		data: requestData.toString()
 	};
 	let attempt = 0;
 	while (attempt < retries) {
@@ -37322,7 +37323,7 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 				const errText = await response.text().catch(() => "");
 				throw new BelleApiError({
 					error: `Erro HTTP ${response.status}`,
-					details: `Falha na comunicação com o proxy (Status: ${response.status}).`,
+					details: `Falha na comunicação com o servidor (Status: ${response.status}).`,
 					status: response.status,
 					raw: {
 						status: response.status,
@@ -37336,6 +37337,16 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 			try {
 				result = JSON.parse(text);
 			} catch (e) {
+				if (text.includes("405 Not Allowed")) throw new BelleApiError({
+					error: `Erro HTTP 405`,
+					details: `Falha na comunicação com o servidor. O endpoint retornou 405 Method Not Allowed.`,
+					status: 405,
+					raw: {
+						status: 405,
+						statusText: "Not Allowed",
+						body: text
+					}
+				});
 				throw new BelleApiError({
 					error: "Resposta Inválida",
 					details: `O proxy retornou um formato inesperado.`,
@@ -50742,7 +50753,7 @@ function IntegrationSettings({ title, description }) {
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
 			setErrorFeedback(null);
 			toast({
-				title: "Conexão Proxy Estabelecida com Sucesso",
+				title: "Conexão Estabelecida com Sucesso",
 				description: `Resposta 200 OK. Pacientes validados: ${names.slice(0, 3).join(", ")}${names.length > 3 ? "..." : ""}`,
 				className: "bg-green-600 text-white border-none"
 			});
@@ -50934,7 +50945,7 @@ function IntegrationSettings({ title, description }) {
 										"data-uid": "src/components/settings/IntegrationSettings.tsx:339:15",
 										"data-prohibitions": "[]",
 										className: "text-xs text-muted-foreground mt-1",
-										children: "Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e emulação de navegador para contornar bloqueios de CORS e segurança (Nginx/Cloudflare). Dica: use o token \"fail-network\" para simular erro de rede."
+										children: "Conexão via túnel de proxy interno (Server-to-Server) formatado em application/x-www-form-urlencoded para contornar bloqueios de CORS e segurança Nginx."
 									})
 								]
 							}),
@@ -51071,14 +51082,58 @@ function IntegrationSettings({ title, description }) {
 													children: errorFeedback.raw.statusText
 												})]
 											}),
+											errorFeedback.raw.status === 405 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:412:25",
+												"data-prohibitions": "[]",
+												className: "p-3 bg-white/50 rounded-md border border-destructive/10 text-xs text-destructive/90 mb-2",
+												children: [
+													/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+														"data-uid": "src/components/settings/IntegrationSettings.tsx:413:27",
+														"data-prohibitions": "[]",
+														children: "Ação Recomendada:"
+													}),
+													" O erro \"405 Not Allowed\" indica que o servidor bloqueou o método POST.",
+													/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", {
+														"data-uid": "src/components/settings/IntegrationSettings.tsx:415:27",
+														"data-prohibitions": "[]",
+														className: "list-disc ml-4 mt-1 space-y-1",
+														children: [
+															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", {
+																"data-uid": "src/components/settings/IntegrationSettings.tsx:416:29",
+																"data-prohibitions": "[]",
+																children: "Verifique se a URL base está apontando para o subdomínio exato da clínica."
+															}),
+															/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("li", {
+																"data-uid": "src/components/settings/IntegrationSettings.tsx:420:29",
+																"data-prohibitions": "[]",
+																children: [
+																	"Redirecionamentos de HTTP para HTTPS podem transformar POST em GET, resultando em erro 405. Certifique-se de usar",
+																	" ",
+																	/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+																		"data-uid": "src/components/settings/IntegrationSettings.tsx:423:31",
+																		"data-prohibitions": "[]",
+																		children: "https://"
+																	}),
+																	"."
+																]
+															}),
+															/* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", {
+																"data-uid": "src/components/settings/IntegrationSettings.tsx:425:29",
+																"data-prohibitions": "[]",
+																children: "Confirme se o endpoint não possui barras extras no final."
+															})
+														]
+													})
+												]
+											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:410:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:430:23",
 												"data-prohibitions": "[]",
 												className: "text-xs font-semibold mb-1 text-destructive/80",
 												children: "Logs de Diagnóstico Brutos:"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:413:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:433:23",
 												"data-prohibitions": "[editContent]",
 												className: "p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all",
 												children: JSON.stringify(errorFeedback.raw, null, 2)
@@ -51086,11 +51141,11 @@ function IntegrationSettings({ title, description }) {
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:418:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:438:19",
 										"data-prohibitions": "[]",
 										className: "pt-2 border-t border-destructive/10 flex gap-2",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:419:21",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:439:21",
 											"data-prohibitions": "[]",
 											variant: "outline",
 											size: "sm",
@@ -51101,7 +51156,7 @@ function IntegrationSettings({ title, description }) {
 											},
 											className: "bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:429:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:449:23",
 												"data-prohibitions": "[editContent]",
 												className: "w-3.5 h-3.5 mr-2"
 											}), "Tentar Novamente"]
@@ -51112,54 +51167,54 @@ function IntegrationSettings({ title, description }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:438:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:458:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap items-center gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:439:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:459:13",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: handleSave,
 								className: "rounded-xl",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:440:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:460:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), "Salvar Apenas"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:444:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:464:13",
 								"data-prohibitions": "[editContent]",
 								variant: "outline",
 								onClick: handleTestConnectionSimple,
 								disabled: isTesting || isTestingSimple || isSyncing || !url.trim() || !token.trim() || !estabelecimento.trim(),
 								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5",
 								children: [isTestingSimple ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:458:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:478:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:460:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:480:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isTestingSimple ? "Testando Proxy..." : "Testar Conexão"]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:466:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:486:15",
 								"data-prohibitions": "[editContent]",
 								onClick: handleSyncPatients,
 								disabled: isSyncing || isTesting || isTestingSimple,
 								className: "bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto",
 								children: [isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:472:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:492:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:474:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:494:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), isSyncing ? "Sincronizando..." : "Sincronizar Pacientes"]
+								}), isSyncing ? "Importando..." : "Importar Clientes"]
 							})
 						]
 					})
@@ -51804,4 +51859,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DajpDqZX.js.map
+//# sourceMappingURL=index-Q9uesgGc.js.map

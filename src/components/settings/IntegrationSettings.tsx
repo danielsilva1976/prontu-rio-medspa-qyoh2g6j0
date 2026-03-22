@@ -162,7 +162,7 @@ export function IntegrationSettings({
       const preview = names.slice(0, 3).join(', ')
 
       toast({
-        title: 'Conexão Proxy Estabelecida com Sucesso',
+        title: 'Conexão Estabelecida com Sucesso',
         description: `Resposta 200 OK. Pacientes validados: ${preview}${names.length > 3 ? '...' : ''}`,
         className: 'bg-green-600 text-white border-none',
       })
@@ -337,9 +337,9 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e
-                emulação de navegador para contornar bloqueios de CORS e segurança
-                (Nginx/Cloudflare). Dica: use o token "fail-network" para simular erro de rede.
+                Conexão via túnel de proxy interno (Server-to-Server) formatado em
+                application/x-www-form-urlencoded para contornar bloqueios de CORS e segurança
+                Nginx.
               </p>
             </div>
 
@@ -407,6 +407,26 @@ export function IntegrationSettings({
                           <span>{errorFeedback.raw.statusText}</span>
                         </div>
                       )}
+
+                      {errorFeedback.raw.status === 405 && (
+                        <div className="p-3 bg-white/50 rounded-md border border-destructive/10 text-xs text-destructive/90 mb-2">
+                          <strong>Ação Recomendada:</strong> O erro "405 Not Allowed" indica que o
+                          servidor bloqueou o método POST.
+                          <ul className="list-disc ml-4 mt-1 space-y-1">
+                            <li>
+                              Verifique se a URL base está apontando para o subdomínio exato da
+                              clínica.
+                            </li>
+                            <li>
+                              Redirecionamentos de HTTP para HTTPS podem transformar POST em GET,
+                              resultando em erro 405. Certifique-se de usar{' '}
+                              <strong>https://</strong>.
+                            </li>
+                            <li>Confirme se o endpoint não possui barras extras no final.</li>
+                          </ul>
+                        </div>
+                      )}
+
                       <p className="text-xs font-semibold mb-1 text-destructive/80">
                         Logs de Diagnóstico Brutos:
                       </p>
@@ -473,7 +493,7 @@ export function IntegrationSettings({
                 ) : (
                   <Users className="w-4 h-4 mr-2" />
                 )}
-                {isSyncing ? 'Sincronizando...' : 'Sincronizar Pacientes'}
+                {isSyncing ? 'Importando...' : 'Importar Clientes'}
               </Button>
             )}
           </div>

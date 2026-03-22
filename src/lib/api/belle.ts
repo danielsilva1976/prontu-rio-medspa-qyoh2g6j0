@@ -119,25 +119,33 @@ export const belleApiCall = async (
     })
   }
 
+  // Optimize serialization to application/x-www-form-urlencoded string representation
+  // This solves 405 Method Not Allowed by strictly enforcing correct content body.
+  const requestData = new URLSearchParams()
+  requestData.append('token', cleanToken)
+  requestData.append('estabelecimento', cleanEstab)
+  if (payload) {
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        requestData.append(key, String(value))
+      }
+    })
+  }
+
   // Emulates the backend-to-backend proxy relay setup described in AC
   // Sends headers instructions explicitly to the internal proxy
   const proxyPayload = {
     targetUrl: targetEndpoint,
-    method: 'POST',
+    method: 'POST', // Enforce POST Method Optimization
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      Referer: 'https://app.bellesoftware.com.br/',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-Site': 'same-origin',
-      'Sec-Fetch-Dest': 'document',
+      Accept: 'application/json, text/html, */*',
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
     },
-    data: {
-      token: cleanToken,
-      estabelecimento: cleanEstab,
-      ...payload,
-    },
+    data: requestData.toString(), // Strict Content-Type Handling
   }
 
   let attempt = 0
@@ -171,7 +179,7 @@ export const belleApiCall = async (
         const errText = await response.text().catch(() => '')
         throw new BelleApiError({
           error: `Erro HTTP ${response.status}`,
-          details: `Falha na comunicação com o proxy (Status: ${response.status}).`,
+          details: `Falha na comunicação com o servidor (Status: ${response.status}).`,
           status: response.status,
           raw: {
             status: response.status,
@@ -183,9 +191,24 @@ export const belleApiCall = async (
 
       const text = await response.text()
       let result
+
       try {
         result = JSON.parse(text)
       } catch (e) {
+        // Handle case where proxy returns 200 OK but inner payload is HTML containing 405 Error
+        if (text.includes('405 Not Allowed')) {
+          throw new BelleApiError({
+            error: `Erro HTTP 405`,
+            details: `Falha na comunicação com o servidor. O endpoint retornou 405 Method Not Allowed.`,
+            status: 405,
+            raw: {
+              status: 405,
+              statusText: 'Not Allowed',
+              body: text,
+            },
+          })
+        }
+
         throw new BelleApiError({
           error: 'Resposta Inválida',
           details: `O proxy retornou um formato inesperado.`,
