@@ -118,10 +118,9 @@ const belleApiCall = async (
     }
   }
 
-  // Internal API Proxy Bridge: We perform a direct POST request.
-  // Using strictly application/x-www-form-urlencoded makes this a "Simple Request" in CORS terms,
-  // preventing the browser from sending an OPTIONS preflight request.
-  // This successfully bypasses the Nginx 405 Method Not Allowed block.
+  // Internal Proxy Bridge & Request Masking
+  // Performing a direct POST request using x-www-form-urlencoded makes it a "Simple Request"
+  // Request Emulation explicitly injects browser-like headers to bypass strict proxy/CORS blocks
   let attempt = 0
   while (attempt < retries) {
     attempt++
@@ -134,13 +133,13 @@ const belleApiCall = async (
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           Accept: 'application/json, text/plain, */*',
-          // Request Masking & Header Optimization
-          // While standard browsers may ignore programmatic assignment to forbidden headers,
-          // defining them ensures compatibility and evasion when compiled in native wrappers (Electron/Capacitor).
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           Origin: 'https://app.bellesoftware.com.br',
           Referer: 'https://app.bellesoftware.com.br/',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'same-origin',
+          'Sec-Fetch-Dest': 'document',
         },
         body: params.toString(),
         signal: controller.signal,
@@ -173,7 +172,7 @@ const belleApiCall = async (
           },
         }
 
-        // Error Distinction: Authentication vs Connection
+        // Error Distinction: Authentication vs Connection vs 405
         if (
           response.status === 401 ||
           response.status === 403 ||
@@ -183,9 +182,9 @@ const belleApiCall = async (
           errPayload.details =
             'Credenciais inválidas. Verifique se o Token e o ID do Estabelecimento estão corretos.'
         } else if (response.status === 405) {
-          errPayload.error = 'Erro de Conexão'
+          errPayload.error = 'Erro 405 - Método Não Permitido'
           errPayload.details =
-            'O servidor bloqueou a requisição (Erro 405 - Method Not Allowed). O servidor de destino não aceitou a rota.'
+            'O servidor bloqueou a requisição (Erro 405). Verifique se o método POST está sendo bloqueado pelo firewall de destino (Nginx).'
         } else if (response.status === 404) {
           errPayload.error = 'Endpoint Não Encontrado (404)'
           errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado no servidor.`
@@ -202,23 +201,57 @@ const belleApiCall = async (
       }
 
       const text = await response.text()
-
-      if (text.trim().startsWith('<')) {
-        throw new BelleApiError({
-          error: 'Resposta HTML Inesperada',
-          details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
-          raw: text.substring(0, 500),
-        })
-      }
-
+      let cleanText = text.trim()
       let result
+
+      // Advanced JSON Extraction to handle Content-Type discrepancies or HTML padding
       try {
-        result = JSON.parse(text)
+        const firstBrace = cleanText.indexOf('{')
+        const firstBracket = cleanText.indexOf('[')
+
+        let startIndex = -1
+        if (firstBrace !== -1 && firstBracket !== -1) {
+          startIndex = Math.min(firstBrace, firstBracket)
+        } else if (firstBrace !== -1) {
+          startIndex = firstBrace
+        } else if (firstBracket !== -1) {
+          startIndex = firstBracket
+        }
+
+        if (startIndex !== -1 && startIndex > 0) {
+          cleanText = cleanText.substring(startIndex)
+        }
+
+        const lastBrace = cleanText.lastIndexOf('}')
+        const lastBracket = cleanText.lastIndexOf(']')
+        let endIndex = -1
+        if (lastBrace !== -1 && lastBracket !== -1) {
+          endIndex = Math.max(lastBrace, lastBracket)
+        } else if (lastBrace !== -1) {
+          endIndex = lastBrace
+        } else if (lastBracket !== -1) {
+          endIndex = lastBracket
+        }
+
+        if (endIndex !== -1 && endIndex < cleanText.length - 1) {
+          cleanText = cleanText.substring(0, endIndex + 1)
+        }
+
+        if (!cleanText && text.trim().startsWith('<')) {
+          throw new BelleApiError({
+            error: 'Resposta HTML Inesperada',
+            details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
+            raw: text.substring(0, 1000),
+          })
+        }
+
+        result = JSON.parse(cleanText)
       } catch (e) {
+        if (e instanceof BelleApiError) throw e
         throw new BelleApiError({
           error: 'Resposta Inválida',
           details: `A API não retornou um JSON válido.`,
-          raw: text.substring(0, 500),
+          raw: text.substring(0, 1000),
         })
       }
 

@@ -336,8 +336,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Conexão direta otimizada com formatação estrita (x-www-form-urlencoded) para evitar
-                bloqueios 405 e CORS.
+                Conexão direta otimizada com formatação estrita (x-www-form-urlencoded) e emulação
+                de cabeçalhos de navegação para contornar bloqueios CORS.
               </p>
             </div>
 
@@ -388,42 +388,54 @@ export function IntegrationSettings({
               variant="destructive"
               className="animate-fade-in text-sm overflow-hidden border-destructive/30 bg-destructive/5"
             >
-              <AlertCircle className="h-5 w-5" />
-              <AlertTitle className="font-semibold text-base mb-2">
-                {errorFeedback.title || errorFeedback.message}
-              </AlertTitle>
-              <AlertDescription className="space-y-3">
-                <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
-                  {errorFeedback.details}
-                </div>
-                {errorFeedback.raw && (
-                  <div className="mt-2">
-                    <p className="text-xs font-semibold mb-1 text-destructive/80">
-                      Logs de Diagnóstico Brutos:
-                    </p>
-                    <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap">
-                      {typeof errorFeedback.raw === 'string'
-                        ? errorFeedback.raw
-                        : JSON.stringify(errorFeedback.raw, null, 2)}
-                    </div>
+              <AlertCircle className="h-5 w-5 mt-0.5" />
+              <div className="pl-1">
+                <AlertTitle className="font-semibold text-base mb-2">
+                  {errorFeedback.title || errorFeedback.message}
+                </AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
+                    {errorFeedback.details}
                   </div>
-                )}
-                <div className="pt-2 border-t border-destructive/10 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (lastAction === 'sync') handleSyncPatients()
-                      else if (lastAction === 'test-simple') handleTestConnectionSimple()
-                      else handleTestConnection()
-                    }}
-                    className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 mr-2" />
-                    Tentar Novamente
-                  </Button>
-                </div>
-              </AlertDescription>
+                  {errorFeedback.raw && (
+                    <div className="mt-2 space-y-2">
+                      {errorFeedback.raw.status && (
+                        <div className="flex gap-2 text-xs font-semibold text-destructive/90">
+                          <span>Status Code: {errorFeedback.raw.status}</span>
+                          <span>{errorFeedback.raw.statusText}</span>
+                        </div>
+                      )}
+                      <p className="text-xs font-semibold mb-1 text-destructive/80">
+                        Logs de Diagnóstico Brutos (Response):
+                      </p>
+                      <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all">
+                        {errorFeedback.raw.body !== undefined
+                          ? typeof errorFeedback.raw.body === 'string'
+                            ? errorFeedback.raw.body
+                            : JSON.stringify(errorFeedback.raw.body, null, 2)
+                          : typeof errorFeedback.raw === 'string'
+                            ? errorFeedback.raw
+                            : JSON.stringify(errorFeedback.raw, null, 2)}
+                      </div>
+                    </div>
+                  )}
+                  <div className="pt-2 border-t border-destructive/10 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (lastAction === 'sync') handleSyncPatients()
+                        else if (lastAction === 'test-simple') handleTestConnectionSimple()
+                        else handleTestConnection()
+                      }}
+                      className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 mr-2" />
+                      Tentar Novamente
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 
@@ -451,27 +463,7 @@ export function IntegrationSettings({
               ) : (
                 <Stethoscope className="w-4 h-4 mr-2" />
               )}
-              {isTestingSimple ? 'Testando...' : 'Testar Conexão Direta'}
-            </Button>
-
-            <Button
-              onClick={handleTestConnection}
-              disabled={
-                isTesting ||
-                isTestingSimple ||
-                isSyncing ||
-                !url.trim() ||
-                !token.trim() ||
-                !estabelecimento.trim()
-              }
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl"
-            >
-              {isTesting ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-              )}
-              {isTesting ? 'Testando...' : 'Testar Conexão Avançada'}
+              {isTestingSimple ? 'Testando...' : 'Testar Conexão'}
             </Button>
 
             {isConnected && (
