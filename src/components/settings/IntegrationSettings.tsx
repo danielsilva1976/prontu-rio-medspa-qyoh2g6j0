@@ -384,11 +384,9 @@ export function IntegrationSettings({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        lastAction === 'sync'
-                          ? handleSyncPatients()
-                          : lastAction === 'test-simple'
-                            ? handleTestConnectionSimple()
-                            : handleTestConnection()
+                        if (lastAction === 'sync') handleSyncPatients()
+                        else if (lastAction === 'test-simple') handleTestConnectionSimple()
+                        else handleTestConnection()
                       }}
                       className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
                     >

@@ -51105,11 +51105,13 @@ function IntegrationSettings({ title, description }) {
 											variant: "outline",
 											size: "sm",
 											onClick: () => {
-												lastAction === "sync" ? handleSyncPatients() : lastAction === "test-simple" ? handleTestConnectionSimple() : handleTestConnection();
+												if (lastAction === "sync") handleSyncPatients();
+												else if (lastAction === "test-simple") handleTestConnectionSimple();
+												else handleTestConnection();
 											},
 											className: "bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:395:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:393:23",
 												"data-prohibitions": "[editContent]",
 												className: "w-3.5 h-3.5 mr-2"
 											}), " Tentar Novamente"]
@@ -51120,51 +51122,51 @@ function IntegrationSettings({ title, description }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:403:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:401:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap items-center gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:404:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:402:13",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: handleSave,
 								className: "rounded-xl",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:405:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:403:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), " Salvar Apenas"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:407:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:405:13",
 								"data-prohibitions": "[editContent]",
 								variant: "outline",
 								onClick: handleTestConnectionSimple,
 								disabled: isConnecting || !url.trim() || !token.trim() || !estabelecimento.trim(),
 								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5",
 								children: [isTestingSimple ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:414:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:412:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:416:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:414:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isTestingSimple ? "Testando Proxy..." : "Testar Conexão"]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:421:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:419:15",
 								"data-prohibitions": "[editContent]",
 								onClick: handleSyncPatients,
 								disabled: isConnecting,
 								className: "bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto",
 								children: [isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:427:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:425:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:429:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:427:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isSyncing ? "Importando..." : "Importar Clientes"]
@@ -51812,4 +51814,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DmhYkY5c.js.map
+//# sourceMappingURL=index-BMXsP1z8.js.map
