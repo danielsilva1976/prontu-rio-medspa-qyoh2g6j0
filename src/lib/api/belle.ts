@@ -59,7 +59,6 @@ export class BelleApiError extends Error {
         }
       }
     } catch (e) {
-      // Falha ao extrair detalhes
       detailsStr = 'Não foi possível extrair os detalhes do erro.'
     }
 
@@ -113,7 +112,7 @@ export const belleApiCall = async (
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       Accept: 'application/json, text/html, */*',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
@@ -171,20 +170,14 @@ export const testBelleWebhookConnection = async (
   url: string,
   token: string,
   payload: Record<string, string | number>,
-  contentType:
-    | 'application/x-www-form-urlencoded'
-    | 'multipart/form-data' = 'application/x-www-form-urlencoded',
+  contentType: 'application/x-www-form-urlencoded' | 'multipart/form-data' = 'multipart/form-data',
 ): Promise<{ success: boolean; status: number; body: string; headers: any }> => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
   if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
   else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
 
-  let baseUrl = 'https://app.bellesoftware.com.br'
-  try {
-    baseUrl = new URL(cleanUrl).origin
-  } catch (e) {
-    // URL inválida ignorada, utiliza a url padrao
-  }
+  let baseUrl =
+    typeof window !== 'undefined' ? window.location.origin : 'https://app.bellesoftware.com.br'
 
   const requestData = new URLSearchParams()
   requestData.append('token', token)
@@ -219,13 +212,16 @@ export const testBelleWebhookConnection = async (
     headers: {
       'Content-Type': finalContentType,
       'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
-      Accept: '*/*',
+      Accept: 'application/json, text/plain, */*',
       'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       'Sec-Fetch-Site': 'cross-site',
-      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Dest': 'empty',
     },
     data: bodyData,
@@ -276,7 +272,8 @@ export const testBelleWebhookConnection = async (
     if (is405) {
       throw new BelleApiError({
         error: 'Erro HTTP 405 - Not Allowed',
-        details: 'O servidor Nginx bloqueou a requisição.',
+        details:
+          'O servidor web (WAF) bloqueou a requisição. O formato ou os headers não foram aceitos.',
         raw: { status: 405, headers: headersObj, body: rawBody },
       })
     }

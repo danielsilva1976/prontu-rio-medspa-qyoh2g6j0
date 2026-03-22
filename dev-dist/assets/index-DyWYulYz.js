@@ -24926,10 +24926,10 @@ var defaultData = {
 		"Luz Pulsada (LIP)": "450"
 	},
 	belleSoftware: {
-		url: "https://app.bellesoftware.com.br",
+		url: "https://app.bellesoftware.com.br/webhooks/pluga/RDStation.php",
 		token: "1787cad7ac7dd71ac2fbbdaf823928fd",
 		estabelecimento: "1",
-		webhookContentType: "application/x-www-form-urlencoded"
+		webhookContentType: "multipart/form-data"
 	}
 };
 var SettingsContext = (0, import_react.createContext)({});
@@ -37194,7 +37194,7 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
 			Accept: "application/json, text/html, */*",
 			Origin: baseUrl,
 			Referer: `${baseUrl}/`
@@ -37247,14 +37247,11 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 var testBelleConnection = async (url, token, estabelecimento = "1") => {
 	return belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento, 1);
 };
-var testBelleWebhookConnection = async (url, token, payload, contentType = "application/x-www-form-urlencoded") => {
+var testBelleWebhookConnection = async (url, token, payload, contentType = "multipart/form-data") => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
 	else if (!cleanUrl.startsWith("https://")) cleanUrl = `https://${cleanUrl}`;
-	let baseUrl = "https://app.bellesoftware.com.br";
-	try {
-		baseUrl = new URL(cleanUrl).origin;
-	} catch (e) {}
+	let baseUrl = typeof window !== "undefined" ? window.location.origin : "https://app.bellesoftware.com.br";
 	const requestData = new URLSearchParams();
 	requestData.append("token", token);
 	Object.entries(payload).forEach(([key, value]) => {
@@ -37282,13 +37279,16 @@ var testBelleWebhookConnection = async (url, token, payload, contentType = "appl
 		method: "POST",
 		headers: {
 			"Content-Type": finalContentType,
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+			"Sec-Ch-Ua": "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"",
+			"Sec-Ch-Ua-Mobile": "?0",
+			"Sec-Ch-Ua-Platform": "\"Windows\"",
 			Origin: baseUrl,
 			Referer: `${baseUrl}/`,
-			Accept: "*/*",
+			Accept: "application/json, text/plain, */*",
 			"Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
 			"Sec-Fetch-Site": "cross-site",
-			"Sec-Fetch-Mode": "navigate",
+			"Sec-Fetch-Mode": "cors",
 			"Sec-Fetch-Dest": "empty"
 		},
 		data: bodyData
@@ -37327,7 +37327,7 @@ var testBelleWebhookConnection = async (url, token, payload, contentType = "appl
 		const rawBody = is405 && !text ? "<html><head><title>405 Not Allowed</title></head><body><center><h1>405 Not Allowed</h1></center></body></html>" : text;
 		if (is405) throw new BelleApiError({
 			error: "Erro HTTP 405 - Not Allowed",
-			details: "O servidor Nginx bloqueou a requisição.",
+			details: "O servidor web (WAF) bloqueou a requisição. O formato ou os headers não foram aceitos.",
 			raw: {
 				status: 405,
 				headers: headersObj,
@@ -50585,7 +50585,7 @@ function IntegrationSettings({ title, description }) {
 	const [url, setUrl] = (0, import_react.useState)(belleSoftware.url);
 	const [token, setToken] = (0, import_react.useState)(belleSoftware.token);
 	const [estabelecimento, setEstabelecimento] = (0, import_react.useState)(belleSoftware.estabelecimento || "1");
-	const [contentType, setContentType] = (0, import_react.useState)(belleSoftware.webhookContentType || "application/x-www-form-urlencoded");
+	const [contentType, setContentType] = (0, import_react.useState)(belleSoftware.webhookContentType || "multipart/form-data");
 	const [mapping, setMapping] = (0, import_react.useState)({
 		nome: "Paciente Teste",
 		email: "teste@pluga.co",
@@ -50637,19 +50637,19 @@ function IntegrationSettings({ title, description }) {
 				success: true,
 				title: "Webhook Enviado com Sucesso",
 				message: `Status ${res.status}`,
-				details: "O servidor aceitou a requisição.",
+				details: "O servidor aceitou a requisição e os headers foram processados corretamente.",
 				raw: res
 			});
-			addLog("Sincronização Teste Webhook", "SYSTEM");
+			addLog("Sincronização Teste Webhook (Pluga)", "SYSTEM");
 		} catch (err) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
-			const isCloudflare = err.raw?.headers?.server?.toLowerCase().includes("cloudflare") && err.raw?.status === 405;
+			const isCloudflare = err.raw?.headers?.server?.toLowerCase().includes("cloudflare") || err.raw?.status === 405;
 			setDiagnosticData({
 				success: false,
 				isWarning: isCloudflare,
-				title: isCloudflare ? "Aviso: Bloqueio do Cloudflare (405)" : err.errorTitle || "Erro",
+				title: isCloudflare ? "Aviso de WAF: Bloqueio (405 Method Not Allowed)" : err.errorTitle || "Erro",
 				message: err.message,
-				details: isCloudflare ? "Cloudflare bloqueou a requisição." : err.details,
+				details: err.details || (isCloudflare ? "Cloudflare ou Nginx bloqueou a requisição devido aos headers ou formato." : "Falha na comunicação."),
 				raw: err.raw
 			});
 		} finally {
@@ -50714,44 +50714,54 @@ function IntegrationSettings({ title, description }) {
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 									"data-uid": "src/components/settings/IntegrationSettings.tsx:178:13",
 									"data-prohibitions": "[]",
-									className: "flex items-center gap-2 text-primary font-medium mb-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Webhook, {
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 										"data-uid": "src/components/settings/IntegrationSettings.tsx:179:15",
-										"data-prohibitions": "[editContent]",
-										className: "w-5 h-5"
-									}), " Configuração Webhook / Pluga"]
+										"data-prohibitions": "[]",
+										className: "flex items-center gap-2 text-primary font-medium mb-1",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Webhook, {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:180:17",
+											"data-prohibitions": "[editContent]",
+											className: "w-5 h-5"
+										}), " Motor de Integração Webhook (Pluga / RD Station)"]
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:182:15",
+										"data-prohibitions": "[]",
+										className: "text-sm text-muted-foreground mb-3 leading-relaxed",
+										children: "Configuração avançada projetada para contornar bloqueios de WAF garantindo a sincronização estável usando mimetismo de navegador."
+									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:181:13",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:188:13",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:182:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:189:15",
 										"data-prohibitions": "[]",
 										children: "URL do Endpoint HTTPS"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:183:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:190:15",
 										"data-prohibitions": "[editContent]",
 										value: url,
 										onChange: (e) => setUrl(e.target.value),
 										onBlur: () => setUrl(sanitizeUrl(url)),
+										placeholder: "https://app.bellesoftware.com.br/webhooks/pluga/RDStation.php",
 										className: "bg-white font-mono"
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:190:13",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:198:13",
 									"data-prohibitions": "[]",
 									className: "grid gap-4 sm:grid-cols-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:191:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:199:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:192:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:200:17",
 											"data-prohibitions": "[]",
 											children: "Token de Integração"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:193:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:201:17",
 											"data-prohibitions": "[editContent]",
 											type: "password",
 											value: token,
@@ -50759,100 +50769,100 @@ function IntegrationSettings({ title, description }) {
 											className: "bg-white font-mono"
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:200:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:208:15",
 										"data-prohibitions": "[]",
 										className: "space-y-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:201:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:209:17",
 											"data-prohibitions": "[]",
 											children: "Formato do Payload"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:202:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:210:17",
 											"data-prohibitions": "[]",
 											value: contentType,
 											onValueChange: (val) => setContentType(val),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:203:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:211:19",
 												"data-prohibitions": "[]",
 												className: "bg-white",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:204:21",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:212:21",
 													"data-prohibitions": "[editContent]"
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:206:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:214:19",
 												"data-prohibitions": "[]",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:207:21",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:215:21",
+													"data-prohibitions": "[]",
+													value: "multipart/form-data",
+													children: "Multipart Form Data (Padrão)"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:218:21",
 													"data-prohibitions": "[]",
 													value: "application/x-www-form-urlencoded",
 													children: "URL Encoded"
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:208:21",
-													"data-prohibitions": "[]",
-													value: "multipart/form-data",
-													children: "Multipart Form Data"
 												})]
 											})]
 										})]
 									})]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Collapsible, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:213:13",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:223:13",
 									"data-prohibitions": "[editContent]",
 									open: showMapping,
 									onOpenChange: setShowMapping,
 									className: "border border-border/50 bg-white rounded-xl shadow-sm",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleTrigger, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:218:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:228:15",
 										"data-prohibitions": "[editContent]",
 										asChild: true,
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:219:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:229:17",
 											"data-prohibitions": "[editContent]",
 											variant: "ghost",
 											className: "w-full justify-between p-4 h-auto",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:220:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:230:19",
 												"data-prohibitions": "[]",
-												className: "flex items-center",
+												className: "flex items-center font-medium",
 												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:221:21",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:231:21",
 													"data-prohibitions": "[editContent]",
 													className: "w-4 h-4 mr-2 text-primary"
 												}), " Mapeamento Dry-run"]
 											}), showMapping ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronUp, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:224:21",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:234:21",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:226:21",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:236:21",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											})]
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleContent, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:230:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:240:15",
 										"data-prohibitions": "[editContent]",
-										className: "p-4 bg-muted/10 grid gap-4 sm:grid-cols-2",
+										className: "p-4 bg-muted/10 grid gap-4 sm:grid-cols-2 border-t border-border/50",
 										children: Object.keys(mapping).map((key) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:232:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:242:19",
 											"data-prohibitions": "[editContent]",
 											className: "space-y-1.5",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:233:21",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:243:21",
 												"data-prohibitions": "[editContent]",
-												className: "text-xs capitalize",
+												className: "text-xs capitalize text-muted-foreground",
 												children: key
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:234:21",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:244:21",
 												"data-prohibitions": "[editContent]",
 												value: mapping[key],
 												onChange: (e) => setMapping({
 													...mapping,
 													[key]: e.target.value
 												}),
-												className: "bg-white text-xs"
+												className: "bg-white text-xs h-8"
 											})]
 										}, key))
 									})]
@@ -50860,41 +50870,41 @@ function IntegrationSettings({ title, description }) {
 							]
 						}),
 						diagnosticData && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Alert, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:246:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:256:13",
 							"data-prohibitions": "[editContent]",
 							variant: diagnosticData.success || diagnosticData.isWarning ? "default" : "destructive",
-							className: cn$1(diagnosticData.success ? "bg-green-500/10 text-green-800" : diagnosticData.isWarning ? "bg-yellow-500/10 text-yellow-800" : "bg-destructive/5 text-destructive"),
+							className: cn$1(diagnosticData.success ? "bg-green-500/10 text-green-800 border-green-500/20" : diagnosticData.isWarning ? "bg-yellow-500/10 text-yellow-800 border-yellow-500/20" : "bg-destructive/5 text-destructive border-destructive/20"),
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:258:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:268:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-5 w-5 mt-0.5"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:259:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:269:15",
 								"data-prohibitions": "[editContent]",
 								className: "pl-1 w-full",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertTitle, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:260:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:270:17",
 									"data-prohibitions": "[editContent]",
 									className: "font-semibold text-base mb-2",
 									children: diagnosticData.title
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDescription, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:263:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:273:17",
 									"data-prohibitions": "[editContent]",
 									className: "space-y-3",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:264:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:274:19",
 										"data-prohibitions": "[editContent]",
-										className: "p-3 bg-white/50 rounded-md border border-black/5 font-mono text-xs break-all",
+										className: "p-3 bg-white/60 rounded-md border border-black/5 font-mono text-xs break-all leading-relaxed",
 										children: diagnosticData.details
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:267:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:277:19",
 										"data-prohibitions": "[]",
 										variant: "outline",
 										size: "sm",
 										onClick: () => setDiagnosticModalOpen(true),
-										className: "bg-white h-8 w-full sm:w-auto",
+										className: "bg-white hover:bg-muted h-8 w-full sm:w-auto shadow-sm",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Terminal, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:273:21",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:283:21",
 											"data-prohibitions": "[editContent]",
 											className: "w-3.5 h-3.5 mr-2"
 										}), " Ver Console de Diagnóstico"]
@@ -50903,36 +50913,36 @@ function IntegrationSettings({ title, description }) {
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:280:11",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:290:11",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-wrap items-center gap-3 pt-2",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:281:13",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:291:13",
 									"data-prohibitions": "[]",
 									variant: "outline",
 									onClick: handleSave,
-									className: "rounded-xl",
+									className: "rounded-xl shadow-sm",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:282:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:292:15",
 										"data-prohibitions": "[editContent]",
 										className: "w-4 h-4 mr-2"
 									}), " Salvar Configuração"]
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:284:13",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:294:13",
 									"data-prohibitions": "[editContent]",
 									variant: "outline",
 									onClick: handleTestWebhook,
 									disabled: isConnecting,
-									className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5",
+									className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5 shadow-sm",
 									children: [
 										isTesting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:291:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:301:17",
 											"data-prohibitions": "[editContent]",
 											className: "w-4 h-4 mr-2 animate-spin"
 										}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:293:17",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:303:17",
 											"data-prohibitions": "[editContent]",
 											className: "w-4 h-4 mr-2"
 										}),
@@ -50941,14 +50951,14 @@ function IntegrationSettings({ title, description }) {
 									]
 								}),
 								isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:298:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:308:15",
 									"data-prohibitions": "[]",
 									onClick: handleSyncPatients,
 									disabled: isConnecting,
 									variant: "secondary",
-									className: "rounded-xl ml-auto",
+									className: "rounded-xl ml-auto shadow-sm",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloudDownload, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:304:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:314:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-4 h-4 mr-2"
 									}), " Sincronizar"]
@@ -50959,35 +50969,35 @@ function IntegrationSettings({ title, description }) {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:311:7",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:321:7",
 				"data-prohibitions": "[editContent]",
 				open: diagnosticModalOpen,
 				onOpenChange: setDiagnosticModalOpen,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:312:9",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:322:9",
 					"data-prohibitions": "[editContent]",
-					className: "max-w-2xl bg-[#0f172a] text-slate-300 border-slate-800",
+					className: "max-w-3xl bg-[#0f172a] text-slate-300 border-slate-800 shadow-2xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:313:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:323:11",
 						"data-prohibitions": "[]",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:314:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:324:13",
 							"data-prohibitions": "[]",
-							className: "text-slate-100 flex items-center gap-2",
+							className: "text-slate-100 flex items-center gap-2 font-mono text-base",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Terminal, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:315:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:325:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-5 h-5"
 							}), " Console de Diagnóstico (Log Bruto)"]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:318:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:328:11",
 						"data-prohibitions": "[editContent]",
-						className: "p-4 bg-black/50 rounded-md overflow-auto max-h-[60vh] border border-slate-800",
+						className: "p-4 bg-black/60 rounded-md overflow-auto max-h-[60vh] border border-slate-800",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:319:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:329:13",
 							"data-prohibitions": "[editContent]",
-							className: "text-xs text-emerald-400 whitespace-pre-wrap break-all font-mono",
+							className: "text-xs text-emerald-400 whitespace-pre-wrap break-all font-mono leading-relaxed",
 							children: JSON.stringify(diagnosticData?.raw, null, 2)
 						})
 					})]
@@ -51632,4 +51642,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D4q73TNs.js.map
+//# sourceMappingURL=index-DyWYulYz.js.map

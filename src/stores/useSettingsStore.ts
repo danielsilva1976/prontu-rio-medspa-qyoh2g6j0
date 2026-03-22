@@ -60,10 +60,10 @@ const defaultData = {
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
   belleSoftware: {
-    url: 'https://app.bellesoftware.com.br',
+    url: 'https://app.bellesoftware.com.br/webhooks/pluga/RDStation.php',
     token: '1787cad7ac7dd71ac2fbbdaf823928fd',
     estabelecimento: '1',
-    webhookContentType: 'application/x-www-form-urlencoded' as const,
+    webhookContentType: 'multipart/form-data' as const,
   },
 }
 
