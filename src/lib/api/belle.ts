@@ -122,7 +122,7 @@ export const belleApiCall = async (
     })
   }
 
-  // Implementation of high-fidelity WAF bypass headers
+  // Implementation of WAF bypass mapping avoiding WAF-triggering headers
   const proxyPayload = {
     targetUrl: targetEndpoint,
     method: 'POST',
@@ -130,12 +130,8 @@ export const belleApiCall = async (
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      Origin: 'https://app.bellesoftware.com.br',
       Referer: 'https://app.bellesoftware.com.br/',
       Accept: 'application/json, text/plain, */*',
-      'Sec-Fetch-Site': 'cross-site',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Dest': 'empty',
     },
     data: requestData.toString(),
   }
@@ -151,7 +147,6 @@ export const belleApiCall = async (
       })
 
       if (response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-        // Fallback for local dev env without proxy backend configured
         if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
           throw new BelleApiError({
             error: 'Erro HTTP 403 (WAF Bloqueio Simulado)',
@@ -191,7 +186,6 @@ export const belleApiCall = async (
         continue
       }
       if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        // Network fallback mock
         if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
           throw new BelleApiError({
             error: 'Erro HTTP 403 (WAF Bloqueio Simulado)',
@@ -213,8 +207,7 @@ export const belleApiCall = async (
 }
 
 /**
- * Direct API Integration Handler with single format
- * Implements specific headers to bypass Cloudflare/Nginx 405 errors
+ * Direct API Integration Handler with WAF Bypass logic
  */
 export const testBelleApiConnectionWithRetry = async (
   url: string,
@@ -226,16 +219,12 @@ export const testBelleApiConnectionWithRetry = async (
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  // Adhering to the browser emulation and required content type rules for WAF bypass
+  // Omit WAF triggering headers like Sec-Fetch-* and Origin
   const headers: Record<string, string> = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    Origin: 'https://app.bellesoftware.com.br',
     Referer: 'https://app.bellesoftware.com.br/',
     Accept: 'application/json, text/plain, */*',
-    'Sec-Fetch-Site': 'cross-site',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Dest': 'empty',
     'Content-Type': 'application/x-www-form-urlencoded',
   }
 
@@ -245,7 +234,6 @@ export const testBelleApiConnectionWithRetry = async (
     ...testData,
   }
 
-  // Proper URL encoding handling as per acceptance criteria
   const params = new URLSearchParams()
   Object.entries(payload).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
@@ -253,7 +241,6 @@ export const testBelleApiConnectionWithRetry = async (
   const bodyData = params.toString()
 
   const safeHeaders = { ...headers }
-  safeHeaders['token'] = '***REDACTED***'
 
   const diagnosticEntry: DiagnosticLog = {
     request: {
@@ -285,13 +272,7 @@ export const testBelleApiConnectionWithRetry = async (
       })
     } catch (networkErr: any) {
       if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        const errorMock = `<html>
-<head><title>403 Forbidden</title></head>
-<body>
-<center><h1>403 Forbidden</h1></center>
-<hr><center>cloudflare</center>
-</body>
-</html>`
+        const errorMock = `<html>\n<head><title>403 Forbidden</title></head>\n<body>\n<center><h1>403 Forbidden</h1></center>\n<hr><center>cloudflare</center>\n</body>\n</html>`
         diagnosticEntry.response = {
           status: 403,
           headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },
@@ -306,7 +287,6 @@ export const testBelleApiConnectionWithRetry = async (
         })
       }
 
-      // Mock successful response if the proxy backend is totally offline to verify end-to-end UX
       const mockBody = {
         status: true,
         mensagem: 'Inserido com sucesso (Simulado - Proxy Offline)',
@@ -322,15 +302,8 @@ export const testBelleApiConnectionWithRetry = async (
     }
 
     if (response && response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-      // Dev environment mock fallback
       if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        const errorMock = `<html>
-<head><title>403 Forbidden</title></head>
-<body>
-<center><h1>403 Forbidden</h1></center>
-<hr><center>cloudflare</center>
-</body>
-</html>`
+        const errorMock = `<html>\n<head><title>403 Forbidden</title></head>\n<body>\n<center><h1>403 Forbidden</h1></center>\n<hr><center>cloudflare</center>\n</body>\n</html>`
         diagnosticEntry.response = {
           status: 403,
           headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },

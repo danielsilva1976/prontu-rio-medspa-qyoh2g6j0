@@ -43,7 +43,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
 
-  // Dynamic field mapping perfectly aligned with the backend test payload requirements
   const [mapping, setMapping] = useState({
     acao: 'add_cliente',
     nome: 'Paciente Teste API',
@@ -91,7 +90,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     updateBelleConfig(cleanUrl, clToken, clEstab, 'application/x-www-form-urlencoded')
 
     try {
-      // Dispatches the fully URL-encoded payload through the server-side proxy
       const res = await testBelleApiConnectionWithRetry(cleanUrl, clToken, clEstab, mapping)
       setBelleLastSync('success', new Date().toISOString())
 
@@ -315,7 +313,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           {diagnosticData && (
             <div className="mt-8 pt-8 border-t border-border/50 animate-fade-in">
               <h3 className="text-lg font-medium flex items-center gap-2 text-primary mb-4">
-                <Terminal className="w-5 h-5" /> Advanced Diagnostic Console
+                <Terminal className="w-5 h-5" /> Log de Diagnóstico
               </h3>
               <div className="space-y-4">
                 {diagnosticData.diagnostics?.map((log, i) => (
