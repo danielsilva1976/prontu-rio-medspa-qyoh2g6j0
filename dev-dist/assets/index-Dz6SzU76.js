@@ -37371,12 +37371,8 @@ var testBelleApiConnectionWithRetry = async (url, token, estabelecimento, testDa
 	});
 };
 var testBelleConnection = async (url, token, estabelecimento = "1") => {
-	try {
-		await fetchBelleClientes(url, token, estabelecimento);
-		return true;
-	} catch (error) {
-		throw error;
-	}
+	await fetchBelleClientes(url, token, estabelecimento);
+	return true;
 };
 var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
@@ -51745,4 +51741,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BMeZhrmH.js.map
+//# sourceMappingURL=index-Dz6SzU76.js.map

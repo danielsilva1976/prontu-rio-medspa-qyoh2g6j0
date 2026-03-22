@@ -339,12 +339,8 @@ export const testBelleConnection = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<boolean> => {
-  try {
-    await fetchBelleClientes(url, token, estabelecimento)
-    return true
-  } catch (error) {
-    throw error
-  }
+  await fetchBelleClientes(url, token, estabelecimento)
+  return true
 }
 
 export const fetchBelleClientes = async (
