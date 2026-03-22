@@ -326,6 +326,86 @@ export const testBelleConnection = async (
   return true
 }
 
+export const testBelleWebhookConnection = async (
+  url: string,
+  token: string,
+  payload: Record<string, string | number>,
+): Promise<{ success: boolean; status: number; body: string }> => {
+  let cleanUrl = url.trim().replace(/\/+$/, '')
+  if (cleanUrl.startsWith('http://')) {
+    cleanUrl = cleanUrl.replace('http://', 'https://')
+  } else if (!cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`
+  }
+
+  let baseUrl = 'https://app.bellesoftware.com.br'
+  try {
+    baseUrl = new URL(cleanUrl).origin
+  } catch (e) {}
+
+  const requestData = new URLSearchParams()
+  requestData.append('token', token)
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      requestData.append(key, String(value))
+    }
+  })
+
+  const proxyPayload = {
+    targetUrl: cleanUrl,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      Origin: baseUrl,
+      Referer: `${baseUrl}/`,
+      Accept: '*/*',
+    },
+    data: requestData.toString(),
+  }
+
+  let response: Response
+  let text = ''
+
+  try {
+    response = await fetch(PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(proxyPayload),
+    })
+    text = await response.text()
+  } catch (err: any) {
+    throw new BelleApiError({
+      error: 'Falha na Comunicação Proxy',
+      details: 'Não foi possível conectar ao proxy. Verifique sua conexão.',
+      raw: { message: err.message },
+    })
+  }
+
+  if (!response.ok) {
+    if (
+      response.status === 405 ||
+      text.includes('405 Not Allowed') ||
+      text.includes('405 Method Not Allowed')
+    ) {
+      throw new BelleApiError({
+        error: 'Erro HTTP 405 - Not Allowed',
+        details:
+          'O servidor Nginx bloqueou a requisição POST. Certifique-se de que a URL de integração não possui barras no final e utiliza https://. Verifique se o endpoint configurado é realmente o endpoint de Webhook Pluga.',
+        raw: { status: 405, headers: Object.fromEntries(response.headers.entries()), body: text },
+      })
+    }
+    throw new BelleApiError({
+      error: `Erro HTTP ${response.status}`,
+      details: 'Falha na comunicação com o Belle Software ao enviar Webhook.',
+      raw: { status: response.status, body: text },
+    })
+  }
+
+  return { success: true, status: response.status, body: text }
+}
+
 export const fetchBelleClientes = async (
   url: string,
   token: string,

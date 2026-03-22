@@ -19347,6 +19347,20 @@ var Clock = createLucideIcon("clock", [["circle", {
 	d: "M12 6v6l4 2",
 	key: "mmk7yg"
 }]]);
+var CloudDownload = createLucideIcon("cloud-download", [
+	["path", {
+		d: "M12 13v8l-4-4",
+		key: "1f5nwf"
+	}],
+	["path", {
+		d: "m12 21 4-4",
+		key: "1lfcce"
+	}],
+	["path", {
+		d: "M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284",
+		key: "ui1hmy"
+	}]
+]);
 var Cpu = createLucideIcon("cpu", [
 	["path", {
 		d: "M12 20v2",
@@ -19747,28 +19761,13 @@ var Search = createLucideIcon("search", [["path", {
 	r: "8",
 	key: "4ej97u"
 }]]);
-var ServerCrash = createLucideIcon("server-crash", [
-	["path", {
-		d: "M6 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2",
-		key: "4b9dqc"
-	}],
-	["path", {
-		d: "M6 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2",
-		key: "22nnkd"
-	}],
-	["path", {
-		d: "M6 6h.01",
-		key: "1utrut"
-	}],
-	["path", {
-		d: "M6 18h.01",
-		key: "uhywen"
-	}],
-	["path", {
-		d: "m13 6-4 6h6l-4 6",
-		key: "14hqih"
-	}]
-]);
+var Send = createLucideIcon("send", [["path", {
+	d: "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z",
+	key: "1ffxy3"
+}], ["path", {
+	d: "m21.854 2.147-10.94 10.939",
+	key: "12cjpa"
+}]]);
 var Settings$1 = createLucideIcon("settings", [["path", {
 	d: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915",
 	key: "1i5ecw"
@@ -19958,6 +19957,20 @@ var Users = createLucideIcon("users", [
 		cy: "7",
 		r: "4",
 		key: "nufk8"
+	}]
+]);
+var Webhook = createLucideIcon("webhook", [
+	["path", {
+		d: "M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2",
+		key: "q3hayz"
+	}],
+	["path", {
+		d: "m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06",
+		key: "1go1hn"
+	}],
+	["path", {
+		d: "m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8",
+		key: "qlwsc0"
 	}]
 ]);
 var WifiOff = createLucideIcon("wifi-off", [
@@ -37448,13 +37461,78 @@ var getMockBelleData = (acao) => {
 	}
 	return [];
 };
-var testBelleConnectionSimple = async (url, token, estabelecimento = "1") => {
-	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
-	return (Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || []).map((c) => c.nome || c.name || "Sem Nome");
-};
 var testBelleConnection = async (url, token, estabelecimento = "1") => {
 	await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
 	return true;
+};
+var testBelleWebhookConnection = async (url, token, payload) => {
+	let cleanUrl = url.trim().replace(/\/+$/, "");
+	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
+	else if (!cleanUrl.startsWith("https://")) cleanUrl = `https://${cleanUrl}`;
+	let baseUrl = "https://app.bellesoftware.com.br";
+	try {
+		baseUrl = new URL(cleanUrl).origin;
+	} catch (e) {}
+	const requestData = new URLSearchParams();
+	requestData.append("token", token);
+	Object.entries(payload).forEach(([key, value]) => {
+		if (value !== void 0 && value !== null && value !== "") requestData.append(key, String(value));
+	});
+	const proxyPayload = {
+		targetUrl: cleanUrl,
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			Origin: baseUrl,
+			Referer: `${baseUrl}/`,
+			Accept: "*/*"
+		},
+		data: requestData.toString()
+	};
+	let response;
+	let text = "";
+	try {
+		response = await fetch(PROXY_ENDPOINT, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json"
+			},
+			body: JSON.stringify(proxyPayload)
+		});
+		text = await response.text();
+	} catch (err) {
+		throw new BelleApiError({
+			error: "Falha na Comunicação Proxy",
+			details: "Não foi possível conectar ao proxy. Verifique sua conexão.",
+			raw: { message: err.message }
+		});
+	}
+	if (!response.ok) {
+		if (response.status === 405 || text.includes("405 Not Allowed") || text.includes("405 Method Not Allowed")) throw new BelleApiError({
+			error: "Erro HTTP 405 - Not Allowed",
+			details: "O servidor Nginx bloqueou a requisição POST. Certifique-se de que a URL de integração não possui barras no final e utiliza https://. Verifique se o endpoint configurado é realmente o endpoint de Webhook Pluga.",
+			raw: {
+				status: 405,
+				headers: Object.fromEntries(response.headers.entries()),
+				body: text
+			}
+		});
+		throw new BelleApiError({
+			error: `Erro HTTP ${response.status}`,
+			details: "Falha na comunicação com o Belle Software ao enviar Webhook.",
+			raw: {
+				status: response.status,
+				body: text
+			}
+		});
+	}
+	return {
+		success: true,
+		status: response.status,
+		body: text
+	};
 };
 var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
@@ -50695,16 +50773,28 @@ function IntegrationSettings({ title, description }) {
 	const [url, setUrl] = (0, import_react.useState)(belleSoftware.url);
 	const [token, setToken] = (0, import_react.useState)(belleSoftware.token);
 	const [estabelecimento, setEstabelecimento] = (0, import_react.useState)(belleSoftware.estabelecimento || "1");
+	const [nome, setNome] = (0, import_react.useState)("Paciente Teste Webhook");
+	const [email, setEmail] = (0, import_react.useState)("teste@pluga.co");
+	const [celular, setCelular] = (0, import_react.useState)("11999999999");
+	const [telefone, setTelefone] = (0, import_react.useState)("");
+	const [estado, setEstado] = (0, import_react.useState)("SP");
+	const [cidade, setCidade] = (0, import_react.useState)("São Paulo");
+	const [observacao, setObservacao] = (0, import_react.useState)("Dry-run de teste de conexão Pluga");
+	const [profissao, setProfissao] = (0, import_react.useState)("Engenheiro");
+	const [tags, setTags] = (0, import_react.useState)("teste, api, webhook");
+	const [dataCadastro, setDataCadastro] = (0, import_react.useState)((/* @__PURE__ */ new Date()).toISOString().split("T")[0]);
+	const [origem, setOrigem] = (0, import_react.useState)("ProntuarioApp");
+	const [idCampanha, setIdCampanha] = (0, import_react.useState)("");
 	const [isTesting, setIsTesting] = (0, import_react.useState)(false);
-	const [isTestingSimple, setIsTestingSimple] = (0, import_react.useState)(false);
 	const [showToken, setShowToken] = (0, import_react.useState)(false);
 	const [showLogs, setShowLogs] = (0, import_react.useState)(false);
+	const [showMapping, setShowMapping] = (0, import_react.useState)(false);
 	const [errorFeedback, setErrorFeedback] = (0, import_react.useState)(null);
 	const [lastAction, setLastAction] = (0, import_react.useState)(null);
 	const { toast } = useToast();
 	const isConnected = belleSoftware.lastSyncStatus === "success";
 	const isError = belleSoftware.lastSyncStatus === "error";
-	const isConnecting = isTesting || isTestingSimple || isSyncing;
+	const isConnecting = isTesting || isSyncing;
 	const parseError = (error) => {
 		let message = "Falha de Comunicação";
 		let details = "Erro ao conectar com o Belle Software.";
@@ -50744,9 +50834,7 @@ function IntegrationSettings({ title, description }) {
 		let cleanUrl = input.trim().replace(/\/+$/, "");
 		if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
 		else if (!cleanUrl.startsWith("https://")) cleanUrl = `https://${cleanUrl}`;
-		if (cleanUrl.endsWith("/api.php")) cleanUrl = cleanUrl.slice(0, -8);
-		else if (cleanUrl.endsWith("api.php")) cleanUrl = cleanUrl.slice(0, -7);
-		return cleanUrl.replace(/\/+$/, "");
+		return cleanUrl;
 	};
 	const handleUrlBlur = () => {
 		const cleanUrl = sanitizeUrl(url);
@@ -50794,18 +50882,69 @@ function IntegrationSettings({ title, description }) {
 			setLoading(false);
 		}
 	};
-	const handleTestConnectionSimple = () => executeAction("test-simple", setIsTestingSimple, async (u, t, e) => {
-		const names = await testBelleConnectionSimple(u, t, e);
-		return `Resposta 200 OK. Pacientes validados: ${names.slice(0, 3).join(", ")}${names.length > 3 ? "..." : ""}`;
-	}, "Conexão Estabelecida com Sucesso", "");
-	const handleTestConnection = () => executeAction("test", setIsTesting, async (u, t, e) => {
-		await testBelleConnection(u, t, e);
-	}, "Sucesso", "Conexão proxy avançada estabelecida com 200 OK.");
+	const handleTestWebhook = async () => {
+		const cleanUrl = sanitizeUrl(url);
+		const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, "");
+		const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "");
+		if (!cleanUrl || !cleanToken || !nome.trim()) {
+			toast({
+				title: "Dados Obrigatórios Ausentes",
+				description: "Verifique se URL, Token e o Nome no Mapeamento de Campos estão preenchidos.",
+				variant: "destructive"
+			});
+			return;
+		}
+		setUrl(cleanUrl);
+		setToken(cleanToken);
+		setEstabelecimento(cleanEstab);
+		setLastAction("test-webhook");
+		setIsTesting(true);
+		setErrorFeedback(null);
+		setShowLogs(false);
+		updateBelleConfig(cleanUrl, cleanToken, cleanEstab);
+		const payload = {
+			nome: nome.trim(),
+			email: email.trim(),
+			celular: celular.trim(),
+			telefone: telefone.trim(),
+			estado: estado.trim(),
+			cidade: cidade.trim(),
+			observacao: observacao.trim(),
+			profissao: profissao.trim(),
+			tags: tags.trim(),
+			dataCadastro: dataCadastro.trim(),
+			origem: origem.trim(),
+			idCampanha: idCampanha.trim(),
+			idEstabelecimento: cleanEstab
+		};
+		try {
+			const result = await testBelleWebhookConnection(cleanUrl, cleanToken, payload);
+			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
+			setErrorFeedback(null);
+			toast({
+				title: "Webhook Enviado com Sucesso",
+				description: `O servidor Nginx retornou status ${result.status} (OK). Payload formatado e aceito.`,
+				className: "bg-green-600 text-white border-none"
+			});
+			addLog("Sincronização de Lead via Webhook (Teste)", "SYSTEM");
+		} catch (error) {
+			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
+			const parsedError = parseError(error);
+			setErrorFeedback(parsedError);
+			toast({
+				title: parsedError.title || parsedError.message,
+				description: parsedError.details,
+				variant: "destructive"
+			});
+		} finally {
+			setIsTesting(false);
+		}
+	};
 	const handleSyncPatients = () => executeAction("sync", setIsSyncing, async (u, t, e) => {
 		const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(u, t, e), fetchBelleAgendamentos(u, t, void 0, e)]);
 		const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos);
 		syncWithBelle(mappedData);
-		addLog("Sincronização Belle Software", "SYSTEM");
+		addLog("Sincronização Lote Belle Software", "SYSTEM");
 		return `${mappedData.length} pacientes importados com sucesso.`;
 	}, "Sincronização Concluída", "");
 	const handleSave = () => {
@@ -50822,139 +50961,139 @@ function IntegrationSettings({ title, description }) {
 		});
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/IntegrationSettings.tsx:233:5",
+		"data-uid": "src/components/settings/IntegrationSettings.tsx:283:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:234:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:284:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:235:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:285:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:236:11",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:286:11",
 					"data-prohibitions": "[editContent]",
 					className: "text-xl text-primary font-serif",
 					children: title
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:237:11",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:287:11",
 					"data-prohibitions": "[editContent]",
 					children: description
 				})]
 			}), isConnecting ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:240:11",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:290:11",
 				"data-prohibitions": "[]",
 				variant: "outline",
 				className: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 py-1.5 px-3 font-medium",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:244:13",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:294:13",
 					"data-prohibitions": "[editContent]",
 					className: "w-3.5 h-3.5 mr-1.5 animate-spin"
-				}), " Reconectando"]
+				}), " Processando"]
 			}) : isConnected ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:247:11",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:297:11",
 				"data-prohibitions": "[]",
 				variant: "outline",
 				className: "bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Wifi, {
-					"data-uid": "src/components/settings/IntegrationSettings.tsx:251:13",
+					"data-uid": "src/components/settings/IntegrationSettings.tsx:301:13",
 					"data-prohibitions": "[editContent]",
 					className: "w-3.5 h-3.5 mr-1.5"
-				}), " Online"]
+				}), " Conectado"]
 			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:254:11",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:304:11",
 				"data-prohibitions": "[editContent]",
 				variant: "outline",
 				className: cn$1("py-1.5 px-3 font-medium", isError ? "bg-red-500/10 text-red-600 border-red-500/20" : "bg-muted/50 text-muted-foreground border-border/50"),
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(WifiOff, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:263:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:313:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-3.5 h-3.5 mr-1.5"
 					}),
 					" ",
-					isError ? "Erro de Conexão" : "Desconectado"
+					isError ? "Erro de Conexão" : "Não Verificado"
 				]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:268:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:318:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:269:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:319:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6 max-w-2xl",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:270:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:320:11",
 						"data-prohibitions": "[editContent]",
 						className: "bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:271:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:321:13",
 								"data-prohibitions": "[]",
 								className: "flex items-center gap-2 text-primary font-medium mb-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ServerCrash, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:272:15",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Webhook, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:322:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-5 h-5"
-								}), " Túnel de Proxy Seguro"]
+								}), " Integração Pluga / Webhook"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:275:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:325:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:276:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:326:15",
 										"data-prohibitions": "[]",
 										htmlFor: "api-url",
-										children: "URL Base do Belle Software"
+										children: "URL do Endpoint Webhook"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:277:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:327:15",
 										"data-prohibitions": "[editContent]",
 										id: "api-url",
-										placeholder: "Ex: https://dominio.bellesoftware.com.br",
+										placeholder: "Ex: https://dominio.bellesoftware.com.br/api/external/lead",
 										value: url,
 										onChange: (e) => setUrl(e.target.value),
 										onBlur: handleUrlBlur,
 										className: "bg-white font-mono text-sm"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:285:15",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:335:15",
 										"data-prohibitions": "[]",
 										className: "text-xs text-muted-foreground mt-1",
-										children: "Conexão via proxy para contornar bloqueios de CORS. O protocolo https:// é obrigatório e será ajustado automaticamente."
+										children: "Para evitar erros Nginx 405, a URL será convertida para usar https:// e as barras finais serão removidas."
 									})
 								]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:291:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:341:13",
 								"data-prohibitions": "[editContent]",
 								className: "grid gap-4 sm:grid-cols-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:292:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:342:15",
 									"data-prohibitions": "[editContent]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:293:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:343:17",
 										"data-prohibitions": "[]",
 										htmlFor: "api-token",
-										children: "Token de Acesso"
+										children: "Token (Obrigatório)"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:294:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:344:17",
 										"data-prohibitions": "[editContent]",
 										className: "relative",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Key, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:295:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:345:19",
 												"data-prohibitions": "[editContent]",
 												className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:296:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:346:19",
 												"data-prohibitions": "[editContent]",
 												id: "api-token",
 												type: showToken ? "text" : "password",
@@ -50964,7 +51103,7 @@ function IntegrationSettings({ title, description }) {
 												className: "bg-white pl-9 pr-10 font-mono text-sm"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:304:19",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:354:19",
 												"data-prohibitions": "[editContent]",
 												type: "button",
 												variant: "ghost",
@@ -50972,11 +51111,11 @@ function IntegrationSettings({ title, description }) {
 												className: "absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground",
 												onClick: () => setShowToken(!showToken),
 												children: showToken ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(EyeOff, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:311:34",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:361:34",
 													"data-prohibitions": "[editContent]",
 													className: "h-4 w-4"
 												}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Eye, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:311:67",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:361:67",
 													"data-prohibitions": "[editContent]",
 													className: "h-4 w-4"
 												})
@@ -50984,24 +51123,24 @@ function IntegrationSettings({ title, description }) {
 										]
 									})]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:316:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:366:15",
 									"data-prohibitions": "[]",
 									className: "space-y-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:317:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:367:17",
 										"data-prohibitions": "[]",
 										htmlFor: "api-estabelecimento",
-										children: "Código do Estabelecimento"
+										children: "ID Estabelecimento"
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:318:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:368:17",
 										"data-prohibitions": "[]",
 										className: "relative",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Building2, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:319:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:369:19",
 											"data-prohibitions": "[editContent]",
 											className: "absolute left-3 top-3 h-4 w-4 text-muted-foreground"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:320:19",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:370:19",
 											"data-prohibitions": "[editContent]",
 											id: "api-estabelecimento",
 											type: "number",
@@ -51012,106 +51151,347 @@ function IntegrationSettings({ title, description }) {
 										})]
 									})]
 								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Collapsible, {
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:382:13",
+								"data-prohibitions": "[editContent]",
+								open: showMapping,
+								onOpenChange: setShowMapping,
+								className: "mt-4 border border-border/50 bg-white rounded-xl shadow-sm overflow-hidden",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleTrigger, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:387:15",
+									"data-prohibitions": "[editContent]",
+									asChild: true,
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:388:17",
+										"data-prohibitions": "[editContent]",
+										variant: "ghost",
+										className: "w-full justify-between p-4 h-auto hover:bg-muted/10 rounded-none border-b border-transparent data-[state=open]:border-border/50",
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:392:19",
+											"data-prohibitions": "[]",
+											className: "flex items-center text-sm font-medium",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:393:21",
+												"data-prohibitions": "[editContent]",
+												className: "w-4 h-4 mr-2 text-primary"
+											}), "Mapeamento de Campos (Dry-run)"]
+										}), showMapping ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronUp, {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:397:21",
+											"data-prohibitions": "[editContent]",
+											className: "w-4 h-4 text-muted-foreground"
+										}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:399:21",
+											"data-prohibitions": "[editContent]",
+											className: "w-4 h-4 text-muted-foreground"
+										})]
+									})
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleContent, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:403:15",
+									"data-prohibitions": "[]",
+									className: "p-4 bg-muted/10",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:404:17",
+										"data-prohibitions": "[]",
+										className: "grid gap-4 sm:grid-cols-2 text-sm",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:405:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:406:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Nome (Obrigatório)"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:407:21",
+													"data-prohibitions": "[editContent]",
+													value: nome,
+													onChange: (e) => setNome(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:413:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:414:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "E-mail"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:415:21",
+													"data-prohibitions": "[editContent]",
+													value: email,
+													onChange: (e) => setEmail(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:421:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:422:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Celular"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:423:21",
+													"data-prohibitions": "[editContent]",
+													value: celular,
+													onChange: (e) => setCelular(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:429:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:430:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Telefone"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:431:21",
+													"data-prohibitions": "[editContent]",
+													value: telefone,
+													onChange: (e) => setTelefone(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:437:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:438:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Estado"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:439:21",
+													"data-prohibitions": "[editContent]",
+													value: estado,
+													onChange: (e) => setEstado(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:445:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:446:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Cidade"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:447:21",
+													"data-prohibitions": "[editContent]",
+													value: cidade,
+													onChange: (e) => setCidade(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:453:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:454:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Profissão"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:455:21",
+													"data-prohibitions": "[editContent]",
+													value: profissao,
+													onChange: (e) => setProfissao(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:461:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:462:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Tags (separadas por vírgula)"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:463:21",
+													"data-prohibitions": "[editContent]",
+													value: tags,
+													onChange: (e) => setTags(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:469:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:470:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Origem / Fonte"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:471:21",
+													"data-prohibitions": "[editContent]",
+													value: origem,
+													onChange: (e) => setOrigem(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:477:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:478:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "ID Campanha"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:479:21",
+													"data-prohibitions": "[editContent]",
+													value: idCampanha,
+													onChange: (e) => setIdCampanha(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:485:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:486:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Data Cadastro"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:487:21",
+													"data-prohibitions": "[editContent]",
+													value: dataCadastro,
+													onChange: (e) => setDataCadastro(e.target.value),
+													className: "bg-white"
+												})]
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:493:19",
+												"data-prohibitions": "[]",
+												className: "space-y-1.5 sm:col-span-2",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:494:21",
+													"data-prohibitions": "[]",
+													className: "text-xs",
+													children: "Observação / Notas"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:495:21",
+													"data-prohibitions": "[editContent]",
+													value: observacao,
+													onChange: (e) => setObservacao(e.target.value),
+													className: "bg-white"
+												})]
+											})
+										]
+									})
+								})]
 							})
 						]
 					}),
 					errorFeedback && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Alert, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:334:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:507:13",
 						"data-prohibitions": "[editContent]",
 						variant: "destructive",
 						className: "animate-fade-in text-sm overflow-hidden border-destructive/30 bg-destructive/5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:338:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:511:15",
 							"data-prohibitions": "[editContent]",
 							className: "h-5 w-5 mt-0.5"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:339:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:512:15",
 							"data-prohibitions": "[editContent]",
 							className: "pl-1",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertTitle, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:340:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:513:17",
 								"data-prohibitions": "[editContent]",
 								className: "font-semibold text-base mb-2",
 								children: errorFeedback.title || errorFeedback.message
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDescription, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:343:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:516:17",
 								"data-prohibitions": "[editContent]",
 								className: "space-y-3",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:344:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:517:19",
 										"data-prohibitions": "[editContent]",
 										className: "p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90",
 										children: errorFeedback.details
 									}),
-									errorFeedback.raw && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:349:21",
+									errorFeedback.raw && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:522:21",
 										"data-prohibitions": "[editContent]",
 										className: "mt-2 space-y-2",
-										children: [errorFeedback.raw.status === 405 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:351:25",
-											"data-prohibitions": "[]",
-											className: "p-3 bg-white/50 rounded-md border border-destructive/10 text-xs text-destructive/90 mb-2",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:352:27",
-												"data-prohibitions": "[]",
-												children: "Erro HTTP 405:"
-											}), " O servidor bloqueou o método POST. Verifique se a URL base aponta para o subdomínio exato e se não há barras extras no final."]
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Collapsible, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:358:23",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Collapsible, {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:523:23",
 											"data-prohibitions": "[editContent]",
 											open: showLogs,
 											onOpenChange: setShowLogs,
 											className: "mt-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleTrigger, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:359:25",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:524:25",
 												"data-prohibitions": "[editContent]",
 												asChild: true,
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:360:27",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:525:27",
 													"data-prohibitions": "[editContent]",
 													variant: "ghost",
 													size: "sm",
 													className: "h-6 px-2 text-xs font-semibold text-destructive/80 hover:text-destructive hover:bg-destructive/10 bg-transparent border-0 p-0 mb-1",
 													children: [showLogs ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronUp, {
-														"data-uid": "src/components/settings/IntegrationSettings.tsx:366:31",
+														"data-uid": "src/components/settings/IntegrationSettings.tsx:531:31",
 														"data-prohibitions": "[editContent]",
 														className: "w-3 h-3 mr-1"
 													}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, {
-														"data-uid": "src/components/settings/IntegrationSettings.tsx:368:31",
+														"data-uid": "src/components/settings/IntegrationSettings.tsx:533:31",
 														"data-prohibitions": "[editContent]",
 														className: "w-3 h-3 mr-1"
-													}), "Ver Logs de Diagnóstico"]
+													}), "Ver Logs de Diagnóstico (Nginx/Servidor)"]
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleContent, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:373:25",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:538:25",
 												"data-prohibitions": "[editContent]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:374:27",
+													"data-uid": "src/components/settings/IntegrationSettings.tsx:539:27",
 													"data-prohibitions": "[editContent]",
-													className: "p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all mt-1",
+													className: "p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-60 whitespace-pre-wrap break-all mt-1",
 													children: JSON.stringify(errorFeedback.raw, null, 2)
 												})
 											})]
-										})]
+										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:382:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:547:19",
 										"data-prohibitions": "[]",
 										className: "pt-2 border-t border-destructive/10 flex gap-2",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:383:21",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:548:21",
 											"data-prohibitions": "[]",
 											variant: "outline",
 											size: "sm",
 											onClick: () => {
 												if (lastAction === "sync") handleSyncPatients();
-												else if (lastAction === "test-simple") handleTestConnectionSimple();
-												else handleTestConnection();
+												else handleTestWebhook();
 											},
 											className: "bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:393:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:557:23",
 												"data-prohibitions": "[editContent]",
 												className: "w-3.5 h-3.5 mr-2"
 											}), " Tentar Novamente"]
@@ -51122,54 +51502,56 @@ function IntegrationSettings({ title, description }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:401:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:565:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap items-center gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:402:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:566:13",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: handleSave,
 								className: "rounded-xl",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:403:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:567:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), " Salvar Apenas"]
+								}), " Salvar Configuração"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:405:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:569:13",
 								"data-prohibitions": "[editContent]",
 								variant: "outline",
-								onClick: handleTestConnectionSimple,
-								disabled: isConnecting || !url.trim() || !token.trim() || !estabelecimento.trim(),
-								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5",
-								children: [isTestingSimple ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:412:17",
+								onClick: handleTestWebhook,
+								disabled: isConnecting || !url.trim() || !token.trim() || !nome.trim(),
+								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-medium",
+								children: [isTesting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:576:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
-								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:414:17",
+								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Send, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:578:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), isTestingSimple ? "Testando Proxy..." : "Testar Conexão"]
+								}), isTesting ? "Testando..." : "Testar Conexão (Webhook)"]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:419:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:583:15",
 								"data-prohibitions": "[editContent]",
 								onClick: handleSyncPatients,
 								disabled: isConnecting,
-								className: "bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto",
+								variant: "secondary",
+								className: "shadow-sm rounded-xl ml-auto",
+								title: "Importar base de clientes (Legado API)",
 								children: [isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:425:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:591:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
-								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:427:19",
+								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloudDownload, {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:593:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), isSyncing ? "Importando..." : "Importar Clientes"]
+								}), isSyncing ? "Importando..." : "Sincronizar Pacientes"]
 							})
 						]
 					})
@@ -51814,4 +52196,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BMXsP1z8.js.map
+//# sourceMappingURL=index-Be-pgab5.js.map
