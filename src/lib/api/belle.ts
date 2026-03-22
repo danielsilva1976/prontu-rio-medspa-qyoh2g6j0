@@ -149,7 +149,9 @@ const belleApiCall = async (
         let errText = ''
         try {
           errText = await response.text()
-        } catch (e) {}
+        } catch (e) {
+          /* ignore */
+        }
 
         if (response.status >= 500 && response.status !== 502 && attempt < retries) {
           await sleep(1000 * attempt)
