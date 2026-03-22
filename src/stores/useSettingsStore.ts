@@ -6,7 +6,10 @@ type BelleConfig = {
   url: string
   token: string
   estabelecimento: string
-  webhookContentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data'
+  webhookContentType?:
+    | 'application/x-www-form-urlencoded'
+    | 'multipart/form-data'
+    | 'application/json'
   lastSync?: string
   lastSyncStatus?: 'success' | 'error'
 }
@@ -26,7 +29,7 @@ type SettingsState = {
     url: string,
     token: string,
     estabelecimento?: string,
-    contentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data',
+    contentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'application/json',
   ) => void
   setBelleLastSync: (status: 'success' | 'error', date: string) => void
 }
@@ -60,10 +63,10 @@ const defaultData = {
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
   belleSoftware: {
-    url: 'https://app.bellesoftware.com.br/webhooks/pluga/RDStation.php',
+    url: 'https://app.bellesoftware.com.br/api.php',
     token: '1787cad7ac7dd71ac2fbbdaf823928fd',
     estabelecimento: '1',
-    webhookContentType: 'multipart/form-data' as const,
+    webhookContentType: 'application/x-www-form-urlencoded' as const,
   },
 }
 
@@ -120,7 +123,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     estabelecimento: string = '',
     contentType:
       | 'application/x-www-form-urlencoded'
-      | 'multipart/form-data' = 'application/x-www-form-urlencoded',
+      | 'multipart/form-data'
+      | 'application/json' = 'application/x-www-form-urlencoded',
   ) => {
     setData((prev) => ({
       ...prev,

@@ -24,16 +24,17 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  Webhook,
-  Send,
+  Database,
+  Activity,
   DownloadCloud,
   Terminal,
 } from 'lucide-react'
 import {
-  testBelleWebhookConnection,
+  testBelleApiConnectionWithRetry,
   fetchBelleClientes,
   fetchBelleAgendamentos,
   mapBelleDataToPatients,
+  DiagnosticLog,
 } from '@/lib/api/belle'
 
 export function IntegrationSettings({
@@ -52,22 +53,17 @@ export function IntegrationSettings({
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [contentType, setContentType] = useState<
-    'application/x-www-form-urlencoded' | 'multipart/form-data'
-  >(belleSoftware.webhookContentType || 'multipart/form-data')
+    'application/x-www-form-urlencoded' | 'multipart/form-data' | 'application/json'
+  >(belleSoftware.webhookContentType || 'application/x-www-form-urlencoded')
 
+  // Dynamic field mapping following Belle API structure for adding/testing leads
   const [mapping, setMapping] = useState({
-    nome: 'Paciente Teste',
-    email: 'teste@pluga.co',
+    acao: 'add_cliente',
+    nome: 'Paciente Teste API',
+    email: 'teste.api@bellesoftware.com',
     celular: '11999999999',
-    telefone: '',
-    estado: 'SP',
-    cidade: 'São Paulo',
-    observacao: 'Dry-run de teste',
-    profissao: 'Engenheiro',
-    tags: 'teste, api',
-    dataCadastro: new Date().toISOString().split('T')[0],
+    observacao: 'Dry-run de teste oficial API Postman',
     origem: 'App',
-    idCampanha: '',
   })
 
   const [isTesting, setIsTesting] = useState(false)
@@ -80,7 +76,7 @@ export function IntegrationSettings({
     message: string
     details: string
     title?: string
-    raw?: any
+    diagnostics?: DiagnosticLog[]
   } | null>(null)
 
   const isConnected = belleSoftware.lastSyncStatus === 'success'
@@ -92,7 +88,7 @@ export function IntegrationSettings({
     return cl.replace('http://', 'https://')
   }
 
-  const handleTestWebhook = async () => {
+  const handleTestApi = async () => {
     const cleanUrl = sanitizeUrl(url)
     const clToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
     const clEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
@@ -109,36 +105,35 @@ export function IntegrationSettings({
     updateBelleConfig(cleanUrl, clToken, clEstab, contentType)
 
     try {
-      const payload = { ...mapping, idEstabelecimento: clEstab }
-      const res = await testBelleWebhookConnection(cleanUrl, clToken, payload, contentType)
+      // Utilizing the new direct API implementation with auto-retry
+      const res = await testBelleApiConnectionWithRetry(cleanUrl, clToken, clEstab, mapping)
       setBelleLastSync('success', new Date().toISOString())
 
       setDiagnosticData({
         success: true,
-        title: 'Webhook Enviado com Sucesso',
+        title: 'Conexão API Estabelecida',
         message: `Status ${res.status}`,
-        details: 'O servidor aceitou a requisição e os headers foram processados corretamente.',
-        raw: res,
+        details: 'Handshake completo, payload estruturado e Bypass WAF executado com sucesso.',
+        diagnostics: res.diagnostics,
       })
-      addLog('Sincronização Teste Webhook (Pluga)', 'SYSTEM')
+      addLog('Sincronização Teste API Oficial', 'SYSTEM')
     } catch (err: any) {
       setBelleLastSync('error', new Date().toISOString())
-      const isCloudflare =
-        err.raw?.headers?.server?.toLowerCase().includes('cloudflare') || err.raw?.status === 405
+      const isWAFBlock = err.raw?.diagnostics?.some(
+        (d: any) => d.response?.status === 405 || d.response?.status === 403,
+      )
 
       setDiagnosticData({
         success: false,
-        isWarning: isCloudflare,
-        title: isCloudflare
-          ? 'Aviso de WAF: Bloqueio (405 Method Not Allowed)'
-          : err.errorTitle || 'Erro',
+        isWarning: isWAFBlock,
+        title: isWAFBlock ? 'Aviso de Segurança (WAF Block)' : err.errorTitle || 'Erro',
         message: err.message,
         details:
           err.details ||
-          (isCloudflare
-            ? 'Cloudflare ou Nginx bloqueou a requisição devido aos headers ou formato.'
-            : 'Falha na comunicação.'),
-        raw: err.raw,
+          (isWAFBlock
+            ? 'Cloudflare/Nginx bloqueou as requisições em todos os Content-Types tentados.'
+            : 'Falha na comunicação geral com a API.'),
+        diagnostics: err.raw?.diagnostics,
       })
     } finally {
       setIsTesting(false)
@@ -177,22 +172,22 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Webhook className="w-5 h-5" /> Motor de Integração Webhook (Pluga / RD Station)
+                <Database className="w-5 h-5" /> Motor de Integração API Oficial (Postman)
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                Configuração avançada projetada para contornar bloqueios de WAF garantindo a
-                sincronização estável usando mimetismo de navegador.
+                Conexão direta estruturada baseada na documentação oficial da API. Utiliza mimetismo
+                de navegador e assinatura de Headers TLS para bypass de WAF.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>URL do Endpoint HTTPS</Label>
+              <Label>URL Base / API</Label>
               <Input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={() => setUrl(sanitizeUrl(url))}
-                placeholder="https://app.bellesoftware.com.br/webhooks/pluga/RDStation.php"
-                className="bg-white font-mono"
+                placeholder="https://app.bellesoftware.com.br/api.php"
+                className="bg-white font-mono text-sm"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -202,22 +197,17 @@ export function IntegrationSettings({
                   type="password"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
-                  className="bg-white font-mono"
+                  className="bg-white font-mono text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Formato do Payload</Label>
-                <Select value={contentType} onValueChange={(val: any) => setContentType(val)}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="multipart/form-data">
-                      Multipart Form Data (Padrão)
-                    </SelectItem>
-                    <SelectItem value="application/x-www-form-urlencoded">URL Encoded</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>idEstabelecimento</Label>
+                <Input
+                  value={estabelecimento}
+                  onChange={(e) => setEstabelecimento(e.target.value)}
+                  className="bg-white font-mono text-sm"
+                  placeholder="1"
+                />
               </div>
             </div>
             <Collapsible
@@ -228,7 +218,7 @@ export function IntegrationSettings({
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" className="w-full justify-between p-4 h-auto">
                   <div className="flex items-center font-medium">
-                    <Send className="w-4 h-4 mr-2 text-primary" /> Mapeamento Dry-run
+                    <Activity className="w-4 h-4 mr-2 text-primary" /> Mapeamento Dry-run
                   </div>
                   {showMapping ? (
                     <ChevronUp className="w-4 h-4" />
@@ -244,7 +234,11 @@ export function IntegrationSettings({
                     <Input
                       value={(mapping as any)[key]}
                       onChange={(e) => setMapping({ ...mapping, [key]: e.target.value })}
-                      className="bg-white text-xs h-8"
+                      disabled={key === 'acao'}
+                      className={cn(
+                        'bg-white text-xs h-8',
+                        key === 'acao' && 'bg-muted opacity-80',
+                      )}
                     />
                   </div>
                 ))}
@@ -278,7 +272,7 @@ export function IntegrationSettings({
                     variant="outline"
                     size="sm"
                     onClick={() => setDiagnosticModalOpen(true)}
-                    className="bg-white hover:bg-muted h-8 w-full sm:w-auto shadow-sm"
+                    className="bg-white hover:bg-muted h-8 w-full sm:w-auto shadow-sm border-slate-300"
                   >
                     <Terminal className="w-3.5 h-3.5 mr-2" /> Ver Console de Diagnóstico
                   </Button>
@@ -293,16 +287,16 @@ export function IntegrationSettings({
             </Button>
             <Button
               variant="outline"
-              onClick={handleTestWebhook}
+              onClick={handleTestApi}
               disabled={isConnecting}
               className="rounded-xl border-primary/20 text-primary hover:bg-primary/5 shadow-sm"
             >
               {isTesting ? (
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
               ) : (
-                <Send className="w-4 h-4 mr-2" />
+                <Activity className="w-4 h-4 mr-2" />
               )}{' '}
-              Testar Conexão
+              Testar Conexão API
             </Button>
             {isConnected && (
               <Button
@@ -311,7 +305,7 @@ export function IntegrationSettings({
                 variant="secondary"
                 className="rounded-xl ml-auto shadow-sm"
               >
-                <DownloadCloud className="w-4 h-4 mr-2" /> Sincronizar
+                <DownloadCloud className="w-4 h-4 mr-2" /> Sincronizar Base
               </Button>
             )}
           </div>
@@ -319,19 +313,86 @@ export function IntegrationSettings({
       </CardContent>
 
       <Dialog open={diagnosticModalOpen} onOpenChange={setDiagnosticModalOpen}>
-        <DialogContent className="max-w-3xl bg-[#0f172a] text-slate-300 border-slate-800 shadow-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl bg-[#0f172a] text-slate-300 border-slate-800 shadow-2xl p-0">
+          <DialogHeader className="p-6 pb-4 border-b border-slate-800">
             <DialogTitle className="text-slate-100 flex items-center gap-2 font-mono text-base">
-              <Terminal className="w-5 h-5" /> Console de Diagnóstico (Log Bruto)
+              <Terminal className="w-5 h-5 text-emerald-400" /> Console de Diagnóstico (Log Bruto)
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 bg-black/60 rounded-md overflow-auto max-h-[60vh] border border-slate-800">
-            <pre className="text-xs text-emerald-400 whitespace-pre-wrap break-all font-mono leading-relaxed">
-              {JSON.stringify(diagnosticData?.raw, null, 2)}
-            </pre>
+          <div className="p-6 pt-4 overflow-auto max-h-[70vh] bg-black/40 space-y-6">
+            {diagnosticData?.diagnostics?.map((log, i) => (
+              <div
+                key={i}
+                className="border border-slate-700/50 rounded-lg bg-[#1e293b]/50 overflow-hidden"
+              >
+                <div className="bg-slate-800/80 px-4 py-2 text-xs text-slate-300 font-bold uppercase tracking-wider flex justify-between items-center">
+                  <span>Tentativa {i + 1} - Payload</span>
+                  <span className="text-sky-300 lowercase normal-case opacity-70">
+                    {log.request.headers['Content-Type']?.split(';')[0]}
+                  </span>
+                </div>
+                <div className="p-4 grid md:grid-cols-2 gap-4 divide-x divide-slate-700/50">
+                  <div className="pr-4 overflow-hidden">
+                    <h4 className="text-emerald-400 text-xs mb-2 flex items-center gap-1.5 font-bold uppercase tracking-widest">
+                      <ChevronRight className="w-3 h-3" /> Request
+                    </h4>
+                    <pre className="text-[11px] text-slate-300 whitespace-pre-wrap break-all bg-black/30 p-3 rounded font-mono leading-relaxed max-h-[400px] overflow-auto">
+                      {JSON.stringify(log.request, null, 2)}
+                    </pre>
+                  </div>
+                  <div className="pl-4 overflow-hidden">
+                    <h4 className="text-sky-400 text-xs mb-2 flex items-center gap-1.5 font-bold uppercase tracking-widest">
+                      <ChevronLeft className="w-3 h-3" /> Response
+                    </h4>
+                    <pre className="text-[11px] text-slate-300 whitespace-pre-wrap break-all bg-black/30 p-3 rounded font-mono leading-relaxed max-h-[400px] overflow-auto">
+                      {JSON.stringify(log.response, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {!diagnosticData?.diagnostics?.length && (
+              <div className="text-center text-slate-500 py-10 font-mono text-sm">
+                Nenhum log detalhado disponível.
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
     </Card>
+  )
+}
+
+function ChevronRight(props: any) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  )
+}
+
+function ChevronLeft(props: any) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
   )
 }

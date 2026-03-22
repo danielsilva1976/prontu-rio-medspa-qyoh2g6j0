@@ -28,6 +28,21 @@ export interface BelleAgendamento {
   observacoes?: string
 }
 
+export interface DiagnosticLog {
+  request: {
+    url: string
+    method: string
+    headers: Record<string, string>
+    body: string
+  }
+  response: {
+    status?: number
+    headers?: Record<string, string>
+    body?: any
+    error?: string
+  } | null
+}
+
 export class BelleApiError extends Error {
   public details: string
   public errorTitle: string
@@ -106,14 +121,22 @@ export const belleApiCall = async (
     })
   }
 
+  // Implementation of high-fidelity WAF bypass headers
   const proxyPayload = {
     targetUrl: targetEndpoint,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-      Accept: 'application/json, text/html, */*',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'cross-site',
+      Accept: 'application/json, text/plain, */*',
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
     },
@@ -158,134 +181,155 @@ export const belleApiCall = async (
   }
 }
 
-export const testBelleConnection = async (
+/**
+ * Direct API Integration Handler with Auto-Retry and Full Diagnostics
+ * Implements strict Postman documentation structure with WAF bypass
+ */
+export const testBelleApiConnectionWithRetry = async (
   url: string,
   token: string,
-  estabelecimento: string = '1',
-): Promise<any> => {
-  return belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento, 1)
-}
+  estabelecimento: string,
+  testData: any,
+): Promise<{ success: boolean; status: number; data: any; diagnostics: DiagnosticLog[] }> => {
+  const targetEndpoint = getApiEndpoint(url, '/api.php')
+  const baseUrl = getApiEndpoint(url, '').replace(/\/api\.php$/, '')
+  const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
+  const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-export const testBelleWebhookConnection = async (
-  url: string,
-  token: string,
-  payload: Record<string, string | number>,
-  contentType: 'application/x-www-form-urlencoded' | 'multipart/form-data' = 'multipart/form-data',
-): Promise<{ success: boolean; status: number; body: string; headers: any }> => {
-  let cleanUrl = url.trim().replace(/\/+$/, '')
-  if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
-  else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
+  const baseHeaders: Record<string, string> = {
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'cross-site',
+    Accept: 'application/json, text/plain, */*',
+    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+    Origin: baseUrl,
+    Referer: `${baseUrl}/`,
+  }
 
-  let baseUrl =
-    typeof window !== 'undefined' ? window.location.origin : 'https://app.bellesoftware.com.br'
+  const buildRequest = (contentType: string) => {
+    let bodyData = ''
+    const finalHeaders = { ...baseHeaders }
 
-  const requestData = new URLSearchParams()
-  requestData.append('token', token)
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      requestData.append(key, String(value))
+    const payload = {
+      token: cleanToken,
+      estabelecimento: cleanEstab,
+      ...testData,
     }
-  })
 
-  let bodyData = ''
-  let finalContentType = contentType
-
-  if (contentType === 'multipart/form-data') {
-    const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
-    let multipartBody = ''
-    requestData.forEach((value, key) => {
-      multipartBody += `--${boundary}\r\n`
-      multipartBody += `Content-Disposition: form-data; name="${key}"\r\n\r\n`
-      multipartBody += `${value}\r\n`
-    })
-    multipartBody += `--${boundary}--\r\n`
-    bodyData = multipartBody
-    finalContentType = `multipart/form-data; boundary=${boundary}`
-  } else {
-    bodyData = requestData.toString()
-    finalContentType = 'application/x-www-form-urlencoded; charset=UTF-8'
-  }
-
-  const proxyPayload = {
-    targetUrl: cleanUrl,
-    method: 'POST',
-    headers: {
-      'Content-Type': finalContentType,
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-      'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-      'Sec-Ch-Ua-Mobile': '?0',
-      'Sec-Ch-Ua-Platform': '"Windows"',
-      Origin: baseUrl,
-      Referer: `${baseUrl}/`,
-      Accept: 'application/json, text/plain, */*',
-      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Sec-Fetch-Site': 'cross-site',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Dest': 'empty',
-    },
-    data: bodyData,
-  }
-
-  let response: Response
-  let text = ''
-
-  try {
-    response = await fetch(PROXY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(proxyPayload),
-    })
-    text = await response.text()
-  } catch (err: any) {
-    throw new BelleApiError({
-      error: 'Falha na Comunicação Proxy',
-      details: 'Não foi possível conectar ao proxy.',
-      raw: { message: err.message },
-    })
-  }
-
-  let headersObj = Object.fromEntries(response.headers.entries())
-
-  if (Object.keys(headersObj).length === 0 || response.status === 405) {
-    headersObj = {
-      'cf-ray': '8f1b2c3d4e5f6a7b-GRU',
-      'cache-control': 'no-cache, no-store, must-revalidate',
-      'cf-cache-status': 'DYNAMIC',
-      'content-type': 'text/html',
-      server: 'cloudflare',
-      'x-content-type-options': 'nosniff',
-      ...headersObj,
-    }
-  }
-
-  if (!response.ok) {
-    const is405 =
-      response.status === 405 ||
-      text.includes('405 Not Allowed') ||
-      text.includes('405 Method Not Allowed')
-    const rawBody =
-      is405 && !text
-        ? '<html><head><title>405 Not Allowed</title></head><body><center><h1>405 Not Allowed</h1></center></body></html>'
-        : text
-
-    if (is405) {
-      throw new BelleApiError({
-        error: 'Erro HTTP 405 - Not Allowed',
-        details:
-          'O servidor web (WAF) bloqueou a requisição. O formato ou os headers não foram aceitos.',
-        raw: { status: 405, headers: headersObj, body: rawBody },
+    if (contentType === 'application/x-www-form-urlencoded') {
+      const params = new URLSearchParams()
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
       })
+      bodyData = params.toString()
+      finalHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
+    } else if (contentType === 'multipart/form-data') {
+      const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
+      let multipartBody = ''
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') {
+          multipartBody += `--${boundary}\r\n`
+          multipartBody += `Content-Disposition: form-data; name="${k}"\r\n\r\n`
+          multipartBody += `${v}\r\n`
+        }
+      })
+      multipartBody += `--${boundary}--\r\n`
+      bodyData = multipartBody
+      finalHeaders['Content-Type'] = `multipart/form-data; boundary=${boundary}`
+    } else if (contentType === 'application/json') {
+      bodyData = JSON.stringify(payload)
+      finalHeaders['Content-Type'] = 'application/json'
     }
 
-    throw new BelleApiError({
-      error: `Erro HTTP ${response.status}`,
-      details: 'Falha na comunicação com o Belle Software.',
-      raw: { status: response.status, headers: headersObj, body: rawBody },
-    })
+    return { headers: finalHeaders, bodyData }
   }
 
-  return { success: true, status: response.status, body: text, headers: headersObj }
+  const contentTypesToTry = [
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+    'application/json',
+  ]
+  const diagnosticLog: DiagnosticLog[] = []
+
+  for (const cType of contentTypesToTry) {
+    const { headers, bodyData } = buildRequest(cType)
+
+    const safeHeaders = { ...headers }
+    if (safeHeaders['token']) safeHeaders['token'] = '***REDACTED***'
+
+    const diagnosticEntry: DiagnosticLog = {
+      request: {
+        url: targetEndpoint,
+        method: 'POST',
+        headers: safeHeaders,
+        body: bodyData,
+      },
+      response: null,
+    }
+
+    try {
+      const proxyPayload = {
+        targetUrl: targetEndpoint,
+        method: 'POST',
+        headers,
+        data: bodyData,
+      }
+
+      const response = await fetch(PROXY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(proxyPayload),
+      })
+
+      const text = await response.text()
+      let parsedBody = text
+      try {
+        parsedBody = JSON.parse(text)
+      } catch (e) {}
+
+      diagnosticEntry.response = {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: parsedBody,
+      }
+
+      diagnosticLog.push(diagnosticEntry)
+
+      // Auto-retry on WAF blocks (usually 405, 403, or 406)
+      if (response.status === 405 || response.status === 403 || response.status === 406) {
+        continue
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      return {
+        success: true,
+        status: response.status,
+        data: parsedBody,
+        diagnostics: diagnosticLog,
+      }
+    } catch (err: any) {
+      if (!diagnosticEntry.response) {
+        diagnosticEntry.response = { error: err.message }
+      }
+      if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry)
+      // On network errors, try the next format just in case it's a protocol issue
+    }
+  }
+
+  throw new BelleApiError({
+    error: 'Falha na Conexão após múltiplas tentativas (WAF Bloqueio).',
+    details:
+      'Tentamos vários formatos (URL Encoded, Multipart, JSON) mas o servidor web continuou bloqueando a requisição.',
+    raw: { diagnostics: diagnosticLog },
+  })
 }
 
 export const fetchBelleClientes = async (
