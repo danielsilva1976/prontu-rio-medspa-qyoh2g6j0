@@ -71,7 +71,6 @@ export class BelleApiError extends Error {
   }
 }
 
-// Internal Backend Proxy configuration per AC
 const PROXY_ENDPOINT = import.meta.env.VITE_BELLE_PROXY_URL || '/api/proxy/belle'
 
 const getApiEndpoint = (url: string, path: string) => {
@@ -89,7 +88,6 @@ const getApiEndpoint = (url: string, path: string) => {
     cleanUrl = cleanUrl.slice(0, -7)
   }
 
-  // Ensure no trailing slash before appending path
   cleanUrl = cleanUrl.replace(/\/+$/, '')
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`
@@ -102,14 +100,13 @@ export const belleApiCall = async (
   path: string,
   payload: any = null,
   estabelecimento: string = '1',
-  retries: number = 1,
+  retries: number = 3,
 ): Promise<any> => {
   const targetEndpoint = getApiEndpoint(url, path)
   const baseUrl = getApiEndpoint(url, '').replace(/\/api\.php$/, '')
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  // Network Simulation for Error Testing (Requested in AC)
   if (cleanToken === 'fail-network') {
     throw new BelleApiError({
       error: 'Falha de Conexão no Túnel Proxy',
@@ -118,13 +115,11 @@ export const belleApiCall = async (
       raw: {
         type: 'NetworkError',
         message: 'Failed to fetch',
-        stack: 'TypeError: Failed to fetch\n    at proxyCall (src/lib/api/belle.ts:123:45)',
+        stack: 'TypeError: Failed to fetch',
       },
     })
   }
 
-  // Optimize serialization to application/x-www-form-urlencoded string representation
-  // This solves 405 Method Not Allowed by strictly enforcing correct content body.
   const requestData = new URLSearchParams()
   requestData.append('token', cleanToken)
   requestData.append('estabelecimento', cleanEstab)
@@ -136,11 +131,9 @@ export const belleApiCall = async (
     })
   }
 
-  // Emulates the backend-to-backend proxy relay setup described in AC
-  // Sends headers instructions explicitly to the internal proxy
   const proxyPayload = {
     targetUrl: targetEndpoint,
-    method: 'POST', // Enforce POST Method Optimization
+    method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent':
@@ -154,22 +147,19 @@ export const belleApiCall = async (
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
     },
-    data: requestData.toString(), // Strict Content-Type Handling
+    data: requestData.toString(),
   }
 
   let attempt = 0
   while (attempt < retries) {
     attempt++
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
 
     try {
       const response = await fetch(PROXY_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(proxyPayload),
         signal: controller.signal,
       })
@@ -177,24 +167,15 @@ export const belleApiCall = async (
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        // MOCK INTERCEPTOR: For preview environment, avoid empty states on 404
         if (response.status === 404 && cleanToken !== 'fail') {
-          console.warn(
-            `[Proxy Mock] Backend proxy (${PROXY_ENDPOINT}) indisponível. Retornando mock.`,
-          )
           return getMockBelleData(payload?.acao)
         }
-
         const errText = await response.text().catch(() => '')
         throw new BelleApiError({
           error: `Erro HTTP ${response.status}`,
           details: `Falha na comunicação com o servidor (Status: ${response.status}).`,
           status: response.status,
-          raw: {
-            status: response.status,
-            statusText: response.statusText,
-            body: errText,
-          },
+          raw: { status: response.status, statusText: response.statusText, body: errText },
         })
       }
 
@@ -204,27 +185,18 @@ export const belleApiCall = async (
       try {
         result = JSON.parse(text)
       } catch (e) {
-        // Handle case where proxy returns 200 OK but inner payload is HTML containing 405 Error
         if (text.includes('405 Not Allowed') || text.includes('405 Method Not Allowed')) {
           throw new BelleApiError({
             error: `Erro HTTP 405`,
-            details: `Falha na comunicação com o servidor. O endpoint retornou 405 Method Not Allowed.`,
+            details: `Erro HTTP 405: O servidor bloqueou o método POST. Verifique se a URL base aponta para o subdomínio exato e se não há barras extras no final.`,
             status: 405,
-            raw: {
-              status: 405,
-              statusText: 'Not Allowed',
-              body: text,
-            },
+            raw: { status: 405, statusText: 'Not Allowed', body: text },
           })
         }
-
         throw new BelleApiError({
           error: 'Resposta Inválida',
           details: `O proxy retornou um formato inesperado.`,
-          raw: {
-            status: response.status,
-            body: text.substring(0, 1500),
-          },
+          raw: { status: response.status, body: text.substring(0, 1500) },
         })
       }
 
@@ -239,12 +211,23 @@ export const belleApiCall = async (
       return result.data || result.dados || result
     } catch (err: any) {
       clearTimeout(timeoutId)
+      const isTimeout = err.name === 'AbortError'
 
-      if (err instanceof BelleApiError) {
-        throw err
+      if (attempt < retries && (isTimeout || err.message === 'Failed to fetch')) {
+        await new Promise((res) => setTimeout(res, 1000 * attempt))
+        continue
       }
 
-      // Network level proxy failures properly formatted per AC
+      if (err instanceof BelleApiError) throw err
+
+      if (isTimeout) {
+        throw new BelleApiError({
+          error: 'Tempo Limite Excedido',
+          details: 'A conexão demorou mais de 10 segundos para responder.',
+          raw: { message: 'Timeout' },
+        })
+      }
+
       throw new BelleApiError({
         error: 'Falha de Conexão no Túnel Proxy',
         details:
@@ -360,7 +343,6 @@ export const fetchBelleAgendamentos = async (
 ): Promise<BelleAgendamento[]> => {
   const payload: any = { acao: 'get_agendamentos' }
   if (cpf) payload.cpf = cpf
-
   const data = await belleApiCall(url, token, '/api.php', payload, estabelecimento)
   return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
 }
@@ -397,13 +379,11 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
               !lastVisit ||
               isNaN(new Date(lastVisit).getTime()) ||
               apptDate > new Date(lastVisit)
-            ) {
+            )
               lastVisit = a.data
-            }
           } else {
-            if (!nextAppointment || apptDate < new Date(nextAppointment)) {
+            if (!nextAppointment || apptDate < new Date(nextAppointment))
               nextAppointment = apptDateStr
-            }
           }
         }
       }
@@ -411,12 +391,8 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
 
     let mappedStatus = nextAppointment ? 'scheduled' : 'active'
     const rawStatus = String(c.status || c.situacao || '').toLowerCase()
-
-    if (rawStatus === 'inativo') {
-      mappedStatus = 'inactive'
-    } else if (rawStatus === 'ativo' && !nextAppointment) {
-      mappedStatus = 'active'
-    }
+    if (rawStatus === 'inativo') mappedStatus = 'inactive'
+    else if (rawStatus === 'ativo' && !nextAppointment) mappedStatus = 'active'
 
     return {
       belleId: belleIdStr,

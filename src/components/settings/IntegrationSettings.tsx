@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -23,6 +24,8 @@ import {
   Stethoscope,
   Eye,
   EyeOff,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import {
   testBelleConnection,
@@ -49,6 +52,7 @@ export function IntegrationSettings({
   const [isTesting, setIsTesting] = useState(false)
   const [isTestingSimple, setIsTestingSimple] = useState(false)
   const [showToken, setShowToken] = useState(false)
+  const [showLogs, setShowLogs] = useState(false)
 
   const [errorFeedback, setErrorFeedback] = useState<{
     message: string
@@ -64,76 +68,70 @@ export function IntegrationSettings({
   const isError = belleSoftware.lastSyncStatus === 'error'
   const isConnecting = isTesting || isTestingSimple || isSyncing
 
-  const parseError = (
-    error: any,
-  ): { message: string; details: string; title?: string; raw?: any } => {
+  const parseError = (error: any) => {
     let message = 'Falha de Comunicação'
-    let details =
-      'Erro ao conectar com o Belle Software. Verifique suas credenciais e a disponibilidade do proxy.'
+    let details = 'Erro ao conectar com o Belle Software.'
     let title = undefined
     let raw = undefined
 
     try {
       if (!error) return { message, details }
-
-      if (typeof error === 'string') {
-        return { message: 'Erro', details: String(error) }
-      }
+      if (typeof error === 'string') return { message: 'Erro', details: String(error) }
 
       if (error instanceof Error) {
         message = error.message
-        if ('errorTitle' in error && (error as any).errorTitle) {
-          title = (error as any).errorTitle
-        }
-        if ('details' in error && (error as any).details) {
-          const d = (error as any).details
-          details = typeof d === 'string' ? d : JSON.stringify(d)
-        }
-        if ('raw' in error) {
-          raw = (error as any).raw
-        }
+        if ('errorTitle' in error) title = (error as any).errorTitle
+        if ('details' in error)
+          details =
+            typeof (error as any).details === 'string'
+              ? (error as any).details
+              : JSON.stringify((error as any).details)
+        if ('raw' in error) raw = (error as any).raw
       } else if (typeof error === 'object') {
         message = String(error.error || error.message || message)
-        if (error.details) {
-          details =
-            typeof error.details === 'string' ? error.details : JSON.stringify(error.details)
-        } else {
-          details = JSON.stringify(error)
-        }
-        if (error.raw) {
-          raw = error.raw
-        }
+        details = error.details
+          ? typeof error.details === 'string'
+            ? error.details
+            : JSON.stringify(error.details)
+          : JSON.stringify(error)
+        raw = error.raw
       }
     } catch (e) {
-      details = 'Ocorreu um erro inesperado ao processar os detalhes da falha.'
+      details = 'Erro inesperado ao processar log.'
     }
 
     return { message: String(message), details: String(details), title, raw }
   }
 
+  const sanitizeUrl = (input: string) => {
+    if (!input) return input
+    let cleanUrl = input.trim().replace(/\/+$/, '')
+
+    if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
+    else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
+
+    if (cleanUrl.endsWith('/api.php')) cleanUrl = cleanUrl.slice(0, -8)
+    else if (cleanUrl.endsWith('api.php')) cleanUrl = cleanUrl.slice(0, -7)
+
+    return cleanUrl.replace(/\/+$/, '')
+  }
+
   const handleUrlBlur = () => {
-    if (!url) return
-    let cleanUrl = url.trim().replace(/\/+$/, '')
-
-    if (cleanUrl.startsWith('http://')) {
-      cleanUrl = cleanUrl.replace('http://', 'https://')
-    } else if (!cleanUrl.startsWith('https://')) {
-      cleanUrl = `https://${cleanUrl}`
-    }
-
-    if (cleanUrl.endsWith('/api.php')) {
-      cleanUrl = cleanUrl.slice(0, -8)
-    } else if (cleanUrl.endsWith('api.php')) {
-      cleanUrl = cleanUrl.slice(0, -7)
-    }
-
-    if (cleanUrl !== url) {
-      setUrl(cleanUrl)
-    }
+    const cleanUrl = sanitizeUrl(url)
+    if (cleanUrl !== url) setUrl(cleanUrl)
   }
 
-  const handleTestConnectionSimple = async () => {
-    if (!url || !token || !estabelecimento) {
+  const executeAction = async (
+    actionName: 'test' | 'test-simple' | 'sync',
+    setLoading: (v: boolean) => void,
+    actionFn: (sanitizedUrl: string, cleanToken: string, cleanEstab: string) => Promise<any>,
+    successMessage: string,
+    successDesc: string,
+  ) => {
+    const cleanUrl = sanitizeUrl(url)
+    if (cleanUrl !== url) setUrl(cleanUrl)
+
+    if (!cleanUrl || !token || !estabelecimento) {
       toast({
         title: 'Dados Incompletos',
         description: 'Preencha a URL base, Token e Estabelecimento.',
@@ -144,144 +142,87 @@ export function IntegrationSettings({
 
     const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
     const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-
     setToken(cleanToken)
     setEstabelecimento(cleanEstab)
-    setLastAction('test-simple')
-
-    setIsTestingSimple(true)
+    setLastAction(actionName)
+    setLoading(true)
     setErrorFeedback(null)
+    setShowLogs(false)
 
-    updateBelleConfig(url, cleanToken, cleanEstab)
+    updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
 
     try {
-      const names = await testBelleConnectionSimple(url, cleanToken, cleanEstab)
+      const result = await actionFn(cleanUrl, cleanToken, cleanEstab)
       setBelleLastSync('success', new Date().toISOString())
       setErrorFeedback(null)
-
-      const preview = names.slice(0, 3).join(', ')
-
       toast({
-        title: 'Conexão Estabelecida com Sucesso',
-        description: `Resposta 200 OK do Belle Software. Pacientes validados: ${preview}${names.length > 3 ? '...' : ''}`,
+        title: successMessage,
+        description: typeof result === 'string' ? result : successDesc,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
       const parsedError = parseError(error)
       setErrorFeedback(parsedError)
-
       toast({
         title: parsedError.title || parsedError.message,
         description: parsedError.details,
         variant: 'destructive',
       })
     } finally {
-      setIsTestingSimple(false)
+      setLoading(false)
     }
   }
 
-  const handleTestConnection = async () => {
-    if (!url || !token || !estabelecimento) {
-      toast({
-        title: 'Dados Incompletos',
-        description: 'Preencha a URL base, Token e Estabelecimento.',
-        variant: 'destructive',
-      })
-      return
-    }
+  const handleTestConnectionSimple = () =>
+    executeAction(
+      'test-simple',
+      setIsTestingSimple,
+      async (u, t, e) => {
+        const names = await testBelleConnectionSimple(u, t, e)
+        return `Resposta 200 OK. Pacientes validados: ${names.slice(0, 3).join(', ')}${names.length > 3 ? '...' : ''}`
+      },
+      'Conexão Estabelecida com Sucesso',
+      '',
+    )
 
-    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
-    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+  const handleTestConnection = () =>
+    executeAction(
+      'test',
+      setIsTesting,
+      async (u, t, e) => {
+        await testBelleConnection(u, t, e)
+      },
+      'Sucesso',
+      'Conexão proxy avançada estabelecida com 200 OK.',
+    )
 
-    setToken(cleanToken)
-    setEstabelecimento(cleanEstab)
-    setLastAction('test')
-
-    setIsTesting(true)
-    setErrorFeedback(null)
-
-    updateBelleConfig(url, cleanToken, cleanEstab)
-
-    try {
-      await testBelleConnection(url, cleanToken, cleanEstab)
-      setBelleLastSync('success', new Date().toISOString())
-      setErrorFeedback(null)
-
-      toast({
-        title: 'Sucesso',
-        description: 'Conexão proxy avançada estabelecida com 200 OK.',
-        className: 'bg-green-600 text-white border-none',
-      })
-    } catch (error: any) {
-      setBelleLastSync('error', new Date().toISOString())
-      const parsedError = parseError(error)
-      setErrorFeedback(parsedError)
-
-      toast({
-        title: parsedError.title || parsedError.message,
-        description: parsedError.details,
-        variant: 'destructive',
-      })
-    } finally {
-      setIsTesting(false)
-    }
-  }
-
-  const handleSyncPatients = async () => {
-    setLastAction('sync')
-    setIsSyncing(true)
-    setErrorFeedback(null)
-
-    toast({
-      title: 'Sincronização Iniciada',
-      description: 'Buscando pacientes via túnel de proxy...',
-    })
-
-    try {
-      const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
-      const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-
-      const [rawClientes, rawAgendamentos] = await Promise.all([
-        fetchBelleClientes(url, cleanToken, cleanEstab),
-        fetchBelleAgendamentos(url, cleanToken, undefined, cleanEstab),
-      ])
-
-      const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
-
-      syncWithBelle(mappedData)
-
-      setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Belle Software (Proxy Bypass)', 'SYSTEM')
-
-      toast({
-        title: 'Sincronização Concluída',
-        description: `${mappedData.length} pacientes importados com sucesso.`,
-        className: 'bg-green-600 text-white border-none',
-      })
-    } catch (error: any) {
-      setBelleLastSync('error', new Date().toISOString())
-      const parsedError = parseError(error)
-      setErrorFeedback(parsedError)
-
-      toast({
-        title: parsedError.title || parsedError.message,
-        description: parsedError.details,
-        variant: 'destructive',
-      })
-    } finally {
-      setIsSyncing(false)
-    }
-  }
+  const handleSyncPatients = () =>
+    executeAction(
+      'sync',
+      setIsSyncing,
+      async (u, t, e) => {
+        const [rawClientes, rawAgendamentos] = await Promise.all([
+          fetchBelleClientes(u, t, e),
+          fetchBelleAgendamentos(u, t, undefined, e),
+        ])
+        const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
+        syncWithBelle(mappedData)
+        addLog('Sincronização Belle Software', 'SYSTEM')
+        return `${mappedData.length} pacientes importados com sucesso.`
+      },
+      'Sincronização Concluída',
+      '',
+    )
 
   const handleSave = () => {
+    const cleanUrl = sanitizeUrl(url)
     const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
     const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-
+    setUrl(cleanUrl)
     setToken(cleanToken)
     setEstabelecimento(cleanEstab)
-    updateBelleConfig(url, cleanToken, cleanEstab)
-
+    updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
     toast({
       title: 'Configurações salvas',
       description: 'As credenciais foram atualizadas localmente.',
@@ -298,18 +239,16 @@ export function IntegrationSettings({
         {isConnecting ? (
           <Badge
             variant="outline"
-            className="bg-blue-500/10 text-blue-600 border-blue-500/20 py-1.5 px-3 font-medium"
+            className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 py-1.5 px-3 font-medium"
           >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            Connecting...
+            <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Reconectando
           </Badge>
         ) : isConnected ? (
           <Badge
             variant="outline"
             className="bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium"
           >
-            <Wifi className="w-3.5 h-3.5 mr-1.5" />
-            Bridge Online
+            <Wifi className="w-3.5 h-3.5 mr-1.5" /> Online
           </Badge>
         ) : (
           <Badge
@@ -321,8 +260,8 @@ export function IntegrationSettings({
                 : 'bg-muted/50 text-muted-foreground border-border/50',
             )}
           >
-            <WifiOff className="w-3.5 h-3.5 mr-1.5" />
-            {isError ? 'Connection Failed' : 'Desconectado'}
+            <WifiOff className="w-3.5 h-3.5 mr-1.5" />{' '}
+            {isError ? 'Erro de Conexão' : 'Desconectado'}
           </Badge>
         )}
       </CardHeader>
@@ -330,8 +269,7 @@ export function IntegrationSettings({
         <div className="space-y-6 max-w-2xl">
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
-              <ServerCrash className="w-5 h-5" />
-              Túnel de Proxy Seguro
+              <ServerCrash className="w-5 h-5" /> Túnel de Proxy Seguro
             </div>
 
             <div className="space-y-2">
@@ -345,9 +283,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Conexão via túnel de proxy interno (Server-to-Server) formatado em
-                application/x-www-form-urlencoded para contornar bloqueios de CORS e segurança
-                Nginx.
+                Conexão via proxy para contornar bloqueios de CORS. O protocolo https:// é
+                obrigatório e será ajustado automaticamente.
               </p>
             </div>
 
@@ -359,7 +296,7 @@ export function IntegrationSettings({
                   <Input
                     id="api-token"
                     type={showToken ? 'text' : 'password'}
-                    placeholder="Cole seu token gerado..."
+                    placeholder="Cole seu token..."
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     className="bg-white pl-9 pr-10 font-mono text-sm"
@@ -407,54 +344,55 @@ export function IntegrationSettings({
                   <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
                     {errorFeedback.details}
                   </div>
+
                   {errorFeedback.raw && (
                     <div className="mt-2 space-y-2">
-                      {errorFeedback.raw.status && (
-                        <div className="flex gap-2 text-xs font-semibold text-destructive/90">
-                          <span>Status Code: {errorFeedback.raw.status}</span>
-                          <span>{errorFeedback.raw.statusText}</span>
-                        </div>
-                      )}
-
                       {errorFeedback.raw.status === 405 && (
                         <div className="p-3 bg-white/50 rounded-md border border-destructive/10 text-xs text-destructive/90 mb-2">
-                          <strong>Ação Recomendada:</strong> O erro "405 Not Allowed" indica que o
-                          servidor bloqueou o método POST.
-                          <ul className="list-disc ml-4 mt-1 space-y-1">
-                            <li>
-                              Verifique se a URL base está apontando para o subdomínio exato da
-                              clínica.
-                            </li>
-                            <li>
-                              Confirme o uso de <strong>https://</strong> (redirecionamentos podem
-                              alterar o método POST para GET).
-                            </li>
-                            <li>Verifique a existência de barras extras no final da URL.</li>
-                          </ul>
+                          <strong>Erro HTTP 405:</strong> O servidor bloqueou o método POST.
+                          Verifique se a URL base aponta para o subdomínio exato e se não há barras
+                          extras no final.
                         </div>
                       )}
 
-                      <p className="text-xs font-semibold mb-1 text-destructive/80">
-                        Logs de Diagnóstico Brutos:
-                      </p>
-                      <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all">
-                        {JSON.stringify(errorFeedback.raw, null, 2)}
-                      </div>
+                      <Collapsible open={showLogs} onOpenChange={setShowLogs} className="mt-2">
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs font-semibold text-destructive/80 hover:text-destructive hover:bg-destructive/10 bg-transparent border-0 p-0 mb-1"
+                          >
+                            {showLogs ? (
+                              <ChevronUp className="w-3 h-3 mr-1" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 mr-1" />
+                            )}
+                            Ver Logs de Diagnóstico
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all mt-1">
+                            {JSON.stringify(errorFeedback.raw, null, 2)}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </div>
                   )}
+
                   <div className="pt-2 border-t border-destructive/10 flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        if (lastAction === 'sync') handleSyncPatients()
-                        else if (lastAction === 'test-simple') handleTestConnectionSimple()
-                        else handleTestConnection()
+                        lastAction === 'sync'
+                          ? handleSyncPatients()
+                          : lastAction === 'test-simple'
+                            ? handleTestConnectionSimple()
+                            : handleTestConnection()
                       }}
                       className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 mr-2" />
-                      Tentar Novamente
+                      <RefreshCw className="w-3.5 h-3.5 mr-2" /> Tentar Novamente
                     </Button>
                   </div>
                 </AlertDescription>
@@ -464,10 +402,8 @@ export function IntegrationSettings({
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button variant="outline" onClick={handleSave} className="rounded-xl">
-              <Save className="w-4 h-4 mr-2" />
-              Salvar Apenas
+              <Save className="w-4 h-4 mr-2" /> Salvar Apenas
             </Button>
-
             <Button
               variant="outline"
               onClick={handleTestConnectionSimple}
@@ -481,7 +417,6 @@ export function IntegrationSettings({
               )}
               {isTestingSimple ? 'Testando Proxy...' : 'Testar Conexão'}
             </Button>
-
             {isConnected && (
               <Button
                 onClick={handleSyncPatients}
