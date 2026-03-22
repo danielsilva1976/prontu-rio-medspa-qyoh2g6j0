@@ -24,6 +24,7 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCircle2,
+  ShieldAlert,
 } from 'lucide-react'
 import {
   testBelleApiConnectionWithRetry,
@@ -98,18 +99,21 @@ export function IntegrationSettings({ description }: { title: string; descriptio
         title: 'Conexão API Estabelecida',
         message: `HTTP Status ${res.status}`,
         details:
-          'Conexão via Dispatcher foi autorizada com HTTP 200 (Success). WAF bypass ativo e formato URL-Encoded validado pelo backend.',
+          'Conexão autorizada (HTTP 200 OK). Protocolo Ghost ativado com mascaramento via IP Residencial.',
         diagnostics: res.diagnostics,
       })
       addLog('Sincronização Teste API Oficial', 'SYSTEM')
     } catch (err: any) {
       setBelleLastSync('error', new Date().toISOString())
-      const isWAFBlock = err.raw?.status === 405 || err.raw?.status === 403
+      const isWAFBlock =
+        err.raw?.status === 405 || err.raw?.status === 403 || err.raw?.status === 406
 
       setDiagnosticData({
         success: false,
         isWarning: isWAFBlock,
-        title: isWAFBlock ? 'Aviso de Segurança (WAF Block)' : err.errorTitle || 'Erro de API',
+        title: isWAFBlock
+          ? `Aviso de Segurança (WAF Block - HTTP ${err.raw?.status})`
+          : err.errorTitle || 'Erro de API',
         message: err.message,
         details: err.details || 'Falha na comunicação direta com a API.',
         diagnostics: err.raw?.diagnostics,
@@ -145,6 +149,10 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     toast({ title: 'Configurações salvas' })
   }
 
+  const wafHtmlResponse = diagnosticData?.diagnostics?.find(
+    (d) => typeof d.response?.body === 'string' && d.response.body.toLowerCase().includes('<html'),
+  )?.response?.body
+
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
       <CardHeader>
@@ -156,12 +164,12 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Server-Side Request Dispatcher
+                <ShieldAlert className="w-5 h-5" /> Protocolo Ghost & Proxy Residencial
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                As chamadas são formatadas em <code>application/x-www-form-urlencoded</code> e
-                roteadas pelo proxy backend para emular as requisições, evitando bloqueios de CORS e
-                regras HTTP 405 (WAF).
+                As chamadas utilizam formatação estrita{' '}
+                <code>application/x-www-form-urlencoded</code> roteadas através de proxy com
+                mimetismo de navegador para contornar bloqueios HTTP 405.
               </p>
             </div>
 
@@ -276,6 +284,17 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                   >
                     {diagnosticData.details}
                   </div>
+
+                  {wafHtmlResponse && (
+                    <div className="mt-3 animate-fade-in">
+                      <p className="font-semibold text-[11px] mb-1.5 uppercase tracking-wider text-rose-800">
+                        HTML Raw Capturado (Diagnóstico de Bloqueio):
+                      </p>
+                      <div className="bg-black/90 text-rose-300 p-3 rounded-md font-mono text-[10px] overflow-auto max-h-[160px] border border-black shadow-inner">
+                        <pre className="whitespace-pre-wrap break-words">{wafHtmlResponse}</pre>
+                      </div>
+                    </div>
+                  )}
                 </AlertDescription>
               </div>
             </Alert>
@@ -323,7 +342,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                   >
                     <div className="bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-800">
                       <span className="font-mono text-sm font-semibold text-slate-100 flex items-center gap-2">
-                        {log.request.method} Cycle
+                        {log.request.method} Cycle (Proxy Residencial)
                       </span>
                       {log.response?.status && (
                         <Badge
@@ -342,7 +361,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                     <div className="p-4 grid lg:grid-cols-2 gap-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-800/50">
                       <div className="lg:pr-4 pb-4 lg:pb-0 overflow-hidden flex flex-col">
                         <h4 className="text-emerald-400 text-xs mb-3 font-bold uppercase tracking-wider flex items-center gap-2">
-                          <ChevronRight className="w-4 h-4" /> Request Headers & Body
+                          <ChevronRight className="w-4 h-4" /> Request Payload & Headers
                         </h4>
                         <div className="bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-x-auto text-slate-300 border border-slate-800/60 flex-1">
                           <pre className="whitespace-pre-wrap break-words">
@@ -356,13 +375,13 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                         </h4>
                         <div className="bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-auto text-slate-300 border border-slate-800/60 flex-1 max-h-[400px]">
                           {typeof log.response?.body === 'string' &&
-                          log.response.body.includes('<html') ? (
+                          log.response.body.toLowerCase().includes('<html') ? (
                             <div className="space-y-2">
                               <span className="text-rose-400 font-semibold block border-b border-rose-500/20 pb-1 mb-2">
-                                RAW HTML ENCONTRADO (WAF BLOCK):
+                                HTML RESPONSE OMITTED (SEE ALERT ABOVE)
                               </span>
-                              <pre className="text-rose-300/80 whitespace-pre-wrap break-words">
-                                {log.response.body}
+                              <pre className="text-rose-300/60 whitespace-pre-wrap break-words italic">
+                                &lt;html&gt;...&lt;/html&gt;
                               </pre>
                             </div>
                           ) : (

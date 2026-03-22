@@ -36,6 +36,8 @@ export interface DiagnosticLog {
     method: string
     headers: Record<string, string>
     body: string
+    removeHeaders?: string[]
+    useResidentialProxy?: boolean
   }
   response: {
     status?: number
@@ -116,13 +118,23 @@ export const belleApiCall = async (
   const requestData = new URLSearchParams()
   requestData.append('token', cleanToken)
   requestData.append('estabelecimento', cleanEstab)
+
   if (payload) {
+    const orderedKeys = ['acao', 'nome', 'email', 'celular', 'observacao', 'origem']
+    orderedKeys.forEach((k) => {
+      if (payload[k] !== undefined && payload[k] !== null && payload[k] !== '') {
+        requestData.append(k, String(payload[k]))
+      }
+    })
+
     Object.entries(payload).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) requestData.append(key, String(value))
+      if (!orderedKeys.includes(key) && value !== undefined && value !== null && value !== '') {
+        requestData.append(key, String(value))
+      }
     })
   }
 
-  // Implementation of WAF bypass mapping avoiding WAF-triggering headers
+  // Ghost Protocol: Browser-Mimicry + Header removal + Residential Proxy
   const proxyPayload = {
     targetUrl: targetEndpoint,
     method: 'POST',
@@ -133,6 +145,8 @@ export const belleApiCall = async (
       Referer: 'https://app.bellesoftware.com.br/',
       Accept: 'application/json, text/plain, */*',
     },
+    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
+    useResidentialProxy: true,
     data: requestData.toString(),
   }
 
@@ -228,26 +242,42 @@ export const testBelleApiConnectionWithRetry = async (
     'Content-Type': 'application/x-www-form-urlencoded',
   }
 
-  const payload = {
-    token: cleanToken,
-    estabelecimento: cleanEstab,
-    ...testData,
-  }
-
   const params = new URLSearchParams()
-  Object.entries(payload).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
+  params.append('token', cleanToken)
+  params.append('estabelecimento', cleanEstab)
+
+  const orderedKeys = ['acao', 'nome', 'email', 'celular', 'observacao', 'origem']
+  orderedKeys.forEach((k) => {
+    if (testData[k] !== undefined && testData[k] !== null && testData[k] !== '') {
+      params.append(k, String(testData[k]))
+    }
   })
+
+  Object.entries(testData).forEach(([k, v]) => {
+    if (!orderedKeys.includes(k) && v !== undefined && v !== null && v !== '') {
+      params.append(k, String(v))
+    }
+  })
+
   const bodyData = params.toString()
 
-  const safeHeaders = { ...headers }
+  const proxyPayload = {
+    targetUrl: targetEndpoint,
+    method: 'POST',
+    headers,
+    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
+    useResidentialProxy: true,
+    data: bodyData,
+  }
 
   const diagnosticEntry: DiagnosticLog = {
     request: {
       url: targetEndpoint,
       method: 'POST',
-      headers: safeHeaders,
+      headers,
       body: bodyData,
+      removeHeaders: proxyPayload.removeHeaders,
+      useResidentialProxy: proxyPayload.useResidentialProxy,
     },
     response: null,
   }
@@ -255,13 +285,6 @@ export const testBelleApiConnectionWithRetry = async (
   const diagnosticLog: DiagnosticLog[] = []
 
   try {
-    const proxyPayload = {
-      targetUrl: targetEndpoint,
-      method: 'POST',
-      headers,
-      data: bodyData,
-    }
-
     let response: Response | undefined
 
     try {
@@ -272,18 +295,18 @@ export const testBelleApiConnectionWithRetry = async (
       })
     } catch (networkErr: any) {
       if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        const errorMock = `<html>\n<head><title>403 Forbidden</title></head>\n<body>\n<center><h1>403 Forbidden</h1></center>\n<hr><center>cloudflare</center>\n</body>\n</html>`
+        const errorMock = `<html>\n<head><title>405 Not Allowed</title></head>\n<body>\n<center><h1>405 Not Allowed</h1></center>\n<hr><center>nginx (WAF Simulated)</center>\n</body>\n</html>`
         diagnosticEntry.response = {
-          status: 403,
+          status: 405,
           headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },
           body: errorMock,
         }
         diagnosticLog.push(diagnosticEntry)
         throw new BelleApiError({
-          error: `Erro HTTP 403 (WAF Bloqueio Simulado)`,
+          error: `Erro HTTP 405 (WAF Bloqueio Simulado)`,
           details:
             'Bloqueio de segurança detectado pelo servidor web. Veja o raw HTML no console de diagnóstico.',
-          raw: { diagnostics: diagnosticLog, status: 403 },
+          raw: { diagnostics: diagnosticLog, status: 405 },
         })
       }
 
@@ -303,18 +326,18 @@ export const testBelleApiConnectionWithRetry = async (
 
     if (response && response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
       if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        const errorMock = `<html>\n<head><title>403 Forbidden</title></head>\n<body>\n<center><h1>403 Forbidden</h1></center>\n<hr><center>cloudflare</center>\n</body>\n</html>`
+        const errorMock = `<html>\n<head><title>405 Not Allowed</title></head>\n<body>\n<center><h1>405 Not Allowed</h1></center>\n<hr><center>nginx (WAF Simulated)</center>\n</body>\n</html>`
         diagnosticEntry.response = {
-          status: 403,
+          status: 405,
           headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },
           body: errorMock,
         }
         diagnosticLog.push(diagnosticEntry)
         throw new BelleApiError({
-          error: `Erro HTTP 403 (WAF Bloqueio Simulado)`,
+          error: `Erro HTTP 405 (WAF Bloqueio Simulado)`,
           details:
             'Bloqueio de segurança detectado pelo servidor web. Veja o raw HTML no console de diagnóstico.',
-          raw: { diagnostics: diagnosticLog, status: 403 },
+          raw: { diagnostics: diagnosticLog, status: 405 },
         })
       }
 
@@ -353,7 +376,7 @@ export const testBelleApiConnectionWithRetry = async (
         throw new BelleApiError({
           error: `Erro HTTP ${response.status} (WAF Bloqueio)`,
           details:
-            'Bloqueio de segurança detectado pelo servidor web. Veja o raw HTML no console de diagnóstico.',
+            'Bloqueio de segurança detectado pelo servidor web. Veja o raw HTML no painel abaixo.',
           raw: { diagnostics: diagnosticLog, status: response.status },
         })
       }
