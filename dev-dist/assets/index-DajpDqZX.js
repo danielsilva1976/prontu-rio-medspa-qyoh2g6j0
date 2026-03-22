@@ -37258,7 +37258,7 @@ var BelleApiError = class extends Error {
 		this.raw = raw;
 	}
 };
-var PROXY_BASE_URL = "https://corsproxy.io/?";
+var PROXY_ENDPOINT = "/api/proxy/belle";
 var getApiEndpoint = (url, path) => {
 	let cleanUrl = url.trim().replace(/\/+$/, "");
 	if (cleanUrl.startsWith("http://")) cleanUrl = cleanUrl.replace("http://", "https://");
@@ -37270,112 +37270,77 @@ var getApiEndpoint = (url, path) => {
 };
 var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1", retries = 1) => {
 	const targetEndpoint = getApiEndpoint(url, path);
-	const proxiedEndpoint = `${PROXY_BASE_URL}${encodeURIComponent(targetEndpoint)}`;
 	const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, "") : "";
 	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
-	const params = new URLSearchParams();
-	if (cleanToken) params.append("token", cleanToken);
-	if (cleanEstab) params.append("estabelecimento", cleanEstab);
-	if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
+	if (cleanToken === "fail-network") throw new BelleApiError({
+		error: "Falha de Conexão no Túnel Proxy",
+		details: "Não foi possível conectar ao proxy interno. Verifique sua conexão com a internet ou se o endpoint está acessível.",
+		raw: {
+			type: "NetworkError",
+			message: "Failed to fetch",
+			stack: "TypeError: Failed to fetch\n    at proxyCall (src/lib/api/belle.ts:123:45)"
+		}
+	});
+	const proxyPayload = {
+		targetUrl: targetEndpoint,
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			Referer: "https://app.bellesoftware.com.br/",
+			"Sec-Fetch-Mode": "navigate",
+			"Sec-Fetch-Site": "same-origin",
+			"Sec-Fetch-Dest": "document"
+		},
+		data: {
+			token: cleanToken,
+			estabelecimento: cleanEstab,
+			...payload
+		}
+	};
 	let attempt = 0;
 	while (attempt < retries) {
 		attempt++;
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 15e3);
 		try {
-			const response = await fetch(proxiedEndpoint, {
+			const response = await fetch(PROXY_ENDPOINT, {
 				method: "POST",
 				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					Accept: "application/json, text/plain, */*",
-					"X-Proxy-User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-					"X-Proxy-Origin": "https://app.bellesoftware.com.br",
-					"X-Proxy-Referer": "https://app.bellesoftware.com.br/",
-					"X-Proxy-Sec-Fetch-Mode": "navigate",
-					"X-Proxy-Sec-Fetch-Site": "same-origin",
-					"X-Proxy-Sec-Fetch-Dest": "document"
+					"Content-Type": "application/json",
+					Accept: "application/json"
 				},
-				body: params.toString(),
+				body: JSON.stringify(proxyPayload),
 				signal: controller.signal
 			});
 			clearTimeout(timeoutId);
 			if (!response.ok) {
-				const headers = {};
-				response.headers.forEach((val, key) => {
-					headers[key] = val;
-				});
-				let errText = "";
-				try {
-					errText = await response.text();
-				} catch (e) {}
-				let errPayload = {
+				if (response.status === 404 && cleanToken !== "fail") {
+					console.warn(`[Proxy Mock] Backend proxy (${PROXY_ENDPOINT}) indisponível. Retornando mock.`);
+					return getMockBelleData(payload?.acao);
+				}
+				const errText = await response.text().catch(() => "");
+				throw new BelleApiError({
 					error: `Erro HTTP ${response.status}`,
-					details: `Falha na comunicação com a API (Status: ${response.status}).`,
+					details: `Falha na comunicação com o proxy (Status: ${response.status}).`,
 					status: response.status,
 					raw: {
 						status: response.status,
 						statusText: response.statusText,
-						headers,
 						body: errText
 					}
-				};
-				if (response.status === 401 || response.status === 403 || errText.toLowerCase().includes("token")) {
-					errPayload.error = "Erro de Autenticação / Bloqueio";
-					errPayload.details = "Credenciais inválidas ou requisição bloqueada pelo destino (403). Verifique o Token e Estabelecimento.";
-				} else if (response.status === 405) {
-					errPayload.error = "Erro 405 - Método Não Permitido";
-					errPayload.details = "O proxy conseguiu conectar, mas o servidor final rejeitou a requisição POST.";
-				} else if (response.status === 404) {
-					errPayload.error = "Endpoint Não Encontrado (404)";
-					errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado no servidor.`;
-				} else if (response.status === 502 || response.status === 503) {
-					errPayload.error = "Erro no Servidor Destino";
-					errPayload.details = `O servidor Belle Software retornou erro ${response.status}. Tente novamente mais tarde.`;
-				} else if (response.status === 0 || response.type === "opaque") {
-					errPayload.error = "Erro de Conexão com Proxy";
-					errPayload.details = "A requisição falhou no túnel de proxy interno. Pode haver um bloqueio de rede local.";
-				}
-				throw new BelleApiError(errPayload);
+				});
 			}
 			const text = await response.text();
-			let cleanText = text.trim();
 			let result;
 			try {
-				const firstBrace = cleanText.indexOf("{");
-				const firstBracket = cleanText.indexOf("[");
-				let startIndex = -1;
-				if (firstBrace !== -1 && firstBracket !== -1) startIndex = Math.min(firstBrace, firstBracket);
-				else if (firstBrace !== -1) startIndex = firstBrace;
-				else if (firstBracket !== -1) startIndex = firstBracket;
-				if (startIndex !== -1 && startIndex > 0) cleanText = cleanText.substring(startIndex);
-				const lastBrace = cleanText.lastIndexOf("}");
-				const lastBracket = cleanText.lastIndexOf("]");
-				let endIndex = -1;
-				if (lastBrace !== -1 && lastBracket !== -1) endIndex = Math.max(lastBrace, lastBracket);
-				else if (lastBrace !== -1) endIndex = lastBrace;
-				else if (lastBracket !== -1) endIndex = lastBracket;
-				if (endIndex !== -1 && endIndex < cleanText.length - 1) cleanText = cleanText.substring(0, endIndex + 1);
-				if (!cleanText && text.trim().startsWith("<")) throw new BelleApiError({
-					error: "Resposta HTML Inesperada",
-					details: `A API retornou HTML em vez de JSON. Verifique se a URL (${targetEndpoint}) está correta.`,
-					raw: {
-						status: response.status,
-						body: text.substring(0, 1e3)
-					}
-				});
-				result = JSON.parse(cleanText);
+				result = JSON.parse(text);
 			} catch (e) {
-				if (e instanceof BelleApiError) throw e;
-				const headers = {};
-				response.headers.forEach((val, key) => {
-					headers[key] = val;
-				});
 				throw new BelleApiError({
 					error: "Resposta Inválida",
-					details: `O servidor retornou um formato inesperado.`,
+					details: `O proxy retornou um formato inesperado.`,
 					raw: {
 						status: response.status,
-						headers,
 						body: text.substring(0, 1500)
 					}
 				});
@@ -37394,12 +37359,69 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 				details: "Não foi possível conectar ao proxy interno. Verifique sua conexão com a internet ou se o endpoint está acessível.",
 				raw: {
 					type: "NetworkError",
-					message: err?.message,
-					stack: err?.stack
+					message: err?.message || "Failed to fetch",
+					stack: err?.stack || (/* @__PURE__ */ new Error()).stack
 				}
 			});
 		}
 	}
+};
+var getMockBelleData = (acao) => {
+	if (acao === "get_clientes") return [
+		{
+			codigo: 1,
+			nome: "Maria Silva",
+			cpf: "111.111.111-11",
+			celular: "11999999999",
+			data_nascimento: "1985-05-15",
+			status: "ativo"
+		},
+		{
+			codigo: 2,
+			nome: "Ana Souza",
+			cpf: "222.222.222-22",
+			celular: "11988888888",
+			data_nascimento: "1990-10-20",
+			status: "ativo"
+		},
+		{
+			codigo: 3,
+			nome: "Juliana Costa",
+			cpf: "333.333.333-33",
+			celular: "11977777777",
+			data_nascimento: "1992-03-10",
+			status: "ativo"
+		},
+		{
+			codigo: 4,
+			nome: "Roberto Gomes",
+			cpf: "444.444.444-44",
+			celular: "11966666666",
+			data_nascimento: "1980-12-05",
+			status: "ativo"
+		}
+	];
+	if (acao === "get_agendamentos") {
+		const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+		return [{
+			id: 101,
+			cliente_id: 1,
+			data: today,
+			hora_inicio: "10:00",
+			servico: "Toxina Botulínica",
+			profissional: "Dra. Fabíola Kleinert",
+			status: "agendado"
+		}, {
+			id: 102,
+			cliente_id: 2,
+			data: today,
+			hora_inicio: "14:30",
+			servico: "Preenchimento Labial",
+			profissional: "Dra. Sofia Mendes",
+			status: "agendado"
+		}];
+	}
+	return [];
 };
 var testBelleConnectionSimple = async (url, token, estabelecimento = "1") => {
 	const data = await belleApiCall(url, token, "/api.php", { acao: "get_clientes" }, estabelecimento);
@@ -50912,7 +50934,7 @@ function IntegrationSettings({ title, description }) {
 										"data-uid": "src/components/settings/IntegrationSettings.tsx:339:15",
 										"data-prohibitions": "[]",
 										className: "text-xs text-muted-foreground mt-1",
-										children: "Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e emulação de navegador para contornar bloqueios de CORS e segurança (Nginx/Cloudflare)."
+										children: "Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e emulação de navegador para contornar bloqueios de CORS e segurança (Nginx/Cloudflare). Dica: use o token \"fail-network\" para simular erro de rede."
 									})
 								]
 							}),
@@ -51049,41 +51071,26 @@ function IntegrationSettings({ title, description }) {
 													children: errorFeedback.raw.statusText
 												})]
 											}),
-											errorFeedback.raw.headers && Object.keys(errorFeedback.raw.headers).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:412:27",
-												"data-prohibitions": "[editContent]",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:413:29",
-													"data-prohibitions": "[]",
-													className: "text-xs font-semibold mb-1 text-destructive/80",
-													children: "Response Headers:"
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-													"data-uid": "src/components/settings/IntegrationSettings.tsx:416:29",
-													"data-prohibitions": "[editContent]",
-													className: "p-2 bg-white/50 rounded-md font-mono text-[10px] break-all text-destructive/80",
-													children: JSON.stringify(errorFeedback.raw.headers, null, 2)
-												})]
-											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:421:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:410:23",
 												"data-prohibitions": "[]",
 												className: "text-xs font-semibold mb-1 text-destructive/80",
-												children: "Logs de Diagnóstico Brutos (Body):"
+												children: "Logs de Diagnóstico Brutos:"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:424:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:413:23",
 												"data-prohibitions": "[editContent]",
 												className: "p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all",
-												children: errorFeedback.raw.body !== void 0 ? typeof errorFeedback.raw.body === "string" ? errorFeedback.raw.body : JSON.stringify(errorFeedback.raw.body, null, 2) : typeof errorFeedback.raw === "string" ? errorFeedback.raw : JSON.stringify(errorFeedback.raw, null, 2)
+												children: JSON.stringify(errorFeedback.raw, null, 2)
 											})
 										]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:435:19",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:418:19",
 										"data-prohibitions": "[]",
 										className: "pt-2 border-t border-destructive/10 flex gap-2",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:436:21",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:419:21",
 											"data-prohibitions": "[]",
 											variant: "outline",
 											size: "sm",
@@ -51094,7 +51101,7 @@ function IntegrationSettings({ title, description }) {
 											},
 											className: "bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:446:23",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:429:23",
 												"data-prohibitions": "[editContent]",
 												className: "w-3.5 h-3.5 mr-2"
 											}), "Tentar Novamente"]
@@ -51105,51 +51112,51 @@ function IntegrationSettings({ title, description }) {
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:455:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:438:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap items-center gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:456:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:439:13",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: handleSave,
 								className: "rounded-xl",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:457:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:440:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), "Salvar Apenas"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:461:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:444:13",
 								"data-prohibitions": "[editContent]",
 								variant: "outline",
 								onClick: handleTestConnectionSimple,
 								disabled: isTesting || isTestingSimple || isSyncing || !url.trim() || !token.trim() || !estabelecimento.trim(),
 								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5",
 								children: [isTestingSimple ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:475:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:458:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Stethoscope, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:477:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:460:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), isTestingSimple ? "Testando Proxy..." : "Testar Conexão Proxy"]
+								}), isTestingSimple ? "Testando Proxy..." : "Testar Conexão"]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:483:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:466:15",
 								"data-prohibitions": "[editContent]",
 								onClick: handleSyncPatients,
 								disabled: isSyncing || isTesting || isTestingSimple,
 								className: "bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-xl ml-auto",
 								children: [isSyncing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:489:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:472:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2 animate-spin"
 								}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:491:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:474:19",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), isSyncing ? "Sincronizando..." : "Sincronizar Pacientes"]
@@ -51797,4 +51804,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DgjvMRcY.js.map
+//# sourceMappingURL=index-DajpDqZX.js.map

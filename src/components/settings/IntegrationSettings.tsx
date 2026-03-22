@@ -339,7 +339,7 @@ export function IntegrationSettings({
               <p className="text-xs text-muted-foreground mt-1">
                 Conexão via túnel de proxy interno (Server-to-Server) com formatação estrita e
                 emulação de navegador para contornar bloqueios de CORS e segurança
-                (Nginx/Cloudflare).
+                (Nginx/Cloudflare). Dica: use o token "fail-network" para simular erro de rede.
               </p>
             </div>
 
@@ -407,28 +407,11 @@ export function IntegrationSettings({
                           <span>{errorFeedback.raw.statusText}</span>
                         </div>
                       )}
-                      {errorFeedback.raw.headers &&
-                        Object.keys(errorFeedback.raw.headers).length > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold mb-1 text-destructive/80">
-                              Response Headers:
-                            </p>
-                            <div className="p-2 bg-white/50 rounded-md font-mono text-[10px] break-all text-destructive/80">
-                              {JSON.stringify(errorFeedback.raw.headers, null, 2)}
-                            </div>
-                          </div>
-                        )}
                       <p className="text-xs font-semibold mb-1 text-destructive/80">
-                        Logs de Diagnóstico Brutos (Body):
+                        Logs de Diagnóstico Brutos:
                       </p>
                       <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap break-all">
-                        {errorFeedback.raw.body !== undefined
-                          ? typeof errorFeedback.raw.body === 'string'
-                            ? errorFeedback.raw.body
-                            : JSON.stringify(errorFeedback.raw.body, null, 2)
-                          : typeof errorFeedback.raw === 'string'
-                            ? errorFeedback.raw
-                            : JSON.stringify(errorFeedback.raw, null, 2)}
+                        {JSON.stringify(errorFeedback.raw, null, 2)}
                       </div>
                     </div>
                   )}
@@ -476,7 +459,7 @@ export function IntegrationSettings({
               ) : (
                 <Stethoscope className="w-4 h-4 mr-2" />
               )}
-              {isTestingSimple ? 'Testando Proxy...' : 'Testar Conexão Proxy'}
+              {isTestingSimple ? 'Testando Proxy...' : 'Testar Conexão'}
             </Button>
 
             {isConnected && (
