@@ -37173,7 +37173,7 @@ var belleApiCall = async (url, token, estabelecimento = "1", queryParams = {}, r
 	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
 	let finalUrl = url.trim();
 	const headers = {
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+		"User-Agent": "MedSpa/1.0",
 		Authorization: cleanToken,
 		Accept: "application/json, text/plain, */*"
 	};
@@ -37195,7 +37195,8 @@ var belleApiCall = async (url, token, estabelecimento = "1", queryParams = {}, r
 			"Sec-Fetch-Site",
 			"Sec-Fetch-Mode",
 			"Sec-Fetch-Dest",
-			"Origin"
+			"Origin",
+			"Referer"
 		],
 		useResidentialProxy: true
 	};
@@ -37211,18 +37212,6 @@ var belleApiCall = async (url, token, estabelecimento = "1", queryParams = {}, r
 				},
 				body: JSON.stringify(proxyPayload)
 			});
-			if (!response.ok) {
-				const text = await response.text();
-				throw new BelleApiError({
-					error: `Erro HTTP ${response.status}`,
-					details: text || "Falha na comunicação com o servidor.",
-					status: response.status,
-					raw: {
-						status: response.status,
-						body: text
-					}
-				});
-			}
 			const text = await response.text();
 			let result;
 			try {
@@ -37230,6 +37219,15 @@ var belleApiCall = async (url, token, estabelecimento = "1", queryParams = {}, r
 			} catch (e) {
 				result = text;
 			}
+			if (!response.ok) throw new BelleApiError({
+				error: `Erro HTTP ${response.status}`,
+				details: typeof result === "string" ? result : JSON.stringify(result),
+				status: response.status,
+				raw: {
+					status: response.status,
+					body: result
+				}
+			});
 			if (typeof result === "object" && result !== null && (result.status === "erro" || result.status === false || result.error)) throw new BelleApiError({
 				error: result.error || result.mensagem || "Erro na API",
 				details: result.details || result.mensagem || text,
@@ -37257,7 +37255,7 @@ var testBelleApiConnectionWithRetry = async (url, token, estabelecimento, testDa
 	const cleanToken = token ? token.trim() : "";
 	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
 	const headers = {
-		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+		"User-Agent": "MedSpa/1.0",
 		Authorization: cleanToken,
 		Accept: "application/json, text/plain, */*"
 	};
@@ -37280,7 +37278,8 @@ var testBelleApiConnectionWithRetry = async (url, token, estabelecimento, testDa
 			"Sec-Fetch-Site",
 			"Sec-Fetch-Mode",
 			"Sec-Fetch-Dest",
-			"Origin"
+			"Origin",
+			"Referer"
 		],
 		useResidentialProxy: true
 	};
@@ -50913,7 +50912,7 @@ function IntegrationSettings({ description }) {
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 									"data-uid": "src/components/settings/IntegrationSettings.tsx:247:19",
 									"data-prohibitions": "[editContent]",
-									className: "p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap",
+									className: "p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono",
 									children: diagnosticData.details
 								})
 							})]
@@ -51706,4 +51705,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D-ZCza-V.js.map
+//# sourceMappingURL=index-CVRtVFPr.js.map

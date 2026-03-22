@@ -244,7 +244,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                   {diagnosticData.title}
                 </AlertTitle>
                 <AlertDescription className="space-y-3">
-                  <div className="p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap">
+                  <div className="p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono">
                     {diagnosticData.details}
                   </div>
                 </AlertDescription>

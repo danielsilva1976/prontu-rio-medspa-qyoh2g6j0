@@ -111,8 +111,7 @@ export const belleApiCall = async (
   let finalUrl = url.trim()
 
   const headers: Record<string, string> = {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'User-Agent': 'MedSpa/1.0',
     Authorization: cleanToken,
     Accept: 'application/json, text/plain, */*',
   }
@@ -140,7 +139,7 @@ export const belleApiCall = async (
     targetUrl: finalUrl,
     method: 'GET',
     headers,
-    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
+    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin', 'Referer'],
     useResidentialProxy: true,
   }
 
@@ -154,22 +153,21 @@ export const belleApiCall = async (
         body: JSON.stringify(proxyPayload),
       })
 
-      if (!response.ok) {
-        const text = await response.text()
-        throw new BelleApiError({
-          error: `Erro HTTP ${response.status}`,
-          details: text || 'Falha na comunicação com o servidor.',
-          status: response.status,
-          raw: { status: response.status, body: text },
-        })
-      }
-
       const text = await response.text()
       let result
       try {
         result = JSON.parse(text)
       } catch (e) {
         result = text
+      }
+
+      if (!response.ok) {
+        throw new BelleApiError({
+          error: `Erro HTTP ${response.status}`,
+          details: typeof result === 'string' ? result : JSON.stringify(result),
+          status: response.status,
+          raw: { status: response.status, body: result },
+        })
       }
 
       if (
@@ -212,8 +210,7 @@ export const testBelleApiConnectionWithRetry = async (
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
   const headers: Record<string, string> = {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'User-Agent': 'MedSpa/1.0',
     Authorization: cleanToken,
     Accept: 'application/json, text/plain, */*',
   }
@@ -240,7 +237,7 @@ export const testBelleApiConnectionWithRetry = async (
     targetUrl: finalUrl,
     method: 'GET',
     headers,
-    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
+    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin', 'Referer'],
     useResidentialProxy: true,
   }
 
