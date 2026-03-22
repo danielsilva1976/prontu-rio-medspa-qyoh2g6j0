@@ -290,7 +290,9 @@ export const testBelleApiConnectionWithRetry = async (
       let parsedBody = text
       try {
         parsedBody = JSON.parse(text)
-      } catch (e) {}
+      } catch (e) {
+        // Ignored as it might not be JSON
+      }
 
       diagnosticEntry.response = {
         status: response.status,
@@ -330,6 +332,19 @@ export const testBelleApiConnectionWithRetry = async (
       'Tentamos vários formatos (URL Encoded, Multipart, JSON) mas o servidor web continuou bloqueando a requisição.',
     raw: { diagnostics: diagnosticLog },
   })
+}
+
+export const testBelleConnection = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '1',
+): Promise<boolean> => {
+  try {
+    await fetchBelleClientes(url, token, estabelecimento)
+    return true
+  } catch (error) {
+    throw error
+  }
 }
 
 export const fetchBelleClientes = async (
