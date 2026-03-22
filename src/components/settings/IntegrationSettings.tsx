@@ -6,6 +6,13 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -26,6 +33,7 @@ import {
   Webhook,
   Send,
   DownloadCloud,
+  Terminal,
 } from 'lucide-react'
 import {
   testBelleWebhookConnection,
@@ -65,8 +73,8 @@ export function IntegrationSettings({
 
   const [isTesting, setIsTesting] = useState(false)
   const [showToken, setShowToken] = useState(false)
-  const [showLogs, setShowLogs] = useState(false)
   const [showMapping, setShowMapping] = useState(false)
+  const [diagnosticModalOpen, setDiagnosticModalOpen] = useState(false)
 
   const [errorFeedback, setErrorFeedback] = useState<{
     message: string
@@ -117,6 +125,7 @@ export function IntegrationSettings({
     return { message: String(message), details: String(details), title, raw }
   }
 
+  // Smart URL Normalizer
   const sanitizeUrl = (input: string) => {
     if (!input) return input
     let cleanUrl = input.trim().replace(/\/+$/, '')
@@ -156,7 +165,6 @@ export function IntegrationSettings({
     setLastAction(actionName)
     setLoading(true)
     setErrorFeedback(null)
-    setShowLogs(false)
 
     updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
 
@@ -203,7 +211,6 @@ export function IntegrationSettings({
     setLastAction('test-webhook')
     setIsTesting(true)
     setErrorFeedback(null)
-    setShowLogs(false)
 
     updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
 
@@ -229,7 +236,7 @@ export function IntegrationSettings({
       setErrorFeedback(null)
       toast({
         title: 'Webhook Enviado com Sucesso',
-        description: `O servidor Nginx retornou status ${result.status} (OK). Payload formatado e aceito.`,
+        description: `O servidor respondeu com status 200 OK. Payload formatado e aceito.`,
         className: 'bg-green-600 text-white border-none',
       })
       addLog('Sincronização de Lead via Webhook (Teste)', 'SYSTEM')
@@ -519,44 +526,29 @@ export function IntegrationSettings({
                   </div>
 
                   {errorFeedback.raw && (
-                    <div className="mt-2 space-y-2">
-                      <Collapsible open={showLogs} onOpenChange={setShowLogs} className="mt-2">
-                        <CollapsibleTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs font-semibold text-destructive/80 hover:text-destructive hover:bg-destructive/10 bg-transparent border-0 p-0 mb-1"
-                          >
-                            {showLogs ? (
-                              <ChevronUp className="w-3 h-3 mr-1" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3 mr-1" />
-                            )}
-                            Ver Logs de Diagnóstico (Nginx/Servidor)
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-60 whitespace-pre-wrap break-all mt-1">
-                            {JSON.stringify(errorFeedback.raw, null, 2)}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
+                    <div className="pt-2 border-t border-destructive/10 flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (lastAction === 'sync') handleSyncPatients()
+                          else handleTestWebhook()
+                        }}
+                        className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 mr-2" /> Tentar Novamente
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDiagnosticModalOpen(true)}
+                        className="bg-white border-destructive/20 text-destructive hover:bg-destructive/10 h-8"
+                      >
+                        <Terminal className="w-3.5 h-3.5 mr-2" />
+                        Ver Console de Diagnóstico
+                      </Button>
                     </div>
                   )}
-
-                  <div className="pt-2 border-t border-destructive/10 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (lastAction === 'sync') handleSyncPatients()
-                        else handleTestWebhook()
-                      }}
-                      className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5 mr-2" /> Tentar Novamente
-                    </Button>
-                  </div>
                 </AlertDescription>
               </div>
             </Alert>
@@ -598,6 +590,26 @@ export function IntegrationSettings({
           </div>
         </div>
       </CardContent>
+
+      <Dialog open={diagnosticModalOpen} onOpenChange={setDiagnosticModalOpen}>
+        <DialogContent className="max-w-2xl bg-[#0f172a] text-slate-300 border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-slate-100 flex items-center gap-2">
+              <Terminal className="w-5 h-5" />
+              Console de Diagnóstico (Log Bruto)
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Detalhes técnicos da requisição bloqueada ou erro do servidor. Útil para debugar
+              bloqueios Nginx 405.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-4 bg-black/50 rounded-md overflow-auto max-h-[60vh] border border-slate-800">
+            <pre className="text-xs text-emerald-400 whitespace-pre-wrap break-all font-mono">
+              {JSON.stringify(errorFeedback?.raw, null, 2)}
+            </pre>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

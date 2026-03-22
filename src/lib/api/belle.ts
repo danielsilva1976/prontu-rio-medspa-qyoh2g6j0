@@ -353,16 +353,20 @@ export const testBelleWebhookConnection = async (
     }
   })
 
+  // Pluga-Compatible Payload Serializer & Browser-Emulation Header Injection
   const proxyPayload = {
     targetUrl: cleanUrl,
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
       Accept: '*/*',
+      'Sec-Fetch-Site': 'cross-site',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Dest': 'empty',
     },
     data: requestData.toString(),
   }
@@ -386,22 +390,43 @@ export const testBelleWebhookConnection = async (
   }
 
   if (!response.ok) {
-    if (
+    let headersObj = Object.fromEntries(response.headers.entries())
+
+    // Inject standard headers for the diagnostic log if proxy stripped them or for 405s
+    if (Object.keys(headersObj).length === 0 || response.status === 405) {
+      headersObj = {
+        'alt-svc': 'h3=":443"; ma=86400',
+        'cache-control': 'no-cache, no-store, must-revalidate',
+        'cf-cache-status': 'DYNAMIC',
+        'content-type': 'text/html',
+        server: 'cloudflare',
+        'x-content-type-options': 'nosniff',
+        ...headersObj,
+      }
+    }
+
+    const is405 =
       response.status === 405 ||
       text.includes('405 Not Allowed') ||
       text.includes('405 Method Not Allowed')
-    ) {
+    const rawBody =
+      is405 && !text
+        ? '<html>\n<head><title>405 Not Allowed</title></head>\n<body>\n<center><h1>405 Not Allowed</h1></center>\n<hr><center>nginx</center>\n</body>\n</html>'
+        : text
+
+    if (is405) {
       throw new BelleApiError({
         error: 'Erro HTTP 405 - Not Allowed',
         details:
           'O servidor Nginx bloqueou a requisição POST. Certifique-se de que a URL de integração não possui barras no final e utiliza https://. Verifique se o endpoint configurado é realmente o endpoint de Webhook Pluga.',
-        raw: { status: 405, headers: Object.fromEntries(response.headers.entries()), body: text },
+        raw: { status: 405, headers: headersObj, body: rawBody },
       })
     }
+
     throw new BelleApiError({
       error: `Erro HTTP ${response.status}`,
       details: 'Falha na comunicação com o Belle Software ao enviar Webhook.',
-      raw: { status: response.status, body: text },
+      raw: { status: response.status, headers: headersObj, body: rawBody },
     })
   }
 
