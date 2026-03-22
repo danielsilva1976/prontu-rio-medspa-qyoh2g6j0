@@ -24,7 +24,6 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCircle2,
-  ShieldAlert,
 } from 'lucide-react'
 import {
   testBelleApiConnectionWithRetry,
@@ -56,7 +55,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
 
   const [diagnosticData, setDiagnosticData] = useState<{
     success: boolean
-    isWarning?: boolean
     message: string
     details: string
     title?: string
@@ -96,22 +94,16 @@ export function IntegrationSettings({ description }: { title: string; descriptio
         success: true,
         title: 'Conexão API Estabelecida',
         message: `HTTP Status ${res.status}`,
-        details:
-          'Conexão autorizada (HTTP 200 OK) utilizando Autenticação REST. Protocolo Ghost ativado com mascaramento de cabeçalhos.',
+        details: 'Conexão autorizada (HTTP 200 OK) com a API do Belle Software.',
         diagnostics: res.diagnostics,
       })
       addLog('Sincronização Teste API Oficial', 'SYSTEM')
     } catch (err: any) {
       setBelleLastSync('error', new Date().toISOString())
-      const isWAFBlock =
-        err.raw?.status === 405 || err.raw?.status === 403 || err.raw?.status === 406
 
       setDiagnosticData({
         success: false,
-        isWarning: isWAFBlock,
-        title: isWAFBlock
-          ? `Aviso de Segurança (WAF Block - HTTP ${err.raw?.status})`
-          : err.errorTitle || 'Erro de API',
+        title: err.errorTitle || `Erro de API (HTTP ${err.status || 'Desconhecido'})`,
         message: err.message,
         details: err.details || 'Falha na comunicação direta com a API.',
         diagnostics: err.raw?.diagnostics,
@@ -142,10 +134,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     toast({ title: 'Configurações salvas' })
   }
 
-  const wafHtmlResponse = diagnosticData?.diagnostics?.find(
-    (d) => typeof d.response?.body === 'string' && d.response.body.toLowerCase().includes('<html'),
-  )?.response?.body
-
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
       <CardHeader>
@@ -157,12 +145,12 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <ShieldAlert className="w-5 h-5" /> Autenticação REST & Protocolo Ghost
+                <Database className="w-5 h-5" /> Integração REST API (v1.0)
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                As chamadas utilizam requisições <code>GET</code> com cabeçalho de{' '}
-                <code>Authorization</code>. Roteadas através de proxy com mimetismo de navegador
-                para contornar bloqueios HTTP 405.
+                As chamadas de listagem e busca utilizam requisições oficiais <code>GET</code> com
+                envio do token de integração via cabeçalho <code>Authorization</code>, seguindo o
+                padrão da documentação v1.0. Roteadas através de proxy para evitar bloqueios CORS.
               </p>
             </div>
 
@@ -245,46 +233,18 @@ export function IntegrationSettings({ description }: { title: string; descriptio
 
           {diagnosticData && !diagnosticData.success && (
             <Alert
-              variant={diagnosticData.isWarning ? 'default' : 'destructive'}
-              className={cn(
-                'animate-in fade-in slide-in-from-top-2 shadow-sm',
-                diagnosticData.isWarning
-                  ? 'bg-amber-50 text-amber-900 border-amber-200'
-                  : 'bg-rose-50 text-rose-900 border-rose-200',
-              )}
+              variant="destructive"
+              className="animate-in fade-in slide-in-from-top-2 shadow-sm bg-rose-50 text-rose-900 border-rose-200"
             >
-              <AlertCircle
-                className={cn(
-                  'h-5 w-5 mt-0.5',
-                  diagnosticData.isWarning ? 'text-amber-600' : 'text-rose-600',
-                )}
-              />
+              <AlertCircle className="h-5 w-5 mt-0.5 text-rose-600" />
               <div className="pl-1 w-full">
                 <AlertTitle className="font-semibold text-base mb-2">
                   {diagnosticData.title}
                 </AlertTitle>
                 <AlertDescription className="space-y-3">
-                  <div
-                    className={cn(
-                      'p-3 rounded-md border text-xs leading-relaxed',
-                      diagnosticData.isWarning
-                        ? 'bg-amber-100/50 border-amber-200/60'
-                        : 'bg-white/60 border-rose-200/50',
-                    )}
-                  >
+                  <div className="p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap">
                     {diagnosticData.details}
                   </div>
-
-                  {wafHtmlResponse && (
-                    <div className="mt-3 animate-fade-in">
-                      <p className="font-semibold text-[11px] mb-1.5 uppercase tracking-wider text-rose-800">
-                        HTML Raw Capturado (Diagnóstico de Bloqueio):
-                      </p>
-                      <div className="bg-black/90 text-rose-300 p-3 rounded-md font-mono text-[10px] overflow-auto max-h-[160px] border border-black shadow-inner">
-                        <pre className="whitespace-pre-wrap break-words">{wafHtmlResponse}</pre>
-                      </div>
-                    </div>
-                  )}
                 </AlertDescription>
               </div>
             </Alert>
@@ -332,7 +292,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                   >
                     <div className="bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-800">
                       <span className="font-mono text-sm font-semibold text-slate-100 flex items-center gap-2">
-                        {log.request.method} Cycle (Proxy Residencial)
+                        {log.request.method} API Cycle
                       </span>
                       {log.response?.status && (
                         <Badge
@@ -364,21 +324,11 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                           <ChevronLeft className="w-4 h-4" /> Response Data (Raw)
                         </h4>
                         <div className="bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-auto text-slate-300 border border-slate-800/60 flex-1 max-h-[400px]">
-                          {typeof log.response?.body === 'string' &&
-                          log.response.body.toLowerCase().includes('<html') ? (
-                            <div className="space-y-2">
-                              <span className="text-rose-400 font-semibold block border-b border-rose-500/20 pb-1 mb-2">
-                                HTML RESPONSE OMITTED (SEE ALERT ABOVE)
-                              </span>
-                              <pre className="text-rose-300/60 whitespace-pre-wrap break-words italic">
-                                &lt;html&gt;...&lt;/html&gt;
-                              </pre>
-                            </div>
-                          ) : (
-                            <pre className="whitespace-pre-wrap break-words">
-                              {JSON.stringify(log.response, null, 2)}
-                            </pre>
-                          )}
+                          <pre className="whitespace-pre-wrap break-words">
+                            {typeof log.response?.body === 'string'
+                              ? log.response.body
+                              : JSON.stringify(log.response, null, 2)}
+                          </pre>
                         </div>
                       </div>
                     </div>

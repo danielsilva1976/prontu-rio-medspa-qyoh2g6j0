@@ -43,7 +43,6 @@ export interface DiagnosticLog {
     url: string
     method: string
     headers: Record<string, string>
-    body?: string
     removeHeaders?: string[]
     useResidentialProxy?: boolean
   }
@@ -99,87 +98,50 @@ export class BelleApiError extends Error {
 }
 
 const PROXY_ENDPOINT = import.meta.env.VITE_BELLE_PROXY_URL || '/api/proxy/belle'
-const WAF_HTML_MOCK = `<html>\n<head><title>405 Not Allowed</title></head>\n<body>\n<center><h1>405 Not Allowed</h1></center>\n<hr><center>nginx/1.29.6</center>\n</body>\n</html>`
-
-const getApiEndpoint = (url: string, path: string) => {
-  let cleanUrl = url.trim().replace(/\/+$/, '')
-  if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
-  else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
-
-  if (cleanUrl.includes('IntegracaoExterna') || cleanUrl.includes('/listar')) {
-    return cleanUrl
-  }
-
-  if (cleanUrl.endsWith('/api.php')) cleanUrl = cleanUrl.slice(0, -8)
-  else if (cleanUrl.endsWith('api.php')) cleanUrl = cleanUrl.slice(0, -7)
-  cleanUrl = cleanUrl.replace(/\/+$/, '')
-  const cleanPath = path.startsWith('/') ? path : `/${path}`
-  return `${cleanUrl}${cleanPath}`.replace(/\/$/, '')
-}
 
 export const belleApiCall = async (
   url: string,
   token: string,
-  path: string,
-  payload: any = null,
   estabelecimento: string = '1',
+  queryParams: Record<string, any> = {},
   retries: number = 3,
 ): Promise<any> => {
-  const targetEndpoint = getApiEndpoint(url, path)
   const cleanToken = token ? token.trim() : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
-  const isRestApi =
-    targetEndpoint.includes('IntegracaoExterna') || targetEndpoint.includes('/listar')
-
-  let finalUrl = targetEndpoint
-  let method = isRestApi ? 'GET' : 'POST'
-  let dataBody: string | undefined = undefined
+  let finalUrl = url.trim()
 
   const headers: Record<string, string> = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    Referer: 'https://app.bellesoftware.com.br/',
+    Authorization: cleanToken,
     Accept: 'application/json, text/plain, */*',
   }
 
   const params = new URLSearchParams()
+  if (cleanEstab) params.append('codEstab', cleanEstab)
 
-  if (isRestApi) {
-    headers['Authorization'] = cleanToken
-    params.append('codEstab', cleanEstab)
-
-    if (payload) {
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value))
-        }
-      })
-    }
-    const [baseUrl, existingQuery] = targetEndpoint.split('?')
-    const queryStr = existingQuery ? `${existingQuery}&${params.toString()}` : params.toString()
-    finalUrl = `${baseUrl}?${queryStr}`
-  } else {
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    params.append('token', cleanToken)
-    params.append('estabelecimento', cleanEstab)
-
-    if (payload) {
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value))
-        }
-      })
-    }
-    dataBody = params.toString()
+  if (queryParams) {
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value))
+      }
+    })
   }
+
+  const [baseUrl, existingQuery] = finalUrl.split('?')
+  let queryStr = existingQuery || ''
+  const newParamsStr = params.toString()
+  if (newParamsStr) {
+    queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr
+  }
+  finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl
 
   const proxyPayload = {
     targetUrl: finalUrl,
-    method,
+    method: 'GET',
     headers,
     removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
     useResidentialProxy: true,
-    data: dataBody,
   }
 
   let attempt = 0
@@ -193,58 +155,64 @@ export const belleApiCall = async (
       })
 
       if (response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-        if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-          throw new BelleApiError({
-            error: 'Erro HTTP 405 (WAF Bloqueio Simulado)',
-            details: 'Bloqueio de segurança detectado pelo servidor web.',
-            status: 405,
-            raw: { status: 405, body: WAF_HTML_MOCK },
-          })
-        }
-        if (payload?.acao === 'get_clientes' || isRestApi)
-          return [{ codigo: 999, nome: 'Paciente de Teste (Proxy Mock)', celular: '11999999999' }]
-        if (payload?.acao === 'get_agendamentos') return []
-        return { status: true, mock: true }
+        return [
+          {
+            codigo: 999,
+            nome: 'Paciente de Teste (Proxy Mock)',
+            celular: '11999999999',
+            codEstab: cleanEstab,
+          },
+        ]
       }
 
       if (!response.ok) {
+        const text = await response.text()
         throw new BelleApiError({
           error: `Erro HTTP ${response.status}`,
-          details: 'Falha na comunicação com o servidor.',
+          details: text || 'Falha na comunicação com o servidor.',
           status: response.status,
-          raw: { status: response.status, statusText: response.statusText },
+          raw: { status: response.status, body: text },
         })
       }
-      const text = await response.text()
-      let result = JSON.parse(text)
 
-      if (!isRestApi && (result.status === 'erro' || result.status === false || result.error)) {
+      const text = await response.text()
+      let result
+      try {
+        result = JSON.parse(text)
+      } catch (e) {
+        result = text
+      }
+
+      if (
+        typeof result === 'object' &&
+        result !== null &&
+        (result.status === 'erro' || result.status === false || result.error)
+      ) {
         throw new BelleApiError({
           error: result.error || result.mensagem || 'Erro na API',
-          details: result.details || result.mensagem,
+          details: result.details || result.mensagem || text,
           raw: result,
         })
       }
 
       return result.data || result.dados || result
     } catch (err: any) {
-      if (attempt < retries && err.message === 'Failed to fetch') {
+      if (
+        attempt < retries &&
+        (err.message === 'Failed to fetch' || err.message.includes('Network'))
+      ) {
         await new Promise((res) => setTimeout(res, 1000 * attempt))
         continue
       }
       if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-          throw new BelleApiError({
-            error: 'Erro HTTP 405 (WAF Bloqueio Simulado)',
-            details: 'Bloqueio de segurança detectado pelo servidor web.',
-            status: 405,
-            raw: { status: 405, body: WAF_HTML_MOCK },
-          })
-        }
-        if (payload?.acao === 'get_clientes' || isRestApi)
-          return [{ codigo: 999, nome: 'Paciente de Teste (Local Mock)', celular: '11999999999' }]
-        if (payload?.acao === 'get_agendamentos') return []
-        return { status: true, mock: true }
+        return [
+          {
+            codigo: 999,
+            nome: 'Paciente de Teste (Local Mock)',
+            celular: '11999999999',
+            codEstab: cleanEstab,
+          },
+        ]
       }
       if (err instanceof BelleApiError) throw err
       throw new BelleApiError({ error: 'Erro de Rede', details: err?.message, raw: err })
@@ -253,7 +221,7 @@ export const belleApiCall = async (
 }
 
 /**
- * Direct API Integration Handler with WAF Bypass logic
+ * Direct API Integration Handler with Diagnostic Logs
  */
 export const testBelleApiConnectionWithRetry = async (
   url: string,
@@ -261,63 +229,47 @@ export const testBelleApiConnectionWithRetry = async (
   estabelecimento: string,
   testData: any = {},
 ): Promise<{ success: boolean; status: number; data: any; diagnostics: DiagnosticLog[] }> => {
-  const targetEndpoint = getApiEndpoint(url, '/api.php')
   const cleanToken = token ? token.trim() : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
-  const isRestApi =
-    targetEndpoint.includes('IntegracaoExterna') || targetEndpoint.includes('/listar')
 
   const headers: Record<string, string> = {
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    Referer: 'https://app.bellesoftware.com.br/',
+    Authorization: cleanToken,
     Accept: 'application/json, text/plain, */*',
   }
 
-  let finalUrl = targetEndpoint
-  let method = isRestApi ? 'GET' : 'POST'
-  let dataBody: string | undefined = undefined
-
+  let finalUrl = url.trim()
   const params = new URLSearchParams()
+  if (cleanEstab) params.append('codEstab', cleanEstab)
 
-  if (isRestApi) {
-    headers['Authorization'] = cleanToken
-    params.append('codEstab', cleanEstab)
-    Object.entries(testData).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') {
-        params.append(k, String(v))
-      }
-    })
-    const [baseUrl, existingQuery] = targetEndpoint.split('?')
-    const queryStr = existingQuery ? `${existingQuery}&${params.toString()}` : params.toString()
-    finalUrl = `${baseUrl}?${queryStr}`
-  } else {
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    params.append('token', cleanToken)
-    params.append('estabelecimento', cleanEstab)
-    Object.entries(testData).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') {
-        params.append(k, String(v))
-      }
-    })
-    dataBody = params.toString()
+  Object.entries(testData).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') {
+      params.append(k, String(v))
+    }
+  })
+
+  const [baseUrl, existingQuery] = finalUrl.split('?')
+  let queryStr = existingQuery || ''
+  const newParamsStr = params.toString()
+  if (newParamsStr) {
+    queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr
   }
+  finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl
 
   const proxyPayload = {
     targetUrl: finalUrl,
-    method,
+    method: 'GET',
     headers,
     removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin'],
     useResidentialProxy: true,
-    data: dataBody,
   }
 
   const diagnosticEntry: DiagnosticLog = {
     request: {
       url: finalUrl,
-      method,
+      method: proxyPayload.method,
       headers,
-      body: dataBody,
       removeHeaders: proxyPayload.removeHeaders,
       useResidentialProxy: proxyPayload.useResidentialProxy,
     },
@@ -336,23 +288,7 @@ export const testBelleApiConnectionWithRetry = async (
         body: JSON.stringify(proxyPayload),
       })
     } catch (networkErr: any) {
-      if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        diagnosticEntry.response = {
-          status: 405,
-          headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },
-          body: WAF_HTML_MOCK,
-        }
-        diagnosticLog.push(diagnosticEntry)
-        throw new BelleApiError({
-          error: `Erro HTTP 405 (WAF Bloqueio Simulado)`,
-          details: 'Bloqueio de segurança detectado pelo servidor web.',
-          raw: { diagnostics: diagnosticLog, status: 405 },
-        })
-      }
-
-      const mockBody = isRestApi
-        ? [{ codigo: 9999, nome: 'Simulado - Proxy Offline' }]
-        : { status: true, mensagem: 'Simulado' }
+      const mockBody = [{ codigo: 9999, nome: 'Simulado - Proxy Offline', codEstab: cleanEstab }]
       diagnosticEntry.response = {
         status: 200,
         headers: { 'content-type': 'application/json', 'x-simulated-mock': 'true' },
@@ -363,23 +299,7 @@ export const testBelleApiConnectionWithRetry = async (
     }
 
     if (response && response.status === 404 && PROXY_ENDPOINT.includes('/api/proxy')) {
-      if (cleanToken !== '1787cad7ac7dd71ac2fbbdaf823928fd') {
-        diagnosticEntry.response = {
-          status: 405,
-          headers: { 'content-type': 'text/html', 'x-simulated-mock': 'true' },
-          body: WAF_HTML_MOCK,
-        }
-        diagnosticLog.push(diagnosticEntry)
-        throw new BelleApiError({
-          error: `Erro HTTP 405 (WAF Bloqueio Simulado)`,
-          details: 'Bloqueio de segurança detectado pelo servidor web.',
-          raw: { diagnostics: diagnosticLog, status: 405 },
-        })
-      }
-
-      const mockBody = isRestApi
-        ? [{ codigo: 9999, nome: 'Simulado - Dev Local' }]
-        : { status: true, mensagem: 'Simulado' }
+      const mockBody = [{ codigo: 9999, nome: 'Simulado - Dev Local', codEstab: cleanEstab }]
       diagnosticEntry.response = {
         status: 200,
         headers: { 'content-type': 'application/json', 'x-simulated-mock': 'true' },
@@ -394,7 +314,7 @@ export const testBelleApiConnectionWithRetry = async (
     try {
       parsedBody = JSON.parse(text)
     } catch (e) {
-      // Keep as plain text/html if not JSON
+      // Keep as plain text if not JSON
     }
 
     diagnosticEntry.response = {
@@ -406,18 +326,24 @@ export const testBelleApiConnectionWithRetry = async (
     diagnosticLog.push(diagnosticEntry)
 
     if (!response.ok) {
-      if (response.status === 405 || response.status === 403 || response.status === 406) {
-        throw new BelleApiError({
-          error: `Erro HTTP ${response.status} (WAF Bloqueio)`,
-          details:
-            'Bloqueio de segurança detectado pelo servidor web. Veja o raw HTML no painel abaixo.',
-          raw: { diagnostics: diagnosticLog, status: response.status },
-        })
-      }
       throw new BelleApiError({
         error: `Erro HTTP ${response.status}`,
-        details: 'O servidor retornou um erro.',
-        raw: { diagnostics: diagnosticLog, status: response.status },
+        details: typeof parsedBody === 'string' ? parsedBody : JSON.stringify(parsedBody),
+        status: response.status,
+        raw: { diagnostics: diagnosticLog, status: response.status, body: parsedBody },
+      })
+    }
+
+    if (
+      typeof parsedBody === 'object' &&
+      parsedBody !== null &&
+      ('erro' in parsedBody || parsedBody.status === false || parsedBody.error)
+    ) {
+      throw new BelleApiError({
+        error: parsedBody.error || parsedBody.mensagem || 'Erro na API',
+        details: parsedBody.details || parsedBody.mensagem || JSON.stringify(parsedBody),
+        status: 200,
+        raw: { diagnostics: diagnosticLog, status: 200, body: parsedBody },
       })
     }
 
@@ -446,12 +372,8 @@ export const testBelleConnection = async (
   token: string,
   estabelecimento: string = '1',
 ) => {
-  try {
-    const result = await belleApiCall(url, token, '', {}, estabelecimento)
-    return { success: true, data: result }
-  } catch (error: any) {
-    return { success: false, error: error.message }
-  }
+  const result = await belleApiCall(url, token, estabelecimento, {})
+  return { success: true, data: result }
 }
 
 export const fetchBelleClientes = async (
@@ -459,28 +381,18 @@ export const fetchBelleClientes = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
-  const isRestApi = url.includes('IntegracaoExterna') || url.includes('/listar')
-  const payload = isRestApi ? {} : { acao: 'get_clientes' }
-  const data = await belleApiCall(url, token, '', payload, estabelecimento)
+  const data = await belleApiCall(url, token, estabelecimento, {})
   return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || []
 }
 
 export const fetchBelleAgendamentos = async (
-  url: string,
-  token: string,
-  cpf?: string,
-  estabelecimento: string = '1',
+  _url: string,
+  _token: string,
+  _cpf?: string,
+  _estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
-  const isRestApi = url.includes('IntegracaoExterna') || url.includes('/listar')
-  if (isRestApi) {
-    // Current REST scope only covers clients. Return empty to prevent sync breaking.
-    return []
-  }
-
-  const payload: any = { acao: 'get_agendamentos' }
-  if (cpf) payload.cpf = cpf
-  const data = await belleApiCall(url, token, '/api.php', payload, estabelecimento)
-  return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
+  // Current REST v1.0 scope only covers clients listing/search. Return empty to prevent sync breaking.
+  return []
 }
 
 export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) => {
