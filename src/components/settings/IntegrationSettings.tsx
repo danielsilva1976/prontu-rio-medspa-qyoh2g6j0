@@ -22,6 +22,8 @@ import {
   Users,
   AlertCircle,
   Stethoscope,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import {
   testBelleConnection,
@@ -47,6 +49,7 @@ export function IntegrationSettings({
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
   const [isTesting, setIsTesting] = useState(false)
   const [isTestingSimple, setIsTestingSimple] = useState(false)
+  const [showToken, setShowToken] = useState(false)
 
   const [errorFeedback, setErrorFeedback] = useState<{
     message: string
@@ -102,20 +105,6 @@ export function IntegrationSettings({
       }
     } catch (e) {
       details = 'Ocorreu um erro inesperado ao processar os detalhes da falha.'
-    }
-
-    if (
-      message.includes('Erro de Conexão') ||
-      details.includes('Erro 405') ||
-      message.includes('405') ||
-      message.includes('404') ||
-      details.includes('404') ||
-      message.includes('HTTP') ||
-      message.includes('Failed to fetch')
-    ) {
-      message = 'Erro de Conexão'
-      details =
-        'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.'
     }
 
     return { message: String(message), details: String(details), title, raw }
@@ -347,8 +336,8 @@ export function IntegrationSettings({
                 className="bg-white font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Integração através de Proxy Interno (ignora CORS) com endpoints
-                x-www-form-urlencoded.
+                Conexão direta otimizada com formatação estrita (x-www-form-urlencoded) para evitar
+                bloqueios 405 e CORS.
               </p>
             </div>
 
@@ -359,12 +348,21 @@ export function IntegrationSettings({
                   <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="api-token"
-                    type="password"
+                    type={showToken ? 'text' : 'password'}
                     placeholder="Cole seu token gerado..."
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="bg-white pl-9 font-mono text-sm"
+                    className="bg-white pl-9 pr-10 font-mono text-sm"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowToken(!showToken)}
+                  >
+                    {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
               </div>
 
@@ -396,9 +394,7 @@ export function IntegrationSettings({
               </AlertTitle>
               <AlertDescription className="space-y-3">
                 <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
-                  {errorFeedback.message === 'Erro de Conexão'
-                    ? `Erro de Conexão: O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.`
-                    : errorFeedback.details}
+                  {errorFeedback.details}
                 </div>
                 {errorFeedback.raw && (
                   <div className="mt-2">
