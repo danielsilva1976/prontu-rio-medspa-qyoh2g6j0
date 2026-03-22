@@ -52,6 +52,7 @@ export function IntegrationSettings({
     message: string
     details: string
     title?: string
+    raw?: any
   } | null>(null)
 
   const [lastAction, setLastAction] = useState<'test' | 'test-simple' | 'sync' | null>(null)
@@ -60,10 +61,13 @@ export function IntegrationSettings({
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isError = belleSoftware.lastSyncStatus === 'error'
 
-  const parseError = (error: any): { message: string; details: string; title?: string } => {
+  const parseError = (
+    error: any,
+  ): { message: string; details: string; title?: string; raw?: any } => {
     let message = 'Falha de Comunicação'
     let details = 'Erro ao conectar com o Belle Software. Verifique suas credenciais.'
     let title = undefined
+    let raw = undefined
 
     try {
       if (!error) return { message, details }
@@ -81,6 +85,9 @@ export function IntegrationSettings({
           const d = (error as any).details
           details = typeof d === 'string' ? d : JSON.stringify(d)
         }
+        if ('raw' in error) {
+          raw = (error as any).raw
+        }
       } else if (typeof error === 'object') {
         message = String(error.error || error.message || message)
         if (error.details) {
@@ -89,12 +96,25 @@ export function IntegrationSettings({
         } else {
           details = JSON.stringify(error)
         }
+        if (error.raw) {
+          raw = error.raw
+        }
       }
     } catch (e) {
       details = 'Ocorreu um erro inesperado ao processar os detalhes da falha.'
     }
 
-    return { message: String(message), details: String(details), title }
+    if (
+      message.includes('Erro de Conexão') ||
+      details.includes('Erro 405') ||
+      message.includes('405')
+    ) {
+      message = 'Erro de Conexão'
+      details =
+        'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.'
+    }
+
+    return { message: String(message), details: String(details), title, raw }
   }
 
   const handleUrlBlur = () => {
@@ -145,9 +165,11 @@ export function IntegrationSettings({
       setBelleLastSync('success', new Date().toISOString())
       setErrorFeedback(null)
 
+      const preview = names.slice(0, 3).join(', ')
+
       toast({
-        title: 'Sucesso',
-        description: `Conexão estabelecida com sucesso! ${names.length} clientes encontrados.`,
+        title: 'Conexão Realizada com Sucesso',
+        description: `Pacientes: ${preview}${names.length > 3 ? '...' : ''}`,
         className: 'bg-green-600 text-white border-none',
       })
     } catch (error: any) {
@@ -371,6 +393,18 @@ export function IntegrationSettings({
                 <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
                   {errorFeedback.details}
                 </div>
+                {errorFeedback.raw && (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold mb-1 text-destructive/80">
+                      Logs de Diagnóstico Brutos:
+                    </p>
+                    <div className="p-3 bg-slate-950 text-emerald-400 rounded-md font-mono text-xs overflow-auto max-h-40 whitespace-pre-wrap">
+                      {typeof errorFeedback.raw === 'string'
+                        ? errorFeedback.raw
+                        : JSON.stringify(errorFeedback.raw, null, 2)}
+                    </div>
+                  </div>
+                )}
                 <div className="pt-2 border-t border-destructive/10 flex gap-2">
                   <Button
                     variant="outline"

@@ -32,11 +32,13 @@ export class BelleApiError extends Error {
   public details: string
   public errorTitle: string
   public status?: number
+  public raw?: any
 
   constructor(payload: any) {
     let message = 'Erro de API'
     let detailsStr = 'Falha na comunicação com o servidor.'
     let status = undefined
+    let raw = undefined
 
     try {
       if (typeof payload === 'string') {
@@ -45,6 +47,7 @@ export class BelleApiError extends Error {
       } else if (payload && typeof payload === 'object') {
         message = String(payload.error || payload.message || message)
         status = payload.status
+        raw = payload.raw || payload
 
         if (typeof payload.details === 'string') {
           detailsStr = payload.details
@@ -64,6 +67,7 @@ export class BelleApiError extends Error {
     this.errorTitle = message
     this.details = String(detailsStr)
     this.status = status
+    this.raw = raw
   }
 }
 
@@ -97,6 +101,10 @@ const belleApiCall = async (
   retries: number = 3,
 ): Promise<any> => {
   const targetEndpoint = getApiEndpoint(url, path)
+
+  // Backend Proxy Implementation to prevent CORS blocks while correctly forwarding requests
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetEndpoint)}`
+
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
@@ -120,7 +128,7 @@ const belleApiCall = async (
     const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      const response = await fetch(targetEndpoint, {
+      const response = await fetch(proxyUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -133,6 +141,16 @@ const belleApiCall = async (
       clearTimeout(timeoutId)
 
       if (!response.ok) {
+        const headers: Record<string, string> = {}
+        response.headers.forEach((val, key) => {
+          headers[key] = val
+        })
+
+        let errText = ''
+        try {
+          errText = await response.text()
+        } catch (e) {}
+
         if (response.status >= 500 && response.status !== 502 && attempt < retries) {
           await sleep(1000 * attempt)
           continue
@@ -142,12 +160,18 @@ const belleApiCall = async (
           error: `Erro HTTP ${response.status}`,
           details: `Falha na comunicação com a API (Status: ${response.status}).`,
           status: response.status,
+          raw: {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+            body: errText,
+          },
         }
 
-        if (response.status === 405) {
-          errPayload.error = 'Method Not Allowed (405)'
+        if (response.status === 405 || response.status === 403) {
+          errPayload.error = 'Erro de Conexão'
           errPayload.details =
-            'Method Not Allowed (405). The destination server refused the POST request. Verify if the base URL is correct or if there is a forced redirect blocking the connection.'
+            'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.'
         } else if (response.status === 404) {
           errPayload.error = 'Endpoint Não Encontrado (404)'
           errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`
@@ -156,12 +180,11 @@ const belleApiCall = async (
           errPayload.details = `Não foi possível obter resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`
         } else {
           try {
-            const text = await response.text()
-            if (text && text.trim().startsWith('{')) {
-              const parsed = JSON.parse(text)
-              errPayload = { ...errPayload, ...parsed }
-            } else if (text) {
-              errPayload.details = `Status ${response.status}: ${text}`
+            if (errText && errText.trim().startsWith('{')) {
+              const parsed = JSON.parse(errText)
+              errPayload = { ...errPayload, ...parsed, raw: errPayload.raw }
+            } else if (errText) {
+              errPayload.details = `Status ${response.status}: ${errText.substring(0, 100)}`
             }
           } catch (e) {
             // Ignore parse errors
@@ -181,6 +204,7 @@ const belleApiCall = async (
         throw new BelleApiError({
           error: 'Resposta HTML Inesperada',
           details: `A API retornou HTML em vez de JSON. Resposta parcial: ${text.substring(0, 100)}... Verifique se a URL (${targetEndpoint}) está correta.`,
+          raw: text.substring(0, 500),
         })
       }
 
@@ -191,6 +215,7 @@ const belleApiCall = async (
         throw new BelleApiError({
           error: 'Resposta Inválida',
           details: `A API não retornou um JSON válido. Resposta: ${text.substring(0, 100)}...`,
+          raw: text.substring(0, 500),
         })
       }
 
@@ -206,12 +231,14 @@ const belleApiCall = async (
           throw new BelleApiError({
             error: 'Erro de Autenticação',
             details: 'Falha na Autenticação - Verifique seu Token e ID do Estabelecimento.',
+            raw: result,
           })
         }
 
         throw new BelleApiError({
           error: result.error || result.mensagem || 'Erro na API',
           details: result.details || result.mensagem || 'A API retornou um erro estrutural.',
+          raw: result,
         })
       }
 
@@ -234,7 +261,12 @@ const belleApiCall = async (
         throw new BelleApiError({
           error: 'Erro de Conexão',
           details:
-            'Não foi possível conectar de forma direta à API. Verifique sua rede ou configurações de CORS no destino.',
+            'O servidor de destino recusou a conexão (Erro 405). Verifique se o Token e o ID do Estabelecimento estão corretos.',
+          raw: {
+            type: 'NetworkError',
+            message: err.message,
+            stack: err.stack,
+          },
         })
       }
 
@@ -250,6 +282,10 @@ const belleApiCall = async (
       throw new BelleApiError({
         error: 'Erro Inesperado',
         details: err?.message || 'Falha na execução da requisição.',
+        raw: {
+          message: err?.message,
+          stack: err?.stack,
+        },
       })
     }
   }
