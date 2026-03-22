@@ -59,6 +59,7 @@ export class BelleApiError extends Error {
         }
       }
     } catch (e) {
+      // Falha ao extrair detalhes
       detailsStr = 'Não foi possível extrair os detalhes do erro.'
     }
 
@@ -158,6 +159,14 @@ export const belleApiCall = async (
   }
 }
 
+export const testBelleConnection = async (
+  url: string,
+  token: string,
+  estabelecimento: string = '1',
+): Promise<any> => {
+  return belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento, 1)
+}
+
 export const testBelleWebhookConnection = async (
   url: string,
   token: string,
@@ -173,7 +182,9 @@ export const testBelleWebhookConnection = async (
   let baseUrl = 'https://app.bellesoftware.com.br'
   try {
     baseUrl = new URL(cleanUrl).origin
-  } catch (e) {}
+  } catch (e) {
+    // URL inválida ignorada, utiliza a url padrao
+  }
 
   const requestData = new URLSearchParams()
   requestData.append('token', token)
