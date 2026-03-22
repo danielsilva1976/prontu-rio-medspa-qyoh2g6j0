@@ -6,6 +6,7 @@ type BelleConfig = {
   url: string
   token: string
   estabelecimento: string
+  webhookContentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data'
   lastSync?: string
   lastSyncStatus?: 'success' | 'error'
 }
@@ -21,7 +22,12 @@ type SettingsState = {
   addItem: (category: SettingsCategory, item: string, price?: string) => void
   removeItem: (category: SettingsCategory, item: string) => void
   updateItem: (category: SettingsCategory, oldItem: string, newItem: string, price?: string) => void
-  updateBelleConfig: (url: string, token: string, estabelecimento?: string) => void
+  updateBelleConfig: (
+    url: string,
+    token: string,
+    estabelecimento?: string,
+    contentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data',
+  ) => void
   setBelleLastSync: (status: 'success' | 'error', date: string) => void
 }
 
@@ -57,6 +63,7 @@ const defaultData = {
     url: 'https://app.bellesoftware.com.br',
     token: '1787cad7ac7dd71ac2fbbdaf823928fd',
     estabelecimento: '1',
+    webhookContentType: 'application/x-www-form-urlencoded' as const,
   },
 }
 
@@ -107,10 +114,23 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const updateBelleConfig = (url: string, token: string, estabelecimento: string = '') => {
+  const updateBelleConfig = (
+    url: string,
+    token: string,
+    estabelecimento: string = '',
+    contentType:
+      | 'application/x-www-form-urlencoded'
+      | 'multipart/form-data' = 'application/x-www-form-urlencoded',
+  ) => {
     setData((prev) => ({
       ...prev,
-      belleSoftware: { ...prev.belleSoftware, url, token, estabelecimento },
+      belleSoftware: {
+        ...prev.belleSoftware,
+        url,
+        token,
+        estabelecimento,
+        webhookContentType: contentType,
+      },
     }))
   }
 

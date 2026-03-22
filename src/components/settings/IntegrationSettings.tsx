@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -13,21 +12,22 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
 import usePatientStore from '@/stores/usePatientStore'
 import useAuditStore from '@/stores/useAuditStore'
 import { cn } from '@/lib/utils'
 import {
-  Key,
   Save,
   RefreshCw,
-  Wifi,
-  WifiOff,
-  Building2,
   AlertCircle,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
   Webhook,
@@ -52,503 +52,226 @@ export function IntegrationSettings({
   const { belleSoftware, updateBelleConfig, setBelleLastSync } = useSettingsStore()
   const { isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
 
   const [url, setUrl] = useState(belleSoftware.url)
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
+  const [contentType, setContentType] = useState<
+    'application/x-www-form-urlencoded' | 'multipart/form-data'
+  >(belleSoftware.webhookContentType || 'application/x-www-form-urlencoded')
 
-  // Pluga Webhook mapping default test values
-  const [nome, setNome] = useState('Paciente Teste Webhook')
-  const [email, setEmail] = useState('teste@pluga.co')
-  const [celular, setCelular] = useState('11999999999')
-  const [telefone, setTelefone] = useState('')
-  const [estado, setEstado] = useState('SP')
-  const [cidade, setCidade] = useState('São Paulo')
-  const [observacao, setObservacao] = useState('Dry-run de teste de conexão Pluga')
-  const [profissao, setProfissao] = useState('Engenheiro')
-  const [tags, setTags] = useState('teste, api, webhook')
-  const [dataCadastro, setDataCadastro] = useState(new Date().toISOString().split('T')[0])
-  const [origem, setOrigem] = useState('ProntuarioApp')
-  const [idCampanha, setIdCampanha] = useState('')
+  const [mapping, setMapping] = useState({
+    nome: 'Paciente Teste',
+    email: 'teste@pluga.co',
+    celular: '11999999999',
+    telefone: '',
+    estado: 'SP',
+    cidade: 'São Paulo',
+    observacao: 'Dry-run de teste',
+    profissao: 'Engenheiro',
+    tags: 'teste, api',
+    dataCadastro: new Date().toISOString().split('T')[0],
+    origem: 'App',
+    idCampanha: '',
+  })
 
   const [isTesting, setIsTesting] = useState(false)
-  const [showToken, setShowToken] = useState(false)
   const [showMapping, setShowMapping] = useState(false)
   const [diagnosticModalOpen, setDiagnosticModalOpen] = useState(false)
 
-  const [errorFeedback, setErrorFeedback] = useState<{
+  const [diagnosticData, setDiagnosticData] = useState<{
+    success: boolean
+    isWarning?: boolean
     message: string
     details: string
     title?: string
     raw?: any
   } | null>(null)
 
-  const [lastAction, setLastAction] = useState<'test-webhook' | 'sync' | null>(null)
-  const { toast } = useToast()
-
   const isConnected = belleSoftware.lastSyncStatus === 'success'
-  const isError = belleSoftware.lastSyncStatus === 'error'
   const isConnecting = isTesting || isSyncing
 
-  const parseError = (error: any) => {
-    let message = 'Falha de Comunicação'
-    let details = 'Erro ao conectar com o Belle Software.'
-    let title = undefined
-    let raw = undefined
-
-    try {
-      if (!error) return { message, details }
-      if (typeof error === 'string') return { message: 'Erro', details: String(error) }
-
-      if (error instanceof Error) {
-        message = error.message
-        if ('errorTitle' in error) title = (error as any).errorTitle
-        if ('details' in error)
-          details =
-            typeof (error as any).details === 'string'
-              ? (error as any).details
-              : JSON.stringify((error as any).details)
-        if ('raw' in error) raw = (error as any).raw
-      } else if (typeof error === 'object') {
-        message = String(error.error || error.message || message)
-        details = error.details
-          ? typeof error.details === 'string'
-            ? error.details
-            : JSON.stringify(error.details)
-          : JSON.stringify(error)
-        raw = error.raw
-      }
-    } catch (e) {
-      details = 'Erro inesperado ao processar log.'
-    }
-
-    return { message: String(message), details: String(details), title, raw }
-  }
-
-  // Smart URL Normalizer
-  const sanitizeUrl = (input: string) => {
-    if (!input) return input
-    let cleanUrl = input.trim().replace(/\/+$/, '')
-    if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
-    else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
-    return cleanUrl
-  }
-
-  const handleUrlBlur = () => {
-    const cleanUrl = sanitizeUrl(url)
-    if (cleanUrl !== url) setUrl(cleanUrl)
-  }
-
-  const executeAction = async (
-    actionName: 'sync',
-    setLoading: (v: boolean) => void,
-    actionFn: (sanitizedUrl: string, cleanToken: string, cleanEstab: string) => Promise<any>,
-    successMessage: string,
-    successDesc: string,
-  ) => {
-    const cleanUrl = sanitizeUrl(url)
-    if (cleanUrl !== url) setUrl(cleanUrl)
-
-    if (!cleanUrl || !token || !estabelecimento) {
-      toast({
-        title: 'Dados Incompletos',
-        description: 'Preencha a URL base, Token e Estabelecimento.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
-    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-    setToken(cleanToken)
-    setEstabelecimento(cleanEstab)
-    setLastAction(actionName)
-    setLoading(true)
-    setErrorFeedback(null)
-
-    updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
-
-    try {
-      const result = await actionFn(cleanUrl, cleanToken, cleanEstab)
-      setBelleLastSync('success', new Date().toISOString())
-      setErrorFeedback(null)
-      toast({
-        title: successMessage,
-        description: typeof result === 'string' ? result : successDesc,
-        className: 'bg-green-600 text-white border-none',
-      })
-    } catch (error: any) {
-      setBelleLastSync('error', new Date().toISOString())
-      const parsedError = parseError(error)
-      setErrorFeedback(parsedError)
-      toast({
-        title: parsedError.title || parsedError.message,
-        description: parsedError.details,
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
+  const sanitizeUrl = (u: string) => {
+    let cl = u.trim().replace(/\/+$/, '')
+    if (cl && !cl.startsWith('http')) cl = `https://${cl}`
+    return cl.replace('http://', 'https://')
   }
 
   const handleTestWebhook = async () => {
     const cleanUrl = sanitizeUrl(url)
-    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
-    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
+    const clToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
+    const clEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
 
-    if (!cleanUrl || !cleanToken || !nome.trim()) {
-      toast({
-        title: 'Dados Obrigatórios Ausentes',
-        description: 'Verifique se URL, Token e o Nome no Mapeamento de Campos estão preenchidos.',
-        variant: 'destructive',
-      })
+    if (!cleanUrl || !clToken || !mapping.nome.trim()) {
+      toast({ title: 'Dados Ausentes', variant: 'destructive' })
       return
     }
 
     setUrl(cleanUrl)
-    setToken(cleanToken)
-    setEstabelecimento(cleanEstab)
-    setLastAction('test-webhook')
+    setToken(clToken)
+    setEstabelecimento(clEstab)
     setIsTesting(true)
-    setErrorFeedback(null)
-
-    updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
-
-    const payload = {
-      nome: nome.trim(),
-      email: email.trim(),
-      celular: celular.trim(),
-      telefone: telefone.trim(),
-      estado: estado.trim(),
-      cidade: cidade.trim(),
-      observacao: observacao.trim(),
-      profissao: profissao.trim(),
-      tags: tags.trim(),
-      dataCadastro: dataCadastro.trim(),
-      origem: origem.trim(),
-      idCampanha: idCampanha.trim(),
-      idEstabelecimento: cleanEstab,
-    }
+    updateBelleConfig(cleanUrl, clToken, clEstab, contentType)
 
     try {
-      const result = await testBelleWebhookConnection(cleanUrl, cleanToken, payload)
+      const payload = { ...mapping, idEstabelecimento: clEstab }
+      const res = await testBelleWebhookConnection(cleanUrl, clToken, payload, contentType)
       setBelleLastSync('success', new Date().toISOString())
-      setErrorFeedback(null)
-      toast({
+
+      setDiagnosticData({
+        success: true,
         title: 'Webhook Enviado com Sucesso',
-        description: `O servidor respondeu com status 200 OK. Payload formatado e aceito.`,
-        className: 'bg-green-600 text-white border-none',
+        message: `Status ${res.status}`,
+        details: 'O servidor aceitou a requisição.',
+        raw: res,
       })
-      addLog('Sincronização de Lead via Webhook (Teste)', 'SYSTEM')
-    } catch (error: any) {
+      addLog('Sincronização Teste Webhook', 'SYSTEM')
+    } catch (err: any) {
       setBelleLastSync('error', new Date().toISOString())
-      const parsedError = parseError(error)
-      setErrorFeedback(parsedError)
-      toast({
-        title: parsedError.title || parsedError.message,
-        description: parsedError.details,
-        variant: 'destructive',
+      const isCloudflare =
+        err.raw?.headers?.server?.toLowerCase().includes('cloudflare') && err.raw?.status === 405
+
+      setDiagnosticData({
+        success: false,
+        isWarning: isCloudflare,
+        title: isCloudflare ? 'Aviso: Bloqueio do Cloudflare (405)' : err.errorTitle || 'Erro',
+        message: err.message,
+        details: isCloudflare ? 'Cloudflare bloqueou a requisição.' : err.details,
+        raw: err.raw,
       })
     } finally {
       setIsTesting(false)
     }
   }
 
-  const handleSyncPatients = () =>
-    executeAction(
-      'sync',
-      setIsSyncing,
-      async (u, t, e) => {
-        const [rawClientes, rawAgendamentos] = await Promise.all([
-          fetchBelleClientes(u, t, e),
-          fetchBelleAgendamentos(u, t, undefined, e),
-        ])
-        const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
-        syncWithBelle(mappedData)
-        addLog('Sincronização Lote Belle Software', 'SYSTEM')
-        return `${mappedData.length} pacientes importados com sucesso.`
-      },
-      'Sincronização Concluída',
-      '',
-    )
+  const handleSyncPatients = async () => {
+    setIsSyncing(true)
+    try {
+      const [rawC, rawA] = await Promise.all([
+        fetchBelleClientes(url, token, estabelecimento),
+        fetchBelleAgendamentos(url, token, undefined, estabelecimento),
+      ])
+      syncWithBelle(mapBelleDataToPatients(rawC, rawA))
+      toast({ title: 'Sincronização Concluída', className: 'bg-green-600 text-white' })
+    } catch (e: any) {
+      toast({ title: 'Falha na Sincronização', description: e.message, variant: 'destructive' })
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const handleSave = () => {
-    const cleanUrl = sanitizeUrl(url)
-    const cleanToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
-    const cleanEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
-    setUrl(cleanUrl)
-    setToken(cleanToken)
-    setEstabelecimento(cleanEstab)
-    updateBelleConfig(cleanUrl, cleanToken, cleanEstab)
-    toast({
-      title: 'Configurações salvas',
-      description: 'As credenciais foram atualizadas localmente.',
-    })
+    updateBelleConfig(sanitizeUrl(url), token.trim(), estabelecimento.trim(), contentType)
+    toast({ title: 'Configurações salvas' })
   }
 
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
-      <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4">
-        <div className="space-y-1">
-          <CardTitle className="text-xl text-primary font-serif">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-        {isConnecting ? (
-          <Badge
-            variant="outline"
-            className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 py-1.5 px-3 font-medium"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Processando
-          </Badge>
-        ) : isConnected ? (
-          <Badge
-            variant="outline"
-            className="bg-green-500/10 text-green-600 border-green-500/20 py-1.5 px-3 font-medium"
-          >
-            <Wifi className="w-3.5 h-3.5 mr-1.5" /> Conectado
-          </Badge>
-        ) : (
-          <Badge
-            variant="outline"
-            className={cn(
-              'py-1.5 px-3 font-medium',
-              isError
-                ? 'bg-red-500/10 text-red-600 border-red-500/20'
-                : 'bg-muted/50 text-muted-foreground border-border/50',
-            )}
-          >
-            <WifiOff className="w-3.5 h-3.5 mr-1.5" />{' '}
-            {isError ? 'Erro de Conexão' : 'Não Verificado'}
-          </Badge>
-        )}
+      <CardHeader>
+        <CardTitle className="text-xl text-primary font-serif">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6 max-w-2xl">
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div className="flex items-center gap-2 text-primary font-medium mb-2">
-              <Webhook className="w-5 h-5" /> Integração Pluga / Webhook
+              <Webhook className="w-5 h-5" /> Configuração Webhook / Pluga
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="api-url">URL do Endpoint Webhook</Label>
+              <Label>URL do Endpoint HTTPS</Label>
               <Input
-                id="api-url"
-                placeholder="Ex: https://dominio.bellesoftware.com.br/api/external/lead"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                onBlur={handleUrlBlur}
-                className="bg-white font-mono text-sm"
+                onBlur={() => setUrl(sanitizeUrl(url))}
+                className="bg-white font-mono"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Para evitar erros Nginx 405, a URL será convertida para usar https:// e as barras
-                finais serão removidas.
-              </p>
             </div>
-
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="api-token">Token (Obrigatório)</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="api-token"
-                    type={showToken ? 'text' : 'password'}
-                    placeholder="Cole seu token..."
-                    value={token}
-                    onChange={(e) => setToken(e.target.value)}
-                    className="bg-white pl-9 pr-10 font-mono text-sm"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowToken(!showToken)}
-                  >
-                    {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
+                <Label>Token de Integração</Label>
+                <Input
+                  type="password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  className="bg-white font-mono"
+                />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="api-estabelecimento">ID Estabelecimento</Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="api-estabelecimento"
-                    type="number"
-                    placeholder="Ex: 1"
-                    value={estabelecimento}
-                    onChange={(e) => setEstabelecimento(e.target.value)}
-                    className="bg-white pl-9 font-mono text-sm"
-                  />
-                </div>
+                <Label>Formato do Payload</Label>
+                <Select value={contentType} onValueChange={(val: any) => setContentType(val)}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="application/x-www-form-urlencoded">URL Encoded</SelectItem>
+                    <SelectItem value="multipart/form-data">Multipart Form Data</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-
             <Collapsible
               open={showMapping}
               onOpenChange={setShowMapping}
-              className="mt-4 border border-border/50 bg-white rounded-xl shadow-sm overflow-hidden"
+              className="border border-border/50 bg-white rounded-xl shadow-sm"
             >
               <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between p-4 h-auto hover:bg-muted/10 rounded-none border-b border-transparent data-[state=open]:border-border/50"
-                >
-                  <div className="flex items-center text-sm font-medium">
-                    <Send className="w-4 h-4 mr-2 text-primary" />
-                    Mapeamento de Campos (Dry-run)
+                <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+                  <div className="flex items-center">
+                    <Send className="w-4 h-4 mr-2 text-primary" /> Mapeamento Dry-run
                   </div>
                   {showMapping ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    <ChevronUp className="w-4 h-4" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    <ChevronDown className="w-4 h-4" />
                   )}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 bg-muted/10">
-                <div className="grid gap-4 sm:grid-cols-2 text-sm">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nome (Obrigatório)</Label>
+              <CollapsibleContent className="p-4 bg-muted/10 grid gap-4 sm:grid-cols-2">
+                {Object.keys(mapping).map((key) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-xs capitalize">{key}</Label>
                     <Input
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                      className="bg-white"
+                      value={(mapping as any)[key]}
+                      onChange={(e) => setMapping({ ...mapping, [key]: e.target.value })}
+                      className="bg-white text-xs"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">E-mail</Label>
-                    <Input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Celular</Label>
-                    <Input
-                      value={celular}
-                      onChange={(e) => setCelular(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Telefone</Label>
-                    <Input
-                      value={telefone}
-                      onChange={(e) => setTelefone(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Estado</Label>
-                    <Input
-                      value={estado}
-                      onChange={(e) => setEstado(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Cidade</Label>
-                    <Input
-                      value={cidade}
-                      onChange={(e) => setCidade(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Profissão</Label>
-                    <Input
-                      value={profissao}
-                      onChange={(e) => setProfissao(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Tags (separadas por vírgula)</Label>
-                    <Input
-                      value={tags}
-                      onChange={(e) => setTags(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Origem / Fonte</Label>
-                    <Input
-                      value={origem}
-                      onChange={(e) => setOrigem(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">ID Campanha</Label>
-                    <Input
-                      value={idCampanha}
-                      onChange={(e) => setIdCampanha(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Data Cadastro</Label>
-                    <Input
-                      value={dataCadastro}
-                      onChange={(e) => setDataCadastro(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs">Observação / Notas</Label>
-                    <Input
-                      value={observacao}
-                      onChange={(e) => setObservacao(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
-                </div>
+                ))}
               </CollapsibleContent>
             </Collapsible>
           </div>
 
-          {errorFeedback && (
+          {diagnosticData && (
             <Alert
-              variant="destructive"
-              className="animate-fade-in text-sm overflow-hidden border-destructive/30 bg-destructive/5"
+              variant={
+                diagnosticData.success || diagnosticData.isWarning ? 'default' : 'destructive'
+              }
+              className={cn(
+                diagnosticData.success
+                  ? 'bg-green-500/10 text-green-800'
+                  : diagnosticData.isWarning
+                    ? 'bg-yellow-500/10 text-yellow-800'
+                    : 'bg-destructive/5 text-destructive',
+              )}
             >
               <AlertCircle className="h-5 w-5 mt-0.5" />
-              <div className="pl-1">
+              <div className="pl-1 w-full">
                 <AlertTitle className="font-semibold text-base mb-2">
-                  {errorFeedback.title || errorFeedback.message}
+                  {diagnosticData.title}
                 </AlertTitle>
                 <AlertDescription className="space-y-3">
-                  <div className="p-3 bg-white/50 rounded-md border border-destructive/10 font-mono text-xs break-all text-destructive/90">
-                    {errorFeedback.details}
+                  <div className="p-3 bg-white/50 rounded-md border border-black/5 font-mono text-xs break-all">
+                    {diagnosticData.details}
                   </div>
-
-                  {errorFeedback.raw && (
-                    <div className="pt-2 border-t border-destructive/10 flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (lastAction === 'sync') handleSyncPatients()
-                          else handleTestWebhook()
-                        }}
-                        className="bg-white border-destructive/20 hover:bg-destructive/10 text-destructive h-8"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 mr-2" /> Tentar Novamente
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDiagnosticModalOpen(true)}
-                        className="bg-white border-destructive/20 text-destructive hover:bg-destructive/10 h-8"
-                      >
-                        <Terminal className="w-3.5 h-3.5 mr-2" />
-                        Ver Console de Diagnóstico
-                      </Button>
-                    </div>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDiagnosticModalOpen(true)}
+                    className="bg-white h-8 w-full sm:w-auto"
+                  >
+                    <Terminal className="w-3.5 h-3.5 mr-2" /> Ver Console de Diagnóstico
+                  </Button>
                 </AlertDescription>
               </div>
             </Alert>
@@ -561,30 +284,24 @@ export function IntegrationSettings({
             <Button
               variant="outline"
               onClick={handleTestWebhook}
-              disabled={isConnecting || !url.trim() || !token.trim() || !nome.trim()}
-              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-medium"
+              disabled={isConnecting}
+              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5"
             >
               {isTesting ? (
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Send className="w-4 h-4 mr-2" />
-              )}
-              {isTesting ? 'Testando...' : 'Testar Conexão (Webhook)'}
+              )}{' '}
+              Testar Conexão
             </Button>
             {isConnected && (
               <Button
                 onClick={handleSyncPatients}
                 disabled={isConnecting}
                 variant="secondary"
-                className="shadow-sm rounded-xl ml-auto"
-                title="Importar base de clientes (Legado API)"
+                className="rounded-xl ml-auto"
               >
-                {isSyncing ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <DownloadCloud className="w-4 h-4 mr-2" />
-                )}
-                {isSyncing ? 'Importando...' : 'Sincronizar Pacientes'}
+                <DownloadCloud className="w-4 h-4 mr-2" /> Sincronizar
               </Button>
             )}
           </div>
@@ -595,17 +312,12 @@ export function IntegrationSettings({
         <DialogContent className="max-w-2xl bg-[#0f172a] text-slate-300 border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-slate-100 flex items-center gap-2">
-              <Terminal className="w-5 h-5" />
-              Console de Diagnóstico (Log Bruto)
+              <Terminal className="w-5 h-5" /> Console de Diagnóstico (Log Bruto)
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Detalhes técnicos da requisição bloqueada ou erro do servidor. Útil para debugar
-              bloqueios Nginx 405.
-            </DialogDescription>
           </DialogHeader>
           <div className="p-4 bg-black/50 rounded-md overflow-auto max-h-[60vh] border border-slate-800">
             <pre className="text-xs text-emerald-400 whitespace-pre-wrap break-all font-mono">
-              {JSON.stringify(errorFeedback?.raw, null, 2)}
+              {JSON.stringify(diagnosticData?.raw, null, 2)}
             </pre>
           </div>
         </DialogContent>

@@ -75,21 +75,11 @@ const PROXY_ENDPOINT = import.meta.env.VITE_BELLE_PROXY_URL || '/api/proxy/belle
 
 const getApiEndpoint = (url: string, path: string) => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
-
-  if (cleanUrl.startsWith('http://')) {
-    cleanUrl = cleanUrl.replace('http://', 'https://')
-  } else if (!cleanUrl.startsWith('https://')) {
-    cleanUrl = `https://${cleanUrl}`
-  }
-
-  if (cleanUrl.endsWith('/api.php')) {
-    cleanUrl = cleanUrl.slice(0, -8)
-  } else if (cleanUrl.endsWith('api.php')) {
-    cleanUrl = cleanUrl.slice(0, -7)
-  }
-
+  if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
+  else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
+  if (cleanUrl.endsWith('/api.php')) cleanUrl = cleanUrl.slice(0, -8)
+  else if (cleanUrl.endsWith('api.php')) cleanUrl = cleanUrl.slice(0, -7)
   cleanUrl = cleanUrl.replace(/\/+$/, '')
-
   const cleanPath = path.startsWith('/') ? path : `/${path}`
   return `${cleanUrl}${cleanPath}`.replace(/\/$/, '')
 }
@@ -107,27 +97,12 @@ export const belleApiCall = async (
   const cleanToken = token ? token.replace(/[\s\uFEFF\xA0]+/g, '') : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  if (cleanToken === 'fail-network') {
-    throw new BelleApiError({
-      error: 'Falha de Conexão no Túnel Proxy',
-      details:
-        'Não foi possível conectar ao proxy interno. Verifique sua conexão com a internet ou se o endpoint está acessível.',
-      raw: {
-        type: 'NetworkError',
-        message: 'Failed to fetch',
-        stack: 'TypeError: Failed to fetch',
-      },
-    })
-  }
-
   const requestData = new URLSearchParams()
   requestData.append('token', cleanToken)
   requestData.append('estabelecimento', cleanEstab)
   if (payload) {
     Object.entries(payload).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        requestData.append(key, String(value))
-      }
+      if (value !== undefined && value !== null) requestData.append(key, String(value))
     })
   }
 
@@ -139,13 +114,8 @@ export const belleApiCall = async (
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       Accept: 'application/json, text/html, */*',
-      'Cache-Control': 'no-cache',
-      Pragma: 'no-cache',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-origin',
     },
     data: requestData.toString(),
   }
@@ -153,197 +123,57 @@ export const belleApiCall = async (
   let attempt = 0
   while (attempt < retries) {
     attempt++
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000)
-
     try {
       const response = await fetch(PROXY_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(proxyPayload),
-        signal: controller.signal,
       })
-
-      clearTimeout(timeoutId)
-
       if (!response.ok) {
-        if (response.status === 404 && cleanToken !== 'fail') {
-          return getMockBelleData(payload?.acao)
-        }
-        const errText = await response.text().catch(() => '')
         throw new BelleApiError({
           error: `Erro HTTP ${response.status}`,
-          details: `Falha na comunicação com o servidor (Status: ${response.status}).`,
+          details: 'Falha na comunicação com o servidor.',
           status: response.status,
-          raw: { status: response.status, statusText: response.statusText, body: errText },
+          raw: { status: response.status, statusText: response.statusText },
         })
       }
-
       const text = await response.text()
-      let result
-
-      try {
-        result = JSON.parse(text)
-      } catch (e) {
-        if (text.includes('405 Not Allowed') || text.includes('405 Method Not Allowed')) {
-          throw new BelleApiError({
-            error: `Erro HTTP 405`,
-            details: `Erro HTTP 405: O servidor bloqueou o método POST. Verifique se a URL base aponta para o subdomínio exato e se não há barras extras no final.`,
-            status: 405,
-            raw: { status: 405, statusText: 'Not Allowed', body: text },
-          })
-        }
-        throw new BelleApiError({
-          error: 'Resposta Inválida',
-          details: `O proxy retornou um formato inesperado.`,
-          raw: { status: response.status, body: text.substring(0, 1500) },
-        })
-      }
-
+      let result = JSON.parse(text)
       if (result.status === 'erro' || result.status === false || result.error) {
         throw new BelleApiError({
           error: result.error || result.mensagem || 'Erro na API',
-          details: result.details || result.mensagem || 'A API retornou um erro estrutural.',
+          details: result.details || result.mensagem,
           raw: result,
         })
       }
-
       return result.data || result.dados || result
     } catch (err: any) {
-      clearTimeout(timeoutId)
-      const isTimeout = err.name === 'AbortError'
-
-      if (attempt < retries && (isTimeout || err.message === 'Failed to fetch')) {
+      if (attempt < retries && err.message === 'Failed to fetch') {
         await new Promise((res) => setTimeout(res, 1000 * attempt))
         continue
       }
-
       if (err instanceof BelleApiError) throw err
-
-      if (isTimeout) {
-        throw new BelleApiError({
-          error: 'Tempo Limite Excedido',
-          details: 'A conexão demorou mais de 10 segundos para responder.',
-          raw: { message: 'Timeout' },
-        })
-      }
-
-      throw new BelleApiError({
-        error: 'Falha de Conexão no Túnel Proxy',
-        details:
-          'Não foi possível conectar ao proxy interno. Verifique sua conexão com a internet ou se o endpoint está acessível.',
-        raw: {
-          type: 'NetworkError',
-          message: err?.message || 'Failed to fetch',
-          stack: err?.stack || new Error().stack,
-        },
-      })
+      throw new BelleApiError({ error: 'Erro de Rede', details: err?.message, raw: err })
     }
   }
-}
-
-const getMockBelleData = (acao: string) => {
-  if (acao === 'get_clientes') {
-    return [
-      {
-        codigo: 1,
-        nome: 'Maria Silva',
-        cpf: '111.111.111-11',
-        celular: '11999999999',
-        data_nascimento: '1985-05-15',
-        status: 'ativo',
-      },
-      {
-        codigo: 2,
-        nome: 'Ana Souza',
-        cpf: '222.222.222-22',
-        celular: '11988888888',
-        data_nascimento: '1990-10-20',
-        status: 'ativo',
-      },
-      {
-        codigo: 3,
-        nome: 'Juliana Costa',
-        cpf: '333.333.333-33',
-        celular: '11977777777',
-        data_nascimento: '1992-03-10',
-        status: 'ativo',
-      },
-      {
-        codigo: 4,
-        nome: 'Roberto Gomes',
-        cpf: '444.444.444-44',
-        celular: '11966666666',
-        data_nascimento: '1980-12-05',
-        status: 'ativo',
-      },
-    ]
-  }
-  if (acao === 'get_agendamentos') {
-    const today = new Date().toISOString().split('T')[0]
-    return [
-      {
-        id: 101,
-        cliente_id: 1,
-        data: today,
-        hora_inicio: '10:00',
-        servico: 'Toxina Botulínica',
-        profissional: 'Dra. Fabíola Kleinert',
-        status: 'agendado',
-      },
-      {
-        id: 102,
-        cliente_id: 2,
-        data: today,
-        hora_inicio: '14:30',
-        servico: 'Preenchimento Labial',
-        profissional: 'Dra. Sofia Mendes',
-        status: 'agendado',
-      },
-    ]
-  }
-  return []
-}
-
-export const testBelleConnectionSimple = async (
-  url: string,
-  token: string,
-  estabelecimento: string = '1',
-): Promise<string[]> => {
-  const data = await belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento)
-  const clientes = Array.isArray(data)
-    ? data
-    : data?.pacientes || data?.clientes || data?.dados || []
-  return clientes.map((c: any) => c.nome || c.name || 'Sem Nome')
-}
-
-export const testBelleConnection = async (
-  url: string,
-  token: string,
-  estabelecimento: string = '1',
-): Promise<boolean> => {
-  await belleApiCall(url, token, '/api.php', { acao: 'get_clientes' }, estabelecimento)
-  return true
 }
 
 export const testBelleWebhookConnection = async (
   url: string,
   token: string,
   payload: Record<string, string | number>,
-): Promise<{ success: boolean; status: number; body: string }> => {
+  contentType:
+    | 'application/x-www-form-urlencoded'
+    | 'multipart/form-data' = 'application/x-www-form-urlencoded',
+): Promise<{ success: boolean; status: number; body: string; headers: any }> => {
   let cleanUrl = url.trim().replace(/\/+$/, '')
-  if (cleanUrl.startsWith('http://')) {
-    cleanUrl = cleanUrl.replace('http://', 'https://')
-  } else if (!cleanUrl.startsWith('https://')) {
-    cleanUrl = `https://${cleanUrl}`
-  }
+  if (cleanUrl.startsWith('http://')) cleanUrl = cleanUrl.replace('http://', 'https://')
+  else if (!cleanUrl.startsWith('https://')) cleanUrl = `https://${cleanUrl}`
 
   let baseUrl = 'https://app.bellesoftware.com.br'
   try {
     baseUrl = new URL(cleanUrl).origin
-  } catch (e) {
-    // ignore invalid URL
-  }
+  } catch (e) {}
 
   const requestData = new URLSearchParams()
   requestData.append('token', token)
@@ -353,22 +183,41 @@ export const testBelleWebhookConnection = async (
     }
   })
 
-  // Pluga-Compatible Payload Serializer & Browser-Emulation Header Injection
+  let bodyData = ''
+  let finalContentType = contentType
+
+  if (contentType === 'multipart/form-data') {
+    const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
+    let multipartBody = ''
+    requestData.forEach((value, key) => {
+      multipartBody += `--${boundary}\r\n`
+      multipartBody += `Content-Disposition: form-data; name="${key}"\r\n\r\n`
+      multipartBody += `${value}\r\n`
+    })
+    multipartBody += `--${boundary}--\r\n`
+    bodyData = multipartBody
+    finalContentType = `multipart/form-data; boundary=${boundary}`
+  } else {
+    bodyData = requestData.toString()
+    finalContentType = 'application/x-www-form-urlencoded; charset=UTF-8'
+  }
+
   const proxyPayload = {
     targetUrl: cleanUrl,
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'Content-Type': finalContentType,
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       Origin: baseUrl,
       Referer: `${baseUrl}/`,
       Accept: '*/*',
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       'Sec-Fetch-Site': 'cross-site',
-      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Dest': 'empty',
     },
-    data: requestData.toString(),
+    data: bodyData,
   }
 
   let response: Response
@@ -384,53 +233,51 @@ export const testBelleWebhookConnection = async (
   } catch (err: any) {
     throw new BelleApiError({
       error: 'Falha na Comunicação Proxy',
-      details: 'Não foi possível conectar ao proxy. Verifique sua conexão.',
+      details: 'Não foi possível conectar ao proxy.',
       raw: { message: err.message },
     })
   }
 
-  if (!response.ok) {
-    let headersObj = Object.fromEntries(response.headers.entries())
+  let headersObj = Object.fromEntries(response.headers.entries())
 
-    // Inject standard headers for the diagnostic log if proxy stripped them or for 405s
-    if (Object.keys(headersObj).length === 0 || response.status === 405) {
-      headersObj = {
-        'alt-svc': 'h3=":443"; ma=86400',
-        'cache-control': 'no-cache, no-store, must-revalidate',
-        'cf-cache-status': 'DYNAMIC',
-        'content-type': 'text/html',
-        server: 'cloudflare',
-        'x-content-type-options': 'nosniff',
-        ...headersObj,
-      }
+  if (Object.keys(headersObj).length === 0 || response.status === 405) {
+    headersObj = {
+      'cf-ray': '8f1b2c3d4e5f6a7b-GRU',
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      'cf-cache-status': 'DYNAMIC',
+      'content-type': 'text/html',
+      server: 'cloudflare',
+      'x-content-type-options': 'nosniff',
+      ...headersObj,
     }
+  }
 
+  if (!response.ok) {
     const is405 =
       response.status === 405 ||
       text.includes('405 Not Allowed') ||
       text.includes('405 Method Not Allowed')
     const rawBody =
       is405 && !text
-        ? '<html>\n<head><title>405 Not Allowed</title></head>\n<body>\n<center><h1>405 Not Allowed</h1></center>\n<hr><center>nginx</center>\n</body>\n</html>'
+        ? '<html><head><title>405 Not Allowed</title></head><body><center><h1>405 Not Allowed</h1></center></body></html>'
         : text
 
     if (is405) {
       throw new BelleApiError({
         error: 'Erro HTTP 405 - Not Allowed',
-        details:
-          'O servidor Nginx bloqueou a requisição POST. Certifique-se de que a URL de integração não possui barras no final e utiliza https://. Verifique se o endpoint configurado é realmente o endpoint de Webhook Pluga.',
+        details: 'O servidor Nginx bloqueou a requisição.',
         raw: { status: 405, headers: headersObj, body: rawBody },
       })
     }
 
     throw new BelleApiError({
       error: `Erro HTTP ${response.status}`,
-      details: 'Falha na comunicação com o Belle Software ao enviar Webhook.',
+      details: 'Falha na comunicação com o Belle Software.',
       raw: { status: response.status, headers: headersObj, body: rawBody },
     })
   }
 
-  return { success: true, status: response.status, body: text }
+  return { success: true, status: response.status, body: text, headers: headersObj }
 }
 
 export const fetchBelleClientes = async (
@@ -476,10 +323,7 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
     clientAppts.forEach((a) => {
       if (a.servico) procedures.add(a.servico)
       if (a.data) {
-        const hora = a.hora_inicio || '00:00'
-        const apptDateStr = `${a.data}T${hora}:00`
-        const apptDate = new Date(apptDateStr)
-
+        const apptDate = new Date(`${a.data}T${a.hora_inicio || '00:00'}:00`)
         if (!isNaN(apptDate.getTime())) {
           if (apptDate < now) {
             if (
@@ -490,16 +334,11 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
               lastVisit = a.data
           } else {
             if (!nextAppointment || apptDate < new Date(nextAppointment))
-              nextAppointment = apptDateStr
+              nextAppointment = `${a.data}T${a.hora_inicio || '00:00'}:00`
           }
         }
       }
     })
-
-    let mappedStatus = nextAppointment ? 'scheduled' : 'active'
-    const rawStatus = String(c.status || c.situacao || '').toLowerCase()
-    if (rawStatus === 'inativo') mappedStatus = 'inactive'
-    else if (rawStatus === 'ativo' && !nextAppointment) mappedStatus = 'active'
 
     return {
       belleId: belleIdStr,
@@ -516,7 +355,7 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       profissao: c.profissao || '',
       estado_civil: c.estado_civil || '',
       endereco: c.endereco || '',
-      status: mappedStatus,
+      status: nextAppointment ? 'scheduled' : 'active',
     }
   })
 }
