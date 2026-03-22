@@ -113,9 +113,6 @@ const belleApiCall = async (
     }
   }
 
-  // Enforce correct required structure
-  params.append('target_url', targetEndpoint)
-
   let attempt = 0
   while (attempt < retries) {
     attempt++
@@ -123,7 +120,7 @@ const belleApiCall = async (
     const timeoutId = setTimeout(() => controller.abort(), 15000)
 
     try {
-      const response = await fetch('/api/internal/belle-bridge', {
+      const response = await fetch(targetEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -149,13 +146,14 @@ const belleApiCall = async (
 
         if (response.status === 405) {
           errPayload.error = 'Method Not Allowed (405)'
-          errPayload.details = `A requisição POST foi recusada pela URL de destino (${targetEndpoint}). Verifique se a URL base está correta e se o servidor aceita POST. Um redirecionamento forçado no servidor pode estar bloqueando a conexão.`
+          errPayload.details =
+            'Method Not Allowed (405). The destination server refused the POST request. Verify if the base URL is correct or if there is a forced redirect blocking the connection.'
         } else if (response.status === 404) {
           errPayload.error = 'Endpoint Não Encontrado (404)'
           errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`
         } else if (response.status === 502) {
           errPayload.error = 'Bad Gateway (502)'
-          errPayload.details = `A ponte de integração não obteve resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`
+          errPayload.details = `Não foi possível obter resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`
         } else {
           try {
             const text = await response.text()
@@ -235,7 +233,8 @@ const belleApiCall = async (
 
         throw new BelleApiError({
           error: 'Erro de Conexão',
-          details: 'Não foi possível conectar à ponte de integração. Verifique sua rede.',
+          details:
+            'Não foi possível conectar de forma direta à API. Verifique sua rede ou configurações de CORS no destino.',
         })
       }
 

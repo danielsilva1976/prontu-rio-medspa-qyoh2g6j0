@@ -118,7 +118,7 @@ export default function Patients() {
       syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Completa Belle Software via Proxy', 'SYSTEM')
+      addLog('Sincronização Completa Belle Software via API Direta', 'SYSTEM')
 
       toast({
         title: 'Sucesso',

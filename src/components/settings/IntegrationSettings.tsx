@@ -414,7 +414,7 @@ export function IntegrationSettings({
               ) : (
                 <Stethoscope className="w-4 h-4 mr-2" />
               )}
-              {isTestingSimple ? 'Testando...' : 'Testar Conexão Simples'}
+              {isTestingSimple ? 'Testando...' : 'Testar Conexão Direta'}
             </Button>
 
             <Button

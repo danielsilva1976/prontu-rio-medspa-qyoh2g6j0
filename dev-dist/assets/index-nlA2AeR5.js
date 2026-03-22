@@ -37245,14 +37245,13 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 	if (cleanToken) params.append("token", cleanToken);
 	if (cleanEstab) params.append("estabelecimento", cleanEstab);
 	if (payload && typeof payload === "object") for (const [key, value] of Object.entries(payload)) params.append(key, typeof value === "object" ? JSON.stringify(value).trim() : String(value).trim());
-	params.append("target_url", targetEndpoint);
 	let attempt = 0;
 	while (attempt < retries) {
 		attempt++;
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 15e3);
 		try {
-			const response = await fetch("/api/internal/belle-bridge", {
+			const response = await fetch(targetEndpoint, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
@@ -37274,13 +37273,13 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 				};
 				if (response.status === 405) {
 					errPayload.error = "Method Not Allowed (405)";
-					errPayload.details = `A requisição POST foi recusada pela URL de destino (${targetEndpoint}). Verifique se a URL base está correta e se o servidor aceita POST. Um redirecionamento forçado no servidor pode estar bloqueando a conexão.`;
+					errPayload.details = "Method Not Allowed (405). The destination server refused the POST request. Verify if the base URL is correct or if there is a forced redirect blocking the connection.";
 				} else if (response.status === 404) {
 					errPayload.error = "Endpoint Não Encontrado (404)";
 					errPayload.details = `O endpoint configurado (${targetEndpoint}) não foi encontrado. Verifique a configuração da URL.`;
 				} else if (response.status === 502) {
 					errPayload.error = "Bad Gateway (502)";
-					errPayload.details = `A ponte de integração não obteve resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`;
+					errPayload.details = `Não foi possível obter resposta válida do servidor Belle Software (${targetEndpoint}). O servidor pode estar indisponível.`;
 				} else try {
 					const text = await response.text();
 					if (text && text.trim().startsWith("{")) {
@@ -37334,7 +37333,7 @@ var belleApiCall = async (url, token, path, payload = null, estabelecimento = "1
 				}
 				throw new BelleApiError({
 					error: "Erro de Conexão",
-					details: "Não foi possível conectar à ponte de integração. Verifique sua rede."
+					details: "Não foi possível conectar de forma direta à API. Verifique sua rede ou configurações de CORS no destino."
 				});
 			}
 			if (err instanceof BelleApiError) throw err;
@@ -37471,7 +37470,7 @@ function Patients() {
 			const [rawClientes, rawAgendamentos] = await Promise.all([fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento), fetchBelleAgendamentos(belleSoftware.url, belleSoftware.token, void 0, belleSoftware.estabelecimento)]);
 			syncWithBelle(mapBelleDataToPatients(rawClientes, rawAgendamentos));
 			setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
-			addLog("Sincronização Completa Belle Software via Proxy", "SYSTEM");
+			addLog("Sincronização Completa Belle Software via API Direta", "SYSTEM");
 			toast({
 				title: "Sucesso",
 				description: "Conexão estabelecida e dados sincronizados com sucesso."
@@ -51006,7 +51005,7 @@ function IntegrationSettings({ title, description }) {
 									"data-uid": "src/components/settings/IntegrationSettings.tsx:415:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
-								}), isTestingSimple ? "Testando..." : "Testar Conexão Simples"]
+								}), isTestingSimple ? "Testando..." : "Testar Conexão Direta"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
 								"data-uid": "src/components/settings/IntegrationSettings.tsx:420:13",
@@ -51683,4 +51682,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-0eKnoLlw.js.map
+//# sourceMappingURL=index-nlA2AeR5.js.map
