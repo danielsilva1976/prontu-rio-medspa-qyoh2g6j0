@@ -13,17 +13,23 @@ export interface BelleCliente {
   dtCadastro?: string
   sexo?: string
   profissao?: string
+  uf?: string
   UF?: string
   cidade?: string
   bairro?: string
   cep?: string
+  rua?: string
+  numeroRua?: string
   endereco?: string
   numEndereco?: string
   historico_clinico?: string
+  observacao?: string
   rg?: string
   estado_civil?: string
   status?: string
   situacao?: string
+  temperatura?: string
+  classificacao?: string
 }
 
 export interface BelleAgendamento {
@@ -100,25 +106,24 @@ export class BelleApiError extends Error {
 const PROXY_ENDPOINT = import.meta.env.VITE_BELLE_PROXY_URL || '/api/proxy/belle'
 
 export const belleApiCall = async (
-  url: string,
+  method: 'GET' | 'POST' | 'PUT',
+  baseUrl: string,
+  endpoint: string,
   token: string,
-  estabelecimento: string = '1',
   queryParams: Record<string, any> = {},
-  retries: number = 3,
+  bodyData: any = null,
+  retries: number = 0,
 ): Promise<any> => {
   const cleanToken = token ? token.trim() : ''
-  const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
-  let finalUrl = url.trim()
+  let finalUrl = `${baseUrl.trim().replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
 
   const headers: Record<string, string> = {
-    'User-Agent': 'MedSpa/1.0',
     Authorization: cleanToken,
-    Accept: 'application/json, text/plain, */*',
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
   }
 
   const params = new URLSearchParams()
-  if (cleanEstab) params.append('codEstab', cleanEstab)
-
   if (queryParams) {
     Object.entries(queryParams).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -127,31 +132,47 @@ export const belleApiCall = async (
     })
   }
 
-  const [baseUrl, existingQuery] = finalUrl.split('?')
-  let queryStr = existingQuery || ''
   const newParamsStr = params.toString()
   if (newParamsStr) {
-    queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr
+    finalUrl = finalUrl.includes('?')
+      ? `${finalUrl}&${newParamsStr}`
+      : `${finalUrl}?${newParamsStr}`
   }
-  finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl
 
   const proxyPayload = {
     targetUrl: finalUrl,
-    method: 'GET',
+    method,
     headers,
-    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin', 'Referer'],
+    body: method !== 'GET' ? bodyData : undefined,
+    removeHeaders: [
+      'Sec-Fetch-Site',
+      'Sec-Fetch-Mode',
+      'Sec-Fetch-Dest',
+      'Origin',
+      'Referer',
+      'User-Agent',
+      'sec-ch-ua',
+      'sec-ch-ua-mobile',
+      'sec-ch-ua-platform',
+    ],
     useResidentialProxy: true,
   }
 
   let attempt = 0
-  while (attempt < retries) {
+  while (attempt <= retries) {
     attempt++
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000)
+
     try {
       const response = await fetch(PROXY_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(proxyPayload),
+        signal: controller.signal,
       })
+
+      clearTimeout(timeoutId)
 
       const text = await response.text()
       let result
@@ -161,9 +182,15 @@ export const belleApiCall = async (
         result = text
       }
 
-      if (!response.ok) {
+      if (!response.ok || [400, 401, 404, 500].includes(response.status)) {
+        let errorMsg = `Erro HTTP ${response.status}`
+        if (response.status === 400) errorMsg = '400 Bad Request'
+        if (response.status === 401) errorMsg = '401 Unauthorized'
+        if (response.status === 404) errorMsg = '404 Not Found'
+        if (response.status === 500) errorMsg = '500 Server Error'
+
         throw new BelleApiError({
-          error: `Erro HTTP ${response.status}`,
+          error: errorMsg,
           details: typeof result === 'string' ? result : JSON.stringify(result),
           status: response.status,
           raw: { status: response.status, body: result },
@@ -184,8 +211,15 @@ export const belleApiCall = async (
 
       return result.data || result.dados || result
     } catch (err: any) {
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        throw new BelleApiError({
+          error: 'Timeout',
+          details: 'A requisição demorou mais de 30 segundos para responder.',
+        })
+      }
       if (
-        attempt < retries &&
+        attempt <= retries &&
         (err.message === 'Failed to fetch' || err.message.includes('Network'))
       ) {
         await new Promise((res) => setTimeout(res, 1000 * attempt))
@@ -197,11 +231,62 @@ export const belleApiCall = async (
   }
 }
 
-/**
- * Direct API Integration Handler with Diagnostic Logs
- */
+export const listClientes = async (
+  baseUrl: string,
+  token: string,
+  estabelecimento: string,
+  pagina: number = 0,
+) => {
+  return belleApiCall('GET', baseUrl, '/clientes', token, { codEstab: estabelecimento, pagina })
+}
+
+export const searchCliente = async (
+  baseUrl: string,
+  token: string,
+  estabelecimento: string,
+  filters: { cpf?: string; id?: string; email?: string; celular?: string },
+) => {
+  return belleApiCall('GET', baseUrl, '/cliente/buscar', token, {
+    codEstab: estabelecimento,
+    ...filters,
+  })
+}
+
+export const updateCliente = async (
+  baseUrl: string,
+  token: string,
+  codCliente: string | number,
+  data: any,
+) => {
+  return belleApiCall('PUT', baseUrl, '/cliente', token, { codCliente }, data)
+}
+
+export const saveLead = async (
+  baseUrl: string,
+  token: string,
+  estabelecimento: string,
+  data: {
+    nome: string
+    celular?: string
+    email?: string
+    cpf?: string
+    observacao?: string
+    tpOrigem?: string
+    codOrigem?: string
+  },
+) => {
+  return belleApiCall(
+    'POST',
+    baseUrl,
+    '/cliente/gravar-lead',
+    token,
+    {},
+    { codEstab: estabelecimento, ...data },
+  )
+}
+
 export const testBelleApiConnectionWithRetry = async (
-  url: string,
+  baseUrl: string,
   token: string,
   estabelecimento: string,
   testData: any = {},
@@ -209,35 +294,53 @@ export const testBelleApiConnectionWithRetry = async (
   const cleanToken = token ? token.trim() : ''
   const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
 
-  const headers: Record<string, string> = {
-    'User-Agent': 'MedSpa/1.0',
-    Authorization: cleanToken,
-    Accept: 'application/json, text/plain, */*',
+  let endpoint = '/clientes'
+  let queryParams: Record<string, any> = { codEstab: cleanEstab }
+
+  const hasFilters = Object.values(testData).some((v) => v !== undefined && v !== null && v !== '')
+  if (hasFilters) {
+    endpoint = '/cliente/buscar'
+    queryParams = { ...queryParams, ...testData }
+  } else {
+    queryParams.pagina = 0
   }
 
-  let finalUrl = url.trim()
+  let finalUrl = `${baseUrl.trim().replace(/\/$/, '')}${endpoint}`
   const params = new URLSearchParams()
-  if (cleanEstab) params.append('codEstab', cleanEstab)
-
-  Object.entries(testData).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') {
-      params.append(k, String(v))
+  Object.entries(queryParams).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.append(key, String(value))
     }
   })
 
-  const [baseUrl, existingQuery] = finalUrl.split('?')
-  let queryStr = existingQuery || ''
   const newParamsStr = params.toString()
   if (newParamsStr) {
-    queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr
+    finalUrl = finalUrl.includes('?')
+      ? `${finalUrl}&${newParamsStr}`
+      : `${finalUrl}?${newParamsStr}`
   }
-  finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl
+
+  const headers: Record<string, string> = {
+    Authorization: cleanToken,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }
 
   const proxyPayload = {
     targetUrl: finalUrl,
     method: 'GET',
     headers,
-    removeHeaders: ['Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-Dest', 'Origin', 'Referer'],
+    removeHeaders: [
+      'Sec-Fetch-Site',
+      'Sec-Fetch-Mode',
+      'Sec-Fetch-Dest',
+      'Origin',
+      'Referer',
+      'User-Agent',
+      'sec-ch-ua',
+      'sec-ch-ua-mobile',
+      'sec-ch-ua-platform',
+    ],
     useResidentialProxy: true,
   }
 
@@ -253,6 +356,8 @@ export const testBelleApiConnectionWithRetry = async (
   }
 
   const diagnosticLog: DiagnosticLog[] = []
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
 
   try {
     let response: Response
@@ -262,9 +367,15 @@ export const testBelleApiConnectionWithRetry = async (
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(proxyPayload),
+        signal: controller.signal,
       })
     } catch (networkErr: any) {
+      if (networkErr.name === 'AbortError') {
+        throw new Error('Timeout de 30 segundos excedido ao contactar o servidor.')
+      }
       throw new Error(`Proxy offline ou erro de rede: ${networkErr.message}`)
+    } finally {
+      clearTimeout(timeoutId)
     }
 
     const text = await response.text()
@@ -283,9 +394,15 @@ export const testBelleApiConnectionWithRetry = async (
 
     diagnosticLog.push(diagnosticEntry)
 
-    if (!response.ok) {
+    if (!response.ok || [400, 401, 404, 500].includes(response.status)) {
+      let errorMsg = `Erro HTTP ${response.status}`
+      if (response.status === 400) errorMsg = '400 Bad Request'
+      if (response.status === 401) errorMsg = '401 Unauthorized'
+      if (response.status === 404) errorMsg = '404 Not Found'
+      if (response.status === 500) errorMsg = '500 Server Error'
+
       throw new BelleApiError({
-        error: `Erro HTTP ${response.status}`,
+        error: errorMsg,
         details: typeof parsedBody === 'string' ? parsedBody : JSON.stringify(parsedBody),
         status: response.status,
         raw: { diagnostics: diagnosticLog, status: response.status, body: parsedBody },
@@ -312,6 +429,7 @@ export const testBelleApiConnectionWithRetry = async (
       diagnostics: diagnosticLog,
     }
   } catch (err: any) {
+    clearTimeout(timeoutId)
     if (!diagnosticEntry.response) {
       diagnosticEntry.response = { error: err.message }
       if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry)
@@ -330,7 +448,7 @@ export const testBelleConnection = async (
   token: string,
   estabelecimento: string = '1',
 ) => {
-  const result = await belleApiCall(url, token, estabelecimento, {})
+  const result = await listClientes(url, token, estabelecimento, 0)
   return { success: true, data: result }
 }
 
@@ -339,7 +457,7 @@ export const fetchBelleClientes = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
-  const data = await belleApiCall(url, token, estabelecimento, {})
+  const data = await listClientes(url, token, estabelecimento, 0)
   return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || []
 }
 
@@ -349,7 +467,6 @@ export const fetchBelleAgendamentos = async (
   _cpf?: string,
   _estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
-  // Current REST v1.0 scope only covers clients listing/search. Return empty to prevent sync breaking.
   return []
 }
 
@@ -391,11 +508,11 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       }
     })
 
-    let formattedAddress = c.endereco || ''
-    if (c.numEndereco) formattedAddress += `, ${c.numEndereco}`
+    let formattedAddress = c.rua || c.endereco || ''
+    if (c.numeroRua || c.numEndereco) formattedAddress += `, ${c.numeroRua || c.numEndereco}`
     if (c.bairro) formattedAddress += ` - ${c.bairro}`
     if (c.cidade) formattedAddress += ` - ${c.cidade}`
-    if (c.UF) formattedAddress += `/${c.UF}`
+    if (c.uf || c.UF) formattedAddress += `/${c.uf || c.UF}`
 
     return {
       belleId: belleIdStr,
@@ -407,23 +524,20 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       lastVisit,
       nextAppointment,
       procedures: Array.from(procedures),
-      history: c.historico_clinico || '',
+      history: c.observacao || c.historico_clinico || '',
       rg: c.rg || '',
       profissao: c.profissao || '',
       estado_civil: c.estado_civil || '',
       endereco: formattedAddress.trim(),
+      rua: c.rua || '',
+      numeroRua: c.numeroRua || '',
+      bairro: c.bairro || '',
+      cidade: c.cidade || '',
+      uf: c.uf || c.UF || '',
+      cep: c.cep || '',
+      temperatura: c.temperatura || '',
+      classificacao: c.classificacao || '',
       status: nextAppointment ? 'scheduled' : 'active',
     }
   })
-}
-
-export const mapPatientToBellePayload = (patient: Partial<Patient>) => {
-  return {
-    acao: 'add_cliente',
-    nome: patient.name || 'Sem Nome',
-    email: patient.email || '',
-    celular: patient.phone ? patient.phone.replace(/\D/g, '') : '',
-    observacao: patient.history || 'Adicionado via Prontuário MEDSPA',
-    origem: 'App',
-  }
 }

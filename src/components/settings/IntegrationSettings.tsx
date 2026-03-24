@@ -162,7 +162,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={() => setUrl(sanitizeUrl(url))}
-                placeholder="https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar"
+                placeholder="https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0"
                 className="bg-white font-mono text-sm"
               />
             </div>
@@ -294,7 +294,18 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                   >
                     <div className="bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-800">
                       <span className="font-mono text-sm font-semibold text-slate-100 flex items-center gap-2">
-                        {log.request.method} API Cycle
+                        <Badge
+                          variant="outline"
+                          className="font-mono border-slate-600 bg-slate-800 text-sky-400"
+                        >
+                          {log.request.method}
+                        </Badge>
+                        <span
+                          className="truncate max-w-[200px] sm:max-w-md"
+                          title={log.request.url}
+                        >
+                          {log.request.url}
+                        </span>
                       </span>
                       {log.response?.status && (
                         <Badge
@@ -329,7 +340,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                           <pre className="whitespace-pre-wrap break-words">
                             {typeof log.response?.body === 'string'
                               ? log.response.body
-                              : JSON.stringify(log.response, null, 2)}
+                              : JSON.stringify(log.response?.body || log.response, null, 2)}
                           </pre>
                         </div>
                       </div>

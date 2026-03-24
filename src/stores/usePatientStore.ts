@@ -20,19 +20,26 @@ export type Patient = {
   endereco?: string
   history?: string
   belleId?: string
+  rua?: string
+  numeroRua?: string
+  bairro?: string
+  cidade?: string
+  uf?: string
+  cep?: string
+  temperatura?: string
+  classificacao?: string
 }
 
 type PatientState = {
   patients: Patient[]
   isSyncing: boolean
   setIsSyncing: (val: boolean) => void
-  addPatient: (patient: Omit<Patient, 'id'>) => void
+  addPatient: (patient: Patient | Omit<Patient, 'id'>) => void
   updatePatient: (id: string, data: Partial<Patient>) => void
   syncWithBelle: (belleData: Partial<Patient>[]) => { added: number; updated: number }
   clearPatients: () => void
 }
 
-// Emptied mock patients as requested to enforce real API data mapping
 const defaultMockPatients: Patient[] = []
 
 const PatientContext = createContext<PatientState>({} as PatientState)
@@ -45,7 +52,6 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed && parsed.length > 0) {
-          // Remove any existing mock patients from localStorage memory to adhere to requirements
           const realPatients = parsed.filter((p: Patient) => !p.id.startsWith('mock-'))
           return realPatients
         }
@@ -56,15 +62,14 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     return defaultMockPatients
   })
 
-  // Data Persistence: Automatically sync local patient data to localStorage
   useEffect(() => {
     localStorage.setItem('@prontuario:patients', JSON.stringify(patients))
   }, [patients])
 
-  const addPatient = (patient: Omit<Patient, 'id'>) => {
+  const addPatient = (patient: any) => {
     const newPatient = {
       ...patient,
-      id: `p-${Date.now()}`,
+      id: patient.id || `p-${Date.now()}`,
     } as Patient
     setPatients((prev) => [...prev, newPatient])
   }
@@ -76,7 +81,6 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const clearPatients = () => setPatients([])
 
   const syncWithBelle = (belleData: Partial<Patient>[]) => {
-    // Purge existing local/mock data and replace entirely with fresh payload from Belle API
     const freshPatients: Patient[] = belleData.map((bp, i) => {
       let age = bp.age || 30
       if (bp.dob) {
@@ -108,6 +112,14 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         endereco: bp.endereco || '',
         history: bp.history || '',
         belleId: bp.belleId,
+        rua: bp.rua || '',
+        numeroRua: bp.numeroRua || '',
+        bairro: bp.bairro || '',
+        cidade: bp.cidade || '',
+        uf: bp.uf || '',
+        cep: bp.cep || '',
+        temperatura: bp.temperatura || '',
+        classificacao: bp.classificacao || '',
       } as Patient
     })
 

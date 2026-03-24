@@ -63,8 +63,8 @@ const defaultData = {
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
   belleSoftware: {
-    url: 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar',
-    token: '1787cad7ac7dd71ac2fbbdaf823928fd',
+    url: 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0',
+    token: import.meta.env.VITE_BELLE_TOKEN || '',
     estabelecimento: '1',
     webhookContentType: 'application/json' as const,
   },

@@ -23,8 +23,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import usePatientStore, { Patient } from '@/stores/usePatientStore'
+import useSettingsStore from '@/stores/useSettingsStore'
 import useAuditStore from '@/stores/useAuditStore'
 import { ImageUpload } from '@/components/ui/image-upload'
+import { updateCliente, saveLead } from '@/lib/api/belle'
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -36,7 +38,12 @@ const formSchema = z.object({
   profissao: z.string().optional(),
   estado_civil: z.string().optional(),
   email: z.string().email('E-mail inválido').or(z.literal('')).optional(),
-  endereco: z.string().optional(),
+  cep: z.string().optional(),
+  rua: z.string().optional(),
+  numeroRua: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  uf: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -49,6 +56,7 @@ interface PatientDialogProps {
 export function PatientDialog({ patient, trigger }: PatientDialogProps) {
   const [open, setOpen] = useState(false)
   const { addPatient, updatePatient } = usePatientStore()
+  const { belleSoftware } = useSettingsStore()
   const { addLog } = useAuditStore()
   const { toast } = useToast()
 
@@ -66,7 +74,12 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
       profissao: patient?.profissao || '',
       estado_civil: patient?.estado_civil || '',
       email: patient?.email || '',
-      endereco: patient?.endereco || '',
+      cep: patient?.cep || '',
+      rua: patient?.rua || '',
+      numeroRua: patient?.numeroRua || '',
+      bairro: patient?.bairro || '',
+      cidade: patient?.cidade || '',
+      uf: patient?.uf || '',
     },
   })
 
@@ -83,7 +96,12 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
           profissao: patient.profissao || '',
           estado_civil: patient.estado_civil || '',
           email: patient.email || '',
-          endereco: patient.endereco || '',
+          cep: patient.cep || '',
+          rua: patient.rua || '',
+          numeroRua: patient.numeroRua || '',
+          bairro: patient.bairro || '',
+          cidade: patient.cidade || '',
+          uf: patient.uf || '',
         })
       } else {
         form.reset({
@@ -96,14 +114,43 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
           profissao: '',
           estado_civil: '',
           email: '',
-          endereco: '',
+          cep: '',
+          rua: '',
+          numeroRua: '',
+          bairro: '',
+          cidade: '',
+          uf: '',
         })
       }
     }
   }, [open, patient, form])
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = async (values: FormValues) => {
     if (isEdit && patient) {
+      if (belleSoftware.url && belleSoftware.token && patient.belleId) {
+        try {
+          await updateCliente(belleSoftware.url, belleSoftware.token, patient.belleId, {
+            nome: values.name,
+            cpf: values.cpf,
+            celular: values.phone,
+            email: values.email,
+            profissao: values.profissao,
+            cep: values.cep,
+            rua: values.rua,
+            numeroRua: values.numeroRua,
+            bairro: values.bairro,
+            cidade: values.cidade,
+            uf: values.uf,
+          })
+          addLog('Atualização sincronizada com Belle Software', patient.id)
+        } catch (e: any) {
+          toast({
+            title: 'Aviso de Integração',
+            description: 'Salvo localmente, mas não foi possível atualizar no Belle Software.',
+            variant: 'destructive',
+          })
+        }
+      }
       updatePatient(patient.id, values)
       addLog('Dados do paciente editados', patient.id)
       toast({
@@ -111,8 +158,36 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
         description: `Os dados de ${values.name} foram atualizados.`,
       })
     } else {
+      let newBelleId = undefined
+      if (belleSoftware.url && belleSoftware.token) {
+        try {
+          const res = await saveLead(
+            belleSoftware.url,
+            belleSoftware.token,
+            belleSoftware.estabelecimento,
+            {
+              nome: values.name,
+              celular: values.phone,
+              email: values.email,
+              cpf: values.cpf,
+            },
+          )
+          newBelleId = res?.codigo || res?.id || undefined
+          addLog('Novo lead gerado no Belle Software', 'SYSTEM')
+        } catch (e: any) {
+          toast({
+            title: 'Aviso de Integração',
+            description: 'Paciente salvo localmente, mas falhou ao registrar lead no Belle.',
+            variant: 'destructive',
+          })
+        }
+      }
+
+      const newPatientId = `p-${Date.now()}`
       addPatient({
         ...values,
+        id: newPatientId,
+        belleId: newBelleId,
         dob: '1990-01-01',
         lastVisit: new Date().toISOString().split('T')[0],
         nextAppointment: null,
@@ -120,6 +195,7 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
         procedures: [],
         professional: null,
       })
+      addLog('Novo paciente cadastrado', newPatientId)
       toast({
         title: 'Paciente cadastrado',
         description: `${values.name} foi adicionado com sucesso.`,
@@ -140,7 +216,7 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl text-primary">
             {isEdit ? 'Editar Paciente' : 'Novo Paciente'}
@@ -170,12 +246,12 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
+                  <FormItem className="md:col-span-2 lg:col-span-3">
                     <FormLabel>Nome Completo</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Maria Silva" {...field} />
@@ -266,7 +342,7 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
+                  <FormItem className="md:col-span-2 lg:col-span-3">
                     <FormLabel>E-mail</FormLabel>
                     <FormControl>
                       <Input placeholder="paciente@email.com" {...field} />
@@ -275,21 +351,89 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
                   </FormItem>
                 )}
               />
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 border-t border-border mt-2 pt-4">
+                <h4 className="text-sm font-medium text-primary mb-3">Endereço</h4>
+              </div>
               <FormField
                 control={form.control}
-                name="endereco"
+                name="cep"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Endereço Completo</FormLabel>
+                  <FormItem>
+                    <FormLabel>CEP</FormLabel>
                     <FormControl>
-                      <Input placeholder="Rua das Flores, 123 - São Paulo/SP" {...field} />
+                      <Input placeholder="00000-000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rua"
+                render={({ field }) => (
+                  <FormItem className="lg:col-span-2">
+                    <FormLabel>Rua / Logradouro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Av. Paulista" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="numeroRua"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número</FormLabel>
+                    <FormControl>
+                      <Input placeholder="1000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bairro"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bairro</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Bela Vista" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="cidade"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <FormControl>
+                      <Input placeholder="São Paulo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="uf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>UF</FormLabel>
+                    <FormControl>
+                      <Input placeholder="SP" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>

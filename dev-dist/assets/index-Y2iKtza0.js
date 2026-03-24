@@ -24926,8 +24926,8 @@ var defaultData = {
 		"Luz Pulsada (LIP)": "450"
 	},
 	belleSoftware: {
-		url: "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar",
-		token: "1787cad7ac7dd71ac2fbbdaf823928fd",
+		url: "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0",
+		token: "",
 		estabelecimento: "1",
 		webhookContentType: "application/json"
 	}
@@ -25171,7 +25171,7 @@ var PatientProvider = ({ children }) => {
 	const addPatient = (patient) => {
 		const newPatient = {
 			...patient,
-			id: `p-${Date.now()}`
+			id: patient.id || `p-${Date.now()}`
 		};
 		setPatients((prev) => [...prev, newPatient]);
 	};
@@ -25211,7 +25211,15 @@ var PatientProvider = ({ children }) => {
 				email: bp.email || "",
 				endereco: bp.endereco || "",
 				history: bp.history || "",
-				belleId: bp.belleId
+				belleId: bp.belleId,
+				rua: bp.rua || "",
+				numeroRua: bp.numeroRua || "",
+				bairro: bp.bairro || "",
+				cidade: bp.cidade || "",
+				uf: bp.uf || "",
+				cep: bp.cep || "",
+				temperatura: bp.temperatura || "",
+				classificacao: bp.classificacao || ""
 			};
 		});
 		setPatients(freshPatients);
@@ -36406,6 +36414,360 @@ function ImageUpload({ value, onChange, nameInitials = "?" }) {
 	});
 }
 //#endregion
+//#region src/lib/api/belle.ts
+var BelleApiError = class extends Error {
+	details;
+	errorTitle;
+	status;
+	raw;
+	constructor(payload) {
+		let message = "Erro de API";
+		let detailsStr = "Falha na comunicação com o servidor.";
+		let status = void 0;
+		let raw = void 0;
+		try {
+			if (typeof payload === "string") {
+				message = payload;
+				detailsStr = payload;
+			} else if (payload && typeof payload === "object") {
+				message = String(payload.error || payload.message || message);
+				status = payload.status;
+				raw = payload.raw || payload;
+				if (typeof payload.details === "string") detailsStr = payload.details;
+				else if (payload.details && typeof payload.details === "object") detailsStr = JSON.stringify(payload.details);
+				else if (!payload.details && payload.error) detailsStr = typeof payload.error === "string" ? payload.error : JSON.stringify(payload.error);
+			}
+		} catch (e) {
+			detailsStr = "Não foi possível extrair os detalhes do erro.";
+		}
+		super(message);
+		this.name = "BelleApiError";
+		this.errorTitle = message;
+		this.details = String(detailsStr);
+		this.status = status;
+		this.raw = raw;
+	}
+};
+var PROXY_ENDPOINT = "/api/proxy/belle";
+var belleApiCall = async (method, baseUrl, endpoint, token, queryParams = {}, bodyData = null, retries = 0) => {
+	const cleanToken = token ? token.trim() : "";
+	let finalUrl = `${baseUrl.trim().replace(/\/$/, "")}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+	const headers = {
+		Authorization: cleanToken,
+		"Content-Type": "application/json",
+		Accept: "application/json"
+	};
+	const params = new URLSearchParams();
+	if (queryParams) Object.entries(queryParams).forEach(([key, value]) => {
+		if (value !== void 0 && value !== null && value !== "") params.append(key, String(value));
+	});
+	const newParamsStr = params.toString();
+	if (newParamsStr) finalUrl = finalUrl.includes("?") ? `${finalUrl}&${newParamsStr}` : `${finalUrl}?${newParamsStr}`;
+	const proxyPayload = {
+		targetUrl: finalUrl,
+		method,
+		headers,
+		body: method !== "GET" ? bodyData : void 0,
+		removeHeaders: [
+			"Sec-Fetch-Site",
+			"Sec-Fetch-Mode",
+			"Sec-Fetch-Dest",
+			"Origin",
+			"Referer",
+			"User-Agent",
+			"sec-ch-ua",
+			"sec-ch-ua-mobile",
+			"sec-ch-ua-platform"
+		],
+		useResidentialProxy: true
+	};
+	let attempt = 0;
+	while (attempt <= retries) {
+		attempt++;
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 3e4);
+		try {
+			const response = await fetch(PROXY_ENDPOINT, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json"
+				},
+				body: JSON.stringify(proxyPayload),
+				signal: controller.signal
+			});
+			clearTimeout(timeoutId);
+			const text = await response.text();
+			let result;
+			try {
+				result = JSON.parse(text);
+			} catch (e) {
+				result = text;
+			}
+			if (!response.ok || [
+				400,
+				401,
+				404,
+				500
+			].includes(response.status)) {
+				let errorMsg = `Erro HTTP ${response.status}`;
+				if (response.status === 400) errorMsg = "400 Bad Request";
+				if (response.status === 401) errorMsg = "401 Unauthorized";
+				if (response.status === 404) errorMsg = "404 Not Found";
+				if (response.status === 500) errorMsg = "500 Server Error";
+				throw new BelleApiError({
+					error: errorMsg,
+					details: typeof result === "string" ? result : JSON.stringify(result),
+					status: response.status,
+					raw: {
+						status: response.status,
+						body: result
+					}
+				});
+			}
+			if (typeof result === "object" && result !== null && (result.status === "erro" || result.status === false || result.error)) throw new BelleApiError({
+				error: result.error || result.mensagem || "Erro na API",
+				details: result.details || result.mensagem || text,
+				raw: result
+			});
+			return result.data || result.dados || result;
+		} catch (err) {
+			clearTimeout(timeoutId);
+			if (err.name === "AbortError") throw new BelleApiError({
+				error: "Timeout",
+				details: "A requisição demorou mais de 30 segundos para responder."
+			});
+			if (attempt <= retries && (err.message === "Failed to fetch" || err.message.includes("Network"))) {
+				await new Promise((res) => setTimeout(res, 1e3 * attempt));
+				continue;
+			}
+			if (err instanceof BelleApiError) throw err;
+			throw new BelleApiError({
+				error: "Erro de Rede",
+				details: err?.message,
+				raw: err
+			});
+		}
+	}
+};
+var listClientes = async (baseUrl, token, estabelecimento, pagina = 0) => {
+	return belleApiCall("GET", baseUrl, "/clientes", token, {
+		codEstab: estabelecimento,
+		pagina
+	});
+};
+var updateCliente = async (baseUrl, token, codCliente, data) => {
+	return belleApiCall("PUT", baseUrl, "/cliente", token, { codCliente }, data);
+};
+var saveLead = async (baseUrl, token, estabelecimento, data) => {
+	return belleApiCall("POST", baseUrl, "/cliente/gravar-lead", token, {}, {
+		codEstab: estabelecimento,
+		...data
+	});
+};
+var testBelleApiConnectionWithRetry = async (baseUrl, token, estabelecimento, testData = {}) => {
+	const cleanToken = token ? token.trim() : "";
+	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
+	let endpoint = "/clientes";
+	let queryParams = { codEstab: cleanEstab };
+	if (Object.values(testData).some((v) => v !== void 0 && v !== null && v !== "")) {
+		endpoint = "/cliente/buscar";
+		queryParams = {
+			...queryParams,
+			...testData
+		};
+	} else queryParams.pagina = 0;
+	let finalUrl = `${baseUrl.trim().replace(/\/$/, "")}${endpoint}`;
+	const params = new URLSearchParams();
+	Object.entries(queryParams).forEach(([key, value]) => {
+		if (value !== void 0 && value !== null && value !== "") params.append(key, String(value));
+	});
+	const newParamsStr = params.toString();
+	if (newParamsStr) finalUrl = finalUrl.includes("?") ? `${finalUrl}&${newParamsStr}` : `${finalUrl}?${newParamsStr}`;
+	const headers = {
+		Authorization: cleanToken,
+		"Content-Type": "application/json",
+		Accept: "application/json"
+	};
+	const proxyPayload = {
+		targetUrl: finalUrl,
+		method: "GET",
+		headers,
+		removeHeaders: [
+			"Sec-Fetch-Site",
+			"Sec-Fetch-Mode",
+			"Sec-Fetch-Dest",
+			"Origin",
+			"Referer",
+			"User-Agent",
+			"sec-ch-ua",
+			"sec-ch-ua-mobile",
+			"sec-ch-ua-platform"
+		],
+		useResidentialProxy: true
+	};
+	const diagnosticEntry = {
+		request: {
+			url: finalUrl,
+			method: proxyPayload.method,
+			headers,
+			removeHeaders: proxyPayload.removeHeaders,
+			useResidentialProxy: proxyPayload.useResidentialProxy
+		},
+		response: null
+	};
+	const diagnosticLog = [];
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 3e4);
+	try {
+		let response;
+		try {
+			response = await fetch(PROXY_ENDPOINT, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json"
+				},
+				body: JSON.stringify(proxyPayload),
+				signal: controller.signal
+			});
+		} catch (networkErr) {
+			if (networkErr.name === "AbortError") throw new Error("Timeout de 30 segundos excedido ao contactar o servidor.");
+			throw new Error(`Proxy offline ou erro de rede: ${networkErr.message}`);
+		} finally {
+			clearTimeout(timeoutId);
+		}
+		const text = await response.text();
+		let parsedBody = text;
+		try {
+			parsedBody = JSON.parse(text);
+		} catch (e) {}
+		diagnosticEntry.response = {
+			status: response.status,
+			headers: Object.fromEntries(response.headers.entries()),
+			body: parsedBody
+		};
+		diagnosticLog.push(diagnosticEntry);
+		if (!response.ok || [
+			400,
+			401,
+			404,
+			500
+		].includes(response.status)) {
+			let errorMsg = `Erro HTTP ${response.status}`;
+			if (response.status === 400) errorMsg = "400 Bad Request";
+			if (response.status === 401) errorMsg = "401 Unauthorized";
+			if (response.status === 404) errorMsg = "404 Not Found";
+			if (response.status === 500) errorMsg = "500 Server Error";
+			throw new BelleApiError({
+				error: errorMsg,
+				details: typeof parsedBody === "string" ? parsedBody : JSON.stringify(parsedBody),
+				status: response.status,
+				raw: {
+					diagnostics: diagnosticLog,
+					status: response.status,
+					body: parsedBody
+				}
+			});
+		}
+		if (typeof parsedBody === "object" && parsedBody !== null && ("erro" in parsedBody || parsedBody.status === false || parsedBody.error)) throw new BelleApiError({
+			error: parsedBody.error || parsedBody.mensagem || "Erro na API",
+			details: parsedBody.details || parsedBody.mensagem || JSON.stringify(parsedBody),
+			status: 200,
+			raw: {
+				diagnostics: diagnosticLog,
+				status: 200,
+				body: parsedBody
+			}
+		});
+		return {
+			success: true,
+			status: response.status,
+			data: parsedBody,
+			diagnostics: diagnosticLog
+		};
+	} catch (err) {
+		clearTimeout(timeoutId);
+		if (!diagnosticEntry.response) {
+			diagnosticEntry.response = { error: err.message };
+			if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry);
+		}
+		if (err instanceof BelleApiError) throw err;
+		throw new BelleApiError({
+			error: "Falha na Conexão",
+			details: err.message,
+			raw: { diagnostics: diagnosticLog }
+		});
+	}
+};
+var testBelleConnection = async (url, token, estabelecimento = "1") => {
+	return {
+		success: true,
+		data: await listClientes(url, token, estabelecimento, 0)
+	};
+};
+var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
+	const data = await listClientes(url, token, estabelecimento, 0);
+	return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || [];
+};
+var fetchBelleAgendamentos = async (_url, _token, _cpf, _estabelecimento = "1") => {
+	return [];
+};
+var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
+	const now = /* @__PURE__ */ new Date();
+	const validClientes = Array.isArray(rawClientes) ? rawClientes : [];
+	const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : [];
+	return validClientes.map((c) => {
+		const belleIdStr = String(c.codigo || c.id || "");
+		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && String(a.cliente_id) === belleIdStr);
+		const rawDob = c.dtNascimento || c.data_nascimento;
+		let lastVisit = rawDob ? new Date(rawDob).toISOString().split("T")[0] : "2023-01-01";
+		let nextAppointment = null;
+		const procedures = /* @__PURE__ */ new Set();
+		clientAppts.forEach((a) => {
+			if (a.servico) procedures.add(a.servico);
+			if (a.data) {
+				const apptDate = /* @__PURE__ */ new Date(`${a.data}T${a.hora_inicio || "00:00"}:00`);
+				if (!isNaN(apptDate.getTime())) {
+					if (apptDate < now) {
+						if (!lastVisit || isNaN(new Date(lastVisit).getTime()) || apptDate > new Date(lastVisit)) lastVisit = a.data;
+					} else if (!nextAppointment || apptDate < new Date(nextAppointment)) nextAppointment = `${a.data}T${a.hora_inicio || "00:00"}:00`;
+				}
+			}
+		});
+		let formattedAddress = c.rua || c.endereco || "";
+		if (c.numeroRua || c.numEndereco) formattedAddress += `, ${c.numeroRua || c.numEndereco}`;
+		if (c.bairro) formattedAddress += ` - ${c.bairro}`;
+		if (c.cidade) formattedAddress += ` - ${c.cidade}`;
+		if (c.uf || c.UF) formattedAddress += `/${c.uf || c.UF}`;
+		return {
+			belleId: belleIdStr,
+			name: (c.nome || "").trim() || "Paciente sem nome",
+			cpf: (c.cpf || "").trim(),
+			email: (c.email || "").trim(),
+			phone: (c.celular || c.telefone || "").trim(),
+			dob: rawDob,
+			lastVisit,
+			nextAppointment,
+			procedures: Array.from(procedures),
+			history: c.observacao || c.historico_clinico || "",
+			rg: c.rg || "",
+			profissao: c.profissao || "",
+			estado_civil: c.estado_civil || "",
+			endereco: formattedAddress.trim(),
+			rua: c.rua || "",
+			numeroRua: c.numeroRua || "",
+			bairro: c.bairro || "",
+			cidade: c.cidade || "",
+			uf: c.uf || c.UF || "",
+			cep: c.cep || "",
+			temperatura: c.temperatura || "",
+			classificacao: c.classificacao || "",
+			status: nextAppointment ? "scheduled" : "active"
+		};
+	});
+};
+//#endregion
 //#region src/components/patients/PatientDialog.tsx
 var formSchema$2 = object({
 	name: string().min(2, "O nome deve ter pelo menos 2 caracteres."),
@@ -36417,11 +36779,17 @@ var formSchema$2 = object({
 	profissao: string().optional(),
 	estado_civil: string().optional(),
 	email: string().email("E-mail inválido").or(literal("")).optional(),
-	endereco: string().optional()
+	cep: string().optional(),
+	rua: string().optional(),
+	numeroRua: string().optional(),
+	bairro: string().optional(),
+	cidade: string().optional(),
+	uf: string().optional()
 });
 function PatientDialog({ patient, trigger }) {
 	const [open, setOpen] = (0, import_react.useState)(false);
 	const { addPatient, updatePatient } = usePatientStore();
+	const { belleSoftware } = useSettingsStore();
 	const { addLog } = useAuditStore();
 	const { toast } = useToast();
 	const isEdit = !!patient;
@@ -36437,7 +36805,12 @@ function PatientDialog({ patient, trigger }) {
 			profissao: patient?.profissao || "",
 			estado_civil: patient?.estado_civil || "",
 			email: patient?.email || "",
-			endereco: patient?.endereco || ""
+			cep: patient?.cep || "",
+			rua: patient?.rua || "",
+			numeroRua: patient?.numeroRua || "",
+			bairro: patient?.bairro || "",
+			cidade: patient?.cidade || "",
+			uf: patient?.uf || ""
 		}
 	});
 	(0, import_react.useEffect)(() => {
@@ -36451,7 +36824,12 @@ function PatientDialog({ patient, trigger }) {
 			profissao: patient.profissao || "",
 			estado_civil: patient.estado_civil || "",
 			email: patient.email || "",
-			endereco: patient.endereco || ""
+			cep: patient.cep || "",
+			rua: patient.rua || "",
+			numeroRua: patient.numeroRua || "",
+			bairro: patient.bairro || "",
+			cidade: patient.cidade || "",
+			uf: patient.uf || ""
 		});
 		else form.reset({
 			name: "",
@@ -36463,15 +36841,42 @@ function PatientDialog({ patient, trigger }) {
 			profissao: "",
 			estado_civil: "",
 			email: "",
-			endereco: ""
+			cep: "",
+			rua: "",
+			numeroRua: "",
+			bairro: "",
+			cidade: "",
+			uf: ""
 		});
 	}, [
 		open,
 		patient,
 		form
 	]);
-	const onSubmit = (values) => {
+	const onSubmit = async (values) => {
 		if (isEdit && patient) {
+			if (belleSoftware.url && belleSoftware.token && patient.belleId) try {
+				await updateCliente(belleSoftware.url, belleSoftware.token, patient.belleId, {
+					nome: values.name,
+					cpf: values.cpf,
+					celular: values.phone,
+					email: values.email,
+					profissao: values.profissao,
+					cep: values.cep,
+					rua: values.rua,
+					numeroRua: values.numeroRua,
+					bairro: values.bairro,
+					cidade: values.cidade,
+					uf: values.uf
+				});
+				addLog("Atualização sincronizada com Belle Software", patient.id);
+			} catch (e) {
+				toast({
+					title: "Aviso de Integração",
+					description: "Salvo localmente, mas não foi possível atualizar no Belle Software.",
+					variant: "destructive"
+				});
+			}
 			updatePatient(patient.id, values);
 			addLog("Dados do paciente editados", patient.id);
 			toast({
@@ -36479,8 +36884,28 @@ function PatientDialog({ patient, trigger }) {
 				description: `Os dados de ${values.name} foram atualizados.`
 			});
 		} else {
+			let newBelleId = void 0;
+			if (belleSoftware.url && belleSoftware.token) try {
+				const res = await saveLead(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento, {
+					nome: values.name,
+					celular: values.phone,
+					email: values.email,
+					cpf: values.cpf
+				});
+				newBelleId = res?.codigo || res?.id || void 0;
+				addLog("Novo lead gerado no Belle Software", "SYSTEM");
+			} catch (e) {
+				toast({
+					title: "Aviso de Integração",
+					description: "Paciente salvo localmente, mas falhou ao registrar lead no Belle.",
+					variant: "destructive"
+				});
+			}
+			const newPatientId = `p-${Date.now()}`;
 			addPatient({
 				...values,
+				id: newPatientId,
+				belleId: newBelleId,
 				dob: "1990-01-01",
 				lastVisit: (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
 				nextAppointment: null,
@@ -36488,6 +36913,7 @@ function PatientDialog({ patient, trigger }) {
 				procedures: [],
 				professional: null
 			});
+			addLog("Novo paciente cadastrado", newPatientId);
 			toast({
 				title: "Paciente cadastrado",
 				description: `${values.name} foi adicionado com sucesso.`
@@ -36496,70 +36922,70 @@ function PatientDialog({ patient, trigger }) {
 		setOpen(false);
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-		"data-uid": "src/components/patients/PatientDialog.tsx:132:5",
+		"data-uid": "src/components/patients/PatientDialog.tsx:208:5",
 		"data-prohibitions": "[editContent]",
 		open,
 		onOpenChange: setOpen,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-			"data-uid": "src/components/patients/PatientDialog.tsx:133:7",
+			"data-uid": "src/components/patients/PatientDialog.tsx:209:7",
 			"data-prohibitions": "[editContent]",
 			asChild: true,
 			children: trigger ? trigger : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-				"data-uid": "src/components/patients/PatientDialog.tsx:137:11",
+				"data-uid": "src/components/patients/PatientDialog.tsx:213:11",
 				"data-prohibitions": "[]",
 				className: "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-					"data-uid": "src/components/patients/PatientDialog.tsx:138:13",
+					"data-uid": "src/components/patients/PatientDialog.tsx:214:13",
 					"data-prohibitions": "[editContent]",
 					className: "w-4 h-4 mr-2"
 				}), "Adicionar Paciente"]
 			})
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-			"data-uid": "src/components/patients/PatientDialog.tsx:143:7",
+			"data-uid": "src/components/patients/PatientDialog.tsx:219:7",
 			"data-prohibitions": "[editContent]",
-			className: "sm:max-w-[600px] max-h-[90vh] overflow-y-auto",
+			className: "sm:max-w-[700px] max-h-[90vh] overflow-y-auto",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-				"data-uid": "src/components/patients/PatientDialog.tsx:144:9",
+				"data-uid": "src/components/patients/PatientDialog.tsx:220:9",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-					"data-uid": "src/components/patients/PatientDialog.tsx:145:11",
+					"data-uid": "src/components/patients/PatientDialog.tsx:221:11",
 					"data-prohibitions": "[editContent]",
 					className: "font-serif text-xl text-primary",
 					children: isEdit ? "Editar Paciente" : "Novo Paciente"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogDescription, {
-					"data-uid": "src/components/patients/PatientDialog.tsx:148:11",
+					"data-uid": "src/components/patients/PatientDialog.tsx:224:11",
 					"data-prohibitions": "[editContent]",
 					children: isEdit ? "Atualize a foto e as informações do paciente." : "Preencha os dados abaixo para cadastrar um novo paciente."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Form, {
-				"data-uid": "src/components/patients/PatientDialog.tsx:154:9",
+				"data-uid": "src/components/patients/PatientDialog.tsx:230:9",
 				"data-prohibitions": "[editContent]",
 				...form,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
-					"data-uid": "src/components/patients/PatientDialog.tsx:155:11",
+					"data-uid": "src/components/patients/PatientDialog.tsx:231:11",
 					"data-prohibitions": "[editContent]",
 					onSubmit: form.handleSubmit(onSubmit),
 					className: "space-y-4 pt-4",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-							"data-uid": "src/components/patients/PatientDialog.tsx:156:13",
+							"data-uid": "src/components/patients/PatientDialog.tsx:232:13",
 							"data-prohibitions": "[editContent]",
 							control: form.control,
 							name: "avatar",
 							render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-								"data-uid": "src/components/patients/PatientDialog.tsx:160:17",
+								"data-uid": "src/components/patients/PatientDialog.tsx:236:17",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:161:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:237:19",
 										"data-prohibitions": "[]",
 										children: "Foto do Paciente"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:162:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:238:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ImageUpload, {
-											"data-uid": "src/components/patients/PatientDialog.tsx:163:21",
+											"data-uid": "src/components/patients/PatientDialog.tsx:239:21",
 											"data-prohibitions": "[editContent]",
 											value: field.value,
 											onChange: field.onChange,
@@ -36567,294 +36993,460 @@ function PatientDialog({ patient, trigger }) {
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:169:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:245:19",
 										"data-prohibitions": "[editContent]"
 									})
 								]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/patients/PatientDialog.tsx:173:13",
+							"data-uid": "src/components/patients/PatientDialog.tsx:249:13",
 							"data-prohibitions": "[]",
-							className: "grid grid-cols-1 md:grid-cols-2 gap-4",
+							className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:174:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:250:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "name",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:178:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:254:19",
 										"data-prohibitions": "[]",
-										className: "md:col-span-2",
+										className: "md:col-span-2 lg:col-span-3",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:179:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:255:21",
 												"data-prohibitions": "[]",
 												children: "Nome Completo"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:180:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:256:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:181:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:257:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Ex: Maria Silva",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:183:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:259:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:187:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:263:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "age",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:191:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:267:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:192:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:268:21",
 												"data-prohibitions": "[]",
 												children: "Idade"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:193:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:269:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:194:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:270:23",
 													"data-prohibitions": "[editContent]",
 													type: "number",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:196:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:272:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:200:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:276:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "phone",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:204:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:280:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:205:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:281:21",
 												"data-prohibitions": "[]",
 												children: "Telefone"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:206:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:282:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:207:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:283:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "(11) 90000-0000",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:209:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:285:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:213:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:289:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "cpf",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:217:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:293:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:218:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:294:21",
 												"data-prohibitions": "[]",
 												children: "CPF"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:219:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:295:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:220:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:296:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "000.000.000-00",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:222:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:298:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:226:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:302:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "rg",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:230:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:306:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:231:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:307:21",
 												"data-prohibitions": "[]",
 												children: "RG"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:232:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:308:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:233:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:309:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "00.000.000-0",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:235:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:311:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:239:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:315:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "profissao",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:243:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:319:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:244:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:320:21",
 												"data-prohibitions": "[]",
 												children: "Profissão"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:245:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:321:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:246:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:322:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Ex: Engenheira",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:248:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:324:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:252:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:328:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "estado_civil",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:256:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:332:19",
 										"data-prohibitions": "[]",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:257:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:333:21",
 												"data-prohibitions": "[]",
 												children: "Estado Civil"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:258:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:334:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:259:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:335:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Ex: Solteira",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:261:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:337:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:265:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:341:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
 									name: "email",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:269:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:345:19",
 										"data-prohibitions": "[]",
-										className: "md:col-span-2",
+										className: "md:col-span-2 lg:col-span-3",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:270:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:346:21",
 												"data-prohibitions": "[]",
 												children: "E-mail"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:271:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:347:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:272:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:348:23",
 													"data-prohibitions": "[editContent]",
 													placeholder: "paciente@email.com",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:274:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:350:21",
+												"data-prohibitions": "[editContent]"
+											})
+										]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-uid": "src/components/patients/PatientDialog.tsx:354:15",
+									"data-prohibitions": "[]",
+									className: "col-span-1 md:col-span-2 lg:col-span-3 border-t border-border mt-2 pt-4",
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
+										"data-uid": "src/components/patients/PatientDialog.tsx:355:17",
+										"data-prohibitions": "[]",
+										className: "text-sm font-medium text-primary mb-3",
+										children: "Endereço"
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
+									"data-uid": "src/components/patients/PatientDialog.tsx:357:15",
+									"data-prohibitions": "[editContent]",
+									control: form.control,
+									name: "cep",
+									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
+										"data-uid": "src/components/patients/PatientDialog.tsx:361:19",
+										"data-prohibitions": "[]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:362:21",
+												"data-prohibitions": "[]",
+												children: "CEP"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:363:21",
+												"data-prohibitions": "[]",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/patients/PatientDialog.tsx:364:23",
+													"data-prohibitions": "[editContent]",
+													placeholder: "00000-000",
+													...field
+												})
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:366:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-									"data-uid": "src/components/patients/PatientDialog.tsx:278:15",
+									"data-uid": "src/components/patients/PatientDialog.tsx:370:15",
 									"data-prohibitions": "[editContent]",
 									control: form.control,
-									name: "endereco",
+									name: "rua",
 									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-										"data-uid": "src/components/patients/PatientDialog.tsx:282:19",
+										"data-uid": "src/components/patients/PatientDialog.tsx:374:19",
 										"data-prohibitions": "[]",
-										className: "md:col-span-2",
+										className: "lg:col-span-2",
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:283:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:375:21",
 												"data-prohibitions": "[]",
-												children: "Endereço Completo"
+												children: "Rua / Logradouro"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:284:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:376:21",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-													"data-uid": "src/components/patients/PatientDialog.tsx:285:23",
+													"data-uid": "src/components/patients/PatientDialog.tsx:377:23",
 													"data-prohibitions": "[editContent]",
-													placeholder: "Rua das Flores, 123 - São Paulo/SP",
+													placeholder: "Av. Paulista",
 													...field
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-												"data-uid": "src/components/patients/PatientDialog.tsx:287:21",
+												"data-uid": "src/components/patients/PatientDialog.tsx:379:21",
+												"data-prohibitions": "[editContent]"
+											})
+										]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
+									"data-uid": "src/components/patients/PatientDialog.tsx:383:15",
+									"data-prohibitions": "[editContent]",
+									control: form.control,
+									name: "numeroRua",
+									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
+										"data-uid": "src/components/patients/PatientDialog.tsx:387:19",
+										"data-prohibitions": "[]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:388:21",
+												"data-prohibitions": "[]",
+												children: "Número"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:389:21",
+												"data-prohibitions": "[]",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/patients/PatientDialog.tsx:390:23",
+													"data-prohibitions": "[editContent]",
+													placeholder: "1000",
+													...field
+												})
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:392:21",
+												"data-prohibitions": "[editContent]"
+											})
+										]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
+									"data-uid": "src/components/patients/PatientDialog.tsx:396:15",
+									"data-prohibitions": "[editContent]",
+									control: form.control,
+									name: "bairro",
+									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
+										"data-uid": "src/components/patients/PatientDialog.tsx:400:19",
+										"data-prohibitions": "[]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:401:21",
+												"data-prohibitions": "[]",
+												children: "Bairro"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:402:21",
+												"data-prohibitions": "[]",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/patients/PatientDialog.tsx:403:23",
+													"data-prohibitions": "[editContent]",
+													placeholder: "Bela Vista",
+													...field
+												})
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:405:21",
+												"data-prohibitions": "[editContent]"
+											})
+										]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
+									"data-uid": "src/components/patients/PatientDialog.tsx:409:15",
+									"data-prohibitions": "[editContent]",
+									control: form.control,
+									name: "cidade",
+									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
+										"data-uid": "src/components/patients/PatientDialog.tsx:413:19",
+										"data-prohibitions": "[]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:414:21",
+												"data-prohibitions": "[]",
+												children: "Cidade"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:415:21",
+												"data-prohibitions": "[]",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/patients/PatientDialog.tsx:416:23",
+													"data-prohibitions": "[editContent]",
+													placeholder: "São Paulo",
+													...field
+												})
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:418:21",
+												"data-prohibitions": "[editContent]"
+											})
+										]
+									})
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
+									"data-uid": "src/components/patients/PatientDialog.tsx:422:15",
+									"data-prohibitions": "[editContent]",
+									control: form.control,
+									name: "uf",
+									render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
+										"data-uid": "src/components/patients/PatientDialog.tsx:426:19",
+										"data-prohibitions": "[]",
+										children: [
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:427:21",
+												"data-prohibitions": "[]",
+												children: "UF"
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:428:21",
+												"data-prohibitions": "[]",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+													"data-uid": "src/components/patients/PatientDialog.tsx:429:23",
+													"data-prohibitions": "[editContent]",
+													placeholder: "SP",
+													...field
+												})
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
+												"data-uid": "src/components/patients/PatientDialog.tsx:431:21",
 												"data-prohibitions": "[editContent]"
 											})
 										]
@@ -36863,18 +37455,18 @@ function PatientDialog({ patient, trigger }) {
 							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/patients/PatientDialog.tsx:292:13",
+							"data-uid": "src/components/patients/PatientDialog.tsx:436:13",
 							"data-prohibitions": "[editContent]",
-							className: "flex justify-end gap-3 pt-4",
+							className: "flex justify-end gap-3 pt-4 border-t border-border mt-4",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/patients/PatientDialog.tsx:293:15",
+								"data-uid": "src/components/patients/PatientDialog.tsx:437:15",
 								"data-prohibitions": "[]",
 								type: "button",
 								variant: "outline",
 								onClick: () => setOpen(false),
 								children: "Cancelar"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/patients/PatientDialog.tsx:296:15",
+								"data-uid": "src/components/patients/PatientDialog.tsx:440:15",
 								"data-prohibitions": "[editContent]",
 								type: "submit",
 								children: isEdit ? "Salvar Alterações" : "Cadastrar"
@@ -37132,291 +37724,6 @@ function PatientCard({ patient }) {
 		})]
 	});
 }
-//#endregion
-//#region src/lib/api/belle.ts
-var BelleApiError = class extends Error {
-	details;
-	errorTitle;
-	status;
-	raw;
-	constructor(payload) {
-		let message = "Erro de API";
-		let detailsStr = "Falha na comunicação com o servidor.";
-		let status = void 0;
-		let raw = void 0;
-		try {
-			if (typeof payload === "string") {
-				message = payload;
-				detailsStr = payload;
-			} else if (payload && typeof payload === "object") {
-				message = String(payload.error || payload.message || message);
-				status = payload.status;
-				raw = payload.raw || payload;
-				if (typeof payload.details === "string") detailsStr = payload.details;
-				else if (payload.details && typeof payload.details === "object") detailsStr = JSON.stringify(payload.details);
-				else if (!payload.details && payload.error) detailsStr = typeof payload.error === "string" ? payload.error : JSON.stringify(payload.error);
-			}
-		} catch (e) {
-			detailsStr = "Não foi possível extrair os detalhes do erro.";
-		}
-		super(message);
-		this.name = "BelleApiError";
-		this.errorTitle = message;
-		this.details = String(detailsStr);
-		this.status = status;
-		this.raw = raw;
-	}
-};
-var PROXY_ENDPOINT = "/api/proxy/belle";
-var belleApiCall = async (url, token, estabelecimento = "1", queryParams = {}, retries = 3) => {
-	const cleanToken = token ? token.trim() : "";
-	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
-	let finalUrl = url.trim();
-	const headers = {
-		"User-Agent": "MedSpa/1.0",
-		Authorization: cleanToken,
-		Accept: "application/json, text/plain, */*"
-	};
-	const params = new URLSearchParams();
-	if (cleanEstab) params.append("codEstab", cleanEstab);
-	if (queryParams) Object.entries(queryParams).forEach(([key, value]) => {
-		if (value !== void 0 && value !== null && value !== "") params.append(key, String(value));
-	});
-	const [baseUrl, existingQuery] = finalUrl.split("?");
-	let queryStr = existingQuery || "";
-	const newParamsStr = params.toString();
-	if (newParamsStr) queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr;
-	finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl;
-	const proxyPayload = {
-		targetUrl: finalUrl,
-		method: "GET",
-		headers,
-		removeHeaders: [
-			"Sec-Fetch-Site",
-			"Sec-Fetch-Mode",
-			"Sec-Fetch-Dest",
-			"Origin",
-			"Referer"
-		],
-		useResidentialProxy: true
-	};
-	let attempt = 0;
-	while (attempt < retries) {
-		attempt++;
-		try {
-			const response = await fetch(PROXY_ENDPOINT, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json"
-				},
-				body: JSON.stringify(proxyPayload)
-			});
-			const text = await response.text();
-			let result;
-			try {
-				result = JSON.parse(text);
-			} catch (e) {
-				result = text;
-			}
-			if (!response.ok) throw new BelleApiError({
-				error: `Erro HTTP ${response.status}`,
-				details: typeof result === "string" ? result : JSON.stringify(result),
-				status: response.status,
-				raw: {
-					status: response.status,
-					body: result
-				}
-			});
-			if (typeof result === "object" && result !== null && (result.status === "erro" || result.status === false || result.error)) throw new BelleApiError({
-				error: result.error || result.mensagem || "Erro na API",
-				details: result.details || result.mensagem || text,
-				raw: result
-			});
-			return result.data || result.dados || result;
-		} catch (err) {
-			if (attempt < retries && (err.message === "Failed to fetch" || err.message.includes("Network"))) {
-				await new Promise((res) => setTimeout(res, 1e3 * attempt));
-				continue;
-			}
-			if (err instanceof BelleApiError) throw err;
-			throw new BelleApiError({
-				error: "Erro de Rede",
-				details: err?.message,
-				raw: err
-			});
-		}
-	}
-};
-/**
-* Direct API Integration Handler with Diagnostic Logs
-*/
-var testBelleApiConnectionWithRetry = async (url, token, estabelecimento, testData = {}) => {
-	const cleanToken = token ? token.trim() : "";
-	const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, "") : "1";
-	const headers = {
-		"User-Agent": "MedSpa/1.0",
-		Authorization: cleanToken,
-		Accept: "application/json, text/plain, */*"
-	};
-	let finalUrl = url.trim();
-	const params = new URLSearchParams();
-	if (cleanEstab) params.append("codEstab", cleanEstab);
-	Object.entries(testData).forEach(([k, v]) => {
-		if (v !== void 0 && v !== null && v !== "") params.append(k, String(v));
-	});
-	const [baseUrl, existingQuery] = finalUrl.split("?");
-	let queryStr = existingQuery || "";
-	const newParamsStr = params.toString();
-	if (newParamsStr) queryStr = queryStr ? `${queryStr}&${newParamsStr}` : newParamsStr;
-	finalUrl = queryStr ? `${baseUrl}?${queryStr}` : baseUrl;
-	const proxyPayload = {
-		targetUrl: finalUrl,
-		method: "GET",
-		headers,
-		removeHeaders: [
-			"Sec-Fetch-Site",
-			"Sec-Fetch-Mode",
-			"Sec-Fetch-Dest",
-			"Origin",
-			"Referer"
-		],
-		useResidentialProxy: true
-	};
-	const diagnosticEntry = {
-		request: {
-			url: finalUrl,
-			method: proxyPayload.method,
-			headers,
-			removeHeaders: proxyPayload.removeHeaders,
-			useResidentialProxy: proxyPayload.useResidentialProxy
-		},
-		response: null
-	};
-	const diagnosticLog = [];
-	try {
-		let response;
-		try {
-			response = await fetch(PROXY_ENDPOINT, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json"
-				},
-				body: JSON.stringify(proxyPayload)
-			});
-		} catch (networkErr) {
-			throw new Error(`Proxy offline ou erro de rede: ${networkErr.message}`);
-		}
-		const text = await response.text();
-		let parsedBody = text;
-		try {
-			parsedBody = JSON.parse(text);
-		} catch (e) {}
-		diagnosticEntry.response = {
-			status: response.status,
-			headers: Object.fromEntries(response.headers.entries()),
-			body: parsedBody
-		};
-		diagnosticLog.push(diagnosticEntry);
-		if (!response.ok) throw new BelleApiError({
-			error: `Erro HTTP ${response.status}`,
-			details: typeof parsedBody === "string" ? parsedBody : JSON.stringify(parsedBody),
-			status: response.status,
-			raw: {
-				diagnostics: diagnosticLog,
-				status: response.status,
-				body: parsedBody
-			}
-		});
-		if (typeof parsedBody === "object" && parsedBody !== null && ("erro" in parsedBody || parsedBody.status === false || parsedBody.error)) throw new BelleApiError({
-			error: parsedBody.error || parsedBody.mensagem || "Erro na API",
-			details: parsedBody.details || parsedBody.mensagem || JSON.stringify(parsedBody),
-			status: 200,
-			raw: {
-				diagnostics: diagnosticLog,
-				status: 200,
-				body: parsedBody
-			}
-		});
-		return {
-			success: true,
-			status: response.status,
-			data: parsedBody,
-			diagnostics: diagnosticLog
-		};
-	} catch (err) {
-		if (!diagnosticEntry.response) {
-			diagnosticEntry.response = { error: err.message };
-			if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry);
-		}
-		if (err instanceof BelleApiError) throw err;
-		throw new BelleApiError({
-			error: "Falha na Conexão",
-			details: err.message,
-			raw: { diagnostics: diagnosticLog }
-		});
-	}
-};
-var testBelleConnection = async (url, token, estabelecimento = "1") => {
-	return {
-		success: true,
-		data: await belleApiCall(url, token, estabelecimento, {})
-	};
-};
-var fetchBelleClientes = async (url, token, estabelecimento = "1") => {
-	const data = await belleApiCall(url, token, estabelecimento, {});
-	return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || [];
-};
-var fetchBelleAgendamentos = async (_url, _token, _cpf, _estabelecimento = "1") => {
-	return [];
-};
-var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
-	const now = /* @__PURE__ */ new Date();
-	const validClientes = Array.isArray(rawClientes) ? rawClientes : [];
-	const validAgendamentos = Array.isArray(rawAgendamentos) ? rawAgendamentos : [];
-	return validClientes.map((c) => {
-		const belleIdStr = String(c.codigo || c.id || "");
-		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && String(a.cliente_id) === belleIdStr);
-		const rawDob = c.dtNascimento || c.data_nascimento;
-		let lastVisit = rawDob ? new Date(rawDob).toISOString().split("T")[0] : "2023-01-01";
-		let nextAppointment = null;
-		const procedures = /* @__PURE__ */ new Set();
-		clientAppts.forEach((a) => {
-			if (a.servico) procedures.add(a.servico);
-			if (a.data) {
-				const apptDate = /* @__PURE__ */ new Date(`${a.data}T${a.hora_inicio || "00:00"}:00`);
-				if (!isNaN(apptDate.getTime())) {
-					if (apptDate < now) {
-						if (!lastVisit || isNaN(new Date(lastVisit).getTime()) || apptDate > new Date(lastVisit)) lastVisit = a.data;
-					} else if (!nextAppointment || apptDate < new Date(nextAppointment)) nextAppointment = `${a.data}T${a.hora_inicio || "00:00"}:00`;
-				}
-			}
-		});
-		let formattedAddress = c.endereco || "";
-		if (c.numEndereco) formattedAddress += `, ${c.numEndereco}`;
-		if (c.bairro) formattedAddress += ` - ${c.bairro}`;
-		if (c.cidade) formattedAddress += ` - ${c.cidade}`;
-		if (c.UF) formattedAddress += `/${c.UF}`;
-		return {
-			belleId: belleIdStr,
-			name: (c.nome || "").trim() || "Paciente sem nome",
-			cpf: (c.cpf || "").trim(),
-			email: (c.email || "").trim(),
-			phone: (c.celular || c.telefone || "").trim(),
-			dob: rawDob,
-			lastVisit,
-			nextAppointment,
-			procedures: Array.from(procedures),
-			history: c.historico_clinico || "",
-			rg: c.rg || "",
-			profissao: c.profissao || "",
-			estado_civil: c.estado_civil || "",
-			endereco: formattedAddress.trim(),
-			status: nextAppointment ? "scheduled" : "active"
-		};
-	});
-};
 //#endregion
 //#region src/pages/Patients.tsx
 function Patients() {
@@ -50757,7 +51064,7 @@ function IntegrationSettings({ description }) {
 									value: url,
 									onChange: (e) => setUrl(e.target.value),
 									onBlur: () => setUrl(sanitizeUrl(url)),
-									placeholder: "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/cliente/listar",
+									placeholder: "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0",
 									className: "bg-white font-mono text-sm"
 								})]
 							}),
@@ -50999,64 +51306,76 @@ function IntegrationSettings({ description }) {
 										"data-uid": "src/components/settings/IntegrationSettings.tsx:296:23",
 										"data-prohibitions": "[editContent]",
 										className: "font-mono text-sm font-semibold text-slate-100 flex items-center gap-2",
-										children: [log.request.method, " API Cycle"]
+										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:297:25",
+											"data-prohibitions": "[editContent]",
+											variant: "outline",
+											className: "font-mono border-slate-600 bg-slate-800 text-sky-400",
+											children: log.request.method
+										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:303:25",
+											"data-prohibitions": "[editContent]",
+											className: "truncate max-w-[200px] sm:max-w-md",
+											title: log.request.url,
+											children: log.request.url
+										})]
 									}), log.response?.status && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:300:25",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:311:25",
 										"data-prohibitions": "[editContent]",
 										variant: "outline",
 										className: cn$1("font-mono border-0 font-bold", log.response.status >= 200 && log.response.status < 300 ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"),
 										children: ["HTTP ", log.response.status]
 									})]
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:313:21",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:324:21",
 									"data-prohibitions": "[editContent]",
 									className: "p-4 grid lg:grid-cols-2 gap-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-800/50",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:314:23",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:325:23",
 										"data-prohibitions": "[editContent]",
 										className: "lg:pr-4 pb-4 lg:pb-0 overflow-hidden flex flex-col",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h4", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:315:25",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:326:25",
 											"data-prohibitions": "[]",
 											className: "text-emerald-400 text-xs mb-3 font-bold uppercase tracking-wider flex items-center gap-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:316:27",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:327:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											}), " Request Payload & Headers"]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:318:25",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:329:25",
 											"data-prohibitions": "[editContent]",
 											className: "bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-x-auto text-slate-300 border border-slate-800/60 flex-1",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:319:27",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:330:27",
 												"data-prohibitions": "[editContent]",
 												className: "whitespace-pre-wrap break-words",
 												children: JSON.stringify(log.request, null, 2)
 											})
 										})]
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:324:23",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:335:23",
 										"data-prohibitions": "[editContent]",
 										className: "lg:pl-4 pt-4 lg:pt-0 overflow-hidden flex flex-col",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h4", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:325:25",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:336:25",
 											"data-prohibitions": "[]",
 											className: "text-sky-400 text-xs mb-3 font-bold uppercase tracking-wider flex items-center gap-2",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronLeft, {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:326:27",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:337:27",
 												"data-prohibitions": "[editContent]",
 												className: "w-4 h-4"
 											}), " Response Data (Raw)"]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											"data-uid": "src/components/settings/IntegrationSettings.tsx:328:25",
+											"data-uid": "src/components/settings/IntegrationSettings.tsx:339:25",
 											"data-prohibitions": "[editContent]",
 											className: "bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-auto text-slate-300 border border-slate-800/60 flex-1 max-h-[400px]",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", {
-												"data-uid": "src/components/settings/IntegrationSettings.tsx:329:27",
+												"data-uid": "src/components/settings/IntegrationSettings.tsx:340:27",
 												"data-prohibitions": "[editContent]",
 												className: "whitespace-pre-wrap break-words",
-												children: typeof log.response?.body === "string" ? log.response.body : JSON.stringify(log.response, null, 2)
+												children: typeof log.response?.body === "string" ? log.response.body : JSON.stringify(log.response?.body || log.response, null, 2)
 											})
 										})]
 									})]
@@ -51705,4 +52024,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CVRtVFPr.js.map
+//# sourceMappingURL=index-Y2iKtza0.js.map
