@@ -30,6 +30,8 @@ export interface BelleCliente {
   situacao?: string
   temperatura?: string
   classificacao?: string
+  rating?: string
+  tags?: string[] | string
 }
 
 export interface BelleAgendamento {
@@ -115,7 +117,7 @@ export const belleApiCall = async (
   retries: number = 0,
 ): Promise<any> => {
   const cleanToken = token ? token.trim() : ''
-  let finalUrl = `${baseUrl.trim().replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+  let finalUrl = `${baseUrl.trim().replace(/\/+$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
 
   const headers: Record<string, string> = {
     Authorization: cleanToken,
@@ -187,6 +189,7 @@ export const belleApiCall = async (
         if (response.status === 400) errorMsg = '400 Bad Request'
         if (response.status === 401) errorMsg = '401 Unauthorized'
         if (response.status === 404) errorMsg = '404 Not Found'
+        if (response.status === 405) errorMsg = '405 Method Not Allowed'
         if (response.status === 500) errorMsg = '500 Server Error'
 
         throw new BelleApiError({
@@ -305,7 +308,7 @@ export const testBelleApiConnectionWithRetry = async (
     queryParams.pagina = 0
   }
 
-  let finalUrl = `${baseUrl.trim().replace(/\/$/, '')}${endpoint}`
+  let finalUrl = `${baseUrl.trim().replace(/\/+$/, '')}${endpoint}`
   const params = new URLSearchParams()
   Object.entries(queryParams).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -394,11 +397,12 @@ export const testBelleApiConnectionWithRetry = async (
 
     diagnosticLog.push(diagnosticEntry)
 
-    if (!response.ok || [400, 401, 404, 500].includes(response.status)) {
+    if (!response.ok || [400, 401, 404, 405, 500].includes(response.status)) {
       let errorMsg = `Erro HTTP ${response.status}`
       if (response.status === 400) errorMsg = '400 Bad Request'
       if (response.status === 401) errorMsg = '401 Unauthorized'
       if (response.status === 404) errorMsg = '404 Not Found'
+      if (response.status === 405) errorMsg = '405 Method Not Allowed'
       if (response.status === 500) errorMsg = '500 Server Error'
 
       throw new BelleApiError({
@@ -457,8 +461,29 @@ export const fetchBelleClientes = async (
   token: string,
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
-  const data = await listClientes(url, token, estabelecimento, 0)
-  return Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || []
+  let allClientes: BelleCliente[] = []
+  let pagina = 0
+  let hasMore = true
+
+  while (hasMore) {
+    const data = await listClientes(url, token, estabelecimento, pagina)
+    const clientes = Array.isArray(data)
+      ? data
+      : data?.pacientes || data?.clientes || data?.dados || []
+
+    if (!clientes || clientes.length === 0) {
+      hasMore = false
+    } else {
+      allClientes = [...allClientes, ...clientes]
+      if (clientes.length < 100) {
+        hasMore = false
+      } else {
+        pagina++
+      }
+    }
+  }
+
+  return allClientes
 }
 
 export const fetchBelleAgendamentos = async (
@@ -538,6 +563,13 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
       temperatura: c.temperatura || '',
       classificacao: c.classificacao || '',
       status: nextAppointment ? 'scheduled' : 'active',
+      sexo: c.sexo || '',
+      rating: c.rating || '',
+      tags: Array.isArray(c.tags)
+        ? c.tags
+        : typeof c.tags === 'string' && c.tags
+          ? c.tags.split(',').map((t: string) => t.trim())
+          : [],
     }
   })
 }

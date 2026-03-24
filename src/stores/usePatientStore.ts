@@ -28,6 +28,9 @@ export type Patient = {
   cep?: string
   temperatura?: string
   classificacao?: string
+  sexo?: string
+  rating?: string
+  tags?: string[]
 }
 
 type PatientState = {
@@ -120,6 +123,9 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         cep: bp.cep || '',
         temperatura: bp.temperatura || '',
         classificacao: bp.classificacao || '',
+        sexo: bp.sexo || '',
+        rating: bp.rating || '',
+        tags: bp.tags || [],
       } as Patient
     })
 
