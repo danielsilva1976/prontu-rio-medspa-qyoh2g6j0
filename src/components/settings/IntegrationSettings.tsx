@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
@@ -14,19 +13,15 @@ import { cn } from '@/lib/utils'
 import {
   Save,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   Database,
   Activity,
   DownloadCloud,
   Terminal,
   Loader2,
-  ChevronRight,
-  ChevronLeft,
   CheckCircle2,
 } from 'lucide-react'
 import {
-  testBelleApiConnectionWithRetry,
+  runIncrementalValidationFlow,
   fetchBelleClientes,
   fetchBelleAgendamentos,
   mapBelleDataToPatients,
@@ -43,15 +38,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
 
-  const [mapping, setMapping] = useState({
-    cpf: '',
-    celular: '',
-    email: '',
-    id: '',
-  })
-
   const [isTesting, setIsTesting] = useState(false)
-  const [showMapping, setShowMapping] = useState(false)
 
   const [diagnosticData, setDiagnosticData] = useState<{
     success: boolean
@@ -87,28 +74,42 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     updateBelleConfig(cleanUrl, clToken, clEstab, 'application/json')
 
     try {
-      const res = await testBelleApiConnectionWithRetry(cleanUrl, clToken, clEstab, mapping)
-      setBelleLastSync('success', new Date().toISOString())
+      const res = await runIncrementalValidationFlow(cleanUrl, clToken, clEstab)
 
-      setDiagnosticData({
-        success: true,
-        title: `Conexão API Estabelecida (HTTP ${res.status})`,
-        message: `HTTP Status ${res.status}`,
-        details: `Requisição bem-sucedida! A API retornou ${Array.isArray(res.data) ? res.data.length + ' registros' : 'dados válidos'}. Consulte o log de diagnóstico abaixo para os dados exatos recebidos.`,
-        diagnostics: res.diagnostics,
-      })
-      addLog('Sincronização Teste API Oficial', 'SYSTEM')
+      if (res.success) {
+        setBelleLastSync('success', new Date().toISOString())
+        setDiagnosticData({
+          success: true,
+          title: `Conexão API Estabelecida`,
+          message: `Validação Incremental Concluída`,
+          details: `Todos os 4 passos contratuais foram validados com sucesso. A API responde adequadamente aos métodos HTTP específicos.`,
+          diagnostics: res.diagnostics,
+        })
+        addLog('Sincronização Teste API Oficial', 'SYSTEM')
+      } else {
+        setBelleLastSync('error', new Date().toISOString())
+        const lastLog = res.diagnostics[res.diagnostics.length - 1]
+        const is405 = lastLog?.is405
+
+        setDiagnosticData({
+          success: false,
+          title: is405
+            ? 'Contract Error (HTTP 405)'
+            : `Erro de API (HTTP ${lastLog?.response?.status || 'Desconhecido'})`,
+          message: 'Falha na Validação Incremental',
+          details: is405
+            ? 'Erro Contratual (HTTP 405 Method Not Allowed): Suspeita de método incorreto (GET/POST/PUT) ou caminho não existente na API.'
+            : 'Falha na comunicação direta com a API no passo: ' + lastLog?.step,
+          diagnostics: res.diagnostics,
+        })
+      }
     } catch (err: any) {
       setBelleLastSync('error', new Date().toISOString())
-
       setDiagnosticData({
         success: false,
-        title: err.errorTitle || `Erro de API (HTTP ${err.status || 'Desconhecido'})`,
+        title: 'Erro de Execução Interna',
         message: err.message,
-        details:
-          err.details ||
-          'Falha na comunicação direta com a API. Verifique os parâmetros e permissões.',
-        diagnostics: err.raw?.diagnostics,
+        details: 'Falha ao executar o fluxo de teste. Verifique sua conexão com a internet.',
       })
     } finally {
       setIsTesting(false)
@@ -150,9 +151,10 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                 <Database className="w-5 h-5" /> Integração REST API (v1.0)
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                As chamadas de listagem e busca utilizam requisições oficiais <code>GET</code> com
-                envio do token de integração via cabeçalho <code>Authorization</code>, seguindo o
-                padrão da documentação v1.0. Roteadas através de proxy para evitar bloqueios CORS.
+                As chamadas utilizam requisições oficiais estritas <code>GET</code>,{' '}
+                <code>PUT</code> e <code>POST</code> com envio do token de integração via cabeçalho{' '}
+                <code>Authorization</code>. A validação incremental testa 4 cenários para garantir a
+                conformidade contratual da API e evitar bloqueios.
               </p>
             </div>
 
@@ -186,37 +188,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                 />
               </div>
             </div>
-            <Collapsible
-              open={showMapping}
-              onOpenChange={setShowMapping}
-              className="border border-border/50 bg-white rounded-xl shadow-sm"
-            >
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-                  <div className="flex items-center font-medium">
-                    <Activity className="w-4 h-4 mr-2 text-primary" /> Filtros Opcionais de Busca
-                  </div>
-                  {showMapping ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 bg-muted/10 grid gap-4 sm:grid-cols-2 border-t border-border/50">
-                {Object.keys(mapping).map((key) => (
-                  <div key={key} className="space-y-1.5">
-                    <Label className="text-xs capitalize text-muted-foreground">{key}</Label>
-                    <Input
-                      value={(mapping as any)[key]}
-                      onChange={(e) => setMapping({ ...mapping, [key]: e.target.value })}
-                      placeholder={`Filtrar por ${key}`}
-                      className="bg-white text-xs h-8"
-                    />
-                  </div>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
           </div>
 
           {diagnosticData?.success && (
@@ -267,7 +238,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
               ) : (
                 <Activity className="w-4 h-4 mr-2" />
               )}{' '}
-              Testar Conexão
+              Validar Contrato da API
             </Button>
             {isConnected && (
               <Button
@@ -281,32 +252,30 @@ export function IntegrationSettings({ description }: { title: string; descriptio
             )}
           </div>
 
-          {diagnosticData && (
+          {diagnosticData?.diagnostics && (
             <div className="mt-8 pt-8 border-t border-border/50 animate-fade-in">
               <h3 className="text-lg font-medium flex items-center gap-2 text-primary mb-4">
-                <Terminal className="w-5 h-5" /> Log de Diagnóstico
+                <Terminal className="w-5 h-5" /> Console de Diagnóstico Contratual
               </h3>
               <div className="space-y-4">
-                {diagnosticData.diagnostics?.map((log, i) => (
+                {diagnosticData.diagnostics.map((log, i) => (
                   <Card
                     key={i}
-                    className="border-slate-800 shadow-md overflow-hidden bg-[#0f172a] text-slate-300"
+                    className={cn(
+                      'border-slate-800 shadow-md overflow-hidden bg-[#0f172a] text-slate-300',
+                      log.error ? 'border-rose-900/50' : '',
+                    )}
                   >
                     <div className="bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-800">
-                      <span className="font-mono text-sm font-semibold text-slate-100 flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <Badge
                           variant="outline"
                           className="font-mono border-slate-600 bg-slate-800 text-sky-400"
                         >
                           {log.request.method}
                         </Badge>
-                        <span
-                          className="truncate max-w-[200px] sm:max-w-md"
-                          title={log.request.url}
-                        >
-                          {log.request.url}
-                        </span>
-                      </span>
+                        <span className="font-semibold text-sm text-slate-200">{log.step}</span>
+                      </div>
                       {log.response?.status && (
                         <Badge
                           variant="outline"
@@ -321,26 +290,53 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                         </Badge>
                       )}
                     </div>
-                    <div className="p-4 grid lg:grid-cols-2 gap-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-800/50">
-                      <div className="lg:pr-4 pb-4 lg:pb-0 overflow-hidden flex flex-col">
-                        <h4 className="text-emerald-400 text-xs mb-3 font-bold uppercase tracking-wider flex items-center gap-2">
-                          <ChevronRight className="w-4 h-4" /> Request Payload & Headers
-                        </h4>
-                        <div className="bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-x-auto text-slate-300 border border-slate-800/60 flex-1">
-                          <pre className="whitespace-pre-wrap break-words">
-                            {JSON.stringify(log.request, null, 2)}
+                    <div className="p-4 space-y-4">
+                      <div className="space-y-2 text-xs font-mono">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-emerald-400 font-bold">URL:</span>
+                          <span className="break-all text-slate-300 bg-black/40 p-1.5 rounded">
+                            {log.request.url}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-emerald-400 font-bold">QUERY PARAMS:</span>
+                            <pre className="bg-black/40 p-2 rounded text-slate-300 overflow-x-auto">
+                              {Object.keys(log.request.queryParams).length > 0
+                                ? JSON.stringify(log.request.queryParams, null, 2)
+                                : 'Nenhum'}
+                            </pre>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-emerald-400 font-bold">HEADERS:</span>
+                            <pre className="bg-black/40 p-2 rounded text-slate-300 overflow-x-auto">
+                              {JSON.stringify(log.request.headers, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1 mt-2">
+                          <span className="text-emerald-400 font-bold">BODY:</span>
+                          <pre className="bg-black/40 p-2 rounded text-slate-300 overflow-x-auto whitespace-pre-wrap">
+                            {log.request.body === 'vazio'
+                              ? 'vazio'
+                              : JSON.stringify(log.request.body, null, 2)}
                           </pre>
                         </div>
                       </div>
-                      <div className="lg:pl-4 pt-4 lg:pt-0 overflow-hidden flex flex-col">
-                        <h4 className="text-sky-400 text-xs mb-3 font-bold uppercase tracking-wider flex items-center gap-2">
-                          <ChevronLeft className="w-4 h-4" /> Response Data (Raw)
-                        </h4>
-                        <div className="bg-black/40 p-3 rounded-md font-mono text-[11px] overflow-auto text-slate-300 border border-slate-800/60 flex-1 max-h-[400px]">
-                          <pre className="whitespace-pre-wrap break-words">
-                            {typeof log.response?.body === 'string'
-                              ? log.response.body
-                              : JSON.stringify(log.response?.body || log.response, null, 2)}
+
+                      <div className="pt-4 border-t border-slate-800 space-y-2 text-xs font-mono">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sky-400 font-bold">STATUS:</span>
+                          <span className="text-slate-300">{log.response?.status || 'N/A'}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sky-400 font-bold">RESPONSE:</span>
+                          <pre className="bg-black/40 p-2 rounded text-slate-300 overflow-auto max-h-[300px] whitespace-pre-wrap">
+                            {log.response?.body
+                              ? typeof log.response.body === 'string'
+                                ? log.response.body
+                                : JSON.stringify(log.response.body, null, 2)
+                              : log.error || 'Sem resposta'}
                           </pre>
                         </div>
                       </div>

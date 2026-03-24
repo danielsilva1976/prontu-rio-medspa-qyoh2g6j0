@@ -47,19 +47,20 @@ export interface BelleAgendamento {
 }
 
 export interface DiagnosticLog {
+  step: string
   request: {
-    url: string
     method: string
+    url: string
+    queryParams: Record<string, string>
     headers: Record<string, string>
-    removeHeaders?: string[]
-    useResidentialProxy?: boolean
+    body: any | 'vazio'
   }
   response: {
     status?: number
-    headers?: Record<string, string>
     body?: any
-    error?: string
   } | null
+  error?: string
+  is405?: boolean
 }
 
 export class BelleApiError extends Error {
@@ -107,42 +108,21 @@ export class BelleApiError extends Error {
 
 const PROXY_ENDPOINT = import.meta.env.VITE_BELLE_PROXY_URL || '/api/proxy/belle'
 
-export const belleApiCall = async (
+const executeExplicitRequest = async (
   method: 'GET' | 'POST' | 'PUT',
-  baseUrl: string,
-  endpoint: string,
+  fullUrl: string,
   token: string,
-  queryParams: Record<string, any> = {},
   bodyData: any = null,
-  retries: number = 0,
-): Promise<any> => {
+): Promise<{ status: number; body: any }> => {
   const cleanToken = token ? token.trim() : ''
-  let finalUrl = `${baseUrl.trim().replace(/\/+$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
-
-  const headers: Record<string, string> = {
+  const headers = {
     Authorization: cleanToken,
     'Content-Type': 'application/json',
     Accept: 'application/json',
   }
 
-  const params = new URLSearchParams()
-  if (queryParams) {
-    Object.entries(queryParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.append(key, String(value))
-      }
-    })
-  }
-
-  const newParamsStr = params.toString()
-  if (newParamsStr) {
-    finalUrl = finalUrl.includes('?')
-      ? `${finalUrl}&${newParamsStr}`
-      : `${finalUrl}?${newParamsStr}`
-  }
-
   const proxyPayload = {
-    targetUrl: finalUrl,
+    targetUrl: fullUrl,
     method,
     headers,
     body: method !== 'GET' ? bodyData : undefined,
@@ -160,78 +140,43 @@ export const belleApiCall = async (
     useResidentialProxy: true,
   }
 
-  let attempt = 0
-  while (attempt <= retries) {
-    attempt++
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
 
+  try {
+    const response = await fetch(PROXY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(proxyPayload),
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+
+    const text = await response.text()
+    let parsedBody = text
     try {
-      const response = await fetch(PROXY_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(proxyPayload),
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      const text = await response.text()
-      let result
-      try {
-        result = JSON.parse(text)
-      } catch (e) {
-        result = text
-      }
-
-      if (!response.ok || [400, 401, 404, 500].includes(response.status)) {
-        let errorMsg = `Erro HTTP ${response.status}`
-        if (response.status === 400) errorMsg = '400 Bad Request'
-        if (response.status === 401) errorMsg = '401 Unauthorized'
-        if (response.status === 404) errorMsg = '404 Not Found'
-        if (response.status === 405) errorMsg = '405 Method Not Allowed'
-        if (response.status === 500) errorMsg = '500 Server Error'
-
-        throw new BelleApiError({
-          error: errorMsg,
-          details: typeof result === 'string' ? result : JSON.stringify(result),
-          status: response.status,
-          raw: { status: response.status, body: result },
-        })
-      }
-
-      if (
-        typeof result === 'object' &&
-        result !== null &&
-        (result.status === 'erro' || result.status === false || result.error)
-      ) {
-        throw new BelleApiError({
-          error: result.error || result.mensagem || 'Erro na API',
-          details: result.details || result.mensagem || text,
-          raw: result,
-        })
-      }
-
-      return result.data || result.dados || result
-    } catch (err: any) {
-      clearTimeout(timeoutId)
-      if (err.name === 'AbortError') {
-        throw new BelleApiError({
-          error: 'Timeout',
-          details: 'A requisição demorou mais de 30 segundos para responder.',
-        })
-      }
-      if (
-        attempt <= retries &&
-        (err.message === 'Failed to fetch' || err.message.includes('Network'))
-      ) {
-        await new Promise((res) => setTimeout(res, 1000 * attempt))
-        continue
-      }
-      if (err instanceof BelleApiError) throw err
-      throw new BelleApiError({ error: 'Erro de Rede', details: err?.message, raw: err })
+      parsedBody = JSON.parse(text)
+    } catch (e) {
+      // Keep plain text
     }
+
+    return { status: response.status, body: parsedBody }
+  } catch (err: any) {
+    clearTimeout(timeoutId)
+    throw err
   }
+}
+
+const validateResponse = (res: { status: number; body: any }) => {
+  if (res.status >= 400 || (res.body && typeof res.body === 'object' && res.body.erro)) {
+    throw new BelleApiError({
+      error: `HTTP ${res.status}`,
+      status: res.status,
+      body: res.body,
+      details: res.body?.mensagem || res.body?.error || JSON.stringify(res.body),
+    })
+  }
+  return res.body.data || res.body.dados || res.body
 }
 
 export const listClientes = async (
@@ -240,19 +185,27 @@ export const listClientes = async (
   estabelecimento: string,
   pagina: number = 0,
 ) => {
-  return belleApiCall('GET', baseUrl, '/clientes', token, { codEstab: estabelecimento, pagina })
+  const cleanBase = baseUrl.trim().replace(/\/+$/, '')
+  const url = `${cleanBase}/clientes?pagina=${pagina}&codEstab=${estabelecimento}`
+  const res = await executeExplicitRequest('GET', url, token)
+  return validateResponse(res)
 }
 
 export const searchCliente = async (
   baseUrl: string,
   token: string,
   estabelecimento: string,
-  filters: { cpf?: string; id?: string; email?: string; celular?: string },
+  filters: Record<string, string>,
 ) => {
-  return belleApiCall('GET', baseUrl, '/cliente/buscar', token, {
-    codEstab: estabelecimento,
-    ...filters,
+  const cleanBase = baseUrl.trim().replace(/\/+$/, '')
+  const params = new URLSearchParams()
+  params.append('codEstab', estabelecimento)
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
   })
+  const url = `${cleanBase}/cliente/buscar?${params.toString()}`
+  const res = await executeExplicitRequest('GET', url, token)
+  return validateResponse(res)
 }
 
 export const updateCliente = async (
@@ -261,190 +214,115 @@ export const updateCliente = async (
   codCliente: string | number,
   data: any,
 ) => {
-  return belleApiCall('PUT', baseUrl, '/cliente', token, { codCliente }, data)
+  const cleanBase = baseUrl.trim().replace(/\/+$/, '')
+  const url = `${cleanBase}/cliente?codCliente=${codCliente}`
+  const res = await executeExplicitRequest('PUT', url, token, data)
+  return validateResponse(res)
 }
 
-export const saveLead = async (
-  baseUrl: string,
-  token: string,
-  estabelecimento: string,
-  data: {
-    nome: string
-    celular?: string
-    email?: string
-    cpf?: string
-    observacao?: string
-    tpOrigem?: string
-    codOrigem?: string
-  },
-) => {
-  return belleApiCall(
-    'POST',
-    baseUrl,
-    '/cliente/gravar-lead',
-    token,
-    {},
-    { codEstab: estabelecimento, ...data },
-  )
+export const saveLead = async (baseUrl: string, token: string, data: any) => {
+  const cleanBase = baseUrl.trim().replace(/\/+$/, '')
+  const url = `${cleanBase}/cliente/gravar-lead`
+  const res = await executeExplicitRequest('POST', url, token, data)
+  return validateResponse(res)
 }
 
-export const testBelleApiConnectionWithRetry = async (
+export const runIncrementalValidationFlow = async (
   baseUrl: string,
   token: string,
-  estabelecimento: string,
-  testData: any = {},
-): Promise<{ success: boolean; status: number; data: any; diagnostics: DiagnosticLog[] }> => {
-  const cleanToken = token ? token.trim() : ''
-  const cleanEstab = estabelecimento ? estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '') : '1'
+  estabelecimento: string = '1',
+): Promise<{ success: boolean; diagnostics: DiagnosticLog[] }> => {
+  const cleanBase = baseUrl.trim().replace(/\/+$/, '')
+  const cleanToken = token.trim()
+  const cleanEstab = estabelecimento.trim()
+  const diagnostics: DiagnosticLog[] = []
 
-  let endpoint = '/clientes'
-  let queryParams: Record<string, any> = { codEstab: cleanEstab }
+  const logStep = async (
+    stepName: string,
+    method: 'GET' | 'POST' | 'PUT',
+    endpointPath: string,
+    queryParams: Record<string, string>,
+    body: any = null,
+  ) => {
+    const params = new URLSearchParams()
+    Object.entries(queryParams).forEach(([k, v]) => params.append(k, v))
+    const qStr = params.toString()
+    const fullUrl = `${cleanBase}${endpointPath}${qStr ? `?${qStr}` : ''}`
 
-  const hasFilters = Object.values(testData).some((v) => v !== undefined && v !== null && v !== '')
-  if (hasFilters) {
-    endpoint = '/cliente/buscar'
-    queryParams = { ...queryParams, ...testData }
-  } else {
-    queryParams.pagina = 0
-  }
-
-  let finalUrl = `${baseUrl.trim().replace(/\/+$/, '')}${endpoint}`
-  const params = new URLSearchParams()
-  Object.entries(queryParams).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      params.append(key, String(value))
+    const logEntry: DiagnosticLog = {
+      step: stepName,
+      request: {
+        method,
+        url: fullUrl,
+        queryParams,
+        headers: {
+          Authorization: '***',
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: method === 'GET' ? 'vazio' : body,
+      },
+      response: null,
     }
-  })
-
-  const newParamsStr = params.toString()
-  if (newParamsStr) {
-    finalUrl = finalUrl.includes('?')
-      ? `${finalUrl}&${newParamsStr}`
-      : `${finalUrl}?${newParamsStr}`
-  }
-
-  const headers: Record<string, string> = {
-    Authorization: cleanToken,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  }
-
-  const proxyPayload = {
-    targetUrl: finalUrl,
-    method: 'GET',
-    headers,
-    removeHeaders: [
-      'Sec-Fetch-Site',
-      'Sec-Fetch-Mode',
-      'Sec-Fetch-Dest',
-      'Origin',
-      'Referer',
-      'User-Agent',
-      'sec-ch-ua',
-      'sec-ch-ua-mobile',
-      'sec-ch-ua-platform',
-    ],
-    useResidentialProxy: true,
-  }
-
-  const diagnosticEntry: DiagnosticLog = {
-    request: {
-      url: finalUrl,
-      method: proxyPayload.method,
-      headers,
-      removeHeaders: proxyPayload.removeHeaders,
-      useResidentialProxy: proxyPayload.useResidentialProxy,
-    },
-    response: null,
-  }
-
-  const diagnosticLog: DiagnosticLog[] = []
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-  try {
-    let response: Response
 
     try {
-      response = await fetch(PROXY_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(proxyPayload),
-        signal: controller.signal,
-      })
-    } catch (networkErr: any) {
-      if (networkErr.name === 'AbortError') {
-        throw new Error('Timeout de 30 segundos excedido ao contactar o servidor.')
+      const res = await executeExplicitRequest(method, fullUrl, cleanToken, body)
+      logEntry.response = { status: res.status, body: res.body }
+
+      if (
+        res.status >= 400 ||
+        (res.body && typeof res.body === 'object' && (res.body.erro || res.body.error))
+      ) {
+        logEntry.error = res.body?.mensagem || res.body?.error || `HTTP ${res.status}`
+        if (res.status === 405) logEntry.is405 = true
+        diagnostics.push(logEntry)
+        return false // Stop flow on first error
       }
-      throw new Error(`Proxy offline ou erro de rede: ${networkErr.message}`)
-    } finally {
-      clearTimeout(timeoutId)
-    }
 
-    const text = await response.text()
-    let parsedBody = text
-    try {
-      parsedBody = JSON.parse(text)
-    } catch (e) {
-      // Keep as plain text if not JSON
+      diagnostics.push(logEntry)
+      return true
+    } catch (err: any) {
+      logEntry.error = err.message || 'Erro de rede ou timeout'
+      diagnostics.push(logEntry)
+      return false
     }
-
-    diagnosticEntry.response = {
-      status: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
-      body: parsedBody,
-    }
-
-    diagnosticLog.push(diagnosticEntry)
-
-    if (!response.ok || [400, 401, 404, 405, 500].includes(response.status)) {
-      let errorMsg = `Erro HTTP ${response.status}`
-      if (response.status === 400) errorMsg = '400 Bad Request'
-      if (response.status === 401) errorMsg = '401 Unauthorized'
-      if (response.status === 404) errorMsg = '404 Not Found'
-      if (response.status === 405) errorMsg = '405 Method Not Allowed'
-      if (response.status === 500) errorMsg = '500 Server Error'
-
-      throw new BelleApiError({
-        error: errorMsg,
-        details: typeof parsedBody === 'string' ? parsedBody : JSON.stringify(parsedBody),
-        status: response.status,
-        raw: { diagnostics: diagnosticLog, status: response.status, body: parsedBody },
-      })
-    }
-
-    if (
-      typeof parsedBody === 'object' &&
-      parsedBody !== null &&
-      ('erro' in parsedBody || parsedBody.status === false || parsedBody.error)
-    ) {
-      throw new BelleApiError({
-        error: parsedBody.error || parsedBody.mensagem || 'Erro na API',
-        details: parsedBody.details || parsedBody.mensagem || JSON.stringify(parsedBody),
-        status: 200,
-        raw: { diagnostics: diagnosticLog, status: 200, body: parsedBody },
-      })
-    }
-
-    return {
-      success: true,
-      status: response.status,
-      data: parsedBody,
-      diagnostics: diagnosticLog,
-    }
-  } catch (err: any) {
-    clearTimeout(timeoutId)
-    if (!diagnosticEntry.response) {
-      diagnosticEntry.response = { error: err.message }
-      if (!diagnosticLog.includes(diagnosticEntry)) diagnosticLog.push(diagnosticEntry)
-    }
-    if (err instanceof BelleApiError) throw err
-    throw new BelleApiError({
-      error: 'Falha na Conexão',
-      details: err.message,
-      raw: { diagnostics: diagnosticLog },
-    })
   }
+
+  // Step 1: GET /clientes
+  const step1 = await logStep('1. Listar Clientes (GET)', 'GET', '/clientes', {
+    pagina: '0',
+    codEstab: cleanEstab,
+  })
+  if (!step1) return { success: false, diagnostics }
+
+  // Step 2: GET /cliente/buscar
+  const step2 = await logStep('2. Buscar Cliente (GET)', 'GET', '/cliente/buscar', {
+    cpf: '11122233344',
+    codEstab: cleanEstab,
+  })
+  if (!step2) return { success: false, diagnostics }
+
+  // Step 3: PUT /cliente (Sample Payload)
+  const step3 = await logStep(
+    '3. Atualizar Cliente (PUT)',
+    'PUT',
+    '/cliente',
+    { codCliente: '4448985' },
+    { nome: 'Teste Medspa', codEstab: cleanEstab },
+  )
+  if (!step3) return { success: false, diagnostics }
+
+  // Step 4: POST /cliente/gravar-lead (Sample Payload)
+  const step4 = await logStep(
+    '4. Gravar Lead (POST)',
+    'POST',
+    '/cliente/gravar-lead',
+    {},
+    { nome: 'Lead Teste', codEstab: cleanEstab, celular: '11999999999' },
+  )
+  if (!step4) return { success: false, diagnostics }
+
+  return { success: true, diagnostics }
 }
 
 export const testBelleConnection = async (
