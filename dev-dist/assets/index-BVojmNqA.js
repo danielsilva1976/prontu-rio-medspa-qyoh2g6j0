@@ -36559,22 +36559,18 @@ var belleDirectClient = async (endpoint, options) => {
 	};
 };
 var testarConexaoBelle = async (estabelecimento = "1") => {
-	try {
-		const { responseBody, debug } = await belleDirectClient("/clientes", {
-			method: "GET",
-			queryParams: {
-				codEstab: estabelecimento,
-				pagina: "0"
-			}
-		});
-		return {
-			success: true,
-			data: responseBody,
-			debug
-		};
-	} catch (error) {
-		throw error;
-	}
+	const { responseBody, debug } = await belleDirectClient("/clientes", {
+		method: "GET",
+		queryParams: {
+			codEstab: estabelecimento,
+			pagina: "0"
+		}
+	});
+	return {
+		success: true,
+		data: responseBody,
+		debug
+	};
 };
 var testBelleConnection = testarConexaoBelle;
 var listClientes = async (estabelecimento, pagina = 0) => {
@@ -51632,4 +51628,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CDz8eiUi.js.map
+//# sourceMappingURL=index-BVojmNqA.js.map

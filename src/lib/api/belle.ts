@@ -109,15 +109,11 @@ const belleDirectClient = async (
 }
 
 export const testarConexaoBelle = async (estabelecimento: string = '1') => {
-  try {
-    const { responseBody, debug } = await belleDirectClient('/clientes', {
-      method: 'GET',
-      queryParams: { codEstab: estabelecimento, pagina: '0' },
-    })
-    return { success: true, data: responseBody, debug }
-  } catch (error: any) {
-    throw error
-  }
+  const { responseBody, debug } = await belleDirectClient('/clientes', {
+    method: 'GET',
+    queryParams: { codEstab: estabelecimento, pagina: '0' },
+  })
+  return { success: true, data: responseBody, debug }
 }
 
 export const testBelleConnection = testarConexaoBelle
