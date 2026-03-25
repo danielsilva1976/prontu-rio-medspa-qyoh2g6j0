@@ -131,12 +131,12 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Integração REST API Direta
+                <Database className="w-5 h-5" /> Integração REST API Segura
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                A integração agora é realizada comunicando diretamente com a API do Belle Software.
-                Isso elimina intermediários e reduz erros de comunicação (como HTTP 405). Defina o
-                estabelecimento de origem para a sincronização da clínica.
+                A integração agora é realizada de forma segura através do nosso servidor,
+                comunicando diretamente com a API do Belle Software sem expor suas credenciais no
+                navegador. Defina o estabelecimento de origem para a sincronização da clínica.
               </p>
             </div>
 

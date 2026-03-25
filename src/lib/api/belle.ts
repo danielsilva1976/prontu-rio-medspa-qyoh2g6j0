@@ -13,107 +13,30 @@ const handleResponse = async (res: Response) => {
   return data
 }
 
-// Consolidating belleClient and belleService into a direct API caller for the frontend
-const belleDirectClient = async (
-  endpoint: string,
-  options: { method: string; queryParams?: Record<string, string>; body?: any },
-) => {
-  const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
-  const token = import.meta.env.VITE_BELLE_TOKEN || 'your_backend_token_here'
-
-  const url = new URL(`${baseUrl}${endpoint}`)
-  if (options.queryParams) {
-    Object.entries(options.queryParams).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') {
-        url.searchParams.append(k, v)
-      }
-    })
-  }
-
-  const cleanToken = token ? token.trim() : ''
-  const headers = {
-    Authorization: cleanToken,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  }
-
-  const codEstab = options.queryParams?.codEstab || 'unknown'
-
-  const logContext = {
-    codEstab,
-    method: options.method,
-    targetUrl: url.toString(),
-    queryParams: options.queryParams,
-    headersSent: { ...headers, Authorization: '***' },
-  }
-
-  logger.info('Belle API Request Started', logContext)
-
-  let response: Response
-  try {
-    response = await fetch(url.toString(), {
-      method: options.method,
-      headers,
-      body: options.body ? JSON.stringify(options.body) : undefined,
-    })
-  } catch (error: any) {
-    logger.error('Belle API Request Failed (Network)', {
-      error: error.message,
-      ...logContext,
-    })
-    const err: any = new Error(`Network Error: ${error.message}`)
-    err.status = 'Network'
-    err.url = url.toString()
-    err.method = options.method
-    throw err
-  }
-
-  const status = response.status
-  const rawBody = await response.text()
-
-  logger.info('Belle API Request Completed', {
-    httpStatusReturned: status,
-    rawResponseBody: rawBody,
-    ...logContext,
-  })
-
-  let responseBody
-  try {
-    responseBody = rawBody ? JSON.parse(rawBody) : {}
-  } catch {
-    responseBody = { message: rawBody }
-  }
-
-  if (status >= 400 || (responseBody && (responseBody.erro || responseBody.error))) {
-    const errorMsg = responseBody?.mensagem || responseBody?.error || JSON.stringify(responseBody)
-    const error: any = new Error(`API Error (HTTP ${status}). Error: ${errorMsg}`)
-    error.status = status
-    error.url = url.toString()
-    error.method = options.method
-    error.rawBody = rawBody
-
-    if (status === 405) {
-      error.message = `Contract Failure (HTTP 405): Method ${options.method} not allowed. Error: ${errorMsg}`
-    } else if (status === 401 || status === 403) {
-      error.message = `Authentication Failure (HTTP ${status}): Credential issue. Error: ${errorMsg}`
-    } else if (status === 400) {
-      error.message = `Validation Failure (HTTP 400): Parameter issue. Error: ${errorMsg}`
-    }
+export const testarConexaoBelle = async (estabelecimento: string = '1') => {
+  const url = `/api/belle/testar-conexao?codEstab=${estabelecimento}`
+  logger.info('Testing Belle API connection via backend', { url })
+  const res = await fetch(url)
+  const data = await res.json()
+  if (!res.ok) {
+    const error: any = new Error(data.error || `HTTP error ${res.status}`)
+    error.status = res.status
+    error.url = url
+    error.method = 'GET'
+    error.rawBody = JSON.stringify(data)
     throw error
   }
-
   return {
-    responseBody,
-    debug: { url: url.toString(), method: options.method, status, rawBody, codEstab },
+    success: true,
+    data: data.data,
+    debug: {
+      url,
+      method: 'GET',
+      status: res.status,
+      codEstab: estabelecimento,
+      rawBody: JSON.stringify(data).substring(0, 200),
+    },
   }
-}
-
-export const testarConexaoBelle = async (estabelecimento: string = '1') => {
-  const { responseBody, debug } = await belleDirectClient('/clientes', {
-    method: 'GET',
-    queryParams: { codEstab: estabelecimento, pagina: '0' },
-  })
-  return { success: true, data: responseBody, debug }
 }
 
 export const testBelleConnection = testarConexaoBelle
@@ -159,20 +82,25 @@ export const fetchBelleClientes = async (
   let hasMore = true
 
   while (hasMore) {
-    const data = await listClientes(estabelecimento, pagina)
-    const clientes = Array.isArray(data)
-      ? data
-      : data?.pacientes || data?.clientes || data?.dados || []
+    try {
+      const data = await listClientes(estabelecimento, pagina)
+      const clientes = Array.isArray(data)
+        ? data
+        : data?.pacientes || data?.clientes || data?.dados || []
 
-    if (!clientes || clientes.length === 0) {
-      hasMore = false
-    } else {
-      allClientes = [...allClientes, ...clientes]
-      if (clientes.length < 100) {
+      if (!clientes || clientes.length === 0) {
         hasMore = false
       } else {
-        pagina++
+        allClientes = [...allClientes, ...clientes]
+        if (clientes.length < 100) {
+          hasMore = false
+        } else {
+          pagina++
+        }
       }
+    } catch (e) {
+      logger.error('Error fetching clientes', e)
+      hasMore = false
     }
   }
 
@@ -180,7 +108,18 @@ export const fetchBelleClientes = async (
 }
 
 export const fetchBelleAgendamentos = async (
-  _estabelecimento: string = '1',
+  estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
-  return []
+  try {
+    const res = await fetch(`/api/belle/agendamentos/listar?codEstab=${estabelecimento}`)
+    const data = await res.json()
+    if (!res.ok) {
+      logger.error('Error fetching agendamentos API', data)
+      return []
+    }
+    return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
+  } catch (e) {
+    logger.error('Error fetching agendamentos network', e)
+    return []
+  }
 }

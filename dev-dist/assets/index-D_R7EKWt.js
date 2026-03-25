@@ -36480,96 +36480,29 @@ var handleResponse = async (res) => {
 	if (!res.ok) throw new Error(data.error || `HTTP error ${res.status}`);
 	return data;
 };
-var belleDirectClient = async (endpoint, options) => {
-	const baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
-	const token = "your_backend_token_here";
-	const url = new URL(`${baseUrl}${endpoint}`);
-	if (options.queryParams) Object.entries(options.queryParams).forEach(([k, v]) => {
-		if (v !== void 0 && v !== null && v !== "") url.searchParams.append(k, v);
-	});
-	const headers = {
-		Authorization: token.trim(),
-		"Content-Type": "application/json",
-		Accept: "application/json"
-	};
-	const codEstab = options.queryParams?.codEstab || "unknown";
-	const logContext = {
-		codEstab,
-		method: options.method,
-		targetUrl: url.toString(),
-		queryParams: options.queryParams,
-		headersSent: {
-			...headers,
-			Authorization: "***"
-		}
-	};
-	logger.info("Belle API Request Started", logContext);
-	let response;
-	try {
-		response = await fetch(url.toString(), {
-			method: options.method,
-			headers,
-			body: options.body ? JSON.stringify(options.body) : void 0
-		});
-	} catch (error) {
-		logger.error("Belle API Request Failed (Network)", {
-			error: error.message,
-			...logContext
-		});
-		const err = /* @__PURE__ */ new Error(`Network Error: ${error.message}`);
-		err.status = "Network";
-		err.url = url.toString();
-		err.method = options.method;
-		throw err;
-	}
-	const status = response.status;
-	const rawBody = await response.text();
-	logger.info("Belle API Request Completed", {
-		httpStatusReturned: status,
-		rawResponseBody: rawBody,
-		...logContext
-	});
-	let responseBody;
-	try {
-		responseBody = rawBody ? JSON.parse(rawBody) : {};
-	} catch {
-		responseBody = { message: rawBody };
-	}
-	if (status >= 400 || responseBody && (responseBody.erro || responseBody.error)) {
-		const errorMsg = responseBody?.mensagem || responseBody?.error || JSON.stringify(responseBody);
-		const error = /* @__PURE__ */ new Error(`API Error (HTTP ${status}). Error: ${errorMsg}`);
-		error.status = status;
-		error.url = url.toString();
-		error.method = options.method;
-		error.rawBody = rawBody;
-		if (status === 405) error.message = `Contract Failure (HTTP 405): Method ${options.method} not allowed. Error: ${errorMsg}`;
-		else if (status === 401 || status === 403) error.message = `Authentication Failure (HTTP ${status}): Credential issue. Error: ${errorMsg}`;
-		else if (status === 400) error.message = `Validation Failure (HTTP 400): Parameter issue. Error: ${errorMsg}`;
+var testarConexaoBelle = async (estabelecimento = "1") => {
+	const url = `/api/belle/testar-conexao?codEstab=${estabelecimento}`;
+	logger.info("Testing Belle API connection via backend", { url });
+	const res = await fetch(url);
+	const data = await res.json();
+	if (!res.ok) {
+		const error = new Error(data.error || `HTTP error ${res.status}`);
+		error.status = res.status;
+		error.url = url;
+		error.method = "GET";
+		error.rawBody = JSON.stringify(data);
 		throw error;
 	}
 	return {
-		responseBody,
-		debug: {
-			url: url.toString(),
-			method: options.method,
-			status,
-			rawBody,
-			codEstab
-		}
-	};
-};
-var testarConexaoBelle = async (estabelecimento = "1") => {
-	const { responseBody, debug } = await belleDirectClient("/clientes", {
-		method: "GET",
-		queryParams: {
-			codEstab: estabelecimento,
-			pagina: "0"
-		}
-	});
-	return {
 		success: true,
-		data: responseBody,
-		debug
+		data: data.data,
+		debug: {
+			url,
+			method: "GET",
+			status: res.status,
+			codEstab: estabelecimento,
+			rawBody: JSON.stringify(data).substring(0, 200)
+		}
 	};
 };
 var testBelleConnection = testarConexaoBelle;
@@ -36594,7 +36527,7 @@ var fetchBelleClientes = async (estabelecimento = "1") => {
 	let allClientes = [];
 	let pagina = 0;
 	let hasMore = true;
-	while (hasMore) {
+	while (hasMore) try {
 		const data = await listClientes(estabelecimento, pagina);
 		const clientes = Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || [];
 		if (!clientes || clientes.length === 0) hasMore = false;
@@ -36603,11 +36536,25 @@ var fetchBelleClientes = async (estabelecimento = "1") => {
 			if (clientes.length < 100) hasMore = false;
 			else pagina++;
 		}
+	} catch (e) {
+		logger.error("Error fetching clientes", e);
+		hasMore = false;
 	}
 	return allClientes;
 };
-var fetchBelleAgendamentos = async (_estabelecimento = "1") => {
-	return [];
+var fetchBelleAgendamentos = async (estabelecimento = "1") => {
+	try {
+		const res = await fetch(`/api/belle/agendamentos/listar?codEstab=${estabelecimento}`);
+		const data = await res.json();
+		if (!res.ok) {
+			logger.error("Error fetching agendamentos API", data);
+			return [];
+		}
+		return Array.isArray(data) ? data : data?.agendamentos || data?.dados || [];
+	} catch (e) {
+		logger.error("Error fetching agendamentos network", e);
+		return [];
+	}
 };
 //#endregion
 //#region src/components/patients/PatientDialog.tsx
@@ -50849,12 +50796,12 @@ function IntegrationSettings({ title, description }) {
 									"data-uid": "src/components/settings/IntegrationSettings.tsx:134:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-5 h-5"
-								}), " Integração REST API Direta"]
+								}), " Integração REST API Segura"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 								"data-uid": "src/components/settings/IntegrationSettings.tsx:136:15",
 								"data-prohibitions": "[]",
 								className: "text-sm text-muted-foreground mb-3 leading-relaxed",
-								children: "A integração agora é realizada comunicando diretamente com a API do Belle Software. Isso elimina intermediários e reduz erros de comunicação (como HTTP 405). Defina o estabelecimento de origem para a sincronização da clínica."
+								children: "A integração agora é realizada de forma segura através do nosso servidor, comunicando diretamente com a API do Belle Software sem expor suas credenciais no navegador. Defina o estabelecimento de origem para a sincronização da clínica."
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 							"data-uid": "src/components/settings/IntegrationSettings.tsx:143:13",
@@ -51628,4 +51575,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-BVojmNqA.js.map
+//# sourceMappingURL=index-D_R7EKWt.js.map
