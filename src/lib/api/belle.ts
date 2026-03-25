@@ -5,17 +5,7 @@ import { logger } from '@/infra/logger'
 export type { BelleCliente, BelleAgendamento, DiagnosticLog }
 export { mapBelleDataToPatients }
 
-const getBaseUrl = () => {
-  try {
-    const proxyUrl = (import.meta as any).env?.VITE_BELLE_PROXY_URL
-    if (proxyUrl) return proxyUrl
-  } catch (e) {
-    // ignore error
-  }
-  return 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
-}
-
-const baseUrl = getBaseUrl()
+const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
 
 const getAuthToken = (): string => {
   let token = ''
@@ -30,7 +20,7 @@ const getAuthToken = (): string => {
     // ignore error
   }
 
-  // 2. Vite browser environment fallback (if allowed)
+  // 2. Vite browser environment fallback
   if (!token) {
     try {
       token =
@@ -46,24 +36,16 @@ const getAuthToken = (): string => {
 const doFetch = async (url: string, options: RequestInit, format: 'bearer' | 'raw') => {
   const headers = new Headers(options.headers || {})
 
-  // Maintain required headers as per AC
+  // Maintain required headers
   headers.set('Accept', 'application/json')
   if (options.method && options.method !== 'GET') {
     headers.set('Content-Type', 'application/json')
   }
 
-  const isProxy = url.includes('/api/proxy')
-
-  if (isProxy) {
-    // When using the secure proxy, instruct it on the token format to use.
-    // The actual token remains safely on the backend.
-    headers.set('X-Token-Format', format)
-  } else {
-    // Direct connection fallback. We MUST append the token here.
-    const token = getAuthToken()
-    if (token) {
-      headers.set('Authorization', format === 'bearer' ? `Bearer ${token}` : token)
-    }
+  // Direct connection using absolute URL
+  const token = getAuthToken()
+  if (token) {
+    headers.set('Authorization', format === 'bearer' ? `Bearer ${token}` : token)
   }
 
   return fetch(url, { ...options, headers })
@@ -72,20 +54,24 @@ const doFetch = async (url: string, options: RequestInit, format: 'bearer' | 'ra
 const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   const isDirectUrl = endpoint.startsWith('http')
   const url = isDirectUrl ? endpoint : `${baseUrl}${endpoint}`
-  const isProxy = url.includes('/api/proxy')
 
-  // Validation: Ensure token exists when connecting directly
-  if (!isProxy) {
-    const token = getAuthToken()
-    if (!token) {
-      throw new Error('Belle Token não configurado no servidor (BELLE_TOKEN ausente).')
-    }
+  const token = getAuthToken()
+  if (!token) {
+    throw new Error('Belle Token não configurado no servidor (BELLE_TOKEN ausente).')
+  }
+
+  let host = 'unknown'
+  try {
+    host = new URL(url).host
+  } catch (e) {
+    // ignore invalid URL host parsing
   }
 
   logger.info('Belle API Request Started', {
     url,
+    host,
     method: options.method || 'GET',
-    security: isProxy ? 'Proxied (Token Hidden)' : 'Direct (Token Exposed)',
+    security: 'Direct External API Call',
   })
 
   // Format Validation Support: First try with 'Bearer' format
@@ -93,7 +79,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
 
   // Format Validation Support: If 401 Unauthorized or 403, retry with 'raw' format
   if (res.status === 401 || res.status === 403) {
-    logger.info('Belle API 401/403 with Bearer token, trying raw format fallback', { url })
+    logger.info('Belle API 401/403 with Bearer token, trying raw format fallback', { url, host })
     res = await doFetch(url, options, 'raw')
   }
 
@@ -101,6 +87,8 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
 
   logger.info('Belle API Request Completed', {
     url,
+    host,
+    method: options.method || 'GET',
     status: res.status,
     contentType,
   })
@@ -118,12 +106,15 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     )
     error.status = res.status
     error.url = url
+    error.host = host
     error.method = options.method || 'GET'
     error.contentType = contentType
     error.rawBody = text.substring(0, 500)
 
     logger.error('Routing/Intercept Error', {
       url,
+      host,
+      method: error.method,
       status: res.status,
       contentType,
       bodyPreview: error.rawBody,
@@ -142,6 +133,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
       )
       error.status = res.status
       error.url = url
+      error.host = host
       error.rawBody = text.substring(0, 200)
       throw error
     }
@@ -153,27 +145,30 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     const error: any = new Error(`API Error (HTTP ${res.status}). Error: ${errorMsg}`)
     error.status = res.status
     error.url = url
+    error.host = host
     error.method = options.method || 'GET'
     error.rawBody = text
     throw error
   }
 
-  return data
+  return { data, status: res.status, url, method: options.method || 'GET', rawBody: text }
 }
 
 export const testarConexaoBelle = async (estabelecimento: string = '1') => {
   try {
-    const data = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=0`, {
+    const response = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=0`, {
       method: 'GET',
     })
 
     return {
       success: true,
-      data: data,
+      data: response.data,
       debug: {
-        url: `${baseUrl}/clientes?codEstab=${estabelecimento}&pagina=0`,
-        method: 'GET',
+        url: response.url,
+        method: response.method,
+        status: response.status,
         codEstab: estabelecimento,
+        rawBody: response.rawBody,
       },
     }
   } catch (error: any) {
@@ -185,9 +180,10 @@ export const testarConexaoBelle = async (estabelecimento: string = '1') => {
 export const testBelleConnection = testarConexaoBelle
 
 export const listClientes = async (estabelecimento: string, pagina: number = 0) => {
-  return fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=${pagina}`, {
+  const response = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=${pagina}`, {
     method: 'GET',
   })
+  return response.data
 }
 
 export const searchCliente = async (estabelecimento: string, filters: Record<string, string>) => {
@@ -197,23 +193,26 @@ export const searchCliente = async (estabelecimento: string, filters: Record<str
     if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
   })
 
-  return fetchBelleApi(`/clientes?${params.toString()}`, {
+  const response = await fetchBelleApi(`/clientes?${params.toString()}`, {
     method: 'GET',
   })
+  return response.data
 }
 
 export const updateCliente = async (codCliente: string | number, data: any) => {
-  return fetchBelleApi(`/clientes?codCliente=${codCliente}`, {
+  const response = await fetchBelleApi(`/clientes?codCliente=${codCliente}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
+  return response.data
 }
 
 export const saveLead = async (data: any) => {
-  return fetchBelleApi(`/clientes/lead`, {
+  const response = await fetchBelleApi(`/clientes/lead`, {
     method: 'POST',
     body: JSON.stringify(data),
   })
+  return response.data
 }
 
 export const fetchBelleClientes = async (
@@ -253,9 +252,10 @@ export const fetchBelleAgendamentos = async (
   estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
   try {
-    const data = await fetchBelleApi(`/agendamentos?codEstab=${estabelecimento}`, {
+    const response = await fetchBelleApi(`/agendamentos?codEstab=${estabelecimento}`, {
       method: 'GET',
     })
+    const data = response.data
 
     return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
   } catch (e) {

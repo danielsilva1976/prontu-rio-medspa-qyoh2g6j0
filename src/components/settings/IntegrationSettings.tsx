@@ -91,7 +91,7 @@ export function IntegrationSettings({
         title: is405 ? 'Contract Error (HTTP 405)' : `Erro de API (HTTP ${status})`,
         message: 'Falha no Teste de Conexão',
         details: err.rawBody
-          ? `URL: ${err.url || 'Desconhecido'}\nMétodo: ${err.method || 'GET'}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}`
+          ? `URL: ${err.url || 'Desconhecido'}\nHost: ${err.host || 'Desconhecido'}\nMétodo: ${err.method || 'GET'}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}`
           : err.message,
       })
     } finally {
@@ -131,12 +131,13 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Integração REST API Segura
+                <Database className="w-5 h-5" /> Integração Direta API
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                A integração agora é realizada de forma segura através do nosso servidor,
-                comunicando diretamente com a API do Belle Software sem expor suas credenciais no
-                navegador. Defina o estabelecimento de origem para a sincronização da clínica.
+                A integração agora é realizada de forma direta com a API do Belle Software (URL
+                Absoluta), evitando roteamentos locais que poderiam causar bloqueios ou retornar o
+                HTML da aplicação. Defina o estabelecimento de origem para a sincronização da
+                clínica.
               </p>
             </div>
 
