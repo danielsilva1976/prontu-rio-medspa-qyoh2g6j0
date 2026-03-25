@@ -5,42 +5,90 @@ import { logger } from '@/infra/logger'
 export type { BelleCliente, BelleAgendamento, DiagnosticLog }
 export { mapBelleDataToPatients }
 
-const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
+const getBaseUrl = () => {
+  try {
+    const proxyUrl = (import.meta as any).env?.VITE_BELLE_PROXY_URL
+    if (proxyUrl) return proxyUrl
+  } catch (e) {}
+  return 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
+}
 
-const doFetch = async (url: string, options: RequestInit, authHeader: string) => {
+const baseUrl = getBaseUrl()
+
+const getAuthToken = (): string => {
+  let token = ''
+
+  // 1. Secure backend retrieval (Node.js/Edge environments)
+  try {
+    const processObj = typeof process !== 'undefined' ? process : undefined
+    if (processObj && processObj.env) {
+      token = processObj.env.BELLE_TOKEN || processObj.env.VITE_BELLE_TOKEN || ''
+    }
+  } catch (e) {}
+
+  // 2. Vite browser environment fallback (if allowed)
+  if (!token) {
+    try {
+      token =
+        (import.meta as any).env?.VITE_BELLE_TOKEN || (import.meta as any).env?.BELLE_TOKEN || ''
+    } catch (e) {}
+  }
+
+  return token.trim()
+}
+
+const doFetch = async (url: string, options: RequestInit, format: 'bearer' | 'raw') => {
   const headers = new Headers(options.headers || {})
-  headers.set('Authorization', authHeader)
-  headers.set('Accept', 'application/json')
 
+  // Maintain required headers as per AC
+  headers.set('Accept', 'application/json')
   if (options.method && options.method !== 'GET') {
     headers.set('Content-Type', 'application/json')
+  }
+
+  const isProxy = url.includes('/api/proxy')
+
+  if (isProxy) {
+    // When using the secure proxy, instruct it on the token format to use.
+    // The actual token remains safely on the backend.
+    headers.set('X-Token-Format', format)
+  } else {
+    // Direct connection fallback. We MUST append the token here.
+    const token = getAuthToken()
+    if (token) {
+      headers.set('Authorization', format === 'bearer' ? `Bearer ${token}` : token)
+    }
   }
 
   return fetch(url, { ...options, headers })
 }
 
 const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${baseUrl}${endpoint}`
-  const token = (import.meta as any).env.VITE_BELLE_TOKEN || ''
-  const cleanToken = token.trim()
+  const isDirectUrl = endpoint.startsWith('http')
+  const url = isDirectUrl ? endpoint : `${baseUrl}${endpoint}`
+  const isProxy = url.includes('/api/proxy')
 
-  if (!cleanToken) {
-    throw new Error('Belle Token não configurado (VITE_BELLE_TOKEN ausente).')
+  // Validation: Ensure token exists when connecting directly
+  if (!isProxy) {
+    const token = getAuthToken()
+    if (!token) {
+      throw new Error('Belle Token não configurado no servidor (BELLE_TOKEN ausente).')
+    }
   }
 
-  const host = new URL(url).host
-
   logger.info('Belle API Request Started', {
-    host,
     url,
     method: options.method || 'GET',
+    security: isProxy ? 'Proxied (Token Hidden)' : 'Direct (Token Exposed)',
   })
 
-  let res = await doFetch(url, options, `Bearer ${cleanToken}`)
+  // Format Validation Support: First try with 'Bearer' format
+  let res = await doFetch(url, options, 'bearer')
 
+  // Format Validation Support: If 401 Unauthorized or 403, retry with 'raw' format
   if (res.status === 401 || res.status === 403) {
-    logger.info('Belle API 401/403 with Bearer token, trying raw format', { url })
-    res = await doFetch(url, options, cleanToken)
+    logger.info('Belle API 401/403 with Bearer token, trying raw format fallback', { url })
+    res = await doFetch(url, options, 'raw')
   }
 
   const contentType = res.headers.get('content-type') || ''
@@ -60,7 +108,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     lowerText.startsWith('<html')
   ) {
     const error: any = new Error(
-      'Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted or routed incorrectly.',
+      'Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted ou routed incorrectly.',
     )
     error.status = res.status
     error.url = url

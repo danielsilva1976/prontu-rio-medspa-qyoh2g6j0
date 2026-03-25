@@ -36475,30 +36475,53 @@ var logger = {
 };
 //#endregion
 //#region src/lib/api/belle.ts
-var baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
-var doFetch = async (url, options, authHeader) => {
+var getBaseUrl = () => {
+	try {
+		return "/api/proxy/belle";
+	} catch (e) {}
+	return "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
+};
+var baseUrl = getBaseUrl();
+var getAuthToken = () => {
+	let token = "";
+	try {
+		const processObj = typeof process !== "undefined" ? process : void 0;
+		if (processObj && processObj.env) token = processObj.env.BELLE_TOKEN || processObj.env.VITE_BELLE_TOKEN || "";
+	} catch (e) {}
+	if (!token) try {
+		token = "";
+	} catch (e) {}
+	return token.trim();
+};
+var doFetch = async (url, options, format) => {
 	const headers = new Headers(options.headers || {});
-	headers.set("Authorization", authHeader);
 	headers.set("Accept", "application/json");
 	if (options.method && options.method !== "GET") headers.set("Content-Type", "application/json");
+	if (url.includes("/api/proxy")) headers.set("X-Token-Format", format);
+	else {
+		const token = getAuthToken();
+		if (token) headers.set("Authorization", format === "bearer" ? `Bearer ${token}` : token);
+	}
 	return fetch(url, {
 		...options,
 		headers
 	});
 };
 var fetchBelleApi = async (endpoint, options = {}) => {
-	const url = `${baseUrl}${endpoint}`;
-	const cleanToken = "your_backend_token_here".trim();
-	const host = new URL(url).host;
+	const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
+	const isProxy = url.includes("/api/proxy");
+	if (!isProxy) {
+		if (!getAuthToken()) throw new Error("Belle Token não configurado no servidor (BELLE_TOKEN ausente).");
+	}
 	logger.info("Belle API Request Started", {
-		host,
 		url,
-		method: options.method || "GET"
+		method: options.method || "GET",
+		security: isProxy ? "Proxied (Token Hidden)" : "Direct (Token Exposed)"
 	});
-	let res = await doFetch(url, options, `Bearer ${cleanToken}`);
+	let res = await doFetch(url, options, "bearer");
 	if (res.status === 401 || res.status === 403) {
-		logger.info("Belle API 401/403 with Bearer token, trying raw format", { url });
-		res = await doFetch(url, options, cleanToken);
+		logger.info("Belle API 401/403 with Bearer token, trying raw format fallback", { url });
+		res = await doFetch(url, options, "raw");
 	}
 	const contentType = res.headers.get("content-type") || "";
 	logger.info("Belle API Request Completed", {
@@ -36509,7 +36532,7 @@ var fetchBelleApi = async (endpoint, options = {}) => {
 	const text = await res.text();
 	const lowerText = text.trim().toLowerCase();
 	if (contentType.includes("text/html") || lowerText.startsWith("<!doctype html>") || lowerText.startsWith("<html")) {
-		const error = /* @__PURE__ */ new Error("Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted or routed incorrectly.");
+		const error = /* @__PURE__ */ new Error("Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted ou routed incorrectly.");
 		error.status = res.status;
 		error.url = url;
 		error.method = options.method || "GET";
@@ -51626,4 +51649,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DEJrY-OO.js.map
+//# sourceMappingURL=index-CAgtUtle.js.map
