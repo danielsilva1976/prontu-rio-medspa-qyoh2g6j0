@@ -1,7 +1,7 @@
 export default async function handler(req: any, res: any) {
   // Configuração de CORS para permitir que o frontend acesse o proxy local/remotamente
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
 
   // Responde imediatamente a requisições de preflight (OPTIONS)
@@ -9,17 +9,33 @@ export default async function handler(req: any, res: any) {
     return res.status(200).end()
   }
 
-  // O proxy em si aceita exclusivamente requisições POST para receber o payload de intruções
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method Not Allowed',
-      message: 'The internal proxy only accepts POST requests.',
-    })
-  }
-
   try {
-    // Desestrutura o payload enviado pelo frontend
-    const { targetUrl, method, headers, body } = req.body || {}
+    // Determina o payload dependendo do método da requisição e de como os dados foram enviados
+    let payload = req.body
+
+    // Tenta fazer o parse caso o body venha como string
+    if (typeof payload === 'string' && payload.trim() !== '') {
+      try {
+        payload = JSON.parse(payload)
+      } catch (e) {
+        // Ignora erro de parse e mantém a string original, pois pode ser intencional
+      }
+    }
+
+    // Fallback: se for um GET ou requisição sem body, tenta buscar o payload na query string
+    const requestMethod = req.method ? req.method.toUpperCase() : 'GET'
+    if (requestMethod === 'GET' && (!payload || Object.keys(payload).length === 0)) {
+      if (req.query?.payload) {
+        try {
+          payload = JSON.parse(req.query.payload as string)
+        } catch (e) {}
+      } else {
+        payload = req.query
+      }
+    }
+
+    // Desestrutura o payload de instruções
+    const { targetUrl, method, headers, body } = payload || {}
 
     if (!targetUrl || !method) {
       return res.status(400).json({
@@ -29,24 +45,25 @@ export default async function handler(req: any, res: any) {
     }
 
     // Logs de execução exigidos (Início da transação)
-    console.log(`[PROXY LOG] Internal Route Method: ${req.method}`)
-    console.log(`[PROXY LOG] Internal URL: /api/proxy/belle`)
-    console.log(`[PROXY LOG] Received Body:`, JSON.stringify(req.body))
+    console.log(`[PROXY LOG] Internal Route Method: ${requestMethod}`)
+    console.log(`[PROXY LOG] Internal URL: ${req.url || '/api/proxy/belle'}`)
+    console.log(`[PROXY LOG] Received Body:`, JSON.stringify(payload))
 
-    // Prepara a chamada para a API externa (Belle Software)
+    // Prepara a chamada para a API externa (Belle Software) utilizando a URL e método literais fornecidos
+    const targetMethod = String(method).toUpperCase()
     const fetchOptions: RequestInit = {
-      method: method.toUpperCase(),
+      method: targetMethod,
       headers: {
-        ...headers,
+        ...headers, // Repassa os cabeçalhos literais (Authorization unadulterated, Content-Type, Accept)
       },
     }
 
-    // Garante que não enviamos "body" em métodos GET ou HEAD, evitando erros de protocolo
-    if (fetchOptions.method !== 'GET' && fetchOptions.method !== 'HEAD' && body) {
+    // Garante que não enviamos "body" em métodos GET ou HEAD, evitando erros de protocolo na API alvo
+    if (targetMethod !== 'GET' && targetMethod !== 'HEAD' && body) {
       fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body)
     }
 
-    // Executa o forwarding da requisição
+    // Executa o forwarding da requisição transparente
     const externalResponse = await fetch(targetUrl, fetchOptions)
     const status = externalResponse.status
 
@@ -57,7 +74,7 @@ export default async function handler(req: any, res: any) {
     try {
       responseData = text ? JSON.parse(text) : {}
     } catch {
-      // Se a resposta não for JSON (como algumas páginas de erro de proxy), encapsula em um objeto JSON
+      // Se a resposta não for JSON (como páginas de erro de proxy do servidor externo), encapsula em um objeto JSON
       responseData = { message: text || 'No content returned from external API' }
     }
 
@@ -65,7 +82,14 @@ export default async function handler(req: any, res: any) {
     console.log(`[PROXY LOG] HTTP Status Returned: ${status}`)
     console.log(`[PROXY LOG] Raw Response:`, responseData)
 
-    // Repassa exatamente o HTTP Status e o payload para a UI, permitindo o correto tratamento e log do frontend (ex: Erros 405)
+    // Tratamento e log específico exigido para erros 405 de contrato
+    if (status === 405) {
+      console.error(
+        `[PROXY ERROR] Contract/Proxy Error: 405 Method Not Allowed returned by external API (${targetMethod} ${targetUrl}). This is a contract failure, not an authentication issue.`,
+      )
+    }
+
+    // Repassa exatamente o HTTP Status e o payload para a UI
     return res.status(status).json(responseData)
   } catch (error: any) {
     console.error(`[PROXY ERROR] Execution failed:`, error.message)
