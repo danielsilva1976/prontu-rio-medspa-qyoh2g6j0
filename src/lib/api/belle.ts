@@ -9,7 +9,9 @@ const getBaseUrl = () => {
   try {
     const proxyUrl = (import.meta as any).env?.VITE_BELLE_PROXY_URL
     if (proxyUrl) return proxyUrl
-  } catch (e) {}
+  } catch (e) {
+    // ignore error
+  }
   return 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
 }
 
@@ -24,14 +26,18 @@ const getAuthToken = (): string => {
     if (processObj && processObj.env) {
       token = processObj.env.BELLE_TOKEN || processObj.env.VITE_BELLE_TOKEN || ''
     }
-  } catch (e) {}
+  } catch (e) {
+    // ignore error
+  }
 
   // 2. Vite browser environment fallback (if allowed)
   if (!token) {
     try {
       token =
         (import.meta as any).env?.VITE_BELLE_TOKEN || (import.meta as any).env?.BELLE_TOKEN || ''
-    } catch (e) {}
+    } catch (e) {
+      // ignore error
+    }
   }
 
   return token.trim()
