@@ -30,11 +30,6 @@ const getAuthToken = (): string => {
     }
   }
 
-  // 3. Fallback for demo so it works end-to-end
-  if (!token) {
-    token = 'demo-token-12345'
-  }
-
   return token.trim()
 }
 
@@ -86,9 +81,8 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   try {
     res = await doFetch(url, options, 'bearer')
   } catch (err) {
-    // Handle CORS or network failure by providing mock data to keep UI working
-    logger.warn('Belle API fetch failed (CORS/Network), using mock data for demo', { url, err })
-    return getMockDataForEndpoint(endpoint, url, options)
+    logger.warn('Belle API fetch failed (CORS/Network)', { url, err })
+    throw err
   }
 
   // Format Validation Support: If 401 Unauthorized or 403, retry with 'raw' format
@@ -97,14 +91,9 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     try {
       res = await doFetch(url, options, 'raw')
     } catch (err) {
-      return getMockDataForEndpoint(endpoint, url, options)
+      logger.warn('Belle API fetch failed on raw retry (CORS/Network)', { url, err })
+      throw err
     }
-  }
-
-  // If still unauthorized with the demo token, use mock data for demo purposes
-  if (res.status === 401 || res.status === 403) {
-    logger.info('Belle API Auth Failed, using mock data for demo end-to-end', { url, host })
-    return getMockDataForEndpoint(endpoint, url, options)
   }
 
   const contentType = res.headers.get('content-type') || ''
@@ -176,56 +165,6 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   }
 
   return { data, status: res.status, url, method: options.method || 'GET', rawBody: text }
-}
-
-function getMockDataForEndpoint(endpoint: string, url: string, options: RequestInit) {
-  if (endpoint.includes('/clientes')) {
-    return {
-      data: [
-        {
-          id: 1,
-          nome: 'Maria da Silva (Mock)',
-          cpf: '12345678901',
-          email: 'maria@example.com',
-          celular: '11999999999',
-          data_nascimento: '1990-05-15',
-          sexo: 'F',
-        },
-        {
-          id: 2,
-          nome: 'João Santos (Mock)',
-          cpf: '10987654321',
-          email: 'joao@example.com',
-          celular: '11988888888',
-          data_nascimento: '1985-10-20',
-          sexo: 'M',
-        },
-      ],
-      status: 200,
-      url,
-      method: options.method || 'GET',
-      rawBody: '{"mock":true, "source":"getMockDataForEndpoint"}',
-    }
-  } else if (endpoint.includes('/agendamentos')) {
-    return {
-      data: [
-        {
-          id: 1,
-          cliente_id: 1,
-          data: new Date().toISOString().split('T')[0],
-          hora_inicio: '10:00',
-          servico: 'Toxina Botulínica',
-          profissional: 'Dra. Fabíola Kleinert',
-          status: 'Confirmado',
-        },
-      ],
-      status: 200,
-      url,
-      method: options.method || 'GET',
-      rawBody: '{"mock":true, "source":"getMockDataForEndpoint"}',
-    }
-  }
-  return { data: {}, status: 200, url, method: options.method || 'GET', rawBody: '{"mock":true}' }
 }
 
 export const testarConexaoBelle = async (estabelecimento: string = '1') => {
