@@ -36475,101 +36475,109 @@ var logger = {
 };
 //#endregion
 //#region src/lib/api/belle.ts
-var handleResponse = async (res, url, method = "GET") => {
-	if ((res.headers.get("content-type") || "").includes("application/json")) {
-		const data = await res.json();
-		if (!res.ok) {
-			const error = new Error(data.error || data.mensagem || `HTTP error ${res.status}`);
-			error.status = res.status;
-			error.url = url || res.url;
-			error.method = method;
-			error.rawBody = JSON.stringify(data);
-			throw error;
-		}
-		return data;
-	} else {
-		const text = await res.text();
-		const headersRecord = {};
-		res.headers.forEach((val, key) => {
-			headersRecord[key] = val;
-		});
-		logger.error("Non-JSON response received", {
-			status: res.status,
-			headers: headersRecord,
-			bodyPreview: text.substring(0, 500)
-		});
-		if (!res.ok) {
-			const error = /* @__PURE__ */ new Error(`HTTP error ${res.status} - Non-JSON response`);
-			error.status = res.status;
-			error.url = url || res.url;
-			error.method = method;
-			error.rawBody = text.substring(0, 500);
-			throw error;
-		}
-		return text;
-	}
+var baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
+var doFetch = async (url, options, authHeader) => {
+	const headers = new Headers(options.headers || {});
+	headers.set("Authorization", authHeader);
+	headers.set("Accept", "application/json");
+	if (options.method && options.method !== "GET") headers.set("Content-Type", "application/json");
+	return fetch(url, {
+		...options,
+		headers
+	});
 };
-var testarConexaoBelle = async (estabelecimento = "1") => {
-	const url = `/api/belle/testar-conexao?codEstab=${estabelecimento}`;
-	logger.info("Testing Belle API connection via backend", { url });
-	const res = await fetch(url);
-	const contentType = res.headers.get("content-type") || "";
-	let data = null;
-	let text = "";
-	if (contentType.includes("application/json")) data = await res.json();
-	else {
-		text = await res.text();
-		const headersRecord = {};
-		res.headers.forEach((val, key) => {
-			headersRecord[key] = val;
-		});
-		logger.warn("Non-JSON response received", {
-			status: res.status,
-			headers: headersRecord,
-			bodyPreview: text.substring(0, 500)
-		});
+var fetchBelleApi = async (endpoint, options = {}) => {
+	const url = `${baseUrl}${endpoint}`;
+	const cleanToken = "your_backend_token_here".trim();
+	const host = new URL(url).host;
+	logger.info("Belle API Request Started", {
+		host,
+		url,
+		method: options.method || "GET"
+	});
+	let res = await doFetch(url, options, `Bearer ${cleanToken}`);
+	if (res.status === 401 || res.status === 403) {
+		logger.info("Belle API 401/403 with Bearer token, trying raw format", { url });
+		res = await doFetch(url, options, cleanToken);
 	}
-	if (!res.ok) {
-		const errorBody = data ? JSON.stringify(data) : text.substring(0, 500);
-		const error = new Error(data?.error || data?.mensagem || `HTTP error ${res.status}`);
+	const contentType = res.headers.get("content-type") || "";
+	logger.info("Belle API Request Completed", {
+		url,
+		status: res.status,
+		contentType
+	});
+	const text = await res.text();
+	const lowerText = text.trim().toLowerCase();
+	if (contentType.includes("text/html") || lowerText.startsWith("<!doctype html>") || lowerText.startsWith("<html")) {
+		const error = /* @__PURE__ */ new Error("Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted or routed incorrectly.");
 		error.status = res.status;
 		error.url = url;
-		error.method = "GET";
-		error.rawBody = errorBody;
+		error.method = options.method || "GET";
+		error.contentType = contentType;
+		error.rawBody = text.substring(0, 500);
+		logger.error("Routing/Intercept Error", {
+			url,
+			status: res.status,
+			contentType,
+			bodyPreview: error.rawBody
+		});
 		throw error;
 	}
-	return {
-		success: true,
-		data: data?.data || data || text,
-		debug: {
-			url,
-			method: "GET",
-			status: res.status,
-			codEstab: estabelecimento,
-			rawBody: data ? JSON.stringify(data).substring(0, 200) : text.substring(0, 200)
-		}
-	};
+	let data;
+	if (text) try {
+		data = JSON.parse(text);
+	} catch (e) {
+		const error = /* @__PURE__ */ new Error(`JSON Parse Error: Expected valid JSON object but failed to parse response.`);
+		error.status = res.status;
+		error.url = url;
+		error.rawBody = text.substring(0, 200);
+		throw error;
+	}
+	if (!res.ok || data && (data.erro || data.error)) {
+		const errorMsg = data?.mensagem || data?.error || JSON.stringify(data) || `HTTP error ${res.status}`;
+		const error = /* @__PURE__ */ new Error(`API Error (HTTP ${res.status}). Error: ${errorMsg}`);
+		error.status = res.status;
+		error.url = url;
+		error.method = options.method || "GET";
+		error.rawBody = text;
+		throw error;
+	}
+	return data;
+};
+var testarConexaoBelle = async (estabelecimento = "1") => {
+	try {
+		return {
+			success: true,
+			data: await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=0`, { method: "GET" }),
+			debug: {
+				url: `${baseUrl}/clientes?codEstab=${estabelecimento}&pagina=0`,
+				method: "GET",
+				codEstab: estabelecimento
+			}
+		};
+	} catch (error) {
+		logger.error("Test Connection Error", {
+			error: error.message,
+			status: error.status
+		});
+		throw error;
+	}
 };
 var testBelleConnection = testarConexaoBelle;
 var listClientes = async (estabelecimento, pagina = 0) => {
-	const url = `/api/belle/clientes/listar?codEstab=${estabelecimento}&pagina=${pagina}`;
-	return handleResponse(await fetch(url), url);
+	return fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=${pagina}`, { method: "GET" });
 };
 var updateCliente = async (codCliente, data) => {
-	const url = `/api/belle/clientes/atualizar?codCliente=${codCliente}`;
-	return handleResponse(await fetch(url, {
+	return fetchBelleApi(`/clientes?codCliente=${codCliente}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
-	}), url, "PUT");
+	});
 };
 var saveLead = async (data) => {
-	const url = `/api/belle/clientes/gravar-lead`;
-	return handleResponse(await fetch(url, {
+	return fetchBelleApi(`/clientes/lead`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
-	}), url, "POST");
+	});
 };
 var fetchBelleClientes = async (estabelecimento = "1") => {
 	let allClientes = [];
@@ -36592,26 +36600,7 @@ var fetchBelleClientes = async (estabelecimento = "1") => {
 };
 var fetchBelleAgendamentos = async (estabelecimento = "1") => {
 	try {
-		const url = `/api/belle/agendamentos/listar?codEstab=${estabelecimento}`;
-		const res = await fetch(url);
-		if (!(res.headers.get("content-type") || "").includes("application/json")) {
-			const text = await res.text();
-			const headersRecord = {};
-			res.headers.forEach((val, key) => {
-				headersRecord[key] = val;
-			});
-			logger.error("Error fetching agendamentos API - Non-JSON response", {
-				status: res.status,
-				headers: headersRecord,
-				bodyPreview: text.substring(0, 500)
-			});
-			return [];
-		}
-		const data = await res.json();
-		if (!res.ok) {
-			logger.error("Error fetching agendamentos API", data);
-			return [];
-		}
+		const data = await fetchBelleApi(`/agendamentos?codEstab=${estabelecimento}`, { method: "GET" });
 		return Array.isArray(data) ? data : data?.agendamentos || data?.dados || [];
 	} catch (e) {
 		logger.error("Error fetching agendamentos network", e);
@@ -51637,4 +51626,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DmkrXFH4.js.map
+//# sourceMappingURL=index-DEJrY-OO.js.map

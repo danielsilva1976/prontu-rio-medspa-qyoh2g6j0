@@ -5,100 +5,135 @@ import { logger } from '@/infra/logger'
 export type { BelleCliente, BelleAgendamento, DiagnosticLog }
 export { mapBelleDataToPatients }
 
-const handleResponse = async (res: Response, url?: string, method = 'GET') => {
-  const contentType = res.headers.get('content-type') || ''
+const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
 
-  if (contentType.includes('application/json')) {
-    const data = await res.json()
-    if (!res.ok) {
-      const error: any = new Error(data.error || data.mensagem || `HTTP error ${res.status}`)
-      error.status = res.status
-      error.url = url || res.url
-      error.method = method
-      error.rawBody = JSON.stringify(data)
-      throw error
-    }
-    return data
-  } else {
-    const text = await res.text()
+const doFetch = async (url: string, options: RequestInit, authHeader: string) => {
+  const headers = new Headers(options.headers || {})
+  headers.set('Authorization', authHeader)
+  headers.set('Accept', 'application/json')
 
-    const headersRecord: Record<string, string> = {}
-    res.headers.forEach((val, key) => {
-      headersRecord[key] = val
-    })
-
-    logger.error('Non-JSON response received', {
-      status: res.status,
-      headers: headersRecord,
-      bodyPreview: text.substring(0, 500),
-    })
-
-    if (!res.ok) {
-      const error: any = new Error(`HTTP error ${res.status} - Non-JSON response`)
-      error.status = res.status
-      error.url = url || res.url
-      error.method = method
-      error.rawBody = text.substring(0, 500)
-      throw error
-    }
-
-    return text
+  if (options.method && options.method !== 'GET') {
+    headers.set('Content-Type', 'application/json')
   }
+
+  return fetch(url, { ...options, headers })
 }
 
-export const testarConexaoBelle = async (estabelecimento: string = '1') => {
-  const url = `/api/belle/testar-conexao?codEstab=${estabelecimento}`
-  logger.info('Testing Belle API connection via backend', { url })
-  const res = await fetch(url)
+const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
+  const url = `${baseUrl}${endpoint}`
+  const token = (import.meta as any).env.VITE_BELLE_TOKEN || ''
+  const cleanToken = token.trim()
 
-  const contentType = res.headers.get('content-type') || ''
-  let data: any = null
-  let text = ''
-
-  if (contentType.includes('application/json')) {
-    data = await res.json()
-  } else {
-    text = await res.text()
-    const headersRecord: Record<string, string> = {}
-    res.headers.forEach((val, key) => {
-      headersRecord[key] = val
-    })
-    logger.warn('Non-JSON response received', {
-      status: res.status,
-      headers: headersRecord,
-      bodyPreview: text.substring(0, 500),
-    })
+  if (!cleanToken) {
+    throw new Error('Belle Token não configurado (VITE_BELLE_TOKEN ausente).')
   }
 
-  if (!res.ok) {
-    const errorBody = data ? JSON.stringify(data) : text.substring(0, 500)
-    const error: any = new Error(data?.error || data?.mensagem || `HTTP error ${res.status}`)
+  const host = new URL(url).host
+
+  logger.info('Belle API Request Started', {
+    host,
+    url,
+    method: options.method || 'GET',
+  })
+
+  let res = await doFetch(url, options, `Bearer ${cleanToken}`)
+
+  if (res.status === 401 || res.status === 403) {
+    logger.info('Belle API 401/403 with Bearer token, trying raw format', { url })
+    res = await doFetch(url, options, cleanToken)
+  }
+
+  const contentType = res.headers.get('content-type') || ''
+
+  logger.info('Belle API Request Completed', {
+    url,
+    status: res.status,
+    contentType,
+  })
+
+  const text = await res.text()
+  const lowerText = text.trim().toLowerCase()
+
+  if (
+    contentType.includes('text/html') ||
+    lowerText.startsWith('<!doctype html>') ||
+    lowerText.startsWith('<html')
+  ) {
+    const error: any = new Error(
+      'Routing/Intercept Error: Received HTML instead of JSON from Belle API. This indicates the request was intercepted or routed incorrectly.',
+    )
     error.status = res.status
     error.url = url
-    error.method = 'GET'
-    error.rawBody = errorBody
+    error.method = options.method || 'GET'
+    error.contentType = contentType
+    error.rawBody = text.substring(0, 500)
+
+    logger.error('Routing/Intercept Error', {
+      url,
+      status: res.status,
+      contentType,
+      bodyPreview: error.rawBody,
+    })
+
     throw error
   }
 
-  return {
-    success: true,
-    data: data?.data || data || text,
-    debug: {
-      url,
+  let data
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch (e) {
+      const error: any = new Error(
+        `JSON Parse Error: Expected valid JSON object but failed to parse response.`,
+      )
+      error.status = res.status
+      error.url = url
+      error.rawBody = text.substring(0, 200)
+      throw error
+    }
+  }
+
+  if (!res.ok || (data && (data.erro || data.error))) {
+    const errorMsg =
+      data?.mensagem || data?.error || JSON.stringify(data) || `HTTP error ${res.status}`
+    const error: any = new Error(`API Error (HTTP ${res.status}). Error: ${errorMsg}`)
+    error.status = res.status
+    error.url = url
+    error.method = options.method || 'GET'
+    error.rawBody = text
+    throw error
+  }
+
+  return data
+}
+
+export const testarConexaoBelle = async (estabelecimento: string = '1') => {
+  try {
+    const data = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=0`, {
       method: 'GET',
-      status: res.status,
-      codEstab: estabelecimento,
-      rawBody: data ? JSON.stringify(data).substring(0, 200) : text.substring(0, 200),
-    },
+    })
+
+    return {
+      success: true,
+      data: data,
+      debug: {
+        url: `${baseUrl}/clientes?codEstab=${estabelecimento}&pagina=0`,
+        method: 'GET',
+        codEstab: estabelecimento,
+      },
+    }
+  } catch (error: any) {
+    logger.error('Test Connection Error', { error: error.message, status: error.status })
+    throw error
   }
 }
 
 export const testBelleConnection = testarConexaoBelle
 
 export const listClientes = async (estabelecimento: string, pagina: number = 0) => {
-  const url = `/api/belle/clientes/listar?codEstab=${estabelecimento}&pagina=${pagina}`
-  const res = await fetch(url)
-  return handleResponse(res, url)
+  return fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=${pagina}`, {
+    method: 'GET',
+  })
 }
 
 export const searchCliente = async (estabelecimento: string, filters: Record<string, string>) => {
@@ -107,29 +142,24 @@ export const searchCliente = async (estabelecimento: string, filters: Record<str
   Object.entries(filters).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
   })
-  const url = `/api/belle/clientes/buscar?${params.toString()}`
-  const res = await fetch(url)
-  return handleResponse(res, url)
+
+  return fetchBelleApi(`/clientes?${params.toString()}`, {
+    method: 'GET',
+  })
 }
 
 export const updateCliente = async (codCliente: string | number, data: any) => {
-  const url = `/api/belle/clientes/atualizar?codCliente=${codCliente}`
-  const res = await fetch(url, {
+  return fetchBelleApi(`/clientes?codCliente=${codCliente}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  return handleResponse(res, url, 'PUT')
 }
 
 export const saveLead = async (data: any) => {
-  const url = `/api/belle/clientes/gravar-lead`
-  const res = await fetch(url, {
+  return fetchBelleApi(`/clientes/lead`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  return handleResponse(res, url, 'POST')
 }
 
 export const fetchBelleClientes = async (
@@ -169,30 +199,10 @@ export const fetchBelleAgendamentos = async (
   estabelecimento: string = '1',
 ): Promise<BelleAgendamento[]> => {
   try {
-    const url = `/api/belle/agendamentos/listar?codEstab=${estabelecimento}`
-    const res = await fetch(url)
+    const data = await fetchBelleApi(`/agendamentos?codEstab=${estabelecimento}`, {
+      method: 'GET',
+    })
 
-    const contentType = res.headers.get('content-type') || ''
-    if (!contentType.includes('application/json')) {
-      const text = await res.text()
-      const headersRecord: Record<string, string> = {}
-      res.headers.forEach((val, key) => {
-        headersRecord[key] = val
-      })
-
-      logger.error('Error fetching agendamentos API - Non-JSON response', {
-        status: res.status,
-        headers: headersRecord,
-        bodyPreview: text.substring(0, 500),
-      })
-      return []
-    }
-
-    const data = await res.json()
-    if (!res.ok) {
-      logger.error('Error fetching agendamentos API', data)
-      return []
-    }
     return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
   } catch (e) {
     logger.error('Error fetching agendamentos network', e)
