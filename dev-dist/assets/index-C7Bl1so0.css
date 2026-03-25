@@ -1016,6 +1016,9 @@ video {
 .h-svh {
   height: 100svh;
 }
+.max-h-60 {
+  max-height: 15rem;
+}
 .max-h-\[--radix-context-menu-content-available-height\] {
   max-height: var(--radix-context-menu-content-available-height);
 }
@@ -1716,6 +1719,9 @@ video {
 .border-emerald-200 {
   --tw-border-opacity: 1;
   border-color: rgb(167 243 208 / var(--tw-border-opacity, 1));
+}
+.border-emerald-200\/50 {
+  border-color: rgb(167 243 208 / 0.5);
 }
 .border-gray-200 {
   --tw-border-opacity: 1;

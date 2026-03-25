@@ -61,6 +61,7 @@ export function IntegrationSettings({
     setEstabelecimento(clEstab)
     setIsTesting(true)
     updateBelleConfig(clEstab, 'application/json')
+    setDiagnosticData(null)
 
     try {
       const res = await testarConexaoBelle(clEstab)
@@ -71,7 +72,7 @@ export function IntegrationSettings({
           success: true,
           title: `Conexão API Estabelecida`,
           message: `Teste de Conexão Concluído`,
-          details: `A comunicação direta com o Belle Software foi realizada com sucesso. A API respondeu adequadamente ao método GET.`,
+          details: `A comunicação com a Belle API foi realizada com sucesso.\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`,
         })
         addLog('Sincronização Teste API Oficial', 'SYSTEM')
       } else {
@@ -81,15 +82,16 @@ export function IntegrationSettings({
       setBelleLastSync('error', new Date().toISOString())
 
       const is405 = err.message.includes('405')
-      const match = err.message.match(/HTTP (\d+)/)
-      const status = match ? match[1] : 'Desconhecido'
+      const status =
+        err.status ||
+        (err.message.match(/HTTP (\d+)/) ? err.message.match(/HTTP (\d+)/)[1] : 'Desconhecido')
 
       setDiagnosticData({
         success: false,
         title: is405 ? 'Contract Error (HTTP 405)' : `Erro de API (HTTP ${status})`,
         message: 'Falha no Teste de Conexão',
-        details: is405
-          ? 'Erro Contratual (HTTP 405 Method Not Allowed): O método GET não é suportado pelo endpoint da API.'
+        details: err.rawBody
+          ? `URL: ${err.url}\nMétodo: ${err.method}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}`
           : err.message,
       })
     } finally {
@@ -129,11 +131,11 @@ export function IntegrationSettings({
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Integração REST API Segura (Backend)
+                <Database className="w-5 h-5" /> Integração REST API Direta
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                A integração agora é realizada estritamente pelo backend para máxima segurança.
-                Tokens de acesso e credenciais não são expostos ao frontend. Defina apenas o
+                A integração agora é realizada comunicando diretamente com a API do Belle Software.
+                Isso elimina intermediários e reduz erros de comunicação (como HTTP 405). Defina o
                 estabelecimento de origem para a sincronização da clínica.
               </p>
             </div>
@@ -157,7 +159,9 @@ export function IntegrationSettings({
                   {diagnosticData.title}
                 </AlertTitle>
                 <AlertDescription className="text-sm text-emerald-700 leading-relaxed font-medium">
-                  {diagnosticData.details}
+                  <div className="p-3 mt-2 rounded-md border text-xs leading-relaxed bg-white/60 border-emerald-200/50 break-words whitespace-pre-wrap font-mono">
+                    {diagnosticData.details}
+                  </div>
                 </AlertDescription>
               </div>
             </Alert>
@@ -174,7 +178,7 @@ export function IntegrationSettings({
                   {diagnosticData.title}
                 </AlertTitle>
                 <AlertDescription className="space-y-3">
-                  <div className="p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono">
+                  <div className="p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono max-h-60 overflow-y-auto">
                     {diagnosticData.details}
                   </div>
                 </AlertDescription>
@@ -197,7 +201,7 @@ export function IntegrationSettings({
               ) : (
                 <Activity className="w-4 h-4 mr-2" />
               )}{' '}
-              Validar Conexão
+              Validar Conexão Direta
             </Button>
             {isConnected && (
               <Button

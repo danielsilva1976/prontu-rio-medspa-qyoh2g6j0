@@ -36461,12 +36461,122 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 	});
 };
 //#endregion
+//#region src/infra/logger.ts
+var logger = {
+	info: (message, meta) => {
+		console.log(`[INFO] ${message}`, meta ? JSON.stringify(meta) : "");
+	},
+	error: (message, error) => {
+		console.error(`[ERROR] ${message}`, error ? JSON.stringify(error) : "");
+	},
+	warn: (message, meta) => {
+		console.warn(`[WARN] ${message}`, meta ? JSON.stringify(meta) : "");
+	}
+};
+//#endregion
 //#region src/lib/api/belle.ts
 var handleResponse = async (res) => {
 	const data = await res.json();
 	if (!res.ok) throw new Error(data.error || `HTTP error ${res.status}`);
 	return data;
 };
+var belleDirectClient = async (endpoint, options) => {
+	const baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
+	const token = "your_backend_token_here";
+	const url = new URL(`${baseUrl}${endpoint}`);
+	if (options.queryParams) Object.entries(options.queryParams).forEach(([k, v]) => {
+		if (v !== void 0 && v !== null && v !== "") url.searchParams.append(k, v);
+	});
+	const headers = {
+		Authorization: token.trim(),
+		"Content-Type": "application/json",
+		Accept: "application/json"
+	};
+	const codEstab = options.queryParams?.codEstab || "unknown";
+	const logContext = {
+		codEstab,
+		method: options.method,
+		targetUrl: url.toString(),
+		queryParams: options.queryParams,
+		headersSent: {
+			...headers,
+			Authorization: "***"
+		}
+	};
+	logger.info("Belle API Request Started", logContext);
+	let response;
+	try {
+		response = await fetch(url.toString(), {
+			method: options.method,
+			headers,
+			body: options.body ? JSON.stringify(options.body) : void 0
+		});
+	} catch (error) {
+		logger.error("Belle API Request Failed (Network)", {
+			error: error.message,
+			...logContext
+		});
+		const err = /* @__PURE__ */ new Error(`Network Error: ${error.message}`);
+		err.status = "Network";
+		err.url = url.toString();
+		err.method = options.method;
+		throw err;
+	}
+	const status = response.status;
+	const rawBody = await response.text();
+	logger.info("Belle API Request Completed", {
+		httpStatusReturned: status,
+		rawResponseBody: rawBody,
+		...logContext
+	});
+	let responseBody;
+	try {
+		responseBody = rawBody ? JSON.parse(rawBody) : {};
+	} catch {
+		responseBody = { message: rawBody };
+	}
+	if (status >= 400 || responseBody && (responseBody.erro || responseBody.error)) {
+		const errorMsg = responseBody?.mensagem || responseBody?.error || JSON.stringify(responseBody);
+		const error = /* @__PURE__ */ new Error(`API Error (HTTP ${status}). Error: ${errorMsg}`);
+		error.status = status;
+		error.url = url.toString();
+		error.method = options.method;
+		error.rawBody = rawBody;
+		if (status === 405) error.message = `Contract Failure (HTTP 405): Method ${options.method} not allowed. Error: ${errorMsg}`;
+		else if (status === 401 || status === 403) error.message = `Authentication Failure (HTTP ${status}): Credential issue. Error: ${errorMsg}`;
+		else if (status === 400) error.message = `Validation Failure (HTTP 400): Parameter issue. Error: ${errorMsg}`;
+		throw error;
+	}
+	return {
+		responseBody,
+		debug: {
+			url: url.toString(),
+			method: options.method,
+			status,
+			rawBody,
+			codEstab
+		}
+	};
+};
+var testarConexaoBelle = async (estabelecimento = "1") => {
+	try {
+		const { responseBody, debug } = await belleDirectClient("/clientes", {
+			method: "GET",
+			queryParams: {
+				codEstab: estabelecimento,
+				pagina: "0"
+			}
+		});
+		return {
+			success: true,
+			data: responseBody,
+			debug
+		};
+	} catch (error) {
+		throw error;
+	}
+};
+var testBelleConnection = testarConexaoBelle;
 var listClientes = async (estabelecimento, pagina = 0) => {
 	return handleResponse(await fetch(`/api/belle/clientes/listar?codEstab=${estabelecimento}&pagina=${pagina}`));
 };
@@ -36484,14 +36594,6 @@ var saveLead = async (data) => {
 		body: JSON.stringify(data)
 	}));
 };
-var testarConexaoBelle = async (estabelecimento = "1") => {
-	return handleResponse(await fetch(`/api/belle/testar-conexao`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ codEstab: estabelecimento })
-	}));
-};
-var testBelleConnection = testarConexaoBelle;
 var fetchBelleClientes = async (estabelecimento = "1") => {
 	let allClientes = [];
 	let pagina = 0;
@@ -50661,27 +50763,28 @@ function IntegrationSettings({ title, description }) {
 		setEstabelecimento(clEstab);
 		setIsTesting(true);
 		updateBelleConfig(clEstab, "application/json");
+		setDiagnosticData(null);
 		try {
-			if ((await testarConexaoBelle(clEstab)).success) {
+			const res = await testarConexaoBelle(clEstab);
+			if (res.success) {
 				setBelleLastSync("success", (/* @__PURE__ */ new Date()).toISOString());
 				setDiagnosticData({
 					success: true,
 					title: `Conexão API Estabelecida`,
 					message: `Teste de Conexão Concluído`,
-					details: `A comunicação direta com o Belle Software foi realizada com sucesso. A API respondeu adequadamente ao método GET.`
+					details: `A comunicação com a Belle API foi realizada com sucesso.\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`
 				});
 				addLog("Sincronização Teste API Oficial", "SYSTEM");
 			} else throw new Error("Falha desconhecida no teste de conexão");
 		} catch (err) {
 			setBelleLastSync("error", (/* @__PURE__ */ new Date()).toISOString());
 			const is405 = err.message.includes("405");
-			const match = err.message.match(/HTTP (\d+)/);
-			const status = match ? match[1] : "Desconhecido";
+			const status = err.status || (err.message.match(/HTTP (\d+)/) ? err.message.match(/HTTP (\d+)/)[1] : "Desconhecido");
 			setDiagnosticData({
 				success: false,
 				title: is405 ? "Contract Error (HTTP 405)" : `Erro de API (HTTP ${status})`,
 				message: "Falha no Teste de Conexão",
-				details: is405 ? "Erro Contratual (HTTP 405 Method Not Allowed): O método GET não é suportado pelo endpoint da API." : err.message
+				details: err.rawBody ? `URL: ${err.url}\nMétodo: ${err.method}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}` : err.message
 			});
 		} finally {
 			setIsTesting(false);
@@ -50711,62 +50814,62 @@ function IntegrationSettings({ title, description }) {
 		toast({ title: "Configurações salvas" });
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/IntegrationSettings.tsx:122:5",
+		"data-uid": "src/components/settings/IntegrationSettings.tsx:124:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:123:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:125:7",
 			"data-prohibitions": "[editContent]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:124:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:126:9",
 				"data-prohibitions": "[]",
 				className: "text-xl text-primary font-serif",
 				children: "Integração Belle Software"
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:125:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:127:9",
 				"data-prohibitions": "[editContent]",
 				children: description
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/settings/IntegrationSettings.tsx:127:7",
+			"data-uid": "src/components/settings/IntegrationSettings.tsx:129:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/IntegrationSettings.tsx:128:9",
+				"data-uid": "src/components/settings/IntegrationSettings.tsx:130:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-6 max-w-3xl",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:129:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:131:11",
 						"data-prohibitions": "[]",
 						className: "bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:130:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:132:13",
 							"data-prohibitions": "[]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:131:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:133:15",
 								"data-prohibitions": "[]",
 								className: "flex items-center gap-2 text-primary font-medium mb-1",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Database, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:132:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:134:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-5 h-5"
-								}), " Integração REST API Segura (Backend)"]
+								}), " Integração REST API Direta"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:134:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:136:15",
 								"data-prohibitions": "[]",
 								className: "text-sm text-muted-foreground mb-3 leading-relaxed",
-								children: "A integração agora é realizada estritamente pelo backend para máxima segurança. Tokens de acesso e credenciais não são expostos ao frontend. Defina apenas o estabelecimento de origem para a sincronização da clínica."
+								children: "A integração agora é realizada comunicando diretamente com a API do Belle Software. Isso elimina intermediários e reduz erros de comunicação (como HTTP 405). Defina o estabelecimento de origem para a sincronização da clínica."
 							})]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:141:13",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:143:13",
 							"data-prohibitions": "[]",
 							className: "space-y-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:142:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:144:15",
 								"data-prohibitions": "[]",
 								children: "Código do Estabelecimento (codEstab)"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:143:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:145:15",
 								"data-prohibitions": "[editContent]",
 								value: estabelecimento,
 								onChange: (e) => setEstabelecimento(e.target.value),
@@ -50776,79 +50879,84 @@ function IntegrationSettings({ title, description }) {
 						})]
 					}),
 					diagnosticData?.success && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Alert, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:153:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:155:13",
 						"data-prohibitions": "[editContent]",
 						className: "bg-emerald-50 border-emerald-200 text-emerald-900 shadow-sm animate-in fade-in slide-in-from-top-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:154:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:156:15",
 							"data-prohibitions": "[editContent]",
 							className: "h-5 w-5 text-emerald-600 mt-0.5"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:155:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:157:15",
 							"data-prohibitions": "[editContent]",
 							className: "pl-1 w-full",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertTitle, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:156:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:158:17",
 								"data-prohibitions": "[editContent]",
 								className: "font-semibold text-base mb-1 text-emerald-800",
 								children: diagnosticData.title
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDescription, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:159:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:161:17",
 								"data-prohibitions": "[editContent]",
 								className: "text-sm text-emerald-700 leading-relaxed font-medium",
-								children: diagnosticData.details
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:162:19",
+									"data-prohibitions": "[editContent]",
+									className: "p-3 mt-2 rounded-md border text-xs leading-relaxed bg-white/60 border-emerald-200/50 break-words whitespace-pre-wrap font-mono",
+									children: diagnosticData.details
+								})
 							})]
 						})]
 					}),
 					diagnosticData && !diagnosticData.success && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Alert, {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:167:13",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:171:13",
 						"data-prohibitions": "[editContent]",
 						variant: "destructive",
 						className: "animate-in fade-in slide-in-from-top-2 shadow-sm bg-rose-50 text-rose-900 border-rose-200",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleAlert, {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:171:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:175:15",
 							"data-prohibitions": "[editContent]",
 							className: "h-5 w-5 mt-0.5 text-rose-600"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/IntegrationSettings.tsx:172:15",
+							"data-uid": "src/components/settings/IntegrationSettings.tsx:176:15",
 							"data-prohibitions": "[editContent]",
 							className: "pl-1 w-full",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertTitle, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:173:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:177:17",
 								"data-prohibitions": "[editContent]",
 								className: "font-semibold text-base mb-2",
 								children: diagnosticData.title
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDescription, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:176:17",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:180:17",
 								"data-prohibitions": "[editContent]",
 								className: "space-y-3",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:177:19",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:181:19",
 									"data-prohibitions": "[editContent]",
-									className: "p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono",
+									className: "p-3 rounded-md border text-xs leading-relaxed bg-white/60 border-rose-200/50 break-words whitespace-pre-wrap font-mono max-h-60 overflow-y-auto",
 									children: diagnosticData.details
 								})
 							})]
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/settings/IntegrationSettings.tsx:185:11",
+						"data-uid": "src/components/settings/IntegrationSettings.tsx:189:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-wrap items-center gap-3 pt-2",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:186:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:190:13",
 								"data-prohibitions": "[]",
 								onClick: handleSave,
 								className: "rounded-xl shadow-sm",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:187:15",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:191:15",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), " Salvar Configuração"]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:189:13",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:193:13",
 								"data-prohibitions": "[editContent]",
 								variant: "outline",
 								onClick: handleTestApi,
@@ -50856,27 +50964,27 @@ function IntegrationSettings({ title, description }) {
 								className: "rounded-xl border-primary/20 text-primary hover:bg-primary/5 shadow-sm",
 								children: [
 									isTesting ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:196:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:200:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-4 h-4 mr-2 animate-spin"
 									}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Activity, {
-										"data-uid": "src/components/settings/IntegrationSettings.tsx:198:17",
+										"data-uid": "src/components/settings/IntegrationSettings.tsx:202:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-4 h-4 mr-2"
 									}),
 									" ",
-									"Validar Conexão"
+									"Validar Conexão Direta"
 								]
 							}),
 							isConnected && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/settings/IntegrationSettings.tsx:203:15",
+								"data-uid": "src/components/settings/IntegrationSettings.tsx:207:15",
 								"data-prohibitions": "[]",
 								onClick: handleSyncPatients,
 								disabled: isConnecting,
 								variant: "secondary",
 								className: "rounded-xl ml-auto shadow-sm",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloudDownload, {
-									"data-uid": "src/components/settings/IntegrationSettings.tsx:209:17",
+									"data-uid": "src/components/settings/IntegrationSettings.tsx:213:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-4 h-4 mr-2"
 								}), " Sincronizar Base"]
@@ -51524,4 +51632,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-B2fA9d-H.js.map
+//# sourceMappingURL=index-CDz8eiUi.js.map
