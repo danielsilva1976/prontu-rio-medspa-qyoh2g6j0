@@ -45,18 +45,13 @@ export const saveLead = async (data: any) => {
   return handleResponse(res)
 }
 
-export const runIncrementalValidationFlow = async (estabelecimento: string = '1') => {
-  const res = await fetch(`/api/belle/teste`, {
+export const testarConexaoBelle = async (estabelecimento: string = '1') => {
+  const res = await fetch(`/api/belle/testar-conexao`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ codEstab: estabelecimento }),
   })
   return handleResponse(res)
-}
-
-export const testBelleConnection = async (estabelecimento: string = '1') => {
-  const result = await listClientes(estabelecimento, 0)
-  return { success: true, data: result }
 }
 
 export const fetchBelleClientes = async (
