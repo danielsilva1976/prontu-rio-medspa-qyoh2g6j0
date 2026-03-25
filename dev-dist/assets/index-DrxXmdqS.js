@@ -36478,13 +36478,7 @@ var logger = {
 var baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
 var getAuthToken = () => {
 	let token = "";
-	try {
-		const processObj = typeof process !== "undefined" ? process : void 0;
-		if (processObj && processObj.env) token = processObj.env.BELLE_TOKEN || processObj.env.VITE_BELLE_TOKEN || "";
-	} catch (e) {}
-	if (!token) try {
-		token = "";
-	} catch (e) {}
+	if (typeof process !== "undefined" && {}.BELLE_TOKEN) token = {}.BELLE_TOKEN;
 	return token.trim();
 };
 var doFetch = async (url, options, format) => {
@@ -51680,4 +51674,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D-6i-r-r.js.map
+//# sourceMappingURL=index-DrxXmdqS.js.map

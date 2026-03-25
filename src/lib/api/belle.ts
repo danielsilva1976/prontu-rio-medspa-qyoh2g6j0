@@ -10,24 +10,10 @@ const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/Integra
 const getAuthToken = (): string => {
   let token = ''
 
-  // 1. Secure backend retrieval (Node.js/Edge environments)
-  try {
-    const processObj = typeof process !== 'undefined' ? process : undefined
-    if (processObj && processObj.env) {
-      token = processObj.env.BELLE_TOKEN || processObj.env.VITE_BELLE_TOKEN || ''
-    }
-  } catch (e) {
-    // ignore error
-  }
-
-  // 2. Vite browser environment fallback
-  if (!token) {
-    try {
-      token =
-        (import.meta as any).env?.BELLE_TOKEN || (import.meta as any).env?.VITE_BELLE_TOKEN || ''
-    } catch (e) {
-      // ignore error
-    }
+  // Secure backend retrieval (Node.js/Edge environments)
+  // Ensures token is never bundled in client-side JavaScript by Vite
+  if (typeof process !== 'undefined' && process.env && process.env.BELLE_TOKEN) {
+    token = process.env.BELLE_TOKEN
   }
 
   return token.trim()
