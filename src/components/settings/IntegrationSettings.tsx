@@ -91,7 +91,7 @@ export function IntegrationSettings({
         title: is405 ? 'Contract Error (HTTP 405)' : `Erro de API (HTTP ${status})`,
         message: 'Falha no Teste de Conexão',
         details: err.rawBody
-          ? `URL: ${err.url}\nMétodo: ${err.method}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}`
+          ? `URL: ${err.url || 'Desconhecido'}\nMétodo: ${err.method || 'GET'}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}`
           : err.message,
       })
     } finally {

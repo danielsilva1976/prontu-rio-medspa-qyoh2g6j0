@@ -60,13 +60,29 @@ const fetchBelleApi = async (
     const response = await fetch(url.toString(), fetchOptions)
 
     const status = response.status
+    const contentType = response.headers.get('content-type') || ''
     const rawBody = await response.text()
 
     let parsedBody
-    try {
-      parsedBody = rawBody ? JSON.parse(rawBody) : {}
-    } catch {
+    if (contentType.includes('application/json')) {
+      try {
+        parsedBody = rawBody ? JSON.parse(rawBody) : {}
+      } catch {
+        parsedBody = { message: rawBody }
+      }
+    } else {
       parsedBody = { message: rawBody }
+
+      const headersRecord: Record<string, string> = {}
+      response.headers.forEach((val, key) => {
+        headersRecord[key] = val
+      })
+
+      logger.error('Backend Belle API non-JSON response', {
+        status,
+        headers: headersRecord,
+        bodyPreview: rawBody.substring(0, 500),
+      })
     }
 
     logger.info('Backend Belle API Request Completed', {

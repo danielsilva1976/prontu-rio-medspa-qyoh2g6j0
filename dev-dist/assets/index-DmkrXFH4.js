@@ -36475,53 +36475,101 @@ var logger = {
 };
 //#endregion
 //#region src/lib/api/belle.ts
-var handleResponse = async (res) => {
-	const data = await res.json();
-	if (!res.ok) throw new Error(data.error || `HTTP error ${res.status}`);
-	return data;
+var handleResponse = async (res, url, method = "GET") => {
+	if ((res.headers.get("content-type") || "").includes("application/json")) {
+		const data = await res.json();
+		if (!res.ok) {
+			const error = new Error(data.error || data.mensagem || `HTTP error ${res.status}`);
+			error.status = res.status;
+			error.url = url || res.url;
+			error.method = method;
+			error.rawBody = JSON.stringify(data);
+			throw error;
+		}
+		return data;
+	} else {
+		const text = await res.text();
+		const headersRecord = {};
+		res.headers.forEach((val, key) => {
+			headersRecord[key] = val;
+		});
+		logger.error("Non-JSON response received", {
+			status: res.status,
+			headers: headersRecord,
+			bodyPreview: text.substring(0, 500)
+		});
+		if (!res.ok) {
+			const error = /* @__PURE__ */ new Error(`HTTP error ${res.status} - Non-JSON response`);
+			error.status = res.status;
+			error.url = url || res.url;
+			error.method = method;
+			error.rawBody = text.substring(0, 500);
+			throw error;
+		}
+		return text;
+	}
 };
 var testarConexaoBelle = async (estabelecimento = "1") => {
 	const url = `/api/belle/testar-conexao?codEstab=${estabelecimento}`;
 	logger.info("Testing Belle API connection via backend", { url });
 	const res = await fetch(url);
-	const data = await res.json();
+	const contentType = res.headers.get("content-type") || "";
+	let data = null;
+	let text = "";
+	if (contentType.includes("application/json")) data = await res.json();
+	else {
+		text = await res.text();
+		const headersRecord = {};
+		res.headers.forEach((val, key) => {
+			headersRecord[key] = val;
+		});
+		logger.warn("Non-JSON response received", {
+			status: res.status,
+			headers: headersRecord,
+			bodyPreview: text.substring(0, 500)
+		});
+	}
 	if (!res.ok) {
-		const error = new Error(data.error || `HTTP error ${res.status}`);
+		const errorBody = data ? JSON.stringify(data) : text.substring(0, 500);
+		const error = new Error(data?.error || data?.mensagem || `HTTP error ${res.status}`);
 		error.status = res.status;
 		error.url = url;
 		error.method = "GET";
-		error.rawBody = JSON.stringify(data);
+		error.rawBody = errorBody;
 		throw error;
 	}
 	return {
 		success: true,
-		data: data.data,
+		data: data?.data || data || text,
 		debug: {
 			url,
 			method: "GET",
 			status: res.status,
 			codEstab: estabelecimento,
-			rawBody: JSON.stringify(data).substring(0, 200)
+			rawBody: data ? JSON.stringify(data).substring(0, 200) : text.substring(0, 200)
 		}
 	};
 };
 var testBelleConnection = testarConexaoBelle;
 var listClientes = async (estabelecimento, pagina = 0) => {
-	return handleResponse(await fetch(`/api/belle/clientes/listar?codEstab=${estabelecimento}&pagina=${pagina}`));
+	const url = `/api/belle/clientes/listar?codEstab=${estabelecimento}&pagina=${pagina}`;
+	return handleResponse(await fetch(url), url);
 };
 var updateCliente = async (codCliente, data) => {
-	return handleResponse(await fetch(`/api/belle/clientes/atualizar?codCliente=${codCliente}`, {
+	const url = `/api/belle/clientes/atualizar?codCliente=${codCliente}`;
+	return handleResponse(await fetch(url, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
-	}));
+	}), url, "PUT");
 };
 var saveLead = async (data) => {
-	return handleResponse(await fetch(`/api/belle/clientes/gravar-lead`, {
+	const url = `/api/belle/clientes/gravar-lead`;
+	return handleResponse(await fetch(url, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
-	}));
+	}), url, "POST");
 };
 var fetchBelleClientes = async (estabelecimento = "1") => {
 	let allClientes = [];
@@ -36544,7 +36592,21 @@ var fetchBelleClientes = async (estabelecimento = "1") => {
 };
 var fetchBelleAgendamentos = async (estabelecimento = "1") => {
 	try {
-		const res = await fetch(`/api/belle/agendamentos/listar?codEstab=${estabelecimento}`);
+		const url = `/api/belle/agendamentos/listar?codEstab=${estabelecimento}`;
+		const res = await fetch(url);
+		if (!(res.headers.get("content-type") || "").includes("application/json")) {
+			const text = await res.text();
+			const headersRecord = {};
+			res.headers.forEach((val, key) => {
+				headersRecord[key] = val;
+			});
+			logger.error("Error fetching agendamentos API - Non-JSON response", {
+				status: res.status,
+				headers: headersRecord,
+				bodyPreview: text.substring(0, 500)
+			});
+			return [];
+		}
 		const data = await res.json();
 		if (!res.ok) {
 			logger.error("Error fetching agendamentos API", data);
@@ -50727,7 +50789,7 @@ function IntegrationSettings({ title, description }) {
 				success: false,
 				title: is405 ? "Contract Error (HTTP 405)" : `Erro de API (HTTP ${status})`,
 				message: "Falha no Teste de Conexão",
-				details: err.rawBody ? `URL: ${err.url}\nMétodo: ${err.method}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}` : err.message
+				details: err.rawBody ? `URL: ${err.url || "Desconhecido"}\nMétodo: ${err.method || "GET"}\nStatus HTTP: ${status}\n\nResposta Bruta:\n${err.rawBody}` : err.message
 			});
 		} finally {
 			setIsTesting(false);
@@ -51575,4 +51637,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D_R7EKWt.js.map
+//# sourceMappingURL=index-DmkrXFH4.js.map
