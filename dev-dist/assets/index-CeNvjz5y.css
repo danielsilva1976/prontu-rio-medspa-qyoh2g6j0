@@ -1232,6 +1232,9 @@ video {
 .max-w-\[--skeleton-width\] {
   max-width: var(--skeleton-width);
 }
+.max-w-\[200px\] {
+  max-width: 200px;
+}
 .max-w-\[420px\] {
   max-width: 420px;
 }

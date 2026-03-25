@@ -83,11 +83,10 @@ export default function Patients() {
       return
     }
 
-    if (!belleSoftware.url || !belleSoftware.token) {
+    if (!belleSoftware.estabelecimento) {
       toast({
         title: 'Configuração Incompleta',
-        description:
-          'Configure a URL e o Token do Belle Software nas configurações antes de sincronizar.',
+        description: 'Configure o estabelecimento do Belle Software nas configurações.',
         variant: 'destructive',
       })
       return
@@ -97,20 +96,11 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
-      await testBelleConnection(
-        belleSoftware.url,
-        belleSoftware.token,
-        belleSoftware.estabelecimento,
-      )
+      await testBelleConnection(belleSoftware.estabelecimento)
 
       const [rawClientes, rawAgendamentos] = await Promise.all([
-        fetchBelleClientes(belleSoftware.url, belleSoftware.token, belleSoftware.estabelecimento),
-        fetchBelleAgendamentos(
-          belleSoftware.url,
-          belleSoftware.token,
-          undefined,
-          belleSoftware.estabelecimento,
-        ),
+        fetchBelleClientes(belleSoftware.estabelecimento),
+        fetchBelleAgendamentos(belleSoftware.estabelecimento),
       ])
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
@@ -149,14 +139,13 @@ export default function Patients() {
       !hasAttemptedAutoSync.current &&
       patients.length === 0 &&
       canSync &&
-      belleSoftware.url &&
-      belleSoftware.token
+      belleSoftware.estabelecimento
     ) {
       hasAttemptedAutoSync.current = true
       handleSync()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patients.length, canSync, belleSoftware.url, belleSoftware.token])
+  }, [patients.length, canSync, belleSoftware.estabelecimento])
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">

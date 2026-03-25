@@ -127,9 +127,9 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
 
   const onSubmit = async (values: FormValues) => {
     if (isEdit && patient) {
-      if (belleSoftware.url && belleSoftware.token && patient.belleId) {
+      if (patient.belleId) {
         try {
-          await updateCliente(belleSoftware.url, belleSoftware.token, patient.belleId, {
+          await updateCliente(patient.belleId, {
             nome: values.name,
             cpf: values.cpf,
             celular: values.phone,
@@ -159,28 +159,22 @@ export function PatientDialog({ patient, trigger }: PatientDialogProps) {
       })
     } else {
       let newBelleId = undefined
-      if (belleSoftware.url && belleSoftware.token) {
-        try {
-          const res = await saveLead(
-            belleSoftware.url,
-            belleSoftware.token,
-            belleSoftware.estabelecimento,
-            {
-              nome: values.name,
-              celular: values.phone,
-              email: values.email,
-              cpf: values.cpf,
-            },
-          )
-          newBelleId = res?.codigo || res?.id || undefined
-          addLog('Novo lead gerado no Belle Software', 'SYSTEM')
-        } catch (e: any) {
-          toast({
-            title: 'Aviso de Integração',
-            description: 'Paciente salvo localmente, mas falhou ao registrar lead no Belle.',
-            variant: 'destructive',
-          })
-        }
+      try {
+        const res = await saveLead({
+          nome: values.name,
+          celular: values.phone,
+          email: values.email,
+          cpf: values.cpf,
+          codEstab: belleSoftware.estabelecimento,
+        })
+        newBelleId = res?.codigo || res?.id || undefined
+        addLog('Novo lead gerado no Belle Software', 'SYSTEM')
+      } catch (e: any) {
+        toast({
+          title: 'Aviso de Integração',
+          description: 'Paciente salvo localmente, mas falhou ao registrar lead no Belle.',
+          variant: 'destructive',
+        })
       }
 
       const newPatientId = `p-${Date.now()}`

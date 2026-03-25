@@ -3,8 +3,6 @@ import { useState, useContext, createContext, ReactNode, createElement } from 'r
 export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands' | 'technologies'
 
 type BelleConfig = {
-  url: string
-  token: string
   estabelecimento: string
   webhookContentType?:
     | 'application/x-www-form-urlencoded'
@@ -26,8 +24,6 @@ type SettingsState = {
   removeItem: (category: SettingsCategory, item: string) => void
   updateItem: (category: SettingsCategory, oldItem: string, newItem: string, price?: string) => void
   updateBelleConfig: (
-    url: string,
-    token: string,
     estabelecimento?: string,
     contentType?: 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'application/json',
   ) => void
@@ -63,8 +59,6 @@ const defaultData = {
     'Luz Pulsada (LIP)': '450',
   } as Record<string, string>,
   belleSoftware: {
-    url: 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0',
-    token: import.meta.env.VITE_BELLE_TOKEN || '',
     estabelecimento: '1',
     webhookContentType: 'application/json' as const,
   },
@@ -118,8 +112,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const updateBelleConfig = (
-    url: string,
-    token: string,
     estabelecimento: string = '',
     contentType:
       | 'application/x-www-form-urlencoded'
@@ -130,8 +122,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       belleSoftware: {
         ...prev.belleSoftware,
-        url,
-        token,
         estabelecimento,
         webhookContentType: contentType,
       },

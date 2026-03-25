@@ -34,8 +34,6 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   const { addLog } = useAuditStore()
   const { toast } = useToast()
 
-  const [url, setUrl] = useState(belleSoftware.url)
-  const [token, setToken] = useState(belleSoftware.token)
   const [estabelecimento, setEstabelecimento] = useState(belleSoftware.estabelecimento || '1')
 
   const [isTesting, setIsTesting] = useState(false)
@@ -51,30 +49,20 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   const isConnected = belleSoftware.lastSyncStatus === 'success'
   const isConnecting = isTesting || isSyncing
 
-  const sanitizeUrl = (u: string) => {
-    let cl = u.trim().replace(/\/+$/, '')
-    if (cl && !cl.startsWith('http')) cl = `https://${cl}`
-    return cl.replace('http://', 'https://')
-  }
-
   const handleTestApi = async () => {
-    const cleanUrl = sanitizeUrl(url)
-    const clToken = token.replace(/[\s\uFEFF\xA0]+/g, '')
     const clEstab = estabelecimento.replace(/[\s\uFEFF\xA0]+/g, '')
 
-    if (!cleanUrl || !clToken) {
+    if (!clEstab) {
       toast({ title: 'Dados Ausentes', variant: 'destructive' })
       return
     }
 
-    setUrl(cleanUrl)
-    setToken(clToken)
     setEstabelecimento(clEstab)
     setIsTesting(true)
-    updateBelleConfig(cleanUrl, clToken, clEstab, 'application/json')
+    updateBelleConfig(clEstab, 'application/json')
 
     try {
-      const res = await runIncrementalValidationFlow(cleanUrl, clToken, clEstab)
+      const res = await runIncrementalValidationFlow(clEstab)
 
       if (res.success) {
         setBelleLastSync('success', new Date().toISOString())
@@ -82,7 +70,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           success: true,
           title: `Conexão API Estabelecida`,
           message: `Validação Incremental Concluída`,
-          details: `Todos os 4 passos contratuais foram validados com sucesso. A API responde adequadamente aos métodos HTTP específicos.`,
+          details: `Todos os 4 passos contratuais foram validados com sucesso. A API responde adequadamente aos métodos HTTP específicos pelo Backend.`,
           diagnostics: res.diagnostics,
         })
         addLog('Sincronização Teste API Oficial', 'SYSTEM')
@@ -109,7 +97,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
         success: false,
         title: 'Erro de Execução Interna',
         message: err.message,
-        details: 'Falha ao executar o fluxo de teste. Verifique sua conexão com a internet.',
+        details: 'Falha ao executar o fluxo de teste. Verifique sua conexão com o Backend.',
       })
     } finally {
       setIsTesting(false)
@@ -120,8 +108,8 @@ export function IntegrationSettings({ description }: { title: string; descriptio
     setIsSyncing(true)
     try {
       const [rawC, rawA] = await Promise.all([
-        fetchBelleClientes(url, token, estabelecimento),
-        fetchBelleAgendamentos(url, token, undefined, estabelecimento),
+        fetchBelleClientes(estabelecimento),
+        fetchBelleAgendamentos(estabelecimento),
       ])
       syncWithBelle(mapBelleDataToPatients(rawC, rawA))
       toast({ title: 'Sincronização Concluída', className: 'bg-green-600 text-white' })
@@ -133,7 +121,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
   }
 
   const handleSave = () => {
-    updateBelleConfig(sanitizeUrl(url), token.trim(), estabelecimento.trim(), 'application/json')
+    updateBelleConfig(estabelecimento.trim(), 'application/json')
     toast({ title: 'Configurações salvas' })
   }
 
@@ -148,45 +136,23 @@ export function IntegrationSettings({ description }: { title: string; descriptio
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Integração REST API (v1.0)
+                <Database className="w-5 h-5" /> Integração REST API Segura (Backend)
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                As chamadas utilizam requisições oficiais estritas <code>GET</code>,{' '}
-                <code>PUT</code> e <code>POST</code> com envio do token de integração via cabeçalho{' '}
-                <code>Authorization</code>. A validação incremental testa 4 cenários para garantir a
-                conformidade contratual da API e evitar bloqueios.
+                A integração agora é realizada estritamente pelo backend para máxima segurança.
+                Tokens de acesso e credenciais não são expostos ao frontend. Defina apenas o
+                estabelecimento de origem para a sincronização da clínica.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>URL Base / API Endpoint</Label>
+              <Label>Código do Estabelecimento (codEstab)</Label>
               <Input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onBlur={() => setUrl(sanitizeUrl(url))}
-                placeholder="https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0"
-                className="bg-white font-mono text-sm"
+                value={estabelecimento}
+                onChange={(e) => setEstabelecimento(e.target.value)}
+                className="bg-white font-mono text-sm max-w-[200px]"
+                placeholder="1"
               />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Token de Integração (Authorization)</Label>
-                <Input
-                  type="password"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  className="bg-white font-mono text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Código do Estabelecimento (codEstab)</Label>
-                <Input
-                  value={estabelecimento}
-                  onChange={(e) => setEstabelecimento(e.target.value)}
-                  className="bg-white font-mono text-sm"
-                  placeholder="1"
-                />
-              </div>
             </div>
           </div>
 
@@ -310,7 +276,7 @@ export function IntegrationSettings({ description }: { title: string; descriptio
                           <div className="flex flex-col gap-1">
                             <span className="text-emerald-400 font-bold">HEADERS:</span>
                             <pre className="bg-black/40 p-2 rounded text-slate-300 overflow-x-auto">
-                              {JSON.stringify(log.request.headers, null, 2)}
+                              {JSON.stringify(log.request.headers || {}, null, 2)}
                             </pre>
                           </div>
                         </div>
