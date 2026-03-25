@@ -54,6 +54,8 @@ export const testarConexaoBelle = async (estabelecimento: string = '1') => {
   return handleResponse(res)
 }
 
+export const testBelleConnection = testarConexaoBelle
+
 export const fetchBelleClientes = async (
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
