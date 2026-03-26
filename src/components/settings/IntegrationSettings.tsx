@@ -73,7 +73,7 @@ export function IntegrationSettings({
           success: true,
           title: `Autenticação e Conexão Estabelecidas`,
           message: `Teste de Conexão Concluído`,
-          details: `A comunicação com a Belle API foi realizada com sucesso.\nStatus de Autenticação: Válido\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`,
+          details: `A comunicação com a Belle API foi realizada com sucesso.\nStatus de Autenticação: Válido (Formato: ${res.debug?.authFormat})\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`,
         })
         addLog('Sincronização Teste API Oficial', 'SYSTEM')
       } else {
@@ -154,10 +154,9 @@ export function IntegrationSettings({
                 )}
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                A integração agora é realizada de forma direta com a API do Belle Software (URL
-                Absoluta), evitando roteamentos locais que poderiam causar bloqueios ou retornar o
-                HTML da aplicação. Defina o estabelecimento de origem para a sincronização da
-                clínica.
+                A integração agora possui diagnóstico automático de formato de token e realiza a
+                comunicação de forma direta com a API do Belle Software. Defina o estabelecimento de
+                origem para a sincronização da clínica.
               </p>
             </div>
 

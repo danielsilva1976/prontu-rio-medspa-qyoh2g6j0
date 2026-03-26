@@ -50,7 +50,10 @@ const getAuthToken = (): string => {
   return cleanToken
 }
 
-const doFetch = async (url: string, options: RequestInit, token: string) => {
+type AuthFormat = 'bearer' | 'pure' | 'token'
+let cachedAuthFormat: AuthFormat | null = null
+
+const doFetch = async (url: string, options: RequestInit, token: string, format: AuthFormat) => {
   const headers = new Headers(options.headers || {})
 
   headers.set('Accept', 'application/json')
@@ -67,7 +70,13 @@ const doFetch = async (url: string, options: RequestInit, token: string) => {
     // Sanitize all whitespaces/hidden characters to avoid 401 token invalid errors
     finalToken = finalToken.replace(/\s+/g, '')
 
-    headers.set('Authorization', `Bearer ${finalToken}`)
+    if (format === 'bearer') {
+      headers.set('Authorization', `Bearer ${finalToken}`)
+    } else if (format === 'token') {
+      headers.set('Authorization', `Token ${finalToken}`)
+    } else {
+      headers.set('Authorization', finalToken)
+    }
   }
 
   return fetch(url, { ...options, headers })
@@ -102,11 +111,34 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   })
 
   let res: Response
+  let usedFormat: AuthFormat = cachedAuthFormat || 'bearer'
+
   try {
-    res = await doFetch(url, options, token)
+    res = await doFetch(url, options, token, usedFormat)
+
+    // Diagnostic retry logic for auth formatting
+    if (res.status === 401 && token) {
+      const formatsToTry: AuthFormat[] = ['bearer', 'pure', 'token'].filter(
+        (f) => f !== usedFormat,
+      ) as AuthFormat[]
+
+      for (const fmt of formatsToTry) {
+        logger.info(`Belle API Request: 401, retrying with auth format: ${fmt}`)
+        res = await doFetch(url, options, token, fmt)
+        if (res.status !== 401) {
+          usedFormat = fmt
+          break
+        }
+      }
+    }
   } catch (err: any) {
     logger.warn('Belle API fetch failed (Network/CORS)', { url, err: err.message })
     throw err
+  }
+
+  // Cache successful auth format to avoid future retries
+  if (res.ok && res.status !== 401) {
+    cachedAuthFormat = usedFormat
   }
 
   const contentType = res.headers.get('content-type') || ''
@@ -117,6 +149,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     method: options.method || 'GET',
     status: res.status,
     contentType,
+    authFormat: usedFormat,
   })
 
   const text = await res.text()
@@ -181,7 +214,14 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     throw error
   }
 
-  return { data, status: res.status, url, method: options.method || 'GET', rawBody: text }
+  return {
+    data,
+    status: res.status,
+    url,
+    method: options.method || 'GET',
+    rawBody: text,
+    authFormat: usedFormat,
+  }
 }
 
 export const testarConexaoBelle = async (estabelecimento: string = '1') => {
@@ -199,6 +239,7 @@ export const testarConexaoBelle = async (estabelecimento: string = '1') => {
         status: response.status,
         codEstab: estabelecimento,
         rawBody: response.rawBody,
+        authFormat: response.authFormat,
       },
     }
   } catch (error: any) {
