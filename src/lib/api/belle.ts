@@ -34,11 +34,17 @@ const getAuthToken = (): string => {
     (typeof process !== 'undefined' && process.env && process.env.NODE_ENV) ||
     'unknown'
 
+  // Secure fingerprint: Only show first 4 and last 4 characters if token is long enough
+  const safeFingerprint =
+    cleanToken && cleanToken.length >= 8
+      ? `${cleanToken.substring(0, 4)}...${cleanToken.substring(cleanToken.length - 4)}`
+      : 'none'
+
   logger.info('Credential Audit', {
     variableNameStatus: cleanToken ? `Loaded from ${source}` : 'Not loaded',
     environmentName: envName,
     tokenLength: cleanToken.length,
-    partialFingerprint: cleanToken ? `${cleanToken.substring(0, 4)}...` : 'none',
+    partialFingerprint: safeFingerprint,
   })
 
   return cleanToken
@@ -149,7 +155,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
       data = JSON.parse(text)
     } catch (e) {
       const error: any = new Error(
-        `JSON Parse Error: Expected valid JSON object but failed to parse response.`,
+        `JSON Parse Error: Expected valid JSON object mas failed to parse response.`,
       )
       error.status = res.status
       error.url = url

@@ -36488,18 +36488,19 @@ var getAuthToken = () => {
 		"MODE": "development",
 		"PROD": true,
 		"SSR": false,
-		"VITE_BELLE_TOKEN": "production-secure-token-from-belle-api"
+		"VITE_BELLE_TOKEN": "1787cad7ac7dd71ac2fbbdaf823928fd"
 	}) {
-		token = "production-secure-token-from-belle-api";
+		token = "1787cad7ac7dd71ac2fbbdaf823928fd";
 		source = "import.meta.env.VITE_BELLE_TOKEN";
 	}
 	const cleanToken = token.replace(/^["']|["']$/g, "").trim();
 	const envName = typeof import.meta !== "undefined" && "development" || typeof process !== "undefined" && "development" || "unknown";
+	const safeFingerprint = cleanToken && cleanToken.length >= 8 ? `${cleanToken.substring(0, 4)}...${cleanToken.substring(cleanToken.length - 4)}` : "none";
 	logger.info("Credential Audit", {
 		variableNameStatus: cleanToken ? `Loaded from ${source}` : "Not loaded",
 		environmentName: envName,
 		tokenLength: cleanToken.length,
-		partialFingerprint: cleanToken ? `${cleanToken.substring(0, 4)}...` : "none"
+		partialFingerprint: safeFingerprint
 	});
 	return cleanToken;
 };
@@ -36578,7 +36579,7 @@ var fetchBelleApi = async (endpoint, options = {}) => {
 	if (text) try {
 		data = JSON.parse(text);
 	} catch (e) {
-		const error = /* @__PURE__ */ new Error(`JSON Parse Error: Expected valid JSON object but failed to parse response.`);
+		const error = /* @__PURE__ */ new Error(`JSON Parse Error: Expected valid JSON object mas failed to parse response.`);
 		error.status = res.status;
 		error.url = url;
 		error.host = host;
@@ -50867,7 +50868,7 @@ function IntegrationSettings({ title, description }) {
 		updateBelleConfig(estabelecimento.trim(), "application/json");
 		toast({ title: "Configurações salvas" });
 	};
-	const tokenConfigured = Boolean("production-secure-token-from-belle-api");
+	const tokenConfigured = Boolean("1787cad7ac7dd71ac2fbbdaf823928fd");
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
 		"data-uid": "src/components/settings/IntegrationSettings.tsx:127:5",
 		"data-prohibitions": "[editContent]",
@@ -51704,4 +51705,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Ci5ewbKK.js.map
+//# sourceMappingURL=index-DFQdogV_.js.map
