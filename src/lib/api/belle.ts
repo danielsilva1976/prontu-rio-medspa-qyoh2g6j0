@@ -10,97 +10,17 @@ const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/Integra
 const getAuthToken = (): string => {
   let token = ''
 
-  // Secure backend retrieval (Node.js/Edge environments)
-  // Ensures token is never bundled in client-side JavaScript by Vite
-  if (typeof process !== 'undefined' && process.env && process.env.BELLE_TOKEN) {
-    token = process.env.BELLE_TOKEN
+  // Vite environment variables support
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    token = (import.meta.env.VITE_BELLE_TOKEN || import.meta.env.BELLE_TOKEN || '') as string
+  }
+
+  // Node.js/Edge environments fallback
+  if (!token && typeof process !== 'undefined' && process.env) {
+    token = process.env.VITE_BELLE_TOKEN || process.env.BELLE_TOKEN || ''
   }
 
   return token.trim()
-}
-
-// Ensure mock data provides a rich experience when frontend has no secure token access
-const getMockClientes = (): BelleCliente[] => [
-  {
-    codigo: '1001',
-    nome: 'Maria Silva Carvalho',
-    cpf: '111.222.333-44',
-    celular: '11999999999',
-    email: 'maria.silva@example.com',
-    data_nascimento: '1985-05-20',
-    sexo: 'F',
-    cidade: 'São Paulo',
-    uf: 'SP',
-    status: 'Ativo',
-    historico_clinico: 'Paciente relata sensibilidade na região frontal.',
-  },
-  {
-    codigo: '1002',
-    nome: 'João Santos Pereira',
-    cpf: '222.333.444-55',
-    celular: '11988888888',
-    email: 'joao.santos@example.com',
-    data_nascimento: '1990-10-15',
-    sexo: 'M',
-    cidade: 'Rio de Janeiro',
-    uf: 'RJ',
-    status: 'Ativo',
-    historico_clinico: 'Sem alergias conhecidas.',
-  },
-  {
-    codigo: '1003',
-    nome: 'Ana Luiza Ferreira',
-    cpf: '333.444.555-66',
-    celular: '11977777777',
-    email: 'ana.ferreira@example.com',
-    data_nascimento: '1978-03-12',
-    sexo: 'F',
-    cidade: 'Curitiba',
-    uf: 'PR',
-    status: 'Ativo',
-  },
-]
-
-const getMockAgendamentos = (): BelleAgendamento[] => {
-  const today = new Date()
-  const dateStr = today.toISOString().split('T')[0]
-
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toISOString().split('T')[0]
-
-  return [
-    {
-      id: 5001,
-      cliente_id: '1001',
-      cpf_cliente: '111.222.333-44',
-      data: dateStr,
-      hora_inicio: '10:00',
-      servico: 'Toxina Botulínica',
-      profissional: 'Dra. Fabíola Kleinert',
-      status: 'Confirmado',
-    },
-    {
-      id: 5002,
-      cliente_id: '1002',
-      cpf_cliente: '222.333.444-55',
-      data: dateStr,
-      hora_inicio: '14:30',
-      servico: 'Preenchimento com Ácido Hialurônico',
-      profissional: 'Dra. Sofia Mendes',
-      status: 'Aguardando',
-    },
-    {
-      id: 5003,
-      cliente_id: '1003',
-      cpf_cliente: '333.444.555-66',
-      data: tomorrowStr,
-      hora_inicio: '09:00',
-      servico: 'Bioestimulador de Colágeno',
-      profissional: 'Dra. Fabíola Kleinert',
-      status: 'Confirmado',
-    },
-  ]
 }
 
 const doFetch = async (url: string, options: RequestInit, token: string) => {
@@ -126,45 +46,11 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
 
   const token = getAuthToken()
 
-  // Frontend execution environment fallback
-  // The token is strictly kept out of the frontend bundle for security.
-  // When executing in the client browser (no token available), we use mock data to satisfy UI connectivity tests.
   if (!token) {
-    logger.info('Belle API Request Intercepted', {
+    logger.warn('Belle API Request: No auth token provided in environment variables', {
       url,
-      method: options.method || 'GET',
-      security: 'Backend Token Not Exposed',
-      action: 'Returning Mock Data',
+      action: 'Proceeding without token, expects 401/403 API response',
     })
-
-    // Simulate network latency for realism
-    await new Promise((r) => setTimeout(r, 600))
-
-    if (url.includes('/clientes') && (!options.method || options.method === 'GET')) {
-      return {
-        data: getMockClientes(),
-        status: 200,
-        url,
-        method: 'GET',
-        rawBody: JSON.stringify(getMockClientes()),
-      }
-    }
-    if (url.includes('/agendamentos') && (!options.method || options.method === 'GET')) {
-      return {
-        data: getMockAgendamentos(),
-        status: 200,
-        url,
-        method: 'GET',
-        rawBody: JSON.stringify(getMockAgendamentos()),
-      }
-    }
-    return {
-      data: { success: true },
-      status: 200,
-      url,
-      method: options.method || 'GET',
-      rawBody: '{"success":true}',
-    }
   }
 
   let host = 'unknown'
@@ -174,7 +60,6 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     // ignore invalid URL host parsing
   }
 
-  // Log Integrity: confirm request execution but mask sensitive token
   logger.info('Belle API Request Started', {
     url,
     host,
@@ -330,7 +215,8 @@ export const fetchBelleClientes = async (
   let pagina = 0
   let hasMore = true
 
-  while (hasMore) {
+  // Protect against infinite loops, allowing up to 100 pages of data (5000+ patients)
+  while (hasMore && pagina < 100) {
     try {
       const data = await listClientes(estabelecimento, pagina)
       const clientes = Array.isArray(data)
@@ -341,14 +227,16 @@ export const fetchBelleClientes = async (
         hasMore = false
       } else {
         allClientes = [...allClientes, ...clientes]
-        if (clientes.length < 100) {
+
+        // If API returns fewer than 50 records, it's definitively the last page
+        if (clientes.length < 50) {
           hasMore = false
         } else {
           pagina++
         }
       }
     } catch (e) {
-      logger.error('Error fetching clientes', e)
+      logger.error(`Error fetching clientes on page ${pagina}`, e)
       hasMore = false
     }
   }

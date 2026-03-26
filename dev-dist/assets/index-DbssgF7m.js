@@ -25134,7 +25134,7 @@ function useAuditStore() {
 }
 //#endregion
 //#region src/stores/usePatientStore.ts
-var defaultMockPatients = [];
+var defaultInitialPatients = [];
 var PatientContext = (0, import_react.createContext)({});
 var PatientProvider = ({ children }) => {
 	const [isSyncing, setIsSyncing] = (0, import_react.useState)(false);
@@ -25148,7 +25148,7 @@ var PatientProvider = ({ children }) => {
 		} catch (e) {
 			console.error("Failed to parse patients from local storage", e);
 		}
-		return defaultMockPatients;
+		return defaultInitialPatients;
 	});
 	(0, import_react.useEffect)(() => {
 		localStorage.setItem("@prontuario:patients", JSON.stringify(patients));
@@ -36410,7 +36410,7 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 	return validClientes.map((c) => {
 		const belleIdStr = String(c.codigo || c.id || "");
 		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && String(a.cliente_id) === belleIdStr);
-		const rawDob = c.dtNascimento || c.data_nascimento;
+		const rawDob = c.data_nascimento || c.dtNascimento;
 		let lastVisit = rawDob ? new Date(rawDob).toISOString().split("T")[0] : "2023-01-01";
 		let nextAppointment = null;
 		const procedures = /* @__PURE__ */ new Set();
@@ -36478,87 +36478,16 @@ var logger = {
 var baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
 var getAuthToken = () => {
 	let token = "";
-	if (typeof process !== "undefined" && {}.BELLE_TOKEN) token = {}.BELLE_TOKEN;
+	if (typeof import.meta !== "undefined" && {
+		"BASE_URL": "/",
+		"DEV": false,
+		"MODE": "development",
+		"PROD": true,
+		"SSR": false,
+		"VITE_BELLE_TOKEN": "production-secure-token-from-belle-api"
+	}) token = "production-secure-token-from-belle-api";
+	if (!token && typeof process !== "undefined" && {}) token = {}.VITE_BELLE_TOKEN || {}.BELLE_TOKEN || "";
 	return token.trim();
-};
-var getMockClientes = () => [
-	{
-		codigo: "1001",
-		nome: "Maria Silva Carvalho",
-		cpf: "111.222.333-44",
-		celular: "11999999999",
-		email: "maria.silva@example.com",
-		data_nascimento: "1985-05-20",
-		sexo: "F",
-		cidade: "São Paulo",
-		uf: "SP",
-		status: "Ativo",
-		historico_clinico: "Paciente relata sensibilidade na região frontal."
-	},
-	{
-		codigo: "1002",
-		nome: "João Santos Pereira",
-		cpf: "222.333.444-55",
-		celular: "11988888888",
-		email: "joao.santos@example.com",
-		data_nascimento: "1990-10-15",
-		sexo: "M",
-		cidade: "Rio de Janeiro",
-		uf: "RJ",
-		status: "Ativo",
-		historico_clinico: "Sem alergias conhecidas."
-	},
-	{
-		codigo: "1003",
-		nome: "Ana Luiza Ferreira",
-		cpf: "333.444.555-66",
-		celular: "11977777777",
-		email: "ana.ferreira@example.com",
-		data_nascimento: "1978-03-12",
-		sexo: "F",
-		cidade: "Curitiba",
-		uf: "PR",
-		status: "Ativo"
-	}
-];
-var getMockAgendamentos = () => {
-	const today = /* @__PURE__ */ new Date();
-	const dateStr = today.toISOString().split("T")[0];
-	const tomorrow = new Date(today);
-	tomorrow.setDate(tomorrow.getDate() + 1);
-	const tomorrowStr = tomorrow.toISOString().split("T")[0];
-	return [
-		{
-			id: 5001,
-			cliente_id: "1001",
-			cpf_cliente: "111.222.333-44",
-			data: dateStr,
-			hora_inicio: "10:00",
-			servico: "Toxina Botulínica",
-			profissional: "Dra. Fabíola Kleinert",
-			status: "Confirmado"
-		},
-		{
-			id: 5002,
-			cliente_id: "1002",
-			cpf_cliente: "222.333.444-55",
-			data: dateStr,
-			hora_inicio: "14:30",
-			servico: "Preenchimento com Ácido Hialurônico",
-			profissional: "Dra. Sofia Mendes",
-			status: "Aguardando"
-		},
-		{
-			id: 5003,
-			cliente_id: "1003",
-			cpf_cliente: "333.444.555-66",
-			data: tomorrowStr,
-			hora_inicio: "09:00",
-			servico: "Bioestimulador de Colágeno",
-			profissional: "Dra. Fabíola Kleinert",
-			status: "Confirmado"
-		}
-	];
 };
 var doFetch = async (url, options, token) => {
 	const headers = new Headers(options.headers || {});
@@ -36576,36 +36505,10 @@ var doFetch = async (url, options, token) => {
 var fetchBelleApi = async (endpoint, options = {}) => {
 	const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
 	const token = getAuthToken();
-	if (!token) {
-		logger.info("Belle API Request Intercepted", {
-			url,
-			method: options.method || "GET",
-			security: "Backend Token Not Exposed",
-			action: "Returning Mock Data"
-		});
-		await new Promise((r) => setTimeout(r, 600));
-		if (url.includes("/clientes") && (!options.method || options.method === "GET")) return {
-			data: getMockClientes(),
-			status: 200,
-			url,
-			method: "GET",
-			rawBody: JSON.stringify(getMockClientes())
-		};
-		if (url.includes("/agendamentos") && (!options.method || options.method === "GET")) return {
-			data: getMockAgendamentos(),
-			status: 200,
-			url,
-			method: "GET",
-			rawBody: JSON.stringify(getMockAgendamentos())
-		};
-		return {
-			data: { success: true },
-			status: 200,
-			url,
-			method: options.method || "GET",
-			rawBody: "{\"success\":true}"
-		};
-	}
+	if (!token) logger.warn("Belle API Request: No auth token provided in environment variables", {
+		url,
+		action: "Proceeding without token, expects 401/403 API response"
+	});
 	let host = "unknown";
 	try {
 		host = new URL(url).host;
@@ -36726,17 +36629,17 @@ var fetchBelleClientes = async (estabelecimento = "1") => {
 	let allClientes = [];
 	let pagina = 0;
 	let hasMore = true;
-	while (hasMore) try {
+	while (hasMore && pagina < 100) try {
 		const data = await listClientes(estabelecimento, pagina);
 		const clientes = Array.isArray(data) ? data : data?.pacientes || data?.clientes || data?.dados || [];
 		if (!clientes || clientes.length === 0) hasMore = false;
 		else {
 			allClientes = [...allClientes, ...clientes];
-			if (clientes.length < 100) hasMore = false;
+			if (clientes.length < 50) hasMore = false;
 			else pagina++;
 		}
 	} catch (e) {
-		logger.error("Error fetching clientes", e);
+		logger.error(`Error fetching clientes on page ${pagina}`, e);
 		hasMore = false;
 	}
 	return allClientes;
@@ -51769,4 +51672,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-GZTYjZ4G.js.map
+//# sourceMappingURL=index-DbssgF7m.js.map

@@ -43,7 +43,7 @@ type PatientState = {
   clearPatients: () => void
 }
 
-const defaultMockPatients: Patient[] = []
+const defaultInitialPatients: Patient[] = []
 
 const PatientContext = createContext<PatientState>({} as PatientState)
 
@@ -55,6 +55,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       if (saved) {
         const parsed = JSON.parse(saved)
         if (parsed && parsed.length > 0) {
+          // Strictly filter out any remnants of legacy mock data
           const realPatients = parsed.filter((p: Patient) => !p.id.startsWith('mock-'))
           return realPatients
         }
@@ -62,7 +63,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {
       console.error('Failed to parse patients from local storage', e)
     }
-    return defaultMockPatients
+    return defaultInitialPatients
   })
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const clearPatients = () => setPatients([])
 
   const syncWithBelle = (belleData: Partial<Patient>[]) => {
+    // Pure synchronization mapping - completely replaces previous data to ensure persistence integrity
     const freshPatients: Patient[] = belleData.map((bp, i) => {
       let age = bp.age || 30
       if (bp.dob) {

@@ -8,14 +8,16 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
     : []
 
   return validClientes.map((c) => {
+    // Explicit mapping to application model as per API spec
     const belleIdStr = String(c.codigo || c.id || '')
+
     const clientAppts = validAgendamentos.filter(
       (a) =>
         (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
         (a.cliente_id && String(a.cliente_id) === belleIdStr),
     )
 
-    const rawDob = c.dtNascimento || c.data_nascimento
+    const rawDob = c.data_nascimento || c.dtNascimento
     let lastVisit = rawDob ? new Date(rawDob).toISOString().split('T')[0] : '2023-01-01'
     let nextAppointment: string | null = null
     const procedures = new Set<string>()
