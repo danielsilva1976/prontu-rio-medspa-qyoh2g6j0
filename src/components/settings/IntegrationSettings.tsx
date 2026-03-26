@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import useSettingsStore from '@/stores/useSettingsStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -70,9 +71,9 @@ export function IntegrationSettings({
         setBelleLastSync('success', new Date().toISOString())
         setDiagnosticData({
           success: true,
-          title: `Conexão API Estabelecida`,
+          title: `Autenticação e Conexão Estabelecidas`,
           message: `Teste de Conexão Concluído`,
-          details: `A comunicação com a Belle API foi realizada com sucesso.\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`,
+          details: `A comunicação com a Belle API foi realizada com sucesso.\nStatus de Autenticação: Válido\n\nURL: ${res.debug?.url}\nMétodo: ${res.debug?.method}\nStatus HTTP: ${res.debug?.status}\nEstabelecimento: ${res.debug?.codEstab}\nResposta (amostra): ${res.debug?.rawBody?.substring(0, 150)}...`,
         })
         addLog('Sincronização Teste API Oficial', 'SYSTEM')
       } else {
@@ -120,6 +121,8 @@ export function IntegrationSettings({
     toast({ title: 'Configurações salvas' })
   }
 
+  const tokenConfigured = Boolean(import.meta.env.VITE_BELLE_TOKEN)
+
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
       <CardHeader>
@@ -130,8 +133,25 @@ export function IntegrationSettings({
         <div className="space-y-6 max-w-3xl">
           <div className="bg-muted/30 p-5 rounded-xl border border-border/50 space-y-5">
             <div>
-              <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Database className="w-5 h-5" /> Integração Direta API
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2 text-primary font-medium">
+                  <Database className="w-5 h-5" /> Integração Direta API
+                </div>
+                {tokenConfigured ? (
+                  <Badge
+                    variant="secondary"
+                    className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-none"
+                  >
+                    Token Identificado
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="secondary"
+                    className="bg-rose-100 text-rose-800 hover:bg-rose-100 border-none"
+                  >
+                    Token Ausente
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                 A integração agora é realizada de forma direta com a API do Belle Software (URL

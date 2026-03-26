@@ -1814,6 +1814,10 @@ video {
 .bg-destructive\/5 {
   background-color: hsl(var(--destructive) / 0.05);
 }
+.bg-emerald-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+}
 .bg-emerald-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1));
@@ -1873,6 +1877,10 @@ video {
 }
 .bg-primary\/5 {
   background-color: hsl(var(--primary) / 0.05);
+}
+.bg-rose-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 228 230 / var(--tw-bg-opacity, 1));
 }
 .bg-rose-50 {
   --tw-bg-opacity: 1;
@@ -2421,6 +2429,10 @@ video {
   --tw-text-opacity: 1;
   color: rgb(225 29 72 / var(--tw-text-opacity, 1));
 }
+.text-rose-800 {
+  --tw-text-opacity: 1;
+  color: rgb(159 18 57 / var(--tw-text-opacity, 1));
+}
 .text-rose-900 {
   --tw-text-opacity: 1;
   color: rgb(136 19 55 / var(--tw-text-opacity, 1));
@@ -2805,6 +2817,10 @@ video {
 .hover\:bg-destructive\/90:hover {
   background-color: hsl(var(--destructive) / 0.9);
 }
+.hover\:bg-emerald-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+}
 .hover\:bg-muted:hover {
   background-color: hsl(var(--muted));
 }
@@ -2831,6 +2847,10 @@ video {
 }
 .hover\:bg-primary\/90:hover {
   background-color: hsl(var(--primary) / 0.9);
+}
+.hover\:bg-rose-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 228 230 / var(--tw-bg-opacity, 1));
 }
 .hover\:bg-secondary:hover {
   background-color: hsl(var(--secondary));

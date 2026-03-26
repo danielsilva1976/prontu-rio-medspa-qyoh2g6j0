@@ -9,17 +9,39 @@ const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/Integra
 
 const getAuthToken = (): string => {
   let token = ''
+  let source = 'none'
 
   // Validate environment variables - backend/SSR support first
   if (typeof process !== 'undefined' && process.env && process.env.BELLE_TOKEN) {
     token = process.env.BELLE_TOKEN
+    source = 'process.env.BELLE_TOKEN'
   } else if (typeof import.meta !== 'undefined' && import.meta.env) {
     // Vite environment variable support
-    token = (import.meta.env.VITE_BELLE_TOKEN || import.meta.env.BELLE_TOKEN || '') as string
+    if (import.meta.env.VITE_BELLE_TOKEN) {
+      token = import.meta.env.VITE_BELLE_TOKEN as string
+      source = 'import.meta.env.VITE_BELLE_TOKEN'
+    } else if (import.meta.env.BELLE_TOKEN) {
+      token = import.meta.env.BELLE_TOKEN as string
+      source = 'import.meta.env.BELLE_TOKEN'
+    }
   }
 
   // Strip potential quotes around the token
-  return token.replace(/^["']|["']$/g, '').trim()
+  const cleanToken = token.replace(/^["']|["']$/g, '').trim()
+
+  const envName =
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE) ||
+    (typeof process !== 'undefined' && process.env && process.env.NODE_ENV) ||
+    'unknown'
+
+  logger.info('Credential Audit', {
+    variableNameStatus: cleanToken ? `Loaded from ${source}` : 'Not loaded',
+    environmentName: envName,
+    tokenLength: cleanToken.length,
+    partialFingerprint: cleanToken ? `${cleanToken.substring(0, 4)}...` : 'none',
+  })
+
+  return cleanToken
 }
 
 const doFetch = async (url: string, options: RequestInit, token: string) => {
@@ -32,8 +54,14 @@ const doFetch = async (url: string, options: RequestInit, token: string) => {
 
   // Format Validation Support: Authentication Header securely parsed
   if (token) {
-    const authValue = token.toLowerCase().startsWith('bearer ') ? token : `Bearer ${token}`
-    headers.set('Authorization', authValue)
+    let finalToken = token
+    if (finalToken.toLowerCase().startsWith('bearer ')) {
+      finalToken = finalToken.substring(7)
+    }
+    // Sanitize all whitespaces/hidden characters to avoid 401 token invalid errors
+    finalToken = finalToken.replace(/\s+/g, '')
+
+    headers.set('Authorization', `Bearer ${finalToken}`)
   }
 
   return fetch(url, { ...options, headers })
@@ -131,9 +159,13 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
     }
   }
 
-  if (!res.ok || (data && (data.erro || data.error))) {
+  if (!res.ok || (data && (data.erro || data.error || data.msg))) {
     const errorMsg =
-      data?.mensagem || data?.error || JSON.stringify(data) || `HTTP error ${res.status}`
+      data?.mensagem ||
+      data?.msg ||
+      data?.error ||
+      JSON.stringify(data) ||
+      `HTTP error ${res.status}`
     const error: any = new Error(`API Error (HTTP ${res.status}). Error: ${errorMsg}`)
     error.status = res.status
     error.url = url
