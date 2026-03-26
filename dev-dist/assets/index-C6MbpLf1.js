@@ -25169,7 +25169,7 @@ var PatientProvider = ({ children }) => {
 	const clearPatients = () => setPatients([]);
 	const syncWithBelle = (belleData) => {
 		const freshPatients = belleData.map((bp, i) => {
-			let age = bp.age || 30;
+			let age = bp.age || 0;
 			if (bp.dob) {
 				const birth = new Date(bp.dob);
 				if (!isNaN(birth.getTime())) {
@@ -25182,13 +25182,13 @@ var PatientProvider = ({ children }) => {
 				name: bp.name || "Sem Nome",
 				age,
 				phone: bp.phone || "",
-				dob: bp.dob || "1990-01-01",
-				lastVisit: bp.lastVisit || (/* @__PURE__ */ new Date()).toISOString().split("T")[0],
+				dob: bp.dob || "",
+				lastVisit: bp.lastVisit || "",
 				nextAppointment: bp.nextAppointment || null,
 				status: bp.status || (bp.nextAppointment ? "scheduled" : "active"),
 				procedures: bp.procedures || [],
 				professional: bp.professional || null,
-				avatar: bp.avatar || `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
+				avatar: bp.avatar || void 0,
 				cpf: bp.cpf || "",
 				rg: bp.rg || "",
 				profissao: bp.profissao || "",
@@ -36410,8 +36410,8 @@ var mapBelleDataToPatients = (rawClientes, rawAgendamentos) => {
 	return validClientes.map((c) => {
 		const belleIdStr = String(c.codigo || c.id || "");
 		const clientAppts = validAgendamentos.filter((a) => a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf || a.cliente_id && String(a.cliente_id) === belleIdStr);
-		const rawDob = c.data_nascimento || c.dtNascimento;
-		let lastVisit = rawDob ? new Date(rawDob).toISOString().split("T")[0] : "2023-01-01";
+		const rawDob = c.data_nascimento || c.dtNascimento || "";
+		let lastVisit = "";
 		let nextAppointment = null;
 		const procedures = /* @__PURE__ */ new Set();
 		clientAppts.forEach((a) => {
@@ -36478,7 +36478,8 @@ var logger = {
 var baseUrl = "https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0";
 var getAuthToken = () => {
 	let token = "";
-	if (typeof import.meta !== "undefined" && {
+	if (typeof process !== "undefined" && {}.BELLE_TOKEN) token = {}.BELLE_TOKEN;
+	else if (typeof import.meta !== "undefined" && {
 		"BASE_URL": "/",
 		"DEV": false,
 		"MODE": "development",
@@ -36486,8 +36487,7 @@ var getAuthToken = () => {
 		"SSR": false,
 		"VITE_BELLE_TOKEN": "production-secure-token-from-belle-api"
 	}) token = "production-secure-token-from-belle-api";
-	if (!token && typeof process !== "undefined" && {}) token = {}.VITE_BELLE_TOKEN || {}.BELLE_TOKEN || "";
-	return token.trim();
+	return token.replace(/^["']|["']$/g, "").trim();
 };
 var doFetch = async (url, options, token) => {
 	const headers = new Headers(options.headers || {});
@@ -37494,70 +37494,68 @@ function PatientCard({ patient }) {
 							"data-prohibitions": "[editContent]",
 							children: ["ID: ", patient.id.toUpperCase()]
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:81:13",
+						patient.age > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/patients/PatientCard.tsx:83:17",
 							"data-prohibitions": "[]",
 							children: "•"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:82:13",
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+							"data-uid": "src/components/patients/PatientCard.tsx:84:17",
 							"data-prohibitions": "[editContent]",
 							children: [patient.age, " anos"]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:83:13",
+						})] }),
+						patient.phone && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/patients/PatientCard.tsx:89:17",
 							"data-prohibitions": "[]",
 							children: "•"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:84:13",
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+							"data-uid": "src/components/patients/PatientCard.tsx:90:17",
 							"data-prohibitions": "[editContent]",
 							children: patient.phone
-						})
+						})] })
 					]
 				})]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/patients/PatientCard.tsx:89:7",
+			"data-uid": "src/components/patients/PatientCard.tsx:97:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row items-start sm:items-center w-full xl:w-auto justify-between gap-4 xl:gap-8 border-t xl:border-t-0 pt-4 xl:pt-0",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/patients/PatientCard.tsx:90:9",
+				"data-uid": "src/components/patients/PatientCard.tsx:98:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex justify-between sm:flex-col w-full sm:w-auto text-sm text-muted-foreground gap-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-					"data-uid": "src/components/patients/PatientCard.tsx:91:11",
+					"data-uid": "src/components/patients/PatientCard.tsx:99:11",
 					"data-prohibitions": "[editContent]",
 					className: "flex items-center gap-1",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Calendar, {
-							"data-uid": "src/components/patients/PatientCard.tsx:92:13",
+							"data-uid": "src/components/patients/PatientCard.tsx:100:13",
 							"data-prohibitions": "[editContent]",
 							className: "w-3.5 h-3.5 shrink-0"
 						}),
 						" ",
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:93:13",
+							"data-uid": "src/components/patients/PatientCard.tsx:101:13",
 							"data-prohibitions": "[]",
 							className: "hidden sm:inline",
 							children: "Última:"
 						}),
 						" ",
-						new Date(patient.lastVisit).toLocaleDateString("pt-BR")
+						patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString("pt-BR") : "Sem registro"
 					]
 				}), patient.nextAppointment ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-					"data-uid": "src/components/patients/PatientCard.tsx:97:13",
+					"data-uid": "src/components/patients/PatientCard.tsx:107:13",
 					"data-prohibitions": "[editContent]",
 					className: "flex items-center gap-1 text-primary font-medium",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Clock, {
-							"data-uid": "src/components/patients/PatientCard.tsx:98:15",
+							"data-uid": "src/components/patients/PatientCard.tsx:108:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-3.5 h-3.5 text-primary shrink-0"
 						}),
 						" ",
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/patients/PatientCard.tsx:99:15",
+							"data-uid": "src/components/patients/PatientCard.tsx:109:15",
 							"data-prohibitions": "[]",
 							className: "hidden sm:inline",
 							children: "Próxima:"
@@ -37566,42 +37564,42 @@ function PatientCard({ patient }) {
 						new Date(patient.nextAppointment).toLocaleDateString("pt-BR")
 					]
 				}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/components/patients/PatientCard.tsx:103:13",
+					"data-uid": "src/components/patients/PatientCard.tsx:113:13",
 					"data-prohibitions": "[]",
 					className: "flex items-center gap-1 text-muted-foreground/60 italic",
 					children: "Sem agendamento"
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/patients/PatientCard.tsx:109:9",
+				"data-uid": "src/components/patients/PatientCard.tsx:119:9",
 				"data-prohibitions": "[]",
 				className: "flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/patients/PatientCard.tsx:110:11",
+					"data-uid": "src/components/patients/PatientCard.tsx:120:11",
 					"data-prohibitions": "[]",
 					asChild: true,
 					variant: "outline",
 					className: "w-full sm:w-auto rounded-full shrink-0 group-hover:border-primary/40 bg-white transition-colors",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link$1, {
-						"data-uid": "src/components/patients/PatientCard.tsx:115:13",
+						"data-uid": "src/components/patients/PatientCard.tsx:125:13",
 						"data-prohibitions": "[]",
 						to: `/prontuario/${patient.id}`,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-							"data-uid": "src/components/patients/PatientCard.tsx:116:15",
+							"data-uid": "src/components/patients/PatientCard.tsx:126:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), "Prontuário"]
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/patients/PatientCard.tsx:120:11",
+					"data-uid": "src/components/patients/PatientCard.tsx:130:11",
 					"data-prohibitions": "[]",
 					asChild: true,
 					className: "w-full sm:w-auto rounded-full shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all sm:hover:scale-[1.02]",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link$1, {
-						"data-uid": "src/components/patients/PatientCard.tsx:124:13",
+						"data-uid": "src/components/patients/PatientCard.tsx:134:13",
 						"data-prohibitions": "[]",
 						to: `/prontuario/${patient.id}?tab=evolucao`,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-							"data-uid": "src/components/patients/PatientCard.tsx:125:15",
+							"data-uid": "src/components/patients/PatientCard.tsx:135:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-1.5"
 						}), "Novo Atendimento"]
@@ -51672,4 +51670,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-DbssgF7m.js.map
+//# sourceMappingURL=index-C6MbpLf1.js.map

@@ -10,17 +10,16 @@ const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/Integra
 const getAuthToken = (): string => {
   let token = ''
 
-  // Vite environment variables support
-  if (typeof import.meta !== 'undefined' && import.meta.env) {
+  // Validate environment variables - backend/SSR support first
+  if (typeof process !== 'undefined' && process.env && process.env.BELLE_TOKEN) {
+    token = process.env.BELLE_TOKEN
+  } else if (typeof import.meta !== 'undefined' && import.meta.env) {
+    // Vite environment variable support
     token = (import.meta.env.VITE_BELLE_TOKEN || import.meta.env.BELLE_TOKEN || '') as string
   }
 
-  // Node.js/Edge environments fallback
-  if (!token && typeof process !== 'undefined' && process.env) {
-    token = process.env.VITE_BELLE_TOKEN || process.env.BELLE_TOKEN || ''
-  }
-
-  return token.trim()
+  // Strip potential quotes around the token
+  return token.replace(/^["']|["']$/g, '').trim()
 }
 
 const doFetch = async (url: string, options: RequestInit, token: string) => {

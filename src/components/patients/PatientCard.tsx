@@ -78,10 +78,18 @@ export function PatientCard({ patient }: { patient: Patient }) {
             {patient.cpf && <span>CPF: {patient.cpf}</span>}
             {patient.cpf && <span>•</span>}
             <span>ID: {patient.id.toUpperCase()}</span>
-            <span>•</span>
-            <span>{patient.age} anos</span>
-            <span>•</span>
-            <span>{patient.phone}</span>
+            {patient.age > 0 && (
+              <>
+                <span>•</span>
+                <span>{patient.age} anos</span>
+              </>
+            )}
+            {patient.phone && (
+              <>
+                <span>•</span>
+                <span>{patient.phone}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -91,7 +99,9 @@ export function PatientCard({ patient }: { patient: Patient }) {
           <p className="flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 shrink-0" />{' '}
             <span className="hidden sm:inline">Última:</span>{' '}
-            {new Date(patient.lastVisit).toLocaleDateString('pt-BR')}
+            {patient.lastVisit
+              ? new Date(patient.lastVisit).toLocaleDateString('pt-BR')
+              : 'Sem registro'}
           </p>
           {patient.nextAppointment ? (
             <p className="flex items-center gap-1 text-primary font-medium">

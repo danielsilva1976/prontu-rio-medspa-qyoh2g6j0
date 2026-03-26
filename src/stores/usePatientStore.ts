@@ -87,7 +87,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const syncWithBelle = (belleData: Partial<Patient>[]) => {
     // Pure synchronization mapping - completely replaces previous data to ensure persistence integrity
     const freshPatients: Patient[] = belleData.map((bp, i) => {
-      let age = bp.age || 30
+      let age = bp.age || 0
       if (bp.dob) {
         const birth = new Date(bp.dob)
         if (!isNaN(birth.getTime())) {
@@ -101,14 +101,13 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         name: bp.name || 'Sem Nome',
         age,
         phone: bp.phone || '',
-        dob: bp.dob || '1990-01-01',
-        lastVisit: bp.lastVisit || new Date().toISOString().split('T')[0],
+        dob: bp.dob || '',
+        lastVisit: bp.lastVisit || '',
         nextAppointment: bp.nextAppointment || null,
         status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
         procedures: bp.procedures || [],
         professional: bp.professional || null,
-        avatar:
-          bp.avatar || `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${i + 10}`,
+        avatar: bp.avatar || undefined, // Replaced mock avatar logic with undefined/real data
         cpf: bp.cpf || '',
         rg: bp.rg || '',
         profissao: bp.profissao || '',

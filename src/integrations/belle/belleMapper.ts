@@ -17,8 +17,8 @@ export const mapBelleDataToPatients = (rawClientes: any, rawAgendamentos: any) =
         (a.cliente_id && String(a.cliente_id) === belleIdStr),
     )
 
-    const rawDob = c.data_nascimento || c.dtNascimento
-    let lastVisit = rawDob ? new Date(rawDob).toISOString().split('T')[0] : '2023-01-01'
+    const rawDob = c.data_nascimento || c.dtNascimento || ''
+    let lastVisit = ''
     let nextAppointment: string | null = null
     const procedures = new Set<string>()
 
