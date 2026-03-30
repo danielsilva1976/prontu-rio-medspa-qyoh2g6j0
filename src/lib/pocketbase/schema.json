@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-30T19:47:33.917Z",
+  "generatedAt": "2026-03-30T20:36:43.429Z",
   "collections": [
     {
       "name": "patients",
@@ -334,6 +334,22 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "users",
+      "type": "auth",
+      "apiRules": {
+        "list": "id = @request.auth.id",
+        "view": "id = @request.auth.id",
+        "create": "",
+        "update": "id = @request.auth.id",
+        "delete": "id = @request.auth.id"
+      },
+      "fields": [],
+      "indexes": [
+        "CREATE UNIQUE INDEX `idx_tokenKey_pbc_1736455494` ON `users` (`tokenKey`)",
+        "CREATE UNIQUE INDEX `idx_email_pbc_1736455494` ON `users` (`email`) WHERE `email` != ''"
+      ]
     }
   ]
 }

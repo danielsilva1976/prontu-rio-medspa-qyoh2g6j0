@@ -72,7 +72,11 @@ function mapRecordToPatient(record: RecordModel): Patient {
     nextAppointment: record.nextAppointment || null,
     status: record.status || 'active',
     phone: record.phone || '',
-    procedures: record.procedures ? JSON.parse(record.procedures) : [],
+    procedures: Array.isArray(record.procedures)
+      ? record.procedures
+      : typeof record.procedures === 'string' && record.procedures
+        ? JSON.parse(record.procedures)
+        : [],
     professional: record.professional || null,
     avatar: record.avatar || undefined,
     cpf: record.cpf || '',
@@ -93,7 +97,11 @@ function mapRecordToPatient(record: RecordModel): Patient {
     classificacao: record.classificacao || '',
     sexo: record.sexo || '',
     rating: record.rating || '',
-    tags: record.tags ? JSON.parse(record.tags) : [],
+    tags: Array.isArray(record.tags)
+      ? record.tags
+      : typeof record.tags === 'string' && record.tags
+        ? JSON.parse(record.tags)
+        : [],
   }
 }
 
@@ -175,11 +183,11 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       classificacao: patient.classificacao || '',
       sexo: patient.sexo || '',
       rating: patient.rating || '',
-      tags: patient.tags ? JSON.stringify(patient.tags) : '[]',
+      tags: patient.tags || [],
       lastVisit: patient.lastVisit || '',
       nextAppointment: patient.nextAppointment || '',
       avatar: patient.avatar || '',
-      procedures: patient.procedures ? JSON.stringify(patient.procedures) : '[]',
+      procedures: patient.procedures || [],
       professional: patient.professional || '',
     }
     await pb.collection('patients').create(payload)
@@ -188,8 +196,8 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const updatePatient = async (id: string, data: Partial<Patient>) => {
     await ensureAuth()
     const payload: any = { ...data }
-    if (data.procedures) payload.procedures = JSON.stringify(data.procedures)
-    if (data.tags) payload.tags = JSON.stringify(data.tags)
+    if (data.procedures) payload.procedures = data.procedures
+    if (data.tags) payload.tags = data.tags
 
     await pb.collection('patients').update(id, payload)
   }
@@ -235,11 +243,11 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
             classificacao: bp.classificacao || '',
             sexo: bp.sexo || '',
             rating: bp.rating || '',
-            tags: bp.tags ? JSON.stringify(bp.tags) : '[]',
+            tags: bp.tags || [],
             lastVisit: bp.lastVisit || '',
             nextAppointment: bp.nextAppointment || '',
             avatar: bp.avatar || '',
-            procedures: bp.procedures ? JSON.stringify(bp.procedures) : '[]',
+            procedures: bp.procedures || [],
             professional: bp.professional || '',
           }
 
