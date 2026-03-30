@@ -48,6 +48,7 @@ type PatientState = {
   totalPages: number
   totalItems: number
   isLoading: boolean
+  syncProgress: { current: number; total: number } | null
   fetchPatients: (page?: number, search?: string, status?: string) => Promise<void>
 }
 
@@ -112,6 +113,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const [syncProgress, setSyncProgress] = useState<{ current: number; total: number } | null>(null)
 
   const ensureAuth = async () => {
     if (!pb.authStore.isValid) {
@@ -208,49 +210,57 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     await ensureAuth()
     let added = 0
     let updated = 0
+    let errors = 0
+
+    setSyncProgress({ current: 0, total: belleData.length })
 
     const allExisting = await pb.collection('patients').getFullList({ fields: 'id,external_id' })
     const existingMap = new Map(allExisting.map((r) => [r.external_id, r.id]))
 
-    const batchSize = 10
-    for (let i = 0; i < belleData.length; i += batchSize) {
-      const batch = belleData.slice(i, i + batchSize)
-      await Promise.all(
-        batch.map(async (bp) => {
-          const external_id = bp.belleId
-            ? String(bp.belleId)
-            : `local-${Date.now()}-${Math.random()}`
-          const payload = {
-            external_id,
-            name: bp.name || 'Sem Nome',
-            email: bp.email || '',
-            phone: bp.phone || '',
-            cpf: bp.cpf || '',
-            dob: bp.dob || '',
-            status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
-            history: bp.history || '',
-            rg: bp.rg || '',
-            profissao: bp.profissao || '',
-            estado_civil: bp.estado_civil || '',
-            endereco: bp.endereco || '',
-            cep: bp.cep || '',
-            rua: bp.rua || '',
-            numeroRua: bp.numeroRua || '',
-            bairro: bp.bairro || '',
-            cidade: bp.cidade || '',
-            uf: bp.uf || '',
-            temperatura: bp.temperatura || '',
-            classificacao: bp.classificacao || '',
-            sexo: bp.sexo || '',
-            rating: bp.rating || '',
-            tags: bp.tags || [],
-            lastVisit: bp.lastVisit || '',
-            nextAppointment: bp.nextAppointment || '',
-            avatar: bp.avatar || '',
-            procedures: bp.procedures || [],
-            professional: bp.professional || '',
-          }
+    for (let i = 0; i < belleData.length; i++) {
+      const bp = belleData[i]
+      setSyncProgress({ current: i + 1, total: belleData.length })
 
+      const external_id = bp.belleId ? String(bp.belleId) : `local-${Date.now()}-${Math.random()}`
+
+      const payload = {
+        external_id,
+        name: bp.name || 'Sem Nome',
+        email: bp.email || '',
+        phone: bp.phone || '',
+        cpf: bp.cpf || '',
+        dob: bp.dob || '',
+        status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
+        history: bp.history || '',
+        rg: bp.rg || '',
+        profissao: bp.profissao || '',
+        estado_civil: bp.estado_civil || '',
+        endereco: bp.endereco || '',
+        cep: bp.cep || '',
+        rua: bp.rua || '',
+        numeroRua: bp.numeroRua || '',
+        bairro: bp.bairro || '',
+        cidade: bp.cidade || '',
+        uf: bp.uf || '',
+        temperatura: bp.temperatura || '',
+        classificacao: bp.classificacao || '',
+        sexo: bp.sexo || '',
+        rating: bp.rating || '',
+        tags: bp.tags || [],
+        lastVisit: bp.lastVisit || '',
+        nextAppointment: bp.nextAppointment || '',
+        avatar: bp.avatar || '',
+        procedures: bp.procedures || [],
+        professional: bp.professional || '',
+      }
+
+      let success = false
+      let attempts = 0
+      const maxAttempts = 3
+
+      while (!success && attempts < maxAttempts) {
+        attempts++
+        try {
           if (existingMap.has(external_id)) {
             await pb.collection('patients').update(existingMap.get(external_id)!, payload)
             updated++
@@ -258,10 +268,25 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
             await pb.collection('patients').create(payload)
             added++
           }
-        }),
-      )
+          success = true
+        } catch (error: any) {
+          if (error?.status === 429 && attempts < maxAttempts) {
+            // Rate limit hit, wait with exponential backoff before retry
+            await new Promise((res) => setTimeout(res, 1000 * attempts))
+          } else {
+            console.error(
+              `Failed to sync patient ${external_id} after ${attempts} attempts:`,
+              error,
+            )
+            errors++
+            break // stop retrying for this record, move to next
+          }
+        }
+      }
     }
-    return { added, updated }
+
+    setSyncProgress(null)
+    return { added, updated, errors }
   }
 
   return createElement(
@@ -279,6 +304,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         totalPages,
         totalItems,
         isLoading,
+        syncProgress,
         fetchPatients,
       },
     },

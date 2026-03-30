@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
 import {
   Pagination,
   PaginationContent,
@@ -44,6 +45,7 @@ export default function Patients() {
     page,
     totalPages,
     isLoading,
+    syncProgress,
   } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
   const { addLog } = useAuditStore()
@@ -232,6 +234,24 @@ export default function Patients() {
                     <p className="text-muted-foreground font-medium animate-pulse">
                       Sincronizando... Conectando à API e baixando base real de clientes...
                     </p>
+                    {syncProgress && (
+                      <div className="w-full max-w-sm mt-6 space-y-2">
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>Processando registros...</span>
+                          <span className="font-medium">
+                            {syncProgress.current} de {syncProgress.total}
+                          </span>
+                        </div>
+                        <Progress
+                          value={
+                            syncProgress.total > 0
+                              ? (syncProgress.current / syncProgress.total) * 100
+                              : 0
+                          }
+                          className="h-2"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="space-y-4">
