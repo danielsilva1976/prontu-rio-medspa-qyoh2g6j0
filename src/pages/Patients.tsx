@@ -11,6 +11,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { useRealtime } from '@/hooks/use-realtime'
 import usePatientStore from '@/stores/usePatientStore'
 import useSettingsStore from '@/stores/useSettingsStore'
 import useAuditStore from '@/stores/useAuditStore'
@@ -26,52 +35,46 @@ import {
 } from '@/lib/api/belle'
 
 export default function Patients() {
-  const { patients, isSyncing, setIsSyncing, syncWithBelle } = usePatientStore()
+  const {
+    patients,
+    isSyncing,
+    setIsSyncing,
+    syncWithBelle,
+    fetchPatients,
+    page,
+    totalPages,
+    isLoading,
+  } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
   const { addLog } = useAuditStore()
   const { currentUser } = useUserStore()
   const { toast } = useToast()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
+  const [currentPage, setCurrentPage] = useState(1)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const hasAttemptedAutoSync = useRef(false)
 
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
 
-  const filteredPatients = patients.filter((p) => {
-    const term = searchTerm.toLowerCase()
-    const matchesSearch =
-      p.name.toLowerCase().includes(term) || (p.cpf && p.cpf.includes(searchTerm))
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
-    if (!matchesSearch) return false
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearch, statusFilter])
 
-    if (statusFilter === 'Ativos') return p.status === 'active' || p.status === 'scheduled'
-    if (statusFilter === 'Inativos') return p.status === 'inactive'
+  useEffect(() => {
+    fetchPatients(currentPage, debouncedSearch, statusFilter)
+  }, [currentPage, debouncedSearch, statusFilter, fetchPatients])
 
-    return true
+  useRealtime('patients', () => {
+    fetchPatients(currentPage, debouncedSearch, statusFilter)
   })
-
-  const sortedPatients = useMemo(() => {
-    const today = new Date()
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-
-    const isToday = (dateString?: string | null) => {
-      if (!dateString) return false
-      return dateString.startsWith(todayStr)
-    }
-
-    return [...filteredPatients].sort((a, b) => {
-      const aToday = isToday(a.nextAppointment) ? 1 : 0
-      const bToday = isToday(b.nextAppointment) ? 1 : 0
-
-      if (aToday !== bToday) {
-        return bToday - aToday
-      }
-
-      return a.name.localeCompare(b.name)
-    })
-  }, [filteredPatients])
 
   const handleSync = async () => {
     if (!canSync) {
@@ -105,7 +108,7 @@ export default function Patients() {
 
       const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
 
-      syncWithBelle(mappedData)
+      await syncWithBelle(mappedData)
 
       setBelleLastSync('success', new Date().toISOString())
       addLog('Sincronização Completa Belle Software via API Direta', 'SYSTEM')
@@ -137,15 +140,17 @@ export default function Patients() {
   useEffect(() => {
     if (
       !hasAttemptedAutoSync.current &&
+      !isLoading &&
       patients.length === 0 &&
       canSync &&
-      belleSoftware.estabelecimento
+      belleSoftware.estabelecimento &&
+      searchTerm === ''
     ) {
       hasAttemptedAutoSync.current = true
       handleSync()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patients.length, canSync, belleSoftware.estabelecimento])
+  }, [patients.length, isLoading, canSync, belleSoftware.estabelecimento])
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
@@ -219,14 +224,16 @@ export default function Patients() {
           </div>
 
           <div className="grid gap-4">
-            {isSyncing ? (
+            {isSyncing || isLoading ? (
               <div className="space-y-6">
-                <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
-                  <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
-                  <p className="text-muted-foreground font-medium animate-pulse">
-                    Sincronizando... Conectando à API e baixando base real de clientes...
-                  </p>
-                </div>
+                {isSyncing && (
+                  <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
+                    <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
+                    <p className="text-muted-foreground font-medium animate-pulse">
+                      Sincronizando... Conectando à API e baixando base real de clientes...
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   <Skeleton className="h-32 w-full rounded-xl" />
                   <Skeleton className="h-32 w-full rounded-xl" />
@@ -249,20 +256,53 @@ export default function Patients() {
                   Tentar Novamente
                 </Button>
               </div>
-            ) : sortedPatients.length === 0 ? (
+            ) : patients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">
                 <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground font-medium text-lg">
                   Nenhum paciente encontrado
                 </p>
                 <p className="text-muted-foreground/80 text-sm mt-1">
-                  {patients.length === 0
+                  {searchTerm === ''
                     ? 'A base local está vazia. Clique em "Sincronizar Belle" para carregar os dados reais.'
                     : 'A busca não retornou resultados para os filtros aplicados.'}
                 </p>
               </div>
             ) : (
-              sortedPatients.map((patient) => <PatientCard key={patient.id} patient={patient} />)
+              <>
+                {patients.map((patient) => (
+                  <PatientCard key={patient.id} patient={patient} />
+                ))}
+                {totalPages > 1 && (
+                  <Pagination className="mt-6">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          className={
+                            currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                          }
+                        />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink className="font-medium pointer-events-none">
+                          Página {currentPage} de {totalPages || 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          className={
+                            currentPage >= totalPages
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
             )}
           </div>
         </CardContent>
