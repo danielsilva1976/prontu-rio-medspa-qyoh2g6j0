@@ -207,6 +207,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const clearPatients = () => setPatients([])
 
   const syncWithBelle = async (belleData: Partial<Patient>[]) => {
+    setIsSyncing(true)
     await ensureAuth()
     let added = 0
     let updated = 0
@@ -214,78 +215,114 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
     setSyncProgress({ current: 0, total: belleData.length })
 
-    const allExisting = await pb.collection('patients').getFullList({ fields: 'id,external_id' })
-    const existingMap = new Map(allExisting.map((r) => [r.external_id, r.id]))
+    try {
+      const allExisting = await pb.collection('patients').getFullList({ fields: 'id,external_id' })
+      const existingMap = new Map(allExisting.map((r) => [r.external_id, r.id]))
 
-    for (let i = 0; i < belleData.length; i++) {
-      const bp = belleData[i]
-      setSyncProgress({ current: i + 1, total: belleData.length })
+      for (let i = 0; i < belleData.length; i++) {
+        const bp = belleData[i]
+        setSyncProgress({ current: i + 1, total: belleData.length })
 
-      const external_id = bp.belleId ? String(bp.belleId) : `local-${Date.now()}-${Math.random()}`
+        const external_id = bp.belleId ? String(bp.belleId) : `local-${Date.now()}-${Math.random()}`
 
-      const payload = {
-        external_id,
-        name: bp.name || 'Sem Nome',
-        email: bp.email || '',
-        phone: bp.phone || '',
-        cpf: bp.cpf || '',
-        dob: bp.dob || '',
-        status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
-        history: bp.history || '',
-        rg: bp.rg || '',
-        profissao: bp.profissao || '',
-        estado_civil: bp.estado_civil || '',
-        endereco: bp.endereco || '',
-        cep: bp.cep || '',
-        rua: bp.rua || '',
-        numeroRua: bp.numeroRua || '',
-        bairro: bp.bairro || '',
-        cidade: bp.cidade || '',
-        uf: bp.uf || '',
-        temperatura: bp.temperatura || '',
-        classificacao: bp.classificacao || '',
-        sexo: bp.sexo || '',
-        rating: bp.rating || '',
-        tags: bp.tags || [],
-        lastVisit: bp.lastVisit || '',
-        nextAppointment: bp.nextAppointment || '',
-        avatar: bp.avatar || '',
-        procedures: bp.procedures || [],
-        professional: bp.professional || '',
-      }
+        const payload = {
+          external_id,
+          name: bp.name || 'Sem Nome',
+          email: bp.email || '',
+          phone: bp.phone || '',
+          cpf: bp.cpf || '',
+          dob: bp.dob || '',
+          status: bp.status || (bp.nextAppointment ? 'scheduled' : 'active'),
+          history: bp.history || '',
+          rg: bp.rg || '',
+          profissao: bp.profissao || '',
+          estado_civil: bp.estado_civil || '',
+          endereco: bp.endereco || '',
+          cep: bp.cep || '',
+          rua: bp.rua || '',
+          numeroRua: bp.numeroRua || '',
+          bairro: bp.bairro || '',
+          cidade: bp.cidade || '',
+          uf: bp.uf || '',
+          temperatura: bp.temperatura || '',
+          classificacao: bp.classificacao || '',
+          sexo: bp.sexo || '',
+          rating: bp.rating || '',
+          tags: bp.tags || [],
+          lastVisit: bp.lastVisit || '',
+          nextAppointment: bp.nextAppointment || '',
+          avatar: bp.avatar || '',
+          procedures: bp.procedures || [],
+          professional: bp.professional || '',
+        }
 
-      let success = false
-      let attempts = 0
-      const maxAttempts = 3
+        let success = false
+        let attempts = 0
+        const maxAttempts = 3
 
-      while (!success && attempts < maxAttempts) {
-        attempts++
-        try {
-          if (existingMap.has(external_id)) {
-            await pb.collection('patients').update(existingMap.get(external_id)!, payload)
-            updated++
-          } else {
-            await pb.collection('patients').create(payload)
-            added++
-          }
-          success = true
-        } catch (error: any) {
-          if (error?.status === 429 && attempts < maxAttempts) {
-            // Rate limit hit, wait with exponential backoff before retry
-            await new Promise((res) => setTimeout(res, 1000 * attempts))
-          } else {
+        while (!success && attempts < maxAttempts) {
+          attempts++
+          try {
+            await ensureAuth()
+
+            if (existingMap.has(external_id)) {
+              await pb.collection('patients').update(existingMap.get(external_id)!, payload)
+              updated++
+            } else {
+              await pb.collection('patients').create(payload)
+              added++
+            }
+            success = true
+
+            // Throttling: 200ms delay to prevent 429 and stabilize sync
+            await new Promise((res) => setTimeout(res, 200))
+          } catch (error: any) {
+            if ((error?.status === 401 || error?.status === 403) && attempts < maxAttempts) {
+              // Auth error during sync, clear token and retry to prevent session termination
+              pb.authStore.clear()
+              await new Promise((res) => setTimeout(res, 500))
+              continue
+            }
+            if (error?.status === 429 && attempts < maxAttempts) {
+              // Rate limit hit, wait with exponential backoff before retry
+              await new Promise((res) => setTimeout(res, 1000 * attempts))
+              continue
+            }
+
             console.error(
               `Failed to sync patient ${external_id} after ${attempts} attempts:`,
               error,
             )
+
+            // Log error to sync_jobs
+            try {
+              await pb.collection('sync_jobs').create({
+                error_log: JSON.stringify({
+                  external_id,
+                  message: error?.message || 'Unknown error',
+                  details: error?.response?.data || {},
+                }),
+                status: 'error',
+                records_processed: i + 1,
+                total_records_expected: belleData.length,
+              })
+            } catch (logError) {
+              console.error('Failed to log error to sync_jobs:', logError)
+            }
+
             errors++
             break // stop retrying for this record, move to next
           }
         }
       }
+
+      // Single fetch to update the UI with new data post-sync
+      await fetchPatients(page)
+    } finally {
+      setIsSyncing(false)
+      setSyncProgress(null)
     }
 
-    setSyncProgress(null)
     return { added, updated, errors }
   }
 
