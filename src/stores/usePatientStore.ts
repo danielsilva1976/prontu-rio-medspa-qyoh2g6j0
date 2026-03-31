@@ -55,6 +55,19 @@ type PatientState = {
 
 const PatientContext = createContext<PatientState>({} as PatientState)
 
+function safeParseJSON(val: any, fallback: any[] = []): any[] {
+  if (Array.isArray(val)) return val
+  if (typeof val === 'string' && val.trim() !== '') {
+    try {
+      const parsed = JSON.parse(val)
+      return Array.isArray(parsed) ? parsed : fallback
+    } catch (e) {
+      return fallback
+    }
+  }
+  return fallback
+}
+
 function mapRecordToPatient(record: RecordModel): Patient {
   let age = 0
   if (record.dob) {
@@ -74,11 +87,7 @@ function mapRecordToPatient(record: RecordModel): Patient {
     nextAppointment: record.nextAppointment || null,
     status: record.status || 'active',
     phone: record.phone || '',
-    procedures: Array.isArray(record.procedures)
-      ? record.procedures
-      : typeof record.procedures === 'string' && record.procedures
-        ? JSON.parse(record.procedures)
-        : [],
+    procedures: safeParseJSON(record.procedures),
     professional: record.professional || null,
     avatar: record.avatar || undefined,
     cpf: record.cpf || '',
@@ -99,11 +108,7 @@ function mapRecordToPatient(record: RecordModel): Patient {
     classificacao: record.classificacao || '',
     sexo: record.sexo || '',
     rating: record.rating || '',
-    tags: Array.isArray(record.tags)
-      ? record.tags
-      : typeof record.tags === 'string' && record.tags
-        ? JSON.parse(record.tags)
-        : [],
+    tags: safeParseJSON(record.tags),
   }
 }
 
@@ -186,7 +191,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       classificacao: patient.classificacao || '',
       sexo: patient.sexo || '',
       rating: patient.rating || '',
-      tags: patient.tags || [],
+      tags: Array.isArray(patient.tags) ? JSON.stringify(patient.tags) : patient.tags || '[]',
       lastVisit: patient.lastVisit || '',
       nextAppointment: patient.nextAppointment || '',
       avatar: patient.avatar || '',
@@ -200,7 +205,9 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     await ensureAuth()
     const payload: any = { ...data }
     if (data.procedures) payload.procedures = data.procedures
-    if (data.tags) payload.tags = data.tags
+    if (data.tags) {
+      payload.tags = Array.isArray(data.tags) ? JSON.stringify(data.tags) : data.tags
+    }
 
     await pb.collection('patients').update(id, payload)
   }

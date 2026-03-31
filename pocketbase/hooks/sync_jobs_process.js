@@ -141,7 +141,7 @@ onRecordAfterCreateSuccess((e) => {
             }
           })
 
-          const procedures = Object.keys(proceduresSet)
+          const procedures = Object.keys(proceduresSet).filter(Boolean).map(String)
           let formattedAddress = c.rua || c.endereco || ''
           if (c.numeroRua || c.numEndereco) formattedAddress += `, ${c.numeroRua || c.numEndereco}`
           if (c.bairro) formattedAddress += ` - ${c.bairro}`
@@ -150,9 +150,12 @@ onRecordAfterCreateSuccess((e) => {
 
           let tagsArr = []
           if (Array.isArray(c.tags)) {
-            tagsArr = c.tags
+            tagsArr = c.tags.filter(Boolean).map(String)
           } else if (typeof c.tags === 'string' && c.tags) {
-            tagsArr = c.tags.split(',').map((t) => t.trim())
+            tagsArr = c.tags
+              .split(',')
+              .map((t) => String(t).trim())
+              .filter(Boolean)
           }
 
           const payload = {
