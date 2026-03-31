@@ -28,12 +28,8 @@ import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
-import {
-  testBelleConnection,
-  fetchBelleClientes,
-  fetchBelleAgendamentos,
-  mapBelleDataToPatients,
-} from '@/lib/api/belle'
+import { testBelleConnection } from '@/lib/api/belle'
+import pb from '@/lib/pocketbase/client'
 
 export default function Patients() {
   const {
@@ -46,6 +42,7 @@ export default function Patients() {
     totalPages,
     isLoading,
     syncProgress,
+    setSyncProgress,
   } = usePatientStore()
   const { belleSoftware, setBelleLastSync } = useSettingsStore()
   const { addLog } = useAuditStore()
@@ -97,35 +94,23 @@ export default function Patients() {
       return
     }
 
-    setIsSyncing(true)
     setErrorMsg(null)
 
     try {
       await testBelleConnection(belleSoftware.estabelecimento)
-
-      const [rawClientes, rawAgendamentos] = await Promise.all([
-        fetchBelleClientes(belleSoftware.estabelecimento),
-        fetchBelleAgendamentos(belleSoftware.estabelecimento),
-      ])
-
-      const mappedData = mapBelleDataToPatients(rawClientes, rawAgendamentos)
-
-      await syncWithBelle(mappedData)
-
-      setBelleLastSync('success', new Date().toISOString())
-      addLog('Sincronização Completa Belle Software via API Direta', 'SYSTEM')
+      await syncWithBelle(belleSoftware.estabelecimento)
 
       toast({
-        title: 'Sucesso',
-        description: 'Conexão estabelecida e dados sincronizados com sucesso.',
+        title: 'Sincronização Iniciada',
+        description: 'O processo está rodando em segundo plano no servidor.',
       })
+      addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
-      addLog(`Erro na Sincronização via API`, 'SYSTEM')
+      addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')
 
       const title = error.errorTitle || error.error || 'Falha na Sincronização'
-      const details =
-        error.details || error.message || 'Não foi possível conectar ao Belle Software.'
+      const details = error.details || error.message || 'Não foi possível conectar ao servidor.'
 
       setErrorMsg(`${title}: ${details}`)
 
@@ -134,10 +119,62 @@ export default function Patients() {
         description: details,
         variant: 'destructive',
       })
-    } finally {
       setIsSyncing(false)
     }
   }
+
+  useEffect(() => {
+    const checkActiveJob = async () => {
+      try {
+        const job = await pb
+          .collection('sync_jobs')
+          .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
+        if (job) {
+          setIsSyncing(true)
+          setSyncProgress({
+            current: job.records_processed || 0,
+            total: job.total_records_expected || 6950,
+          })
+        }
+      } catch (e) {
+        // No active job
+      }
+    }
+    checkActiveJob()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useRealtime('sync_jobs', (e) => {
+    const job = e.record
+    if (e.action === 'create' || e.action === 'update') {
+      if (job.status === 'processing' || job.status === 'pending') {
+        setIsSyncing(true)
+        setSyncProgress({
+          current: job.records_processed || 0,
+          total: job.total_records_expected || 6950,
+        })
+      } else if (job.status === 'completed') {
+        setIsSyncing(false)
+        setSyncProgress(null)
+        setBelleLastSync('success', new Date().toISOString())
+        toast({
+          title: 'Sincronização Concluída',
+          description: 'Todos os pacientes foram atualizados com sucesso.',
+        })
+        fetchPatients(currentPage, debouncedSearch, statusFilter)
+      } else if (job.status === 'error') {
+        setIsSyncing(false)
+        setSyncProgress(null)
+        setBelleLastSync('error', new Date().toISOString())
+        setErrorMsg(job.error_log || 'Erro desconhecido na sincronização.')
+        toast({
+          title: 'Erro na Sincronização',
+          description: 'Houve uma falha no processamento em background.',
+          variant: 'destructive',
+        })
+      }
+    }
+  })
 
   useEffect(() => {
     if (
