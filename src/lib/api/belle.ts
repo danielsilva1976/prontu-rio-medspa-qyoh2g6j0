@@ -111,14 +111,14 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   })
 
   let res: Response
-  let usedFormat: AuthFormat = cachedAuthFormat || 'bearer'
+  let usedFormat: AuthFormat = cachedAuthFormat || 'pure'
 
   try {
     res = await doFetch(url, options, token, usedFormat)
 
     // Diagnostic retry logic for auth formatting
     if (res.status === 401 && token) {
-      const formatsToTry: AuthFormat[] = ['bearer', 'pure', 'token'].filter(
+      const formatsToTry: AuthFormat[] = ['pure', 'bearer', 'token'].filter(
         (f) => f !== usedFormat,
       ) as AuthFormat[]
 

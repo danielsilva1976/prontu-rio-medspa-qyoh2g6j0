@@ -17,7 +17,7 @@ onRecordAfterCreateSuccess((e) => {
       0,
     )
     if (existing && existing.length > 0) {
-      record.set('status', 'error')
+      record.set('status', 'failed')
       record.set('error_log', 'A sync job is already processing for this establishment.')
       $app.saveNoValidate(record)
       e.next()
@@ -38,7 +38,7 @@ onRecordAfterCreateSuccess((e) => {
 
       let cleanToken = token.replace(/^["']|["']$/g, '').trim()
       if (cleanToken.toLowerCase().startsWith('bearer ')) {
-        cleanToken = cleanToken.substring(7)
+        cleanToken = cleanToken.substring(7).trim()
       }
 
       // 1. Fetch all appointments to compute lastVisit / nextAppointment locally
@@ -48,17 +48,23 @@ onRecordAfterCreateSuccess((e) => {
           url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/agendamentos?codEstab=${estab}`,
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${cleanToken}`,
+            Authorization: cleanToken,
             Accept: 'application/json',
           },
           timeout: 120,
         })
+        if (resAg.statusCode === 401) {
+          throw new Error(`Token inválido (HTTP 401): ${resAg.string || 'Unauthorized'}`)
+        }
         if (resAg.statusCode === 200 && resAg.json) {
           agendamentos = Array.isArray(resAg.json)
             ? resAg.json
             : resAg.json.agendamentos || resAg.json.dados || []
         }
       } catch (err) {
+        if (err.message && err.message.includes('Token inválido')) {
+          throw err
+        }
         console.log('Warning: Error fetching agendamentos in hook: ', err)
       }
 
@@ -73,13 +79,16 @@ onRecordAfterCreateSuccess((e) => {
           url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=${page}`,
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${cleanToken}`,
+            Authorization: cleanToken,
             Accept: 'application/json',
           },
           timeout: 60,
         })
 
         if (resCl.statusCode !== 200) {
+          if (resCl.statusCode === 401) {
+            throw new Error(`Token inválido (HTTP 401): ${resCl.string || 'Unauthorized'}`)
+          }
           throw new Error(`Belle API Error ${resCl.statusCode}: ${resCl.string || 'Unknown error'}`)
         }
 
@@ -241,7 +250,7 @@ onRecordAfterCreateSuccess((e) => {
       console.log('Background Sync Error:', err)
       try {
         const job = $app.findRecordById('sync_jobs', jobId)
-        job.set('status', 'error')
+        job.set('status', 'failed')
         job.set('error_log', String(err.message || err))
         $app.saveNoValidate(job)
       } catch (e) {}
