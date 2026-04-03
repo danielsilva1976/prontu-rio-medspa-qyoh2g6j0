@@ -130,19 +130,42 @@ export default function Patients() {
           .collection('sync_jobs')
           .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
         if (job) {
-          setIsSyncing(true)
-          setSyncProgress({
-            current: job.records_processed || 0,
-            total: job.total_records_expected || 6950,
-          })
+          const updatedAt = new Date(job.updated).getTime()
+          const now = new Date().getTime()
+          const stalledThreshold = 5 * 60 * 1000 // 5 minutes
+
+          if (now - updatedAt > stalledThreshold && job.status === 'processing') {
+            // Automatically reset stalled job
+            await pb.collection('sync_jobs').update(job.id, {
+              status: 'failed',
+              error_log:
+                'Sincronização interrompida devido a tempo limite na resposta do servidor. O processo foi reiniciado.',
+            })
+            setIsSyncing(false)
+            setSyncProgress(null)
+          } else {
+            setIsSyncing(true)
+            setSyncProgress({
+              current: job.records_processed || 0,
+              total: job.total_records_expected || 6950,
+            })
+          }
         }
       } catch (e) {
         // No active job
       }
     }
+
     checkActiveJob()
+
+    // Periodically poll to track job status and rescue from stalls
+    const interval = setInterval(() => {
+      if (isSyncing) checkActiveJob()
+    }, 30000)
+
+    return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isSyncing])
 
   useRealtime('sync_jobs', (e) => {
     const job = e.record

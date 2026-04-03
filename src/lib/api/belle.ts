@@ -199,6 +199,17 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
   }
 
   if (!res.ok || (data && (data.erro || data.error || data.msg))) {
+    if (res.status === 404 && url.includes('/clientes/lead')) {
+      logger.warn('Lead API 404 Error (Ignored for sync)', { url })
+      return {
+        data: null,
+        status: res.status,
+        url,
+        method: options.method || 'GET',
+        rawBody: text,
+        authFormat: usedFormat,
+      }
+    }
     const errorMsg =
       data?.mensagem ||
       data?.msg ||
