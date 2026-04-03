@@ -55,6 +55,7 @@ export default function Patients() {
   const [currentPage, setCurrentPage] = useState(1)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const hasAttemptedAutoSync = useRef(false)
+  const realtimeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
 
@@ -71,8 +72,19 @@ export default function Patients() {
     fetchPatients(currentPage, debouncedSearch, statusFilter)
   }, [currentPage, debouncedSearch, statusFilter, fetchPatients])
 
+  useEffect(() => {
+    return () => {
+      if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current)
+    }
+  }, [])
+
   useRealtime('patients', () => {
-    fetchPatients(currentPage, debouncedSearch, statusFilter)
+    if (isSyncing) return // Previne milhares de requests durante a sincronização em massa, evitando crashes
+
+    if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current)
+    realtimeTimeoutRef.current = setTimeout(() => {
+      fetchPatients(currentPage, debouncedSearch, statusFilter)
+    }, 1500)
   })
 
   const handleSync = async () => {

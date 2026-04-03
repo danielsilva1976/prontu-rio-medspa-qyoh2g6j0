@@ -17,7 +17,14 @@ Pagination.displayName = 'Pagination'
 
 const PaginationContent = React.forwardRef<HTMLUListElement, React.ComponentProps<'ul'>>(
   ({ className, ...props }, ref) => (
-    <ul ref={ref} className={cn('flex flex-row items-center gap-1', className)} {...props} />
+    <ul
+      ref={ref}
+      className={cn(
+        'flex flex-row flex-wrap items-center justify-center gap-1 sm:gap-2',
+        className,
+      )}
+      {...props}
+    />
   ),
 )
 PaginationContent.displayName = 'PaginationContent'
@@ -52,25 +59,25 @@ const PaginationPrevious = ({
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label="Go to previous page"
+    aria-label="Página anterior"
     size="default"
     className={cn('gap-1 pl-2.5', className)}
     {...props}
   >
     <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
+    <span className="hidden sm:inline">Anterior</span>
   </PaginationLink>
 )
 PaginationPrevious.displayName = 'PaginationPrevious'
 
 const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label="Go to next page"
+    aria-label="Próxima página"
     size="default"
     className={cn('gap-1 pr-2.5', className)}
     {...props}
   >
-    <span>Next</span>
+    <span className="hidden sm:inline">Próxima</span>
     <ChevronRight className="h-4 w-4" />
   </PaginationLink>
 )

@@ -1,4 +1,12 @@
-import { useState, useCallback, useContext, createContext, ReactNode, createElement } from 'react'
+import {
+  useState,
+  useCallback,
+  useContext,
+  createContext,
+  ReactNode,
+  createElement,
+  useRef,
+} from 'react'
 import pb from '@/lib/pocketbase/client'
 import { RecordModel } from 'pocketbase'
 
@@ -121,6 +129,8 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const [totalItems, setTotalItems] = useState(0)
   const [syncProgress, setSyncProgress] = useState<{ current: number; total: number } | null>(null)
 
+  const fetchIdRef = useRef(0)
+
   const ensureAuth = async () => {
     if (!pb.authStore.isValid) {
       try {
@@ -133,12 +143,15 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchPatients = useCallback(
     async (p: number = 1, search: string = '', status: string = 'Todos') => {
+      const currentFetchId = ++fetchIdRef.current
       setIsLoading(true)
       try {
         await ensureAuth()
         const filters: string[] = []
         if (search) {
-          filters.push(`(name ~ "${search}" || cpf ~ "${search}")`)
+          // Prevent injection and use proper syntax
+          const safeSearch = search.replace(/"/g, '\\"')
+          filters.push(`(name ~ "${safeSearch}" || cpf ~ "${safeSearch}")`)
         }
         if (status === 'Ativos') {
           filters.push(`(status = "active" || status = "scheduled")`)
@@ -151,16 +164,25 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         const result = await pb.collection('patients').getList(p, 20, {
           filter,
           sort: 'name',
+          requestKey: 'fetch_patients_list', // Aborts any pending list request, improving performance
         })
 
-        setPatients(result.items.map(mapRecordToPatient))
-        setPage(result.page)
-        setTotalPages(result.totalPages)
-        setTotalItems(result.totalItems)
-      } catch (error) {
-        console.error('Failed to fetch patients', error)
+        // Only update state if this is the most recent fetch
+        if (currentFetchId === fetchIdRef.current) {
+          setPatients(result.items.map(mapRecordToPatient))
+          setPage(result.page)
+          setTotalPages(result.totalPages)
+          setTotalItems(result.totalItems)
+        }
+      } catch (error: any) {
+        if (error?.isAbort) return // Ignore aborted requests
+        if (currentFetchId === fetchIdRef.current) {
+          console.error('Failed to fetch patients', error)
+        }
       } finally {
-        setIsLoading(false)
+        if (currentFetchId === fetchIdRef.current) {
+          setIsLoading(false)
+        }
       }
     },
     [],
