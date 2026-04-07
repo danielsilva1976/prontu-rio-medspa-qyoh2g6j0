@@ -77,6 +77,8 @@ const doFetch = async (url: string, options: RequestInit, token: string, format:
     } else {
       headers.set('Authorization', finalToken)
     }
+
+    headers.set('x-sync-token', finalToken)
   }
 
   return fetch(url, { ...options, headers })

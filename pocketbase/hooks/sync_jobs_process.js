@@ -33,8 +33,9 @@ onRecordAfterCreateSuccess((e) => {
   // Detach the heavy lifting
   setTimeout(() => {
     try {
-      let token = $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN')
-      if (!token) throw new Error('BELLE_TOKEN is missing in environment variables.')
+      let token =
+        $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN')
+      if (!token) throw new Error('BELLE_TOKEN is missing in secrets or environment variables.')
 
       let cleanToken = token.replace(/^["']|["']$/g, '').trim()
       if (cleanToken.toLowerCase().startsWith('bearer ')) {
@@ -49,6 +50,7 @@ onRecordAfterCreateSuccess((e) => {
           method: 'GET',
           headers: {
             Authorization: cleanToken,
+            'x-sync-token': cleanToken,
             Accept: 'application/json',
           },
           timeout: 120,
@@ -98,6 +100,7 @@ onRecordAfterCreateSuccess((e) => {
             method: 'GET',
             headers: {
               Authorization: cleanToken,
+              'x-sync-token': cleanToken,
               Accept: 'application/json',
             },
             timeout: 60,

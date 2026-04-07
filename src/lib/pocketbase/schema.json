@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-03T20:49:55.639Z",
+  "generatedAt": "2026-04-07T20:15:15.035Z",
   "collections": [
     {
       "name": "patients",
@@ -197,7 +197,8 @@
       ],
       "indexes": [
         "CREATE UNIQUE INDEX idx_patients_external_id ON patients (external_id)",
-        "CREATE INDEX `idx_patients_name` ON `patients` (name)"
+        "CREATE INDEX `idx_patients_name` ON `patients` (name)",
+        "CREATE INDEX `idx_patients_cpf` ON `patients` (cpf)"
       ]
     },
     {
@@ -331,6 +332,12 @@
           "type": "number",
           "required": false,
           "system": false
+        },
+        {
+          "name": "priority_external_id",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": []
@@ -350,6 +357,52 @@
         "CREATE UNIQUE INDEX `idx_tokenKey_pbc_1736455494` ON `users` (`tokenKey`)",
         "CREATE UNIQUE INDEX `idx_email_pbc_1736455494` ON `users` (`email`) WHERE `email` != ''"
       ]
+    },
+    {
+      "name": "app_settings",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "key",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_app_settings_key ON app_settings (key)"]
     }
   ]
 }
