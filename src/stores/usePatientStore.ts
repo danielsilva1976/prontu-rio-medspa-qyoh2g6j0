@@ -239,17 +239,30 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const syncWithBelle = async (estabelecimento: string) => {
     await ensureAuth()
 
+    let lastPage = 0
+    let recordsProcessed = 0
+    let totalExpected = 0
+
     try {
       const existing = await pb
         .collection('sync_jobs')
-        .getFirstListItem('status="pending" || status="processing"')
-      if (existing) {
-        setIsSyncing(true)
-        setSyncProgress({
-          current: existing.records_processed || 0,
-          total: existing.total_records_expected || 0,
+        .getFirstListItem('status="pending" || status="processing" || status="failed"', {
+          sort: '-created',
         })
-        return
+
+      if (existing) {
+        if (existing.status === 'pending' || existing.status === 'processing') {
+          setIsSyncing(true)
+          setSyncProgress({
+            current: existing.records_processed || 0,
+            total: existing.total_records_expected || 0,
+          })
+          return
+        } else if (existing.status === 'failed') {
+          lastPage = existing.last_processed_page || 0
+          recordsProcessed = existing.records_processed || 0
+          totalExpected = existing.total_records_expected || 0
+        }
       }
     } catch (e) {
       // No active job found, proceed
@@ -257,12 +270,13 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsSyncing(true)
-      setSyncProgress({ current: 0, total: 0 })
+      setSyncProgress({ current: recordsProcessed, total: totalExpected })
       await pb.collection('sync_jobs').create({
         status: 'pending',
         estabelecimento,
-        records_processed: 0,
-        total_records_expected: 0,
+        last_processed_page: lastPage,
+        records_processed: recordsProcessed,
+        total_records_expected: totalExpected,
       })
     } catch (e) {
       setIsSyncing(false)

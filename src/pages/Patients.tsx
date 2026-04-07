@@ -106,33 +106,54 @@ export default function Patients() {
       return
     }
 
-    // Check for an already running process
+    // Check for an already running process or failed process to resume
+    let lastPage = 0
+    let recordsProcessed = 0
+    let totalExpected = 0
+
     try {
       const activeJob = await pb
         .collection('sync_jobs')
-        .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
+        .getFirstListItem('status="pending" || status="processing" || status="failed"', {
+          sort: '-created',
+        })
 
       if (activeJob) {
-        const updatedAt = new Date(activeJob.updated).getTime()
-        const now = new Date().getTime()
-        if (now - updatedAt <= 10 * 60 * 1000) {
-          toast({
-            title: 'Sincronização em Andamento',
-            description: 'Já existe um processo de sincronização rodando em segundo plano.',
-          })
-          setIsSyncing(true)
-          setSyncProgress({
-            current: activeJob.records_processed || 0,
-            total: activeJob.total_records_expected || 0,
-          })
-          return
-        } else {
-          // Clear stuck job to allow a new one
-          await pb.collection('sync_jobs').update(activeJob.id, {
-            status: 'failed',
-            error_log:
-              'Processo anterior cancelado por inatividade (timeout de 10 min). Reiniciando...',
-          })
+        if (activeJob.status === 'pending' || activeJob.status === 'processing') {
+          const updatedAt = new Date(activeJob.updated).getTime()
+          const now = new Date().getTime()
+          if (now - updatedAt <= 10 * 60 * 1000) {
+            toast({
+              title: 'Sincronização em Andamento',
+              description: 'Já existe um processo de sincronização rodando em segundo plano.',
+            })
+            setIsSyncing(true)
+            setSyncProgress({
+              current: activeJob.records_processed || 0,
+              total: activeJob.total_records_expected || 0,
+            })
+            return
+          } else {
+            // Clear stuck job to allow a new one
+            await pb.collection('sync_jobs').update(activeJob.id, {
+              status: 'failed',
+              error_log:
+                (activeJob.error_log || '') +
+                '\nProcesso anterior cancelado por inatividade (timeout). Reiniciando do ponto de parada...',
+            })
+            // Will resume from this job
+            lastPage = activeJob.last_processed_page || 0
+            recordsProcessed = activeJob.records_processed || 0
+            totalExpected = activeJob.total_records_expected || 0
+          }
+        } else if (activeJob.status === 'failed') {
+          // Check if we should resume
+          // We resume if there was a partial progress
+          if (activeJob.last_processed_page > 0 || activeJob.records_processed > 0) {
+            lastPage = activeJob.last_processed_page || 0
+            recordsProcessed = activeJob.records_processed || 0
+            totalExpected = activeJob.total_records_expected || 0
+          }
         }
       }
     } catch (e) {
@@ -147,15 +168,24 @@ export default function Patients() {
       await pb.collection('sync_jobs').create({
         status: 'pending',
         estabelecimento: belleSoftware.estabelecimento,
-        records_processed: 0,
-        total_records_expected: 0,
+        last_processed_page: lastPage,
+        records_processed: recordsProcessed,
+        total_records_expected: totalExpected,
       })
 
-      toast({
-        title: 'Sincronização Iniciada',
-        description: 'O processo está rodando em segundo plano no servidor.',
-      })
-      addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
+      if (lastPage > 0) {
+        toast({
+          title: 'Sincronização Retomada',
+          description: `Retomando processo a partir da página ${lastPage} (${recordsProcessed} registros).`,
+        })
+        addLog(`Sincronização Retomada - Página ${lastPage}`, 'SYSTEM')
+      } else {
+        toast({
+          title: 'Sincronização Iniciada',
+          description: 'O processo está rodando em segundo plano no servidor.',
+        })
+        addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
+      }
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')
@@ -190,7 +220,8 @@ export default function Patients() {
             await pb.collection('sync_jobs').update(job.id, {
               status: 'failed',
               error_log:
-                'Sincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',
+                (job.error_log || '') +
+                '\nSincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',
             })
             setIsSyncing(false)
             setSyncProgress(null)
@@ -348,9 +379,9 @@ export default function Patients() {
                   </div>
                 </div>
                 {syncProgress && (
-                  <div className="w-full sm:w-64 space-y-1.5">
+                  <div className="w-full sm:w-72 space-y-1.5">
                     <div className="flex justify-between text-xs text-primary/80 font-medium">
-                      <span>Progresso</span>
+                      <span>Progresso da Sincronização</span>
                       <span>
                         {syncProgress.current}{' '}
                         {syncProgress.total > 0 ? `/ ${syncProgress.total}` : 'registros'}
@@ -359,12 +390,12 @@ export default function Patients() {
                     <Progress
                       value={
                         syncProgress.total > 0
-                          ? (syncProgress.current / syncProgress.total) * 100
+                          ? Math.min((syncProgress.current / syncProgress.total) * 100, 100)
                           : syncProgress.current > 0
                             ? 100
                             : 0
                       }
-                      className="h-1.5 bg-primary/10"
+                      className="h-1.5 bg-primary/10 [&>div]:transition-all [&>div]:duration-500"
                     />
                   </div>
                 )}

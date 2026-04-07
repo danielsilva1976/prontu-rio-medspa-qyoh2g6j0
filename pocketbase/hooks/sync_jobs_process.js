@@ -28,7 +28,8 @@ onRecordAfterCreateSuccess((e) => {
           ex.set('status', 'failed')
           ex.set(
             'error_log',
-            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Processo travado por mais de 10 minutos)',
+            (ex.get('error_log') || '') +
+              '\nSincronização interrompida devido a tempo limite na resposta do servidor.',
           )
           $app.saveNoValidate(ex)
         } else {
@@ -67,10 +68,26 @@ onRecordAfterCreateSuccess((e) => {
 
       let cleanToken = token.replace(/['"]/g, '').replace(/\s+/g, '')
 
+      let lastSync = null
+      try {
+        const setting = $app.findFirstRecordByData('app_settings', 'key', 'last_successful_sync')
+        lastSync = setting.get('value')
+      } catch (e) {}
+
+      let dateFilter = ''
+      if (lastSync) {
+        const d = new Date(lastSync)
+        d.setDate(d.getDate() - 1)
+        const yyyy = d.getFullYear()
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        dateFilter = `&dataAtualizacao=${yyyy}-${mm}-${dd}`
+      }
+
       let agendamentos = []
       try {
         const resAg = $http.send({
-          url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/agendamentos?codEstab=${estab}`,
+          url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/agendamentos?codEstab=${estab}${dateFilter}`,
           method: 'GET',
           headers: {
             Authorization: cleanToken,
@@ -80,16 +97,12 @@ onRecordAfterCreateSuccess((e) => {
           timeout: 120,
         })
         if (resAg.statusCode === 401) {
-          throw new Error(
-            `Acesso Negado (HTTP 401) - O token de integração é inválido ou expirou. ${resAg.string || ''}`,
-          )
+          throw new Error(`Acesso Negado (HTTP 401) - O token de integração é inválido ou expirou.`)
         }
         if (resAg.statusCode === 200 && resAg.json) {
           agendamentos = Array.isArray(resAg.json)
             ? resAg.json
             : resAg.json.agendamentos || resAg.json.dados || []
-        } else if (resAg.statusCode !== 200) {
-          console.log(`Belle API Error fetching agendamentos: ${resAg.statusCode}`)
         }
       } catch (err) {
         if (err.message && err.message.includes('Acesso Negado')) {
@@ -98,7 +111,6 @@ onRecordAfterCreateSuccess((e) => {
         console.log('Warning: Error fetching agendamentos in hook: ', err)
       }
 
-      // Pre-process agendamentos to avoid nested loops (O(N^2) -> O(N))
       const agendamentosByCpf = {}
       const agendamentosById = {}
 
@@ -115,39 +127,15 @@ onRecordAfterCreateSuccess((e) => {
         }
       }
 
-      let page = 0
-      let totalProcessed = 0
+      const currentJob = $app.findRecordById('sync_jobs', jobId)
+      let page = currentJob.get('last_processed_page') || 0
+      let totalProcessed = currentJob.get('records_processed') || 0
 
-      // Perform initial count request to correctly calculate total_records_expected
-      let totalExpected = 0
-      try {
-        const countRes = $http.send({
-          url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1`,
-          method: 'GET',
-          headers: {
-            Authorization: cleanToken,
-            'x-sync-token': cleanToken,
-            Accept: 'application/json',
-          },
-          timeout: 30,
-        })
-        const cData = countRes.json
-
-        if (cData && !Array.isArray(cData)) {
-          totalExpected = Number(
-            cData.total ||
-              cData.totalRegistros ||
-              cData.totalCount ||
-              cData.total_registros ||
-              cData.quantidade ||
-              0,
-          )
-        }
-
-        if (!totalExpected || isNaN(totalExpected)) {
-          // Fallback: tentar endpoint /count explícito caso a paginação não retorne o total
-          const specificCount = $http.send({
-            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}`,
+      let totalExpected = currentJob.get('total_records_expected') || 0
+      if (page === 0 && totalExpected === 0) {
+        try {
+          const countRes = $http.send({
+            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1${dateFilter}`,
             method: 'GET',
             headers: {
               Authorization: cleanToken,
@@ -156,24 +144,49 @@ onRecordAfterCreateSuccess((e) => {
             },
             timeout: 30,
           })
-          const scData = specificCount.json
-          if (scData) {
+          const cData = countRes.json
+
+          if (cData && !Array.isArray(cData)) {
             totalExpected = Number(
-              scData.total ||
-                scData.count ||
-                scData.total_registros ||
-                (typeof scData === 'number' ? scData : 0),
+              cData.total ||
+                cData.totalRegistros ||
+                cData.totalCount ||
+                cData.total_registros ||
+                cData.quantidade ||
+                0,
             )
           }
-        }
 
-        if (totalExpected > 0) {
-          const job = $app.findRecordById('sync_jobs', jobId)
-          job.set('total_records_expected', totalExpected)
-          $app.saveNoValidate(job)
+          if (!totalExpected || isNaN(totalExpected)) {
+            const specificCount = $http.send({
+              url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}${dateFilter}`,
+              method: 'GET',
+              headers: {
+                Authorization: cleanToken,
+                'x-sync-token': cleanToken,
+                Accept: 'application/json',
+              },
+              timeout: 30,
+            })
+            const scData = specificCount.json
+            if (scData) {
+              totalExpected = Number(
+                scData.total ||
+                  scData.count ||
+                  scData.total_registros ||
+                  (typeof scData === 'number' ? scData : 0),
+              )
+            }
+          }
+
+          if (totalExpected > 0) {
+            const job = $app.findRecordById('sync_jobs', jobId)
+            job.set('total_records_expected', totalExpected)
+            $app.saveNoValidate(job)
+          }
+        } catch (err) {
+          console.log('Initial count request error:', err)
         }
-      } catch (err) {
-        console.log('Initial count request error:', err)
       }
 
       const patientsCol = $app.findCollectionByNameOrId('patients')
@@ -181,10 +194,9 @@ onRecordAfterCreateSuccess((e) => {
 
       const processPage = () => {
         try {
-          // Verify job is still active to prevent ghosts
           try {
-            const currentJob = $app.findRecordById('sync_jobs', jobId)
-            if (currentJob.get('status') !== 'processing') {
+            const jobCheck = $app.findRecordById('sync_jobs', jobId)
+            if (jobCheck.get('status') !== 'processing') {
               console.log('Job no longer processing, aborting batch loop.')
               return
             }
@@ -192,15 +204,16 @@ onRecordAfterCreateSuccess((e) => {
             return
           }
 
-          if (page >= 150) {
+          if (page >= 1000) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
             $app.saveNoValidate(job)
+            saveLastSync()
             return
           }
 
           const resCl = $http.send({
-            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=${page}`,
+            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=${page}${dateFilter}`,
             method: 'GET',
             headers: {
               Authorization: cleanToken,
@@ -230,151 +243,162 @@ onRecordAfterCreateSuccess((e) => {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
             $app.saveNoValidate(job)
+            saveLastSync()
             return
           }
 
           const now = new Date()
 
           for (let i = 0; i < clientes.length; i++) {
-            const c = clientes[i]
-            const belleIdStr = String(c.codigo || c.id || '')
-            if (!belleIdStr) continue
+            try {
+              const c = clientes[i]
+              const belleIdStr = String(c.codigo || c.id || '')
+              if (!belleIdStr) continue
 
-            let clientAppts = []
-            if (c.cpf && agendamentosByCpf[c.cpf]) {
-              clientAppts = clientAppts.concat(agendamentosByCpf[c.cpf])
-            }
-            if (agendamentosById[belleIdStr]) {
-              clientAppts = clientAppts.concat(agendamentosById[belleIdStr])
-            }
-
-            // Remove duplicates
-            const seenAppts = {}
-            clientAppts = clientAppts.filter((a) => {
-              const id = a.id || a.codigo
-              if (id) {
-                if (seenAppts[id]) return false
-                seenAppts[id] = true
+              let clientAppts = []
+              if (c.cpf && agendamentosByCpf[c.cpf]) {
+                clientAppts = clientAppts.concat(agendamentosByCpf[c.cpf])
               }
-              return true
-            })
+              if (agendamentosById[belleIdStr]) {
+                clientAppts = clientAppts.concat(agendamentosById[belleIdStr])
+              }
 
-            let lastVisit = ''
-            let nextAppointment = ''
-            const proceduresSet = {}
+              const seenAppts = {}
+              clientAppts = clientAppts.filter((a) => {
+                const id = a.id || a.codigo
+                if (id) {
+                  if (seenAppts[id]) return false
+                  seenAppts[id] = true
+                }
+                return true
+              })
 
-            for (let k = 0; k < clientAppts.length; k++) {
-              const a = clientAppts[k]
-              if (a.servico) proceduresSet[a.servico] = true
-              if (a.data) {
-                const apptDate = new Date(`${a.data}T${a.hora_inicio || '00:00'}:00`)
-                if (!isNaN(apptDate.getTime())) {
-                  if (apptDate < now) {
-                    if (
-                      !lastVisit ||
-                      isNaN(new Date(lastVisit).getTime()) ||
-                      apptDate > new Date(lastVisit)
-                    ) {
-                      lastVisit = a.data
-                    }
-                  } else {
-                    if (!nextAppointment || apptDate < new Date(nextAppointment)) {
-                      nextAppointment = `${a.data}T${a.hora_inicio || '00:00'}:00`
+              let lastVisit = ''
+              let nextAppointment = ''
+              const proceduresSet = {}
+
+              for (let k = 0; k < clientAppts.length; k++) {
+                const a = clientAppts[k]
+                if (a.servico) proceduresSet[a.servico] = true
+                if (a.data) {
+                  const apptDate = new Date(`${a.data}T${a.hora_inicio || '00:00'}:00`)
+                  if (!isNaN(apptDate.getTime())) {
+                    if (apptDate < now) {
+                      if (
+                        !lastVisit ||
+                        isNaN(new Date(lastVisit).getTime()) ||
+                        apptDate > new Date(lastVisit)
+                      ) {
+                        lastVisit = a.data
+                      }
+                    } else {
+                      if (!nextAppointment || apptDate < new Date(nextAppointment)) {
+                        nextAppointment = `${a.data}T${a.hora_inicio || '00:00'}:00`
+                      }
                     }
                   }
                 }
               }
-            }
 
-            const procedures = Object.keys(proceduresSet).filter(Boolean).map(String)
-            let formattedAddress = c.rua || c.endereco || ''
-            if (c.numeroRua || c.numEndereco)
-              formattedAddress += `, ${c.numeroRua || c.numEndereco}`
-            if (c.bairro) formattedAddress += ` - ${c.bairro}`
-            if (c.cidade) formattedAddress += ` - ${c.cidade}`
-            if (c.uf || c.UF) formattedAddress += `/${c.uf || c.UF}`
+              const procedures = Object.keys(proceduresSet).filter(Boolean).map(String)
+              let formattedAddress = c.rua || c.endereco || ''
+              if (c.numeroRua || c.numEndereco)
+                formattedAddress += `, ${c.numeroRua || c.numEndereco}`
+              if (c.bairro) formattedAddress += ` - ${c.bairro}`
+              if (c.cidade) formattedAddress += ` - ${c.cidade}`
+              if (c.uf || c.UF) formattedAddress += `/${c.uf || c.UF}`
 
-            let tagsArr = []
-            if (Array.isArray(c.tags)) {
-              tagsArr = c.tags.filter(Boolean).map(String)
-            } else if (typeof c.tags === 'string' && c.tags) {
-              tagsArr = c.tags
-                .split(',')
-                .map((t) => String(t).trim())
-                .filter(Boolean)
-            }
-
-            const patientName = (c.nome || '').trim() || 'Paciente sem nome'
-            const payload = {
-              external_id: belleIdStr,
-              name: patientName,
-              cpf: (c.cpf || '').trim(),
-              email: (c.email || '').trim(),
-              phone: (c.celular || c.telefone || '').trim(),
-              dob: c.data_nascimento || c.dtNascimento || '',
-              lastVisit: lastVisit,
-              nextAppointment: nextAppointment,
-              procedures: procedures,
-              history: c.observacao || c.historico_clinico || '',
-              rg: c.rg || '',
-              profissao: c.profissao || '',
-              estado_civil: c.estado_civil || '',
-              endereco: formattedAddress.trim(),
-              rua: c.rua || '',
-              numeroRua: c.numeroRua || '',
-              bairro: c.bairro || '',
-              cidade: c.cidade || '',
-              uf: c.uf || c.UF || '',
-              cep: c.cep || '',
-              temperatura: c.temperatura || '',
-              classificacao: c.classificacao || '',
-              status: nextAppointment ? 'scheduled' : 'active',
-              sexo: c.sexo || '',
-              rating: c.rating || '',
-              tags: tagsArr.join(', '),
-            }
-
-            let patientId = null
-            try {
-              const existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
-              for (let key in payload) {
-                existing.set(key, payload[key])
+              let tagsArr = []
+              if (Array.isArray(c.tags)) {
+                tagsArr = c.tags.filter(Boolean).map(String)
+              } else if (typeof c.tags === 'string' && c.tags) {
+                tagsArr = c.tags
+                  .split(',')
+                  .map((t) => String(t).trim())
+                  .filter(Boolean)
               }
-              $app.saveNoValidate(existing)
-              patientId = existing.id
-            } catch (err) {
-              const newRecord = new Record(patientsCol)
-              for (let key in payload) newRecord.set(key, payload[key])
-              $app.saveNoValidate(newRecord)
-              patientId = newRecord.id
-            }
 
-            if (patientId) {
-              for (let j = 0; j < clientAppts.length; j++) {
-                const a = clientAppts[j]
-                const apptExtId = String(a.id || a.codigo || `${belleIdStr}-${j}`)
-                const apptPayload = {
-                  external_id: apptExtId,
-                  patient: patientId,
-                  appointment_date: a.data ? `${a.data} 00:00:00.000Z` : '',
-                  status: a.status || '',
-                  service_name: a.servico || '',
-                  professional: a.profissional || '',
+              const patientName = (c.nome || '').trim() || 'Paciente sem nome'
+              const payload = {
+                external_id: belleIdStr,
+                name: patientName,
+                cpf: (c.cpf || '').trim(),
+                email: (c.email || '').trim(),
+                phone: (c.celular || c.telefone || '').trim(),
+                dob: c.data_nascimento || c.dtNascimento || '',
+                lastVisit: lastVisit,
+                nextAppointment: nextAppointment,
+                procedures: procedures,
+                history: c.observacao || c.historico_clinico || '',
+                rg: c.rg || '',
+                profissao: c.profissao || '',
+                estado_civil: c.estado_civil || '',
+                endereco: formattedAddress.trim(),
+                rua: c.rua || '',
+                numeroRua: c.numeroRua || '',
+                bairro: c.bairro || '',
+                cidade: c.cidade || '',
+                uf: c.uf || c.UF || '',
+                cep: c.cep || '',
+                temperatura: c.temperatura || '',
+                classificacao: c.classificacao || '',
+                status: nextAppointment ? 'scheduled' : 'active',
+                sexo: c.sexo || '',
+                rating: c.rating || '',
+                tags: tagsArr.join(', '),
+              }
+
+              let patientId = null
+              try {
+                const existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
+                for (let key in payload) {
+                  existing.set(key, payload[key])
                 }
-                try {
-                  const exAppt = $app.findFirstRecordByData(
-                    'appointments',
-                    'external_id',
-                    apptExtId,
-                  )
-                  for (let key in apptPayload) exAppt.set(key, apptPayload[key])
-                  $app.saveNoValidate(exAppt)
-                } catch (e) {
-                  const newAppt = new Record(apptsCol)
-                  for (let key in apptPayload) newAppt.set(key, apptPayload[key])
-                  $app.saveNoValidate(newAppt)
+                $app.saveNoValidate(existing)
+                patientId = existing.id
+              } catch (err) {
+                const newRecord = new Record(patientsCol)
+                for (let key in payload) newRecord.set(key, payload[key])
+                $app.saveNoValidate(newRecord)
+                patientId = newRecord.id
+              }
+
+              if (patientId) {
+                for (let j = 0; j < clientAppts.length; j++) {
+                  const a = clientAppts[j]
+                  const apptExtId = String(a.id || a.codigo || `${belleIdStr}-${j}`)
+                  const apptPayload = {
+                    external_id: apptExtId,
+                    patient: patientId,
+                    appointment_date: a.data ? `${a.data} 00:00:00.000Z` : '',
+                    status: a.status || '',
+                    service_name: a.servico || '',
+                    professional: a.profissional || '',
+                  }
+                  try {
+                    const exAppt = $app.findFirstRecordByData(
+                      'appointments',
+                      'external_id',
+                      apptExtId,
+                    )
+                    for (let key in apptPayload) exAppt.set(key, apptPayload[key])
+                    $app.saveNoValidate(exAppt)
+                  } catch (e) {
+                    const newAppt = new Record(apptsCol)
+                    for (let key in apptPayload) newAppt.set(key, apptPayload[key])
+                    $app.saveNoValidate(newAppt)
+                  }
                 }
               }
+            } catch (itemErr) {
+              try {
+                const jobToUpdate = $app.findRecordById('sync_jobs', jobId)
+                let currentLog = jobToUpdate.get('error_log') || ''
+                currentLog += `\nErro cliente ${clientes[i]?.codigo || '?'}: ${itemErr.message || itemErr}`
+                if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
+                jobToUpdate.set('error_log', currentLog.trim())
+                $app.saveNoValidate(jobToUpdate)
+              } catch (e) {}
             }
           }
 
@@ -394,6 +418,7 @@ onRecordAfterCreateSuccess((e) => {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
             $app.saveNoValidate(job)
+            saveLastSync()
           } else {
             page++
             setTimeout(processPage, 300)
@@ -403,10 +428,28 @@ onRecordAfterCreateSuccess((e) => {
           try {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'failed')
-            job.set('error_log', 'Erro no lote de clientes: ' + String(err.message || err))
+            let currentLog = job.get('error_log') || ''
+            currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
+            if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
+            job.set('error_log', currentLog.trim())
             $app.saveNoValidate(job)
           } catch (e) {}
         }
+      }
+
+      function saveLastSync() {
+        try {
+          let setting
+          try {
+            setting = $app.findFirstRecordByData('app_settings', 'key', 'last_successful_sync')
+          } catch (e) {
+            const col = $app.findCollectionByNameOrId('app_settings')
+            setting = new Record(col)
+            setting.set('key', 'last_successful_sync')
+          }
+          setting.set('value', new Date().toISOString())
+          $app.saveNoValidate(setting)
+        } catch (e) {}
       }
 
       processPage()
