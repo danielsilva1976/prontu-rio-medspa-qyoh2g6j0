@@ -1,6 +1,6 @@
 onRecordAfterCreateSuccess((e) => {
   const record = e.record
-  if (record.get('status') !== 'pending') {
+  if (record.get('status') !== 'pending' && record.get('status') !== 'processing') {
     e.next()
     return
   }
@@ -31,7 +31,7 @@ onRecordAfterCreateSuccess((e) => {
             (ex.get('error_log') || '') +
               '\nSincronização interrompida devido a tempo limite na resposta do servidor.',
           )
-          $app.saveNoValidate(ex)
+          $app.save(ex)
         } else {
           activeExists = true
         }
@@ -43,7 +43,7 @@ onRecordAfterCreateSuccess((e) => {
           'error_log',
           'Já existe uma sincronização ativa para este estabelecimento. Aguarde a conclusão.',
         )
-        $app.saveNoValidate(record)
+        $app.save(record)
         e.next()
         return
       }
@@ -53,7 +53,7 @@ onRecordAfterCreateSuccess((e) => {
   }
 
   record.set('status', 'processing')
-  $app.saveNoValidate(record)
+  $app.save(record)
 
   // Detach the heavy lifting
   setTimeout(() => {
@@ -100,9 +100,8 @@ onRecordAfterCreateSuccess((e) => {
           throw new Error(`Acesso Negado (HTTP 401) - O token de integração é inválido ou expirou.`)
         }
         if (resAg.statusCode === 200 && resAg.json) {
-          agendamentos = Array.isArray(resAg.json)
-            ? resAg.json
-            : resAg.json.agendamentos || resAg.json.dados || []
+          const agData = resAg.json
+          agendamentos = Array.isArray(agData) ? agData : agData.agendamentos || agData.dados || []
         }
       } catch (err) {
         if (err.message && err.message.includes('Acesso Negado')) {
@@ -182,7 +181,7 @@ onRecordAfterCreateSuccess((e) => {
           if (totalExpected > 0) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('total_records_expected', totalExpected)
-            $app.saveNoValidate(job)
+            $app.save(job)
           }
         } catch (err) {
           console.log('Initial count request error:', err)
@@ -207,7 +206,7 @@ onRecordAfterCreateSuccess((e) => {
           if (page >= 1000) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
-            $app.saveNoValidate(job)
+            $app.save(job)
             saveLastSync()
             return
           }
@@ -235,14 +234,17 @@ onRecordAfterCreateSuccess((e) => {
           }
 
           const data = resCl.json
-          const clientes = Array.isArray(data)
-            ? data
-            : data?.pacientes || data?.clientes || data?.dados || []
+          let clientes = []
+          if (Array.isArray(data)) {
+            clientes = data
+          } else if (data && typeof data === 'object') {
+            clientes = data.pacientes || data.clientes || data.dados || []
+          }
 
-          if (!clientes || clientes.length === 0) {
+          if (!Array.isArray(clientes) || clientes.length === 0) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
-            $app.saveNoValidate(job)
+            $app.save(job)
             saveLastSync()
             return
           }
@@ -318,13 +320,13 @@ onRecordAfterCreateSuccess((e) => {
                   .filter(Boolean)
               }
 
-              const patientName = (c.nome || '').trim() || 'Paciente sem nome'
+              const patientName = c.nome ? String(c.nome).trim() : ''
               const payload = {
                 external_id: belleIdStr,
-                name: patientName,
-                cpf: (c.cpf || '').trim(),
-                email: (c.email || '').trim(),
-                phone: (c.celular || c.telefone || '').trim(),
+                name: patientName || 'Paciente sem nome',
+                cpf: c.cpf ? String(c.cpf).trim() : '',
+                email: c.email ? String(c.email).trim() : '',
+                phone: c.celular || c.telefone ? String(c.celular || c.telefone).trim() : '',
                 dob: c.data_nascimento || c.dtNascimento || '',
                 lastVisit: lastVisit,
                 nextAppointment: nextAppointment,
@@ -349,18 +351,30 @@ onRecordAfterCreateSuccess((e) => {
               }
 
               let patientId = null
+              let existing = null
               try {
-                const existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
-                for (let key in payload) {
-                  existing.set(key, payload[key])
+                existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
+              } catch (_) {}
+
+              try {
+                if (existing) {
+                  for (let key in payload) {
+                    if (payload[key] !== undefined) existing.set(key, payload[key])
+                  }
+                  $app.save(existing)
+                  patientId = existing.id
+                } else {
+                  const newRecord = new Record(patientsCol)
+                  for (let key in payload) {
+                    if (payload[key] !== undefined) newRecord.set(key, payload[key])
+                  }
+                  $app.save(newRecord)
+                  patientId = newRecord.id
                 }
-                $app.saveNoValidate(existing)
-                patientId = existing.id
-              } catch (err) {
-                const newRecord = new Record(patientsCol)
-                for (let key in payload) newRecord.set(key, payload[key])
-                $app.saveNoValidate(newRecord)
-                patientId = newRecord.id
+              } catch (saveErr) {
+                throw new Error(
+                  `Failed to create/update patient ${belleIdStr}: ${saveErr.message || saveErr}`,
+                )
               }
 
               if (patientId) {
@@ -375,18 +389,28 @@ onRecordAfterCreateSuccess((e) => {
                     service_name: a.servico || '',
                     professional: a.profissional || '',
                   }
+                  let exAppt = null
                   try {
-                    const exAppt = $app.findFirstRecordByData(
-                      'appointments',
-                      'external_id',
-                      apptExtId,
+                    exAppt = $app.findFirstRecordByData('appointments', 'external_id', apptExtId)
+                  } catch (_) {}
+
+                  try {
+                    if (exAppt) {
+                      for (let key in apptPayload) {
+                        if (apptPayload[key] !== undefined) exAppt.set(key, apptPayload[key])
+                      }
+                      $app.save(exAppt)
+                    } else {
+                      const newAppt = new Record(apptsCol)
+                      for (let key in apptPayload) {
+                        if (apptPayload[key] !== undefined) newAppt.set(key, apptPayload[key])
+                      }
+                      $app.save(newAppt)
+                    }
+                  } catch (saveErr) {
+                    throw new Error(
+                      `Failed to create/update appointment ${apptExtId}: ${saveErr.message || saveErr}`,
                     )
-                    for (let key in apptPayload) exAppt.set(key, apptPayload[key])
-                    $app.saveNoValidate(exAppt)
-                  } catch (e) {
-                    const newAppt = new Record(apptsCol)
-                    for (let key in apptPayload) newAppt.set(key, apptPayload[key])
-                    $app.saveNoValidate(newAppt)
                   }
                 }
               }
@@ -397,7 +421,7 @@ onRecordAfterCreateSuccess((e) => {
                 currentLog += `\nErro cliente ${clientes[i]?.codigo || '?'}: ${itemErr.message || itemErr}`
                 if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
                 jobToUpdate.set('error_log', currentLog.trim())
-                $app.saveNoValidate(jobToUpdate)
+                $app.save(jobToUpdate)
               } catch (e) {}
             }
           }
@@ -411,13 +435,13 @@ onRecordAfterCreateSuccess((e) => {
             if (!jobToUpdate.get('total_records_expected') && totalExpected > 0) {
               jobToUpdate.set('total_records_expected', totalExpected)
             }
-            $app.saveNoValidate(jobToUpdate)
+            $app.save(jobToUpdate)
           } catch (e) {}
 
           if (clientes.length < 50) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
-            $app.saveNoValidate(job)
+            $app.save(job)
             saveLastSync()
           } else {
             page++
@@ -432,7 +456,7 @@ onRecordAfterCreateSuccess((e) => {
             currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
             if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
             job.set('error_log', currentLog.trim())
-            $app.saveNoValidate(job)
+            $app.save(job)
           } catch (e) {}
         }
       }
@@ -448,7 +472,7 @@ onRecordAfterCreateSuccess((e) => {
             setting.set('key', 'last_successful_sync')
           }
           setting.set('value', new Date().toISOString())
-          $app.saveNoValidate(setting)
+          $app.save(setting)
         } catch (e) {}
       }
 
@@ -459,7 +483,7 @@ onRecordAfterCreateSuccess((e) => {
         const job = $app.findRecordById('sync_jobs', jobId)
         job.set('status', 'failed')
         job.set('error_log', String(err.message || err))
-        $app.saveNoValidate(job)
+        $app.save(job)
       } catch (e) {}
     }
   }, 100)

@@ -30,6 +30,7 @@ import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
 import { testBelleConnection } from '@/lib/api/belle'
 import pb from '@/lib/pocketbase/client'
+import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 
 export default function Patients() {
   const {
@@ -166,11 +167,11 @@ export default function Patients() {
       // Bypass direct frontend fetch (which causes CORS) and directly create the job.
       // The backend hook `sync_jobs_process.js` will handle the actual Belle API connection reliably.
       await pb.collection('sync_jobs').create({
-        status: 'pending',
-        estabelecimento: belleSoftware.estabelecimento,
-        last_processed_page: lastPage,
-        records_processed: recordsProcessed,
-        total_records_expected: totalExpected,
+        status: 'processing',
+        estabelecimento: String(belleSoftware.estabelecimento || '1'),
+        last_processed_page: Number(lastPage) || 0,
+        records_processed: Number(recordsProcessed) || 0,
+        total_records_expected: Number(totalExpected) || 0,
       })
 
       if (lastPage > 0) {
@@ -190,17 +191,22 @@ export default function Patients() {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')
 
-      const title = error?.response?.message || 'Falha na Sincronização'
-      const details = error?.message || 'Não foi possível criar o job de sincronização.'
+      const fieldErrors = extractFieldErrors(error)
+      const fieldErrorsStr = Object.entries(fieldErrors)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')
+      const details = getErrorMessage(error)
+      const fullError = fieldErrorsStr ? `${details} - ${fieldErrorsStr}` : details
 
-      setErrorMsg(`${title}: ${details}`)
+      setErrorMsg(`Failed to create record: ${fullError}`)
 
       toast({
-        title,
-        description: details,
+        title: 'Falha na Sincronização',
+        description: fullError,
         variant: 'destructive',
       })
       setIsSyncing(false)
+      setSyncProgress(null)
     }
   }
 
@@ -231,6 +237,19 @@ export default function Patients() {
               current: job.records_processed || 0,
               total: job.total_records_expected || 0,
             })
+          }
+        } else {
+          // Check for recently failed jobs to persist error state locally
+          const failedJob = await pb
+            .collection('sync_jobs')
+            .getFirstListItem('status="failed" || status="error"', { sort: '-created' })
+            .catch(() => null)
+
+          if (failedJob && !isSyncing) {
+            const failedAt = new Date(failedJob.updated).getTime()
+            if (new Date().getTime() - failedAt < 60000) {
+              setErrorMsg(failedJob.error_log || 'Falha ao iniciar sincronização.')
+            }
           }
         }
       } catch (e) {
