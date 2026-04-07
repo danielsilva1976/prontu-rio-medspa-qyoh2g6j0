@@ -106,6 +106,32 @@ export default function Patients() {
       return
     }
 
+    // Check for an already running process
+    try {
+      const activeJob = await pb
+        .collection('sync_jobs')
+        .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
+
+      if (activeJob) {
+        const updatedAt = new Date(activeJob.updated).getTime()
+        const now = new Date().getTime()
+        if (now - updatedAt <= 5 * 60 * 1000) {
+          toast({
+            title: 'Sincronização em Andamento',
+            description: 'Já existe um processo de sincronização rodando em segundo plano.',
+          })
+          setIsSyncing(true)
+          setSyncProgress({
+            current: activeJob.records_processed || 0,
+            total: activeJob.total_records_expected || 6950,
+          })
+          return
+        }
+      }
+    } catch (e) {
+      // No active job, proceed
+    }
+
     setErrorMsg(null)
 
     try {

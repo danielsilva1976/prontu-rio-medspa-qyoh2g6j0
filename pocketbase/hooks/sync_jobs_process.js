@@ -13,15 +13,36 @@ onRecordAfterCreateSuccess((e) => {
       'sync_jobs',
       `(status="processing" || status="pending") && estabelecimento="${estab}" && id!="${jobId}"`,
       '',
-      1,
+      10,
       0,
     )
     if (existing && existing.length > 0) {
-      record.set('status', 'failed')
-      record.set('error_log', 'A sync job is already processing for this establishment.')
-      $app.saveNoValidate(record)
-      e.next()
-      return
+      let activeExists = false
+      const now = new Date().getTime()
+      for (let i = 0; i < existing.length; i++) {
+        const ex = existing[i]
+        const updatedAtStr = ex.get('updated')
+        const updatedAt = updatedAtStr ? new Date(updatedAtStr.replace(' ', 'T')).getTime() : now
+
+        if (now - updatedAt > 5 * 60 * 1000) {
+          ex.set('status', 'failed')
+          ex.set(
+            'error_log',
+            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Stuck process)',
+          )
+          $app.saveNoValidate(ex)
+        } else {
+          activeExists = true
+        }
+      }
+
+      if (activeExists) {
+        record.set('status', 'failed')
+        record.set('error_log', 'A sync job is already processing for this establishment.')
+        $app.saveNoValidate(record)
+        e.next()
+        return
+      }
     }
   } catch (err) {
     // ignore
@@ -35,7 +56,11 @@ onRecordAfterCreateSuccess((e) => {
     try {
       let token =
         $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN')
-      if (!token) throw new Error('BELLE_TOKEN is missing in secrets or environment variables.')
+      if (!token) {
+        throw new Error(
+          'Valid technical credential required: BELLE_TOKEN is missing in secrets or environment variables.',
+        )
+      }
 
       let cleanToken = token.replace(/^["']|["']$/g, '').trim()
       if (cleanToken.toLowerCase().startsWith('bearer ')) {
@@ -56,7 +81,9 @@ onRecordAfterCreateSuccess((e) => {
           timeout: 120,
         })
         if (resAg.statusCode === 401) {
-          throw new Error(`Token inválido (HTTP 401): ${resAg.string || 'Unauthorized'}`)
+          throw new Error(
+            `Valid technical credential required (HTTP 401): ${resAg.string || 'Unauthorized'}`,
+          )
         }
         if (resAg.statusCode === 200 && resAg.json) {
           agendamentos = Array.isArray(resAg.json)
@@ -108,7 +135,9 @@ onRecordAfterCreateSuccess((e) => {
 
           if (resCl.statusCode !== 200) {
             if (resCl.statusCode === 401) {
-              throw new Error(`Token inválido (HTTP 401): ${resCl.string || 'Unauthorized'}`)
+              throw new Error(
+                `Valid technical credential required (HTTP 401): ${resCl.string || 'Unauthorized'}`,
+              )
             }
             throw new Error(
               `Belle API Error ${resCl.statusCode}: ${resCl.string || 'Unknown error'}`,
