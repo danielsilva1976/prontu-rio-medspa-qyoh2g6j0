@@ -213,10 +213,6 @@ onRecordAfterCreateSuccess((e) => {
                 .filter(Boolean)
             }
 
-            // Ensure JSON serialization guards against [object Object]
-            const proceduresJson = JSON.stringify(procedures)
-            const tagsJson = JSON.stringify(tagsArr)
-
             const payload = {
               external_id: belleIdStr,
               name: (c.nome || '').trim() || 'Paciente sem nome',
@@ -226,7 +222,7 @@ onRecordAfterCreateSuccess((e) => {
               dob: c.data_nascimento || c.dtNascimento || '',
               lastVisit: lastVisit,
               nextAppointment: nextAppointment,
-              procedures: proceduresJson,
+              procedures: procedures, // Array directly, PocketBase manages JSON encoding
               history: c.observacao || c.historico_clinico || '',
               rg: c.rg || '',
               profissao: c.profissao || '',
@@ -243,7 +239,7 @@ onRecordAfterCreateSuccess((e) => {
               status: nextAppointment ? 'scheduled' : 'active',
               sexo: c.sexo || '',
               rating: c.rating || '',
-              tags: tagsJson,
+              tags: tagsArr.join(', '), // Ensure tags are stored as readable text instead of stringified array
             }
 
             let patientId = null
@@ -317,7 +313,7 @@ onRecordAfterCreateSuccess((e) => {
           try {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'failed')
-            job.set('error_log', String(err.message || err))
+            job.set('error_log', 'Batch Error: ' + String(err.message || err))
             $app.saveNoValidate(job)
           } catch (e) {}
         }
@@ -330,7 +326,7 @@ onRecordAfterCreateSuccess((e) => {
       try {
         const job = $app.findRecordById('sync_jobs', jobId)
         job.set('status', 'failed')
-        job.set('error_log', String(err.message || err))
+        job.set('error_log', 'Init Error: ' + String(err.message || err))
         $app.saveNoValidate(job)
       } catch (e) {}
     }

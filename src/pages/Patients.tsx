@@ -126,6 +126,12 @@ export default function Patients() {
             total: activeJob.total_records_expected || 6950,
           })
           return
+        } else {
+          // Clear stuck job to allow a new one
+          await pb.collection('sync_jobs').update(activeJob.id, {
+            status: 'failed',
+            error_log: 'Processo anterior cancelado por inatividade.',
+          })
         }
       }
     } catch (e) {
@@ -135,8 +141,14 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
-      await testBelleConnection(belleSoftware.estabelecimento)
-      await syncWithBelle(belleSoftware.estabelecimento)
+      // Bypass direct frontend fetch (which causes CORS) and directly create the job.
+      // The backend hook `sync_jobs_process.js` will handle the actual Belle API connection reliably.
+      await pb.collection('sync_jobs').create({
+        status: 'pending',
+        estabelecimento: belleSoftware.estabelecimento,
+        records_processed: 0,
+        total_records_expected: 6950,
+      })
 
       toast({
         title: 'Sincronização Iniciada',
@@ -147,8 +159,8 @@ export default function Patients() {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')
 
-      const title = error.errorTitle || error.error || 'Falha na Sincronização'
-      const details = error.details || error.message || 'Não foi possível conectar ao servidor.'
+      const title = error?.response?.message || 'Falha na Sincronização'
+      const details = error?.message || 'Não foi possível criar o job de sincronização.'
 
       setErrorMsg(`${title}: ${details}`)
 
