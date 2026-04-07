@@ -235,14 +235,14 @@ export default function Patients() {
           description: 'Todos os pacientes foram atualizados com sucesso.',
         })
         fetchPatients(currentPage, debouncedSearch, statusFilter)
-      } else if (job.status === 'error') {
+      } else if (job.status === 'error' || job.status === 'failed') {
         setIsSyncing(false)
         setSyncProgress(null)
         setBelleLastSync('error', new Date().toISOString())
-        setErrorMsg(job.error_log || 'Erro desconhecido na sincronização.')
+        setErrorMsg(job.error_log || 'Erro na comunicação com a API do Belle Software.')
         toast({
           title: 'Erro na Sincronização',
-          description: 'Houve uma falha no processamento em background.',
+          description: job.error_log || 'Houve uma falha no processamento em background.',
           variant: 'destructive',
         })
       }

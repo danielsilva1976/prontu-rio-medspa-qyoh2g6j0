@@ -28,7 +28,7 @@ onRecordAfterCreateSuccess((e) => {
           ex.set('status', 'failed')
           ex.set(
             'error_log',
-            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Stuck process)',
+            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Processo travado)',
           )
           $app.saveNoValidate(ex)
         } else {
@@ -38,7 +38,10 @@ onRecordAfterCreateSuccess((e) => {
 
       if (activeExists) {
         record.set('status', 'failed')
-        record.set('error_log', 'A sync job is already processing for this establishment.')
+        record.set(
+          'error_log',
+          'Já existe uma sincronização ativa para este estabelecimento. Aguarde a conclusão.',
+        )
         $app.saveNoValidate(record)
         e.next()
         return
@@ -58,16 +61,12 @@ onRecordAfterCreateSuccess((e) => {
         $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN')
       if (!token) {
         throw new Error(
-          'Valid technical credential required: BELLE_TOKEN is missing in secrets or environment variables.',
+          'A credencial técnica (BELLE_TOKEN) não foi encontrada nas variáveis de ambiente ou secrets.',
         )
       }
 
-      let cleanToken = token.replace(/^["']|["']$/g, '').trim()
-      if (cleanToken.toLowerCase().startsWith('bearer ')) {
-        cleanToken = cleanToken.substring(7).trim()
-      }
+      let cleanToken = token.replace(/['"]/g, '').replace(/\s+/g, '')
 
-      // 1. Fetch all appointments to compute lastVisit / nextAppointment locally
       let agendamentos = []
       try {
         const resAg = $http.send({
@@ -82,19 +81,38 @@ onRecordAfterCreateSuccess((e) => {
         })
         if (resAg.statusCode === 401) {
           throw new Error(
-            `Valid technical credential required (HTTP 401): ${resAg.string || 'Unauthorized'}`,
+            `Acesso Negado (HTTP 401) - O token de integração é inválido ou expirou. ${resAg.string || ''}`,
           )
         }
         if (resAg.statusCode === 200 && resAg.json) {
           agendamentos = Array.isArray(resAg.json)
             ? resAg.json
             : resAg.json.agendamentos || resAg.json.dados || []
+        } else if (resAg.statusCode !== 200) {
+          console.log(`Belle API Error fetching agendamentos: ${resAg.statusCode}`)
         }
       } catch (err) {
-        if (err.message && err.message.includes('Token inválido')) {
+        if (err.message && err.message.includes('Acesso Negado')) {
           throw err
         }
         console.log('Warning: Error fetching agendamentos in hook: ', err)
+      }
+
+      // Pre-process agendamentos to avoid nested loops (O(N^2) -> O(N))
+      const agendamentosByCpf = {}
+      const agendamentosById = {}
+
+      for (let i = 0; i < agendamentos.length; i++) {
+        const a = agendamentos[i]
+        if (a.cpf_cliente) {
+          if (!agendamentosByCpf[a.cpf_cliente]) agendamentosByCpf[a.cpf_cliente] = []
+          agendamentosByCpf[a.cpf_cliente].push(a)
+        }
+        if (a.cliente_id) {
+          const cid = String(a.cliente_id)
+          if (!agendamentosById[cid]) agendamentosById[cid] = []
+          agendamentosById[cid].push(a)
+        }
       }
 
       let page = 0
@@ -104,7 +122,7 @@ onRecordAfterCreateSuccess((e) => {
 
       const processPage = () => {
         try {
-          // Verify job is still active, to prevent detached ghost processes
+          // Verify job is still active to prevent ghosts
           try {
             const currentJob = $app.findRecordById('sync_jobs', jobId)
             if (currentJob.get('status') !== 'processing') {
@@ -136,11 +154,11 @@ onRecordAfterCreateSuccess((e) => {
           if (resCl.statusCode !== 200) {
             if (resCl.statusCode === 401) {
               throw new Error(
-                `Valid technical credential required (HTTP 401): ${resCl.string || 'Unauthorized'}`,
+                `Acesso Negado (HTTP 401): O token configurado é inválido. Verifique suas credenciais.`,
               )
             }
             throw new Error(
-              `Belle API Error ${resCl.statusCode}: ${resCl.string || 'Unknown error'}`,
+              `Erro na API Belle (HTTP ${resCl.statusCode}): ${resCl.string || 'Erro desconhecido'}`,
             )
           }
 
@@ -163,17 +181,31 @@ onRecordAfterCreateSuccess((e) => {
             const belleIdStr = String(c.codigo || c.id || '')
             if (!belleIdStr) continue
 
-            const clientAppts = agendamentos.filter(
-              (a) =>
-                (a.cpf_cliente && c.cpf && a.cpf_cliente === c.cpf) ||
-                (a.cliente_id && String(a.cliente_id) === belleIdStr),
-            )
+            let clientAppts = []
+            if (c.cpf && agendamentosByCpf[c.cpf]) {
+              clientAppts = clientAppts.concat(agendamentosByCpf[c.cpf])
+            }
+            if (agendamentosById[belleIdStr]) {
+              clientAppts = clientAppts.concat(agendamentosById[belleIdStr])
+            }
+
+            // Remove duplicates
+            const seenAppts = {}
+            clientAppts = clientAppts.filter((a) => {
+              const id = a.id || a.codigo
+              if (id) {
+                if (seenAppts[id]) return false
+                seenAppts[id] = true
+              }
+              return true
+            })
 
             let lastVisit = ''
             let nextAppointment = ''
             const proceduresSet = {}
 
-            clientAppts.forEach((a) => {
+            for (let k = 0; k < clientAppts.length; k++) {
+              const a = clientAppts[k]
               if (a.servico) proceduresSet[a.servico] = true
               if (a.data) {
                 const apptDate = new Date(`${a.data}T${a.hora_inicio || '00:00'}:00`)
@@ -193,7 +225,7 @@ onRecordAfterCreateSuccess((e) => {
                   }
                 }
               }
-            })
+            }
 
             const procedures = Object.keys(proceduresSet).filter(Boolean).map(String)
             let formattedAddress = c.rua || c.endereco || ''
@@ -213,16 +245,17 @@ onRecordAfterCreateSuccess((e) => {
                 .filter(Boolean)
             }
 
+            const patientName = (c.nome || '').trim() || 'Paciente sem nome'
             const payload = {
               external_id: belleIdStr,
-              name: (c.nome || '').trim() || 'Paciente sem nome',
+              name: patientName,
               cpf: (c.cpf || '').trim(),
               email: (c.email || '').trim(),
               phone: (c.celular || c.telefone || '').trim(),
               dob: c.data_nascimento || c.dtNascimento || '',
               lastVisit: lastVisit,
               nextAppointment: nextAppointment,
-              procedures: procedures, // Array directly, PocketBase manages JSON encoding
+              procedures: procedures,
               history: c.observacao || c.historico_clinico || '',
               rg: c.rg || '',
               profissao: c.profissao || '',
@@ -239,14 +272,12 @@ onRecordAfterCreateSuccess((e) => {
               status: nextAppointment ? 'scheduled' : 'active',
               sexo: c.sexo || '',
               rating: c.rating || '',
-              tags: tagsArr.join(', '), // Ensure tags are stored as readable text instead of stringified array
+              tags: tagsArr.join(', '),
             }
 
             let patientId = null
             try {
               const existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
-
-              // Database sanitization happens automatically as explicit string fields overwrite any corrupted state
               for (let key in payload) {
                 existing.set(key, payload[key])
               }
@@ -306,27 +337,26 @@ onRecordAfterCreateSuccess((e) => {
             $app.saveNoValidate(job)
           } else {
             page++
-            setTimeout(processPage, 500) // Yield to VM and prevent timeouts
+            setTimeout(processPage, 300)
           }
         } catch (err) {
           console.log('Background Sync Batch Error:', err)
           try {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'failed')
-            job.set('error_log', 'Batch Error: ' + String(err.message || err))
+            job.set('error_log', 'Erro no lote de clientes: ' + String(err.message || err))
             $app.saveNoValidate(job)
           } catch (e) {}
         }
       }
 
-      // Start processing batches
       processPage()
     } catch (err) {
       console.log('Background Sync Init Error:', err)
       try {
         const job = $app.findRecordById('sync_jobs', jobId)
         job.set('status', 'failed')
-        job.set('error_log', 'Init Error: ' + String(err.message || err))
+        job.set('error_log', String(err.message || err))
         $app.saveNoValidate(job)
       } catch (e) {}
     }
