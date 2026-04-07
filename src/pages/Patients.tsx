@@ -115,7 +115,7 @@ export default function Patients() {
       if (activeJob) {
         const updatedAt = new Date(activeJob.updated).getTime()
         const now = new Date().getTime()
-        if (now - updatedAt <= 5 * 60 * 1000) {
+        if (now - updatedAt <= 10 * 60 * 1000) {
           toast({
             title: 'Sincronização em Andamento',
             description: 'Já existe um processo de sincronização rodando em segundo plano.',
@@ -123,14 +123,15 @@ export default function Patients() {
           setIsSyncing(true)
           setSyncProgress({
             current: activeJob.records_processed || 0,
-            total: activeJob.total_records_expected || 6950,
+            total: activeJob.total_records_expected || 0,
           })
           return
         } else {
           // Clear stuck job to allow a new one
           await pb.collection('sync_jobs').update(activeJob.id, {
             status: 'failed',
-            error_log: 'Processo anterior cancelado por inatividade.',
+            error_log:
+              'Processo anterior cancelado por inatividade (timeout de 10 min). Reiniciando...',
           })
         }
       }
@@ -147,7 +148,7 @@ export default function Patients() {
         status: 'pending',
         estabelecimento: belleSoftware.estabelecimento,
         records_processed: 0,
-        total_records_expected: 6950,
+        total_records_expected: 0,
       })
 
       toast({
@@ -182,14 +183,14 @@ export default function Patients() {
         if (job) {
           const updatedAt = new Date(job.updated).getTime()
           const now = new Date().getTime()
-          const stalledThreshold = 5 * 60 * 1000 // 5 minutes
+          const stalledThreshold = 10 * 60 * 1000 // 10 minutes
 
           if (now - updatedAt > stalledThreshold && job.status === 'processing') {
             // Automatically reset stalled job
             await pb.collection('sync_jobs').update(job.id, {
               status: 'failed',
               error_log:
-                'Sincronização interrompida devido a tempo limite na resposta do servidor. O processo foi reiniciado.',
+                'Sincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',
             })
             setIsSyncing(false)
             setSyncProgress(null)
@@ -197,7 +198,7 @@ export default function Patients() {
             setIsSyncing(true)
             setSyncProgress({
               current: job.records_processed || 0,
-              total: job.total_records_expected || 6950,
+              total: job.total_records_expected || 0,
             })
           }
         }
@@ -224,7 +225,7 @@ export default function Patients() {
         setIsSyncing(true)
         setSyncProgress({
           current: job.records_processed || 0,
-          total: job.total_records_expected || 6950,
+          total: job.total_records_expected || 0,
         })
       } else if (job.status === 'completed') {
         setIsSyncing(false)
@@ -318,11 +319,10 @@ export default function Patients() {
                 className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={isSyncing}
               />
             </div>
             <div className="w-full sm:w-48">
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isSyncing}>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="h-12 bg-white border-muted rounded-xl text-base focus:ring-primary">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -336,55 +336,65 @@ export default function Patients() {
           </div>
 
           <div className="grid gap-4">
-            {isSyncing || isLoading ? (
-              <div className="space-y-6">
-                {isSyncing && (
-                  <div className="flex flex-col items-center justify-center py-8 bg-muted/10 rounded-xl border border-dashed border-border">
-                    <RefreshCw className="w-10 h-10 text-primary animate-spin mb-3 opacity-80" />
-                    <p className="text-muted-foreground font-medium animate-pulse">
-                      Sincronizando... Conectando à API e baixando base real de clientes...
+            {isSyncing && (
+              <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20 animate-fade-in mb-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <RefreshCw className="w-6 h-6 text-primary animate-spin opacity-80" />
+                  <div>
+                    <p className="text-sm font-semibold text-primary">Sincronização em Andamento</p>
+                    <p className="text-xs text-muted-foreground">
+                      Baixando e atualizando dados em segundo plano. O sistema continua disponível.
                     </p>
-                    {syncProgress && (
-                      <div className="w-full max-w-sm mt-6 space-y-2">
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>Processando registros...</span>
-                          <span className="font-medium">
-                            {syncProgress.current} de {syncProgress.total}
-                          </span>
-                        </div>
-                        <Progress
-                          value={
-                            syncProgress.total > 0
-                              ? (syncProgress.current / syncProgress.total) * 100
-                              : 0
-                          }
-                          className="h-2"
-                        />
-                      </div>
-                    )}
+                  </div>
+                </div>
+                {syncProgress && (
+                  <div className="w-full sm:w-64 space-y-1.5">
+                    <div className="flex justify-between text-xs text-primary/80 font-medium">
+                      <span>Progresso</span>
+                      <span>
+                        {syncProgress.current}{' '}
+                        {syncProgress.total > 0 ? `/ ${syncProgress.total}` : 'registros'}
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        syncProgress.total > 0
+                          ? (syncProgress.current / syncProgress.total) * 100
+                          : syncProgress.current > 0
+                            ? 100
+                            : 0
+                      }
+                      className="h-1.5 bg-primary/10"
+                    />
                   </div>
                 )}
-                <div className="space-y-4">
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-xl" />
+              </div>
+            )}
+
+            {errorMsg && (
+              <div className="flex items-start gap-3 p-4 bg-destructive/5 rounded-xl border border-destructive/30 animate-fade-in mb-2">
+                <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-destructive">Falha na Sincronização</p>
+                  <p className="text-xs text-destructive/80 mt-1 mb-3">{errorMsg}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                    onClick={handleSync}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Tentar Novamente
+                  </Button>
                 </div>
               </div>
-            ) : errorMsg ? (
-              <div className="text-center py-12 bg-destructive/5 rounded-xl border border-dashed border-destructive/30">
-                <AlertCircle className="w-10 h-10 text-destructive/50 mx-auto mb-3" />
-                <p className="text-destructive font-medium text-lg">
-                  Não foi possível carregar os dados
-                </p>
-                <p className="text-destructive/80 text-sm mt-2 max-w-md mx-auto">{errorMsg}</p>
-                <Button
-                  variant="outline"
-                  className="mt-5 border-destructive/30 text-destructive hover:bg-destructive/10"
-                  onClick={handleSync}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Tentar Novamente
-                </Button>
+            )}
+
+            {isLoading && patients.length === 0 ? (
+              <div className="space-y-4">
+                <Skeleton className="h-32 w-full rounded-xl" />
+                <Skeleton className="h-32 w-full rounded-xl" />
+                <Skeleton className="h-32 w-full rounded-xl" />
               </div>
             ) : patients.length === 0 ? (
               <div className="text-center py-16 bg-muted/10 rounded-xl border border-dashed border-border">

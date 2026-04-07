@@ -24,11 +24,11 @@ onRecordAfterCreateSuccess((e) => {
         const updatedAtStr = ex.get('updated')
         const updatedAt = updatedAtStr ? new Date(updatedAtStr.replace(' ', 'T')).getTime() : now
 
-        if (now - updatedAt > 5 * 60 * 1000) {
+        if (now - updatedAt > 10 * 60 * 1000) {
           ex.set('status', 'failed')
           ex.set(
             'error_log',
-            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Processo travado)',
+            'Sincronização interrompida devido a tempo limite na resposta do servidor. (Processo travado por mais de 10 minutos)',
           )
           $app.saveNoValidate(ex)
         } else {
@@ -117,6 +117,65 @@ onRecordAfterCreateSuccess((e) => {
 
       let page = 0
       let totalProcessed = 0
+
+      // Perform initial count request to correctly calculate total_records_expected
+      let totalExpected = 0
+      try {
+        const countRes = $http.send({
+          url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1`,
+          method: 'GET',
+          headers: {
+            Authorization: cleanToken,
+            'x-sync-token': cleanToken,
+            Accept: 'application/json',
+          },
+          timeout: 30,
+        })
+        const cData = countRes.json
+
+        if (cData && !Array.isArray(cData)) {
+          totalExpected = Number(
+            cData.total ||
+              cData.totalRegistros ||
+              cData.totalCount ||
+              cData.total_registros ||
+              cData.quantidade ||
+              0,
+          )
+        }
+
+        if (!totalExpected || isNaN(totalExpected)) {
+          // Fallback: tentar endpoint /count explícito caso a paginação não retorne o total
+          const specificCount = $http.send({
+            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}`,
+            method: 'GET',
+            headers: {
+              Authorization: cleanToken,
+              'x-sync-token': cleanToken,
+              Accept: 'application/json',
+            },
+            timeout: 30,
+          })
+          const scData = specificCount.json
+          if (scData) {
+            totalExpected = Number(
+              scData.total ||
+                scData.count ||
+                scData.total_registros ||
+                (typeof scData === 'number' ? scData : 0),
+            )
+          }
+        }
+
+        if (totalExpected > 0) {
+          const job = $app.findRecordById('sync_jobs', jobId)
+          job.set('total_records_expected', totalExpected)
+          $app.saveNoValidate(job)
+        }
+      } catch (err) {
+        console.log('Initial count request error:', err)
+      }
+
       const patientsCol = $app.findCollectionByNameOrId('patients')
       const apptsCol = $app.findCollectionByNameOrId('appointments')
 
@@ -325,8 +384,8 @@ onRecordAfterCreateSuccess((e) => {
             const jobToUpdate = $app.findRecordById('sync_jobs', jobId)
             jobToUpdate.set('records_processed', totalProcessed)
             jobToUpdate.set('last_processed_page', page)
-            if (!jobToUpdate.get('total_records_expected')) {
-              jobToUpdate.set('total_records_expected', 6950)
+            if (!jobToUpdate.get('total_records_expected') && totalExpected > 0) {
+              jobToUpdate.set('total_records_expected', totalExpected)
             }
             $app.saveNoValidate(jobToUpdate)
           } catch (e) {}
