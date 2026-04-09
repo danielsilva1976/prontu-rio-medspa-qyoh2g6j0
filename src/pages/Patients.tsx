@@ -109,6 +109,35 @@ export default function Patients() {
       return
     }
 
+    setIsSyncing(true)
+
+    // Pre-Sync Handshake Validation
+    let handshakeTotal = 0
+    try {
+      const res = await testBelleConnection(belleSoftware.estabelecimento || '1')
+      const cData = res.data
+      if (cData && !Array.isArray(cData)) {
+        handshakeTotal = Number(
+          cData.total ||
+            cData.totalRegistros ||
+            cData.totalCount ||
+            cData.total_registros ||
+            cData.quantidade ||
+            0,
+        )
+      }
+    } catch (error: any) {
+      setIsSyncing(false)
+      const msg = error.message || 'Erro na comunicação com a API'
+      toast({
+        title: 'Falha de Conexão',
+        description: msg,
+        variant: 'destructive',
+      })
+      setErrorMsg(`Handshake failed: ${msg}`)
+      return
+    }
+
     // Check for an already running process or failed process to resume
     let lastPage = 0
     let recordsProcessed = 0
@@ -169,6 +198,12 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
+      const finalTotal = Number(totalExpected) || handshakeTotal || 0
+      setSyncProgress({
+        current: Number(recordsProcessed) || 0,
+        total: finalTotal,
+      })
+
       // Bypass direct frontend fetch (which causes CORS) and directly create the job.
       // The backend hook `sync_jobs_process.js` will handle the actual Belle API connection reliably.
       await pb.collection('sync_jobs').create({
@@ -176,7 +211,7 @@ export default function Patients() {
         estabelecimento: String(belleSoftware.estabelecimento || '1'),
         last_processed_page: Number(lastPage) || 0,
         records_processed: Number(recordsProcessed) || 0,
-        total_records_expected: Number(totalExpected) || 0,
+        total_records_expected: finalTotal,
       })
 
       if (lastPage > 0) {
@@ -299,9 +334,7 @@ export default function Patients() {
     try {
       await pb.collection('sync_jobs').update(activeJob.id, {
         status: 'failed',
-        error_log:
-          (activeJob.error_log || '') +
-          '\nInterrompido manualmente pelo usuário após inatividade (mais de 15 minutos sem resposta).',
+        error_log: (activeJob.error_log || '') + '\nInterrompido manualmente pelo usuário.',
       })
       toast({
         title: 'Sincronização Interrompida',
@@ -438,18 +471,16 @@ export default function Patients() {
                       }
                       className="h-1.5 bg-primary/10 [&>div]:transition-all [&>div]:duration-500"
                     />
-                    {activeJob &&
-                      new Date().getTime() - new Date(activeJob.updated).getTime() >
-                        15 * 60 * 1000 && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleForceStop}
-                          className="h-7 w-full text-xs mt-2"
-                        >
-                          Forçar Interrupção
-                        </Button>
-                      )}
+                    {activeJob && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleForceStop}
+                        className="h-7 w-full text-xs mt-2"
+                      >
+                        Forçar Interrupção
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
