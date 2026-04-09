@@ -238,11 +238,11 @@ export default function Patients() {
       const details = getErrorMessage(error)
       const fullError = fieldErrorsStr ? `${details} - ${fieldErrorsStr}` : details
 
-      setErrorMsg(`Failed to create record: ${fullError}`)
+      setErrorMsg(`Falha na criação do Job: ${fullError}`)
 
       toast({
         title: 'Falha na Sincronização',
-        description: fullError,
+        description: 'Sincronização interrompida devido a timeout ou erro de servidor.',
         variant: 'destructive',
       })
       setIsSyncing(false)
@@ -334,10 +334,12 @@ export default function Patients() {
         setIsSyncing(false)
         setSyncProgress(null)
         setBelleLastSync('error', new Date().toISOString())
-        setErrorMsg(job.error_log || 'Erro na comunicação com a API do Belle Software.')
+        setErrorMsg(
+          job.error_log || 'Sincronização interrompida devido a timeout ou erro de servidor.',
+        )
         toast({
           title: 'Erro na Sincronização',
-          description: job.error_log || 'Houve uma falha no processamento em background.',
+          description: 'Sincronização interrompida devido a timeout ou erro de servidor.',
           variant: 'destructive',
         })
       }
@@ -507,8 +509,8 @@ export default function Patients() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-destructive">Falha na Sincronização</p>
                   <p className="text-xs text-destructive/80 mt-1 mb-1">
-                    O processo foi interrompido. Verifique o Painel de Diagnóstico (Ver Logs de
-                    Erro) para mais detalhes sobre o erro ou timeout do servidor.
+                    Sincronização interrompida devido a timeout ou erro de servidor. Verifique o
+                    Painel de Diagnóstico (Ver Logs de Erro) para mais detalhes.
                   </p>
                   <p className="text-xs text-destructive/60 mb-3 font-mono bg-destructive/10 p-2 rounded whitespace-pre-wrap max-h-32 overflow-y-auto">
                     {errorMsg}

@@ -55,7 +55,7 @@ onRecordAfterCreateSuccess((e) => {
   record.set('status', 'processing')
   $app.save(record)
 
-  // Detach the heavy lifting
+  // Detach the heavy lifting to prevent execution timeouts
   setTimeout(() => {
     try {
       let token =
@@ -223,6 +223,19 @@ onRecordAfterCreateSuccess((e) => {
             clientes = data.pacientes || data.clientes || data.dados || []
           }
 
+          // ALPHABETICAL PROCESSING: Sorting array to maintain alphabetical consistency
+          if (Array.isArray(clientes)) {
+            clientes.sort((a, b) => {
+              const nameA = String(a.nome || '')
+                .trim()
+                .toLowerCase()
+              const nameB = String(b.nome || '')
+                .trim()
+                .toLowerCase()
+              return nameA.localeCompare(nameB)
+            })
+          }
+
           if (!Array.isArray(clientes) || clientes.length === 0) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
@@ -238,6 +251,8 @@ onRecordAfterCreateSuccess((e) => {
             const c = clientes[i]
             const belleIdStr = String(c.codigo || c.id || '')
             if (!belleIdStr) continue
+
+            const patientName = c.nome ? String(c.nome).trim() : ''
 
             try {
               let formattedAddress = c.rua || c.endereco || ''
@@ -256,8 +271,6 @@ onRecordAfterCreateSuccess((e) => {
                   .map((t) => String(t).trim())
                   .filter(Boolean)
               }
-
-              const patientName = c.nome ? String(c.nome).trim() : ''
 
               if (!patientName) {
                 throw new Error(`Campo 'name' não pode ser vazio`)
@@ -291,6 +304,7 @@ onRecordAfterCreateSuccess((e) => {
 
               let existing = null
               try {
+                // Upsert Integrity: ensures we match by external_id
                 existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
               } catch (_) {}
 
@@ -307,9 +321,26 @@ onRecordAfterCreateSuccess((e) => {
                 $app.save(newRecord)
               }
             } catch (itemErr) {
-              // Upsert Reliability Error Logging
+              // Diagnostic Transparency: Grabbing field-level validation errors
               pageErrors++
-              currentLog += `\nErro cliente ${belleIdStr}: ${itemErr.message || itemErr}`
+              let detailStr = itemErr.message || String(itemErr)
+              try {
+                const errData = itemErr.data || (itemErr.response && itemErr.response.data)
+                if (errData && typeof errData === 'object') {
+                  const parts = []
+                  for (let k in errData) {
+                    if (errData[k] && errData[k].message) {
+                      parts.push(`${k}: ${errData[k].message}`)
+                    } else {
+                      parts.push(`${k}: ${JSON.stringify(errData[k])}`)
+                    }
+                  }
+                  if (parts.length > 0) {
+                    detailStr = `Falha de validação - ${parts.join(', ')}`
+                  }
+                }
+              } catch (e) {}
+              currentLog += `\n[Erro] Cliente ID ${belleIdStr} (${patientName}): ${detailStr}`
             }
           }
 
@@ -322,7 +353,7 @@ onRecordAfterCreateSuccess((e) => {
             jobToUpdate.set('last_processed_page', page)
 
             if (pageErrors > 0) {
-              if (currentLog.length > 5000) currentLog = currentLog.slice(-5000)
+              if (currentLog.length > 10000) currentLog = currentLog.slice(-10000)
               jobToUpdate.set('error_log', currentLog.trim())
             }
 
@@ -339,6 +370,7 @@ onRecordAfterCreateSuccess((e) => {
             saveLastSync()
           } else {
             page++
+            // Resilient Sync Hook Optimization: yielding to avoid timeouts
             setTimeout(processPage, 300)
           }
         } catch (err) {
@@ -348,7 +380,7 @@ onRecordAfterCreateSuccess((e) => {
             job.set('status', 'failed')
             let currentLog = job.get('error_log') || ''
             currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
-            if (currentLog.length > 5000) currentLog = currentLog.slice(-5000)
+            if (currentLog.length > 10000) currentLog = currentLog.slice(-10000)
             job.set('error_log', currentLog.trim())
             $app.save(job)
           } catch (e) {}
