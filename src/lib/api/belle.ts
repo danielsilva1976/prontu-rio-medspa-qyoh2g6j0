@@ -239,7 +239,7 @@ const fetchBelleApi = async (endpoint: string, options: RequestInit = {}) => {
 
 export const testarConexaoBelle = async (estabelecimento: string = '1') => {
   try {
-    const response = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=0`, {
+    const response = await fetchBelleApi(`/clientes?codEstab=${estabelecimento}&pagina=1`, {
       method: 'GET',
     })
 

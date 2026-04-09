@@ -147,7 +147,7 @@ export default function Patients() {
       const activeJob = await pb
         .collection('sync_jobs')
         .getFirstListItem(
-          'status="pending" || status="processing" || status="failed" || status="error"',
+          `(status="pending" || status="processing" || status="failed" || status="error") && estabelecimento="${belleSoftware.estabelecimento || '1'}"`,
           {
             sort: '-created',
           },
@@ -253,9 +253,13 @@ export default function Patients() {
   useEffect(() => {
     const checkActiveJob = async () => {
       try {
+        const estab = belleSoftware.estabelecimento || '1'
         const job = await pb
           .collection('sync_jobs')
-          .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
+          .getFirstListItem(
+            `(status="pending" || status="processing") && estabelecimento="${estab}"`,
+            { sort: '-created' },
+          )
         if (job) {
           setActiveJob(job)
           setIsSyncing(true)
@@ -266,9 +270,12 @@ export default function Patients() {
         } else {
           setActiveJob(null)
           // Check for recently failed jobs to persist error state locally
+          const estab = belleSoftware.estabelecimento || '1'
           const failedJob = await pb
             .collection('sync_jobs')
-            .getFirstListItem('status="failed" || status="error"', { sort: '-created' })
+            .getFirstListItem(`(status="failed" || status="error") && estabelecimento="${estab}"`, {
+              sort: '-created',
+            })
             .catch(() => null)
 
           if (failedJob && !isSyncing) {
@@ -296,6 +303,14 @@ export default function Patients() {
 
   useRealtime('sync_jobs', (e) => {
     const job = e.record
+    // Filtra para reagir apenas aos jobs do estabelecimento atual
+    if (
+      belleSoftware.estabelecimento &&
+      job.estabelecimento !== belleSoftware.estabelecimento &&
+      job.estabelecimento !== '1'
+    )
+      return
+
     if (e.action === 'create' || e.action === 'update') {
       if (job.status === 'processing' || job.status === 'pending') {
         setActiveJob(job)

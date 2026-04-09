@@ -171,6 +171,8 @@ onRecordAfterCreateSuccess((e) => {
 
       const patientsCol = $app.findCollectionByNameOrId('patients')
 
+      if (page === 0) page = 1
+
       const processPage = () => {
         try {
           let jobCheck
