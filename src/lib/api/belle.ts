@@ -299,6 +299,29 @@ export const saveLead = async (data: any) => {
   return response.data
 }
 
+export const fetchBelleAgendamentos = async (
+  estabelecimento: string = '1',
+  dataInicio?: string,
+  dataFim?: string,
+): Promise<any[]> => {
+  const params = new URLSearchParams()
+  params.append('codEstab', estabelecimento)
+  if (dataInicio) params.append('dataInicial', dataInicio)
+  if (dataFim) params.append('dataFinal', dataFim)
+
+  try {
+    const response = await fetchBelleApi(`/agendamentos?${params.toString()}`, {
+      method: 'GET',
+    })
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data?.agendamentos || response.data?.dados || []
+  } catch (err) {
+    console.error('Error fetching agendamentos', err)
+    return []
+  }
+}
+
 export const fetchBelleClientes = async (
   estabelecimento: string = '1',
 ): Promise<BelleCliente[]> => {
