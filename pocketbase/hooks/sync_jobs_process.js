@@ -89,8 +89,41 @@ onRecordAfterCreateSuccess((e) => {
       let totalProcessed = currentJob.get('records_processed') || 0
       let totalExpected = currentJob.get('total_records_expected') || 0
 
+      // Recalculate total for incremental sync if needed
+      if (dateFilter && page <= 1) {
+        try {
+          const specificCount = $http.send({
+            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}${dateFilter}`,
+            method: 'GET',
+            headers: {
+              Authorization: cleanToken,
+              'x-sync-token': cleanToken,
+              Accept: 'application/json',
+            },
+            timeout: 30,
+          })
+
+          if (specificCount.statusCode === 200) {
+            const scData = specificCount.json
+            if (scData) {
+              const incrementalTotal = Number(
+                scData.total ||
+                  scData.count ||
+                  scData.total_registros ||
+                  (typeof scData === 'number' ? scData : 0),
+              )
+              if (incrementalTotal >= 0 && incrementalTotal !== totalExpected) {
+                totalExpected = incrementalTotal
+                currentJob.set('total_records_expected', totalExpected)
+                $app.save(currentJob)
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
       // Conectivity Validation & Init Count Feature
-      if (page === 0 && totalExpected === 0) {
+      if (page === 0 && (!totalExpected || isNaN(totalExpected) || totalExpected === 0)) {
         try {
           const countRes = $http.send({
             url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1${dateFilter}`,
@@ -309,10 +342,21 @@ onRecordAfterCreateSuccess((e) => {
               } catch (_) {}
 
               if (existing) {
+                let changed = false
                 for (let key in payload) {
-                  if (payload[key] !== undefined) existing.set(key, payload[key])
+                  if (payload[key] !== undefined) {
+                    const oldVal = existing.get(key)
+                    const newVal = payload[key]
+                    // Safe string comparison to avoid triggering saves on identical values
+                    if (String(oldVal || '') !== String(newVal || '')) {
+                      existing.set(key, newVal)
+                      changed = true
+                    }
+                  }
                 }
-                $app.save(existing)
+                if (changed) {
+                  $app.save(existing)
+                }
               } else {
                 const newRecord = new Record(patientsCol)
                 for (let key in payload) {
