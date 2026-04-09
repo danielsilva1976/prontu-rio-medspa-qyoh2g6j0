@@ -1,6 +1,6 @@
 onRecordAfterCreateSuccess((e) => {
   const record = e.record
-  if (record.get('status') !== 'pending' && record.get('status') !== 'processing') {
+  if (record.get('status') !== 'pending') {
     e.next()
     return
   }
@@ -12,7 +12,7 @@ onRecordAfterCreateSuccess((e) => {
     const existing = $app.findRecordsByFilter(
       'sync_jobs',
       `(status="processing" || status="pending") && estabelecimento="${estab}" && id!="${jobId}"`,
-      '',
+      '-created',
       10,
       0,
     )
@@ -29,9 +29,9 @@ onRecordAfterCreateSuccess((e) => {
           ex.set(
             'error_log',
             (ex.get('error_log') || '') +
-              '\nSincronização interrompida devido a tempo limite na resposta do servidor (mais de 15 minutos).',
+              '\nSincronização interrompida devido a tempo limite na resposta do servidor.',
           )
-          $app.save(ex)
+          $app.saveNoValidate(ex)
         } else {
           activeExists = true
         }
@@ -41,9 +41,9 @@ onRecordAfterCreateSuccess((e) => {
         record.set('status', 'failed')
         record.set(
           'error_log',
-          'Já existe uma sincronização ativa para este estabelecimento. Aguarde a conclusão.',
+          'Já existe uma sincronização ativa para este estabelecimento. Job descartado.',
         )
-        $app.save(record)
+        $app.saveNoValidate(record)
         e.next()
         return
       }
@@ -53,9 +53,8 @@ onRecordAfterCreateSuccess((e) => {
   }
 
   record.set('status', 'processing')
-  $app.save(record)
+  $app.saveNoValidate(record)
 
-  // Detach the heavy lifting to prevent execution timeouts
   setTimeout(() => {
     try {
       let token =
@@ -63,7 +62,6 @@ onRecordAfterCreateSuccess((e) => {
         $os.getenv('BELLE_TOKEN') ||
         $os.getenv('VITE_BELLE_TOKEN') ||
         ''
-
       let cleanToken = String(token)
         .replace(/^["']|["']$/g, '')
         .trim()
@@ -73,9 +71,7 @@ onRecordAfterCreateSuccess((e) => {
       cleanToken = cleanToken.replace(/\s+/g, '')
 
       if (!cleanToken) {
-        throw new Error(
-          'A credencial técnica (BELLE_TOKEN) não foi encontrada nas variáveis de ambiente ou secrets.',
-        )
+        throw new Error('A credencial técnica (BELLE_TOKEN) não foi encontrada.')
       }
 
       let lastSync = null
@@ -98,10 +94,10 @@ onRecordAfterCreateSuccess((e) => {
       try {
         currentJob = $app.findRecordById('sync_jobs', jobId)
       } catch (e) {
-        return // job deleted or not found
+        return
       }
 
-      let page = currentJob.get('last_processed_page') || 1
+      let page = currentJob.get('last_processed_page') || 0
       if (page <= 0) page = 1
 
       let totalProcessed = currentJob.get('records_processed') || 0
@@ -115,7 +111,6 @@ onRecordAfterCreateSuccess((e) => {
           try {
             jobCheck = $app.findRecordById('sync_jobs', jobId)
             if (jobCheck.get('status') !== 'processing') {
-              console.log('Job no longer processing, aborting batch loop.')
               return
             }
           } catch (e) {
@@ -124,7 +119,7 @@ onRecordAfterCreateSuccess((e) => {
 
           if (page >= 1000) {
             jobCheck.set('status', 'completed')
-            $app.save(jobCheck)
+            $app.saveNoValidate(jobCheck)
             saveLastSync()
             return
           }
@@ -144,14 +139,12 @@ onRecordAfterCreateSuccess((e) => {
               timeout: 60,
             })
           } catch (reqErr) {
-            throw new Error(`Falha de rede ao contatar Belle API: ${reqErr.message}`)
+            throw new Error(`Belle API Timeout ou erro de rede: ${reqErr.message}`)
           }
 
           if (resCl.statusCode !== 200) {
             if (resCl.statusCode === 401 || resCl.statusCode === 403) {
-              throw new Error(
-                `Acesso Negado (HTTP ${resCl.statusCode}): O token configurado é inválido. Verifique suas credenciais.`,
-              )
+              throw new Error(`Acesso Negado (HTTP ${resCl.statusCode}): Token inválido.`)
             }
             throw new Error(
               `Erro na API Belle (HTTP ${resCl.statusCode}): ${resCl.string || 'Erro desconhecido'}`,
@@ -162,7 +155,7 @@ onRecordAfterCreateSuccess((e) => {
           try {
             data = resCl.json
           } catch (e) {
-            throw new Error(`Erro ao processar JSON da resposta: ${resCl.string}`)
+            throw new Error(`Erro ao processar JSON: ${resCl.string}`)
           }
 
           let clientes = []
@@ -172,22 +165,9 @@ onRecordAfterCreateSuccess((e) => {
             clientes = data.pacientes || data.clientes || data.dados || []
           }
 
-          // ALPHABETICAL PROCESSING: Sorting array to maintain alphabetical consistency
-          if (Array.isArray(clientes)) {
-            clientes.sort((a, b) => {
-              const nameA = String(a.nome || '')
-                .trim()
-                .toLowerCase()
-              const nameB = String(b.nome || '')
-                .trim()
-                .toLowerCase()
-              return nameA.localeCompare(nameB)
-            })
-          }
-
           if (!Array.isArray(clientes) || clientes.length === 0) {
             jobCheck.set('status', 'completed')
-            $app.save(jobCheck)
+            $app.saveNoValidate(jobCheck)
             saveLastSync()
             return
           }
@@ -246,56 +226,41 @@ onRecordAfterCreateSuccess((e) => {
                 tags: tagsArr.join(', '),
               }
 
-              let existing = null
+              let existingRec = null
               try {
-                // Upsert Integrity: ensures we match by external_id
-                existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
+                existingRec = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
               } catch (_) {}
 
-              if (existing) {
+              if (existingRec) {
                 let changed = false
                 for (let key in payload) {
                   if (payload[key] !== undefined) {
-                    const oldVal = existing.get(key)
+                    const oldVal = existingRec.get(key)
                     const newVal = payload[key]
-                    // Safe string comparison to avoid triggering saves on identical values
                     if (String(oldVal || '') !== String(newVal || '')) {
-                      existing.set(key, newVal)
+                      existingRec.set(key, newVal)
                       changed = true
                     }
                   }
                 }
                 if (changed) {
-                  $app.save(existing)
+                  $app.saveNoValidate(existingRec)
                 }
               } else {
                 const newRecord = new Record(patientsCol)
                 for (let key in payload) {
                   if (payload[key] !== undefined) newRecord.set(key, payload[key])
                 }
-                $app.save(newRecord)
+                $app.saveNoValidate(newRecord)
               }
             } catch (itemErr) {
-              // Diagnostic Transparency: Grabbing field-level validation errors
               pageErrors++
-              let detailStr = itemErr.message || String(itemErr)
-              try {
-                const errData = itemErr.data || (itemErr.response && itemErr.response.data)
-                if (errData && typeof errData === 'object') {
-                  const parts = []
-                  for (let k in errData) {
-                    if (errData[k] && errData[k].message) parts.push(`${k}: ${errData[k].message}`)
-                  }
-                  if (parts.length > 0) detailStr = `Falha de validação - ${parts.join(', ')}`
-                }
-              } catch (e) {}
-              currentLog += `\n[Erro] ID ${belleIdStr}: ${detailStr}`
+              currentLog += `\n[Erro] ID ${belleIdStr}: ${itemErr.message || String(itemErr)}`
             }
           }
 
           totalProcessed += clientes.length
 
-          // Heartbeat & Sync State Update
           try {
             const jobToUpdate = $app.findRecordById('sync_jobs', jobId)
             jobToUpdate.set('records_processed', totalProcessed)
@@ -306,7 +271,6 @@ onRecordAfterCreateSuccess((e) => {
               jobToUpdate.set('error_log', currentLog.trim())
             }
 
-            // Update total expected based on data structure if available
             if (!totalExpected || totalExpected === 0) {
               if (data && typeof data === 'object' && (data.total || data.totalRegistros)) {
                 totalExpected = Number(data.total || data.totalRegistros || 0)
@@ -314,29 +278,28 @@ onRecordAfterCreateSuccess((e) => {
               }
             }
 
-            $app.save(jobToUpdate)
+            $app.saveNoValidate(jobToUpdate)
           } catch (e) {}
 
           if (clientes.length < 50) {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'completed')
-            $app.save(job)
+            $app.saveNoValidate(job)
             saveLastSync()
           } else {
             page++
-            // Resilient Sync Hook Optimization: yielding to avoid timeouts
             setTimeout(processPage, 100)
           }
         } catch (err) {
-          console.log('Background Sync Batch Error:', err)
           try {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'failed')
             let currentLog = job.get('error_log') || ''
-            currentLog += '\nErro geral no lote: ' + String(err.message || err)
+            currentLog +=
+              '\nFalha crítica durante o processamento do lote: ' + String(err.message || err)
             if (currentLog.length > 10000) currentLog = currentLog.slice(-10000)
             job.set('error_log', currentLog.trim())
-            $app.save(job)
+            $app.saveNoValidate(job)
           } catch (e) {}
         }
       }
@@ -352,18 +315,17 @@ onRecordAfterCreateSuccess((e) => {
             setting.set('key', 'last_successful_sync')
           }
           setting.set('value', new Date().toISOString())
-          $app.save(setting)
+          $app.saveNoValidate(setting)
         } catch (e) {}
       }
 
       processPage()
     } catch (err) {
-      console.log('Background Sync Init Error:', err)
       try {
         const job = $app.findRecordById('sync_jobs', jobId)
         job.set('status', 'failed')
-        job.set('error_log', String(err.message || err))
-        $app.save(job)
+        job.set('error_log', 'Erro de inicialização do worker: ' + String(err.message || err))
+        $app.saveNoValidate(job)
       } catch (e) {}
     }
   }, 10)

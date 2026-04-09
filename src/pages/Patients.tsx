@@ -138,57 +138,36 @@ export default function Patients() {
       return
     }
 
-    // Check for an already running process or failed process to resume
-    let lastPage = 0
-    let recordsProcessed = 0
-    let totalExpected = 0
-
+    // Job Creation Guard
     try {
       const activeJob = await pb
         .collection('sync_jobs')
         .getFirstListItem(
-          `(status="pending" || status="processing" || status="failed" || status="error") && estabelecimento="${belleSoftware.estabelecimento || '1'}"`,
-          {
-            sort: '-created',
-          },
+          `(status="pending" || status="processing") && estabelecimento="${belleSoftware.estabelecimento || '1'}"`,
+          { sort: '-created' },
         )
 
       if (activeJob) {
-        if (activeJob.status === 'pending' || activeJob.status === 'processing') {
-          const updatedAt = new Date(activeJob.updated).getTime()
-          const now = new Date().getTime()
-          if (now - updatedAt <= 15 * 60 * 1000) {
-            toast({
-              title: 'Sincronização em Andamento',
-              description: 'Já existe um processo de sincronização rodando em segundo plano.',
-            })
-            setIsSyncing(true)
-            setSyncProgress({
-              current: activeJob.records_processed || 0,
-              total: activeJob.total_records_expected || 0,
-            })
-            return
-          } else {
-            // Clear stuck job to allow a new one
-            await pb.collection('sync_jobs').update(activeJob.id, {
-              status: 'failed',
-              error_log:
-                (activeJob.error_log || '') +
-                '\nProcesso anterior cancelado por inatividade (timeout). Reiniciando do ponto de parada...',
-            })
-            // Will resume from this job
-            lastPage = activeJob.last_processed_page || 0
-            recordsProcessed = activeJob.records_processed || 0
-            totalExpected = activeJob.total_records_expected || 0
-          }
-        } else if (activeJob.status === 'failed' || activeJob.status === 'error') {
-          // Check if we should resume
-          // We resume if there was a partial progress
-          if (activeJob.last_processed_page > 0 || activeJob.records_processed > 0) {
-            lastPage = activeJob.last_processed_page || 0
-            recordsProcessed = activeJob.records_processed || 0
-            totalExpected = activeJob.total_records_expected || 0
-          }
+        const updatedAt = new Date(activeJob.updated).getTime()
+        const now = new Date().getTime()
+        if (now - updatedAt <= 15 * 60 * 1000) {
+          toast({
+            title: 'Sincronização em Andamento',
+            description: 'Já existe um processo de sincronização ativo. Acompanhe o progresso.',
+          })
+          setIsSyncing(true)
+          setSyncProgress({
+            current: activeJob.records_processed || 0,
+            total: activeJob.total_records_expected || 0,
+          })
+          return
+        } else {
+          // Clear stuck job
+          await pb.collection('sync_jobs').update(activeJob.id, {
+            status: 'failed',
+            error_log:
+              (activeJob.error_log || '') + '\nProcesso anterior cancelado por inatividade.',
+          })
         }
       }
     } catch (e) {
@@ -198,36 +177,26 @@ export default function Patients() {
     setErrorMsg(null)
 
     try {
-      const finalTotal = Number(totalExpected) || handshakeTotal || 0
       setSyncProgress({
-        current: Number(recordsProcessed) || 0,
-        total: finalTotal,
+        current: 0,
+        total: handshakeTotal || 0,
       })
 
-      // Bypass direct frontend fetch (which causes CORS) and directly create the job.
-      // The backend hook `sync_jobs_process.js` will handle the actual Belle API connection reliably.
+      // Validated Payload: minimal and strictly follows the schema
       await pb.collection('sync_jobs').create({
         status: 'pending',
         estabelecimento: String(belleSoftware.estabelecimento || '1'),
-        last_processed_page: lastPage > 0 ? Number(lastPage) : 1,
-        records_processed: Number(recordsProcessed) || 0,
-        total_records_expected: totalExpected > 0 ? Number(totalExpected) : 0,
+        last_processed_page: 0,
+        records_processed: 0,
+        total_records_expected: 0,
         retry_count: 0,
       })
 
-      if (lastPage > 0) {
-        toast({
-          title: 'Sincronização Retomada',
-          description: `Retomando processo a partir da página ${lastPage} (${recordsProcessed} registros).`,
-        })
-        addLog(`Sincronização Retomada - Página ${lastPage}`, 'SYSTEM')
-      } else {
-        toast({
-          title: 'Sincronização Iniciada',
-          description: 'O processo está rodando em segundo plano no servidor.',
-        })
-        addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
-      }
+      toast({
+        title: 'Sincronização Iniciada',
+        description: 'O processo está rodando em segundo plano no servidor.',
+      })
+      addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
     } catch (error: any) {
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')

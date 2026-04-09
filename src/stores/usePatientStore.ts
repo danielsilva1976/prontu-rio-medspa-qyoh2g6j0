@@ -239,30 +239,23 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const syncWithBelle = async (estabelecimento: string) => {
     await ensureAuth()
 
-    let lastPage = 0
-    let recordsProcessed = 0
-    let totalExpected = 0
-
     try {
       const existing = await pb
         .collection('sync_jobs')
-        .getFirstListItem('status="pending" || status="processing" || status="failed"', {
-          sort: '-created',
-        })
+        .getFirstListItem(
+          `(status="pending" || status="processing") && estabelecimento="${estabelecimento}"`,
+          {
+            sort: '-created',
+          },
+        )
 
       if (existing) {
-        if (existing.status === 'pending' || existing.status === 'processing') {
-          setIsSyncing(true)
-          setSyncProgress({
-            current: existing.records_processed || 0,
-            total: existing.total_records_expected || 0,
-          })
-          return
-        } else if (existing.status === 'failed') {
-          lastPage = existing.last_processed_page || 0
-          recordsProcessed = existing.records_processed || 0
-          totalExpected = existing.total_records_expected || 0
-        }
+        setIsSyncing(true)
+        setSyncProgress({
+          current: existing.records_processed || 0,
+          total: existing.total_records_expected || 0,
+        })
+        return
       }
     } catch (e) {
       // No active job found, proceed
@@ -270,13 +263,13 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsSyncing(true)
-      setSyncProgress({ current: recordsProcessed, total: totalExpected })
+      setSyncProgress({ current: 0, total: 0 })
       await pb.collection('sync_jobs').create({
         status: 'pending',
         estabelecimento: String(estabelecimento || '1'),
-        last_processed_page: lastPage > 0 ? Number(lastPage) : 1,
-        records_processed: Number(recordsProcessed) || 0,
-        total_records_expected: totalExpected > 0 ? Number(totalExpected) : 0,
+        last_processed_page: 0,
+        records_processed: 0,
+        total_records_expected: 0,
         retry_count: 0,
       })
     } catch (e) {
