@@ -115,9 +115,12 @@ export default function Patients() {
     try {
       const activeJob = await pb
         .collection('sync_jobs')
-        .getFirstListItem('status="pending" || status="processing" || status="failed"', {
-          sort: '-created',
-        })
+        .getFirstListItem(
+          'status="pending" || status="processing" || status="failed" || status="error"',
+          {
+            sort: '-created',
+          },
+        )
 
       if (activeJob) {
         if (activeJob.status === 'pending' || activeJob.status === 'processing') {
@@ -137,7 +140,7 @@ export default function Patients() {
           } else {
             // Clear stuck job to allow a new one
             await pb.collection('sync_jobs').update(activeJob.id, {
-              status: 'failed',
+              status: 'error',
               error_log:
                 (activeJob.error_log || '') +
                 '\nProcesso anterior cancelado por inatividade (timeout). Reiniciando do ponto de parada...',
@@ -147,7 +150,7 @@ export default function Patients() {
             recordsProcessed = activeJob.records_processed || 0
             totalExpected = activeJob.total_records_expected || 0
           }
-        } else if (activeJob.status === 'failed') {
+        } else if (activeJob.status === 'failed' || activeJob.status === 'error') {
           // Check if we should resume
           // We resume if there was a partial progress
           if (activeJob.last_processed_page > 0 || activeJob.records_processed > 0) {
@@ -224,7 +227,7 @@ export default function Patients() {
           if (now - updatedAt > stalledThreshold && job.status === 'processing') {
             // Automatically reset stalled job
             await pb.collection('sync_jobs').update(job.id, {
-              status: 'failed',
+              status: 'error',
               error_log:
                 (job.error_log || '') +
                 '\nSincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',

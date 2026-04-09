@@ -1,8 +1,8 @@
-import { BelleCliente, BelleAgendamento, DiagnosticLog } from '@/integrations/belle/belleTypes'
+import { BelleCliente, DiagnosticLog } from '@/integrations/belle/belleTypes'
 import { mapBelleDataToPatients } from '@/integrations/belle/belleMapper'
 import { logger } from '@/infra/logger'
 
-export type { BelleCliente, BelleAgendamento, DiagnosticLog }
+export type { BelleCliente, DiagnosticLog }
 export { mapBelleDataToPatients }
 
 const baseUrl = 'https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0'
@@ -333,20 +333,4 @@ export const fetchBelleClientes = async (
   }
 
   return allClientes
-}
-
-export const fetchBelleAgendamentos = async (
-  estabelecimento: string = '1',
-): Promise<BelleAgendamento[]> => {
-  try {
-    const response = await fetchBelleApi(`/agendamentos?codEstab=${estabelecimento}`, {
-      method: 'GET',
-    })
-    const data = response.data
-
-    return Array.isArray(data) ? data : data?.agendamentos || data?.dados || []
-  } catch (e) {
-    logger.error('Error fetching agendamentos network', e)
-    return []
-  }
 }
