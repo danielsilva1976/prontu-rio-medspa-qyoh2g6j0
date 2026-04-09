@@ -24,12 +24,12 @@ onRecordAfterCreateSuccess((e) => {
         const updatedAtStr = ex.get('updated')
         const updatedAt = updatedAtStr ? new Date(updatedAtStr.replace(' ', 'T')).getTime() : now
 
-        if (now - updatedAt > 10 * 60 * 1000) {
+        if (now - updatedAt > 15 * 60 * 1000) {
           ex.set('status', 'failed')
           ex.set(
             'error_log',
             (ex.get('error_log') || '') +
-              '\nSincronização interrompida devido a tempo limite na resposta do servidor.',
+              '\nSincronização interrompida devido a tempo limite na resposta do servidor (mais de 15 minutos).',
           )
           $app.save(ex)
         } else {
@@ -87,8 +87,9 @@ onRecordAfterCreateSuccess((e) => {
       const currentJob = $app.findRecordById('sync_jobs', jobId)
       let page = currentJob.get('last_processed_page') || 0
       let totalProcessed = currentJob.get('records_processed') || 0
-
       let totalExpected = currentJob.get('total_records_expected') || 0
+
+      // Conectivity Validation & Init Count Feature
       if (page === 0 && totalExpected === 0) {
         try {
           const countRes = $http.send({
@@ -101,6 +102,18 @@ onRecordAfterCreateSuccess((e) => {
             },
             timeout: 30,
           })
+
+          if (countRes.statusCode !== 200) {
+            const job = $app.findRecordById('sync_jobs', jobId)
+            job.set('status', 'error')
+            job.set(
+              'error_log',
+              `Falha na conexão com a API Belle: ${countRes.statusCode} - ${countRes.string || 'Erro desconhecido'}`,
+            )
+            $app.save(job)
+            return
+          }
+
           const cData = countRes.json
 
           if (cData && !Array.isArray(cData)) {
@@ -125,14 +138,17 @@ onRecordAfterCreateSuccess((e) => {
               },
               timeout: 30,
             })
-            const scData = specificCount.json
-            if (scData) {
-              totalExpected = Number(
-                scData.total ||
-                  scData.count ||
-                  scData.total_registros ||
-                  (typeof scData === 'number' ? scData : 0),
-              )
+
+            if (specificCount.statusCode === 200) {
+              const scData = specificCount.json
+              if (scData) {
+                totalExpected = Number(
+                  scData.total ||
+                    scData.count ||
+                    scData.total_registros ||
+                    (typeof scData === 'number' ? scData : 0),
+                )
+              }
             }
           }
 
@@ -142,7 +158,14 @@ onRecordAfterCreateSuccess((e) => {
             $app.save(job)
           }
         } catch (err) {
-          console.log('Initial count request error:', err)
+          const job = $app.findRecordById('sync_jobs', jobId)
+          job.set('status', 'error')
+          job.set(
+            'error_log',
+            `Falha na conexão com a API Belle: Erro de rede ou timeout. ${err.message}`,
+          )
+          $app.save(job)
+          return
         }
       }
 
@@ -150,8 +173,9 @@ onRecordAfterCreateSuccess((e) => {
 
       const processPage = () => {
         try {
+          let jobCheck
           try {
-            const jobCheck = $app.findRecordById('sync_jobs', jobId)
+            jobCheck = $app.findRecordById('sync_jobs', jobId)
             if (jobCheck.get('status') !== 'processing') {
               console.log('Job no longer processing, aborting batch loop.')
               return
@@ -161,9 +185,8 @@ onRecordAfterCreateSuccess((e) => {
           }
 
           if (page >= 1000) {
-            const job = $app.findRecordById('sync_jobs', jobId)
-            job.set('status', 'completed')
-            $app.save(job)
+            jobCheck.set('status', 'completed')
+            $app.save(jobCheck)
             saveLastSync()
             return
           }
@@ -206,12 +229,15 @@ onRecordAfterCreateSuccess((e) => {
             return
           }
 
-          for (let i = 0; i < clientes.length; i++) {
-            try {
-              const c = clientes[i]
-              const belleIdStr = String(c.codigo || c.id || '')
-              if (!belleIdStr) continue
+          let currentLog = jobCheck.get('error_log') || ''
+          let pageErrors = 0
 
+          for (let i = 0; i < clientes.length; i++) {
+            const c = clientes[i]
+            const belleIdStr = String(c.codigo || c.id || '')
+            if (!belleIdStr) continue
+
+            try {
               let formattedAddress = c.rua || c.endereco || ''
               if (c.numeroRua || c.numEndereco)
                 formattedAddress += `, ${c.numeroRua || c.numEndereco}`
@@ -230,9 +256,14 @@ onRecordAfterCreateSuccess((e) => {
               }
 
               const patientName = c.nome ? String(c.nome).trim() : ''
+
+              if (!patientName) {
+                throw new Error(`Campo 'name' não pode ser vazio`)
+              }
+
               const payload = {
                 external_id: belleIdStr,
-                name: patientName || 'Paciente sem nome',
+                name: patientName,
                 cpf: c.cpf ? String(c.cpf).trim() : '',
                 email: c.email ? String(c.email).trim() : '',
                 phone: c.celular || c.telefone ? String(c.celular || c.telefone).trim() : '',
@@ -261,42 +292,38 @@ onRecordAfterCreateSuccess((e) => {
                 existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
               } catch (_) {}
 
-              try {
-                if (existing) {
-                  for (let key in payload) {
-                    if (payload[key] !== undefined) existing.set(key, payload[key])
-                  }
-                  $app.save(existing)
-                } else {
-                  const newRecord = new Record(patientsCol)
-                  for (let key in payload) {
-                    if (payload[key] !== undefined) newRecord.set(key, payload[key])
-                  }
-                  $app.save(newRecord)
+              if (existing) {
+                for (let key in payload) {
+                  if (payload[key] !== undefined) existing.set(key, payload[key])
                 }
-              } catch (saveErr) {
-                throw new Error(
-                  `Failed to create/update patient ${belleIdStr}: ${saveErr.message || saveErr}`,
-                )
+                $app.save(existing)
+              } else {
+                const newRecord = new Record(patientsCol)
+                for (let key in payload) {
+                  if (payload[key] !== undefined) newRecord.set(key, payload[key])
+                }
+                $app.save(newRecord)
               }
             } catch (itemErr) {
-              try {
-                const jobToUpdate = $app.findRecordById('sync_jobs', jobId)
-                let currentLog = jobToUpdate.get('error_log') || ''
-                currentLog += `\nErro cliente ${clientes[i]?.codigo || '?'}: ${itemErr.message || itemErr}`
-                if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
-                jobToUpdate.set('error_log', currentLog.trim())
-                $app.save(jobToUpdate)
-              } catch (e) {}
+              // Upsert Reliability Error Logging
+              pageErrors++
+              currentLog += `\nErro cliente ${belleIdStr}: ${itemErr.message || itemErr}`
             }
           }
 
           totalProcessed += clientes.length
 
+          // Heartbeat & Sync State Update
           try {
             const jobToUpdate = $app.findRecordById('sync_jobs', jobId)
             jobToUpdate.set('records_processed', totalProcessed)
             jobToUpdate.set('last_processed_page', page)
+
+            if (pageErrors > 0) {
+              if (currentLog.length > 5000) currentLog = currentLog.slice(-5000)
+              jobToUpdate.set('error_log', currentLog.trim())
+            }
+
             if (!jobToUpdate.get('total_records_expected') && totalExpected > 0) {
               jobToUpdate.set('total_records_expected', totalExpected)
             }
@@ -319,7 +346,7 @@ onRecordAfterCreateSuccess((e) => {
             job.set('status', 'failed')
             let currentLog = job.get('error_log') || ''
             currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
-            if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
+            if (currentLog.length > 5000) currentLog = currentLog.slice(-5000)
             job.set('error_log', currentLog.trim())
             $app.save(job)
           } catch (e) {}

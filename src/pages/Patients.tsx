@@ -56,6 +56,7 @@ export default function Patients() {
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [activeJob, setActiveJob] = useState<any>(null)
   const hasAttemptedAutoSync = useRef(false)
   const realtimeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -127,7 +128,7 @@ export default function Patients() {
         if (activeJob.status === 'pending' || activeJob.status === 'processing') {
           const updatedAt = new Date(activeJob.updated).getTime()
           const now = new Date().getTime()
-          if (now - updatedAt <= 10 * 60 * 1000) {
+          if (now - updatedAt <= 15 * 60 * 1000) {
             toast({
               title: 'Sincronização em Andamento',
               description: 'Já existe um processo de sincronização rodando em segundo plano.',
@@ -221,28 +222,14 @@ export default function Patients() {
           .collection('sync_jobs')
           .getFirstListItem('status="pending" || status="processing"', { sort: '-created' })
         if (job) {
-          const updatedAt = new Date(job.updated).getTime()
-          const now = new Date().getTime()
-          const stalledThreshold = 10 * 60 * 1000 // 10 minutes
-
-          if (now - updatedAt > stalledThreshold && job.status === 'processing') {
-            // Automatically reset stalled job
-            await pb.collection('sync_jobs').update(job.id, {
-              status: 'failed',
-              error_log:
-                (job.error_log || '') +
-                '\nSincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',
-            })
-            setIsSyncing(false)
-            setSyncProgress(null)
-          } else {
-            setIsSyncing(true)
-            setSyncProgress({
-              current: job.records_processed || 0,
-              total: job.total_records_expected || 0,
-            })
-          }
+          setActiveJob(job)
+          setIsSyncing(true)
+          setSyncProgress({
+            current: job.records_processed || 0,
+            total: job.total_records_expected || 0,
+          })
         } else {
+          setActiveJob(null)
           // Check for recently failed jobs to persist error state locally
           const failedJob = await pb
             .collection('sync_jobs')
@@ -276,12 +263,14 @@ export default function Patients() {
     const job = e.record
     if (e.action === 'create' || e.action === 'update') {
       if (job.status === 'processing' || job.status === 'pending') {
+        setActiveJob(job)
         setIsSyncing(true)
         setSyncProgress({
           current: job.records_processed || 0,
           total: job.total_records_expected || 0,
         })
       } else if (job.status === 'completed') {
+        setActiveJob(null)
         setIsSyncing(false)
         setSyncProgress(null)
         setBelleLastSync('success', new Date().toISOString())
@@ -291,6 +280,7 @@ export default function Patients() {
         })
         fetchPatients(currentPage, debouncedSearch, statusFilter)
       } else if (job.status === 'error' || job.status === 'failed') {
+        setActiveJob(null)
         setIsSyncing(false)
         setSyncProgress(null)
         setBelleLastSync('error', new Date().toISOString())
@@ -303,6 +293,31 @@ export default function Patients() {
       }
     }
   })
+
+  const handleForceStop = async () => {
+    if (!activeJob) return
+    try {
+      await pb.collection('sync_jobs').update(activeJob.id, {
+        status: 'failed',
+        error_log:
+          (activeJob.error_log || '') +
+          '\nInterrompido manualmente pelo usuário após inatividade (mais de 15 minutos sem resposta).',
+      })
+      toast({
+        title: 'Sincronização Interrompida',
+        description: 'O processo foi cancelado manualmente.',
+      })
+      setIsSyncing(false)
+      setActiveJob(null)
+      setSyncProgress(null)
+    } catch (e) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível interromper a sincronização.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   useEffect(() => {
     if (
@@ -423,6 +438,18 @@ export default function Patients() {
                       }
                       className="h-1.5 bg-primary/10 [&>div]:transition-all [&>div]:duration-500"
                     />
+                    {activeJob &&
+                      new Date().getTime() - new Date(activeJob.updated).getTime() >
+                        15 * 60 * 1000 && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleForceStop}
+                          className="h-7 w-full text-xs mt-2"
+                        >
+                          Forçar Interrupção
+                        </Button>
+                      )}
                   </div>
                 )}
               </div>
@@ -437,9 +464,9 @@ export default function Patients() {
                     O processo foi interrompido. Verifique o Painel de Diagnóstico (Ver Logs de
                     Erro) para mais detalhes sobre o erro ou timeout do servidor.
                   </p>
-                  <p className="text-xs text-destructive/60 mb-3 font-mono bg-destructive/10 p-2 rounded truncate max-w-full">
+                  <p className="text-xs text-destructive/60 mb-3 font-mono bg-destructive/10 p-2 rounded whitespace-pre-wrap max-h-32 overflow-y-auto">
                     {errorMsg}
-                  </p>
+                  </p>{' '}
                   <Button
                     variant="outline"
                     size="sm"
