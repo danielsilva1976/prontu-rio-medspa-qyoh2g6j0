@@ -207,11 +207,12 @@ export default function Patients() {
       // Bypass direct frontend fetch (which causes CORS) and directly create the job.
       // The backend hook `sync_jobs_process.js` will handle the actual Belle API connection reliably.
       await pb.collection('sync_jobs').create({
-        status: 'processing',
+        status: 'pending',
         estabelecimento: String(belleSoftware.estabelecimento || '1'),
-        last_processed_page: Number(lastPage) || 0,
+        last_processed_page: lastPage > 0 ? Number(lastPage) : 1,
         records_processed: Number(recordsProcessed) || 0,
-        total_records_expected: finalTotal,
+        total_records_expected: totalExpected > 0 ? Number(totalExpected) : 0,
+        retry_count: 0,
       })
 
       if (lastPage > 0) {

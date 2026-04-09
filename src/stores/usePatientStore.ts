@@ -272,11 +272,12 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       setIsSyncing(true)
       setSyncProgress({ current: recordsProcessed, total: totalExpected })
       await pb.collection('sync_jobs').create({
-        status: 'processing',
+        status: 'pending',
         estabelecimento: String(estabelecimento || '1'),
-        last_processed_page: Number(lastPage) || 0,
+        last_processed_page: lastPage > 0 ? Number(lastPage) : 1,
         records_processed: Number(recordsProcessed) || 0,
-        total_records_expected: Number(totalExpected) || 0,
+        total_records_expected: totalExpected > 0 ? Number(totalExpected) : 0,
+        retry_count: 0,
       })
     } catch (e) {
       setIsSyncing(false)

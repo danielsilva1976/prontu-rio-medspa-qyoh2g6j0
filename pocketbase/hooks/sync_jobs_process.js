@@ -123,7 +123,7 @@ onRecordAfterCreateSuccess((e) => {
       }
 
       // Conectivity Validation & Init Count Feature
-      if (page === 0 && (!totalExpected || isNaN(totalExpected) || totalExpected === 0)) {
+      if (page <= 1 && (!totalExpected || isNaN(totalExpected) || totalExpected === 0)) {
         try {
           const countRes = $http.send({
             url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1${dateFilter}`,
@@ -204,7 +204,7 @@ onRecordAfterCreateSuccess((e) => {
 
       const patientsCol = $app.findCollectionByNameOrId('patients')
 
-      if (page === 0) page = 1
+      if (page <= 0) page = 1
 
       const processPage = () => {
         try {
