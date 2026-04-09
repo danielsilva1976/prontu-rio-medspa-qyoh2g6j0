@@ -28,6 +28,7 @@ import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
+import { SyncDiagnosticPanel } from '@/components/patients/SyncDiagnosticPanel'
 import { testBelleConnection } from '@/lib/api/belle'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
@@ -140,7 +141,7 @@ export default function Patients() {
           } else {
             // Clear stuck job to allow a new one
             await pb.collection('sync_jobs').update(activeJob.id, {
-              status: 'error',
+              status: 'failed',
               error_log:
                 (activeJob.error_log || '') +
                 '\nProcesso anterior cancelado por inatividade (timeout). Reiniciando do ponto de parada...',
@@ -227,7 +228,7 @@ export default function Patients() {
           if (now - updatedAt > stalledThreshold && job.status === 'processing') {
             // Automatically reset stalled job
             await pb.collection('sync_jobs').update(job.id, {
-              status: 'error',
+              status: 'failed',
               error_log:
                 (job.error_log || '') +
                 '\nSincronização interrompida devido a tempo limite na resposta do servidor. O processo falhou após 10 minutos de inatividade.',
@@ -327,7 +328,7 @@ export default function Patients() {
             Base de clientes atualizada via integração com Belle Software
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {belleSoftware.lastSync && canSync && (
             <div className="hidden sm:flex flex-col items-end mr-1 text-xs">
               <span
@@ -348,15 +349,18 @@ export default function Patients() {
             </div>
           )}
           {canSync && (
-            <Button
-              variant="outline"
-              className="bg-white border-primary/20 text-primary hover:bg-primary/5 min-w-[170px]"
-              onClick={handleSync}
-              disabled={isSyncing}
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Sincronizando...' : 'Sincronizar Belle'}
-            </Button>
+            <>
+              <SyncDiagnosticPanel />
+              <Button
+                variant="outline"
+                className="bg-white border-primary/20 text-primary hover:bg-primary/5 min-w-[170px]"
+                onClick={handleSync}
+                disabled={isSyncing}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                {isSyncing ? 'Sincronizando...' : 'Sincronizar Belle'}
+              </Button>
+            </>
           )}
           <PatientDialog />
         </div>
@@ -429,7 +433,13 @@ export default function Patients() {
                 <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-destructive">Falha na Sincronização</p>
-                  <p className="text-xs text-destructive/80 mt-1 mb-3">{errorMsg}</p>
+                  <p className="text-xs text-destructive/80 mt-1 mb-1">
+                    O processo foi interrompido. Verifique o Painel de Diagnóstico (Ver Logs de
+                    Erro) para mais detalhes sobre o erro ou timeout do servidor.
+                  </p>
+                  <p className="text-xs text-destructive/60 mb-3 font-mono bg-destructive/10 p-2 rounded truncate max-w-full">
+                    {errorMsg}
+                  </p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -437,7 +447,7 @@ export default function Patients() {
                     onClick={handleSync}
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                    Tentar Novamente
+                    Retomar Sincronização
                   </Button>
                 </div>
               </div>

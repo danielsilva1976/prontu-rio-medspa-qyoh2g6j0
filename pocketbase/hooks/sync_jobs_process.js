@@ -25,7 +25,7 @@ onRecordAfterCreateSuccess((e) => {
         const updatedAt = updatedAtStr ? new Date(updatedAtStr.replace(' ', 'T')).getTime() : now
 
         if (now - updatedAt > 10 * 60 * 1000) {
-          ex.set('status', 'error')
+          ex.set('status', 'failed')
           ex.set(
             'error_log',
             (ex.get('error_log') || '') +
@@ -38,7 +38,7 @@ onRecordAfterCreateSuccess((e) => {
       }
 
       if (activeExists) {
-        record.set('status', 'error')
+        record.set('status', 'failed')
         record.set(
           'error_log',
           'Já existe uma sincronização ativa para este estabelecimento. Aguarde a conclusão.',
@@ -316,7 +316,7 @@ onRecordAfterCreateSuccess((e) => {
           console.log('Background Sync Batch Error:', err)
           try {
             const job = $app.findRecordById('sync_jobs', jobId)
-            job.set('status', 'error')
+            job.set('status', 'failed')
             let currentLog = job.get('error_log') || ''
             currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
             if (currentLog.length > 2000) currentLog = currentLog.slice(-2000)
@@ -346,7 +346,7 @@ onRecordAfterCreateSuccess((e) => {
       console.log('Background Sync Init Error:', err)
       try {
         const job = $app.findRecordById('sync_jobs', jobId)
-        job.set('status', 'error')
+        job.set('status', 'failed')
         job.set('error_log', String(err.message || err))
         $app.save(job)
       } catch (e) {}
