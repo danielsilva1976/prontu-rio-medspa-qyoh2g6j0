@@ -84,48 +84,6 @@ onRecordAfterCreateSuccess((e) => {
         dateFilter = `&dataAtualizacao=${yyyy}-${mm}-${dd}`
       }
 
-      let agendamentos = []
-      try {
-        const resAg = $http.send({
-          url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/agendamentos?codEstab=${estab}${dateFilter}`,
-          method: 'GET',
-          headers: {
-            Authorization: cleanToken,
-            'x-sync-token': cleanToken,
-            Accept: 'application/json',
-          },
-          timeout: 120,
-        })
-        if (resAg.statusCode === 401) {
-          throw new Error(`Acesso Negado (HTTP 401) - O token de integração é inválido ou expirou.`)
-        }
-        if (resAg.statusCode === 200 && resAg.json) {
-          const agData = resAg.json
-          agendamentos = Array.isArray(agData) ? agData : agData.agendamentos || agData.dados || []
-        }
-      } catch (err) {
-        if (err.message && err.message.includes('Acesso Negado')) {
-          throw err
-        }
-        console.log('Warning: Error fetching agendamentos in hook: ', err)
-      }
-
-      const agendamentosByCpf = {}
-      const agendamentosById = {}
-
-      for (let i = 0; i < agendamentos.length; i++) {
-        const a = agendamentos[i]
-        if (a.cpf_cliente) {
-          if (!agendamentosByCpf[a.cpf_cliente]) agendamentosByCpf[a.cpf_cliente] = []
-          agendamentosByCpf[a.cpf_cliente].push(a)
-        }
-        if (a.cliente_id) {
-          const cid = String(a.cliente_id)
-          if (!agendamentosById[cid]) agendamentosById[cid] = []
-          agendamentosById[cid].push(a)
-        }
-      }
-
       const currentJob = $app.findRecordById('sync_jobs', jobId)
       let page = currentJob.get('last_processed_page') || 0
       let totalProcessed = currentJob.get('records_processed') || 0
@@ -189,7 +147,6 @@ onRecordAfterCreateSuccess((e) => {
       }
 
       const patientsCol = $app.findCollectionByNameOrId('patients')
-      const apptsCol = $app.findCollectionByNameOrId('appointments')
 
       const processPage = () => {
         try {
@@ -249,60 +206,12 @@ onRecordAfterCreateSuccess((e) => {
             return
           }
 
-          const now = new Date()
-
           for (let i = 0; i < clientes.length; i++) {
             try {
               const c = clientes[i]
               const belleIdStr = String(c.codigo || c.id || '')
               if (!belleIdStr) continue
 
-              let clientAppts = []
-              if (c.cpf && agendamentosByCpf[c.cpf]) {
-                clientAppts = clientAppts.concat(agendamentosByCpf[c.cpf])
-              }
-              if (agendamentosById[belleIdStr]) {
-                clientAppts = clientAppts.concat(agendamentosById[belleIdStr])
-              }
-
-              const seenAppts = {}
-              clientAppts = clientAppts.filter((a) => {
-                const id = a.id || a.codigo
-                if (id) {
-                  if (seenAppts[id]) return false
-                  seenAppts[id] = true
-                }
-                return true
-              })
-
-              let lastVisit = ''
-              let nextAppointment = ''
-              const proceduresSet = {}
-
-              for (let k = 0; k < clientAppts.length; k++) {
-                const a = clientAppts[k]
-                if (a.servico) proceduresSet[a.servico] = true
-                if (a.data) {
-                  const apptDate = new Date(`${a.data}T${a.hora_inicio || '00:00'}:00`)
-                  if (!isNaN(apptDate.getTime())) {
-                    if (apptDate < now) {
-                      if (
-                        !lastVisit ||
-                        isNaN(new Date(lastVisit).getTime()) ||
-                        apptDate > new Date(lastVisit)
-                      ) {
-                        lastVisit = a.data
-                      }
-                    } else {
-                      if (!nextAppointment || apptDate < new Date(nextAppointment)) {
-                        nextAppointment = `${a.data}T${a.hora_inicio || '00:00'}:00`
-                      }
-                    }
-                  }
-                }
-              }
-
-              const procedures = Object.keys(proceduresSet).filter(Boolean).map(String)
               let formattedAddress = c.rua || c.endereco || ''
               if (c.numeroRua || c.numEndereco)
                 formattedAddress += `, ${c.numeroRua || c.numEndereco}`
@@ -328,9 +237,6 @@ onRecordAfterCreateSuccess((e) => {
                 email: c.email ? String(c.email).trim() : '',
                 phone: c.celular || c.telefone ? String(c.celular || c.telefone).trim() : '',
                 dob: c.data_nascimento || c.dtNascimento || '',
-                lastVisit: lastVisit,
-                nextAppointment: nextAppointment,
-                procedures: procedures,
                 history: c.observacao || c.historico_clinico || '',
                 rg: c.rg || '',
                 profissao: c.profissao || '',
@@ -344,13 +250,12 @@ onRecordAfterCreateSuccess((e) => {
                 cep: c.cep || '',
                 temperatura: c.temperatura || '',
                 classificacao: c.classificacao || '',
-                status: nextAppointment ? 'scheduled' : 'active',
+                status: 'active',
                 sexo: c.sexo || '',
                 rating: c.rating || '',
                 tags: tagsArr.join(', '),
               }
 
-              let patientId = null
               let existing = null
               try {
                 existing = $app.findFirstRecordByData('patients', 'external_id', belleIdStr)
@@ -362,57 +267,17 @@ onRecordAfterCreateSuccess((e) => {
                     if (payload[key] !== undefined) existing.set(key, payload[key])
                   }
                   $app.save(existing)
-                  patientId = existing.id
                 } else {
                   const newRecord = new Record(patientsCol)
                   for (let key in payload) {
                     if (payload[key] !== undefined) newRecord.set(key, payload[key])
                   }
                   $app.save(newRecord)
-                  patientId = newRecord.id
                 }
               } catch (saveErr) {
                 throw new Error(
                   `Failed to create/update patient ${belleIdStr}: ${saveErr.message || saveErr}`,
                 )
-              }
-
-              if (patientId) {
-                for (let j = 0; j < clientAppts.length; j++) {
-                  const a = clientAppts[j]
-                  const apptExtId = String(a.id || a.codigo || `${belleIdStr}-${j}`)
-                  const apptPayload = {
-                    external_id: apptExtId,
-                    patient: patientId,
-                    appointment_date: a.data ? `${a.data} 00:00:00.000Z` : '',
-                    status: a.status || '',
-                    service_name: a.servico || '',
-                    professional: a.profissional || '',
-                  }
-                  let exAppt = null
-                  try {
-                    exAppt = $app.findFirstRecordByData('appointments', 'external_id', apptExtId)
-                  } catch (_) {}
-
-                  try {
-                    if (exAppt) {
-                      for (let key in apptPayload) {
-                        if (apptPayload[key] !== undefined) exAppt.set(key, apptPayload[key])
-                      }
-                      $app.save(exAppt)
-                    } else {
-                      const newAppt = new Record(apptsCol)
-                      for (let key in apptPayload) {
-                        if (apptPayload[key] !== undefined) newAppt.set(key, apptPayload[key])
-                      }
-                      $app.save(newAppt)
-                    }
-                  } catch (saveErr) {
-                    throw new Error(
-                      `Failed to create/update appointment ${apptExtId}: ${saveErr.message || saveErr}`,
-                    )
-                  }
-                }
               }
             } catch (itemErr) {
               try {
