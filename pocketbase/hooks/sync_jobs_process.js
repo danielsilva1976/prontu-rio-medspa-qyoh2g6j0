@@ -59,14 +59,24 @@ onRecordAfterCreateSuccess((e) => {
   setTimeout(() => {
     try {
       let token =
-        $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN')
-      if (!token) {
+        $secrets.get('BELLE_TOKEN') ||
+        $os.getenv('BELLE_TOKEN') ||
+        $os.getenv('VITE_BELLE_TOKEN') ||
+        ''
+
+      let cleanToken = String(token)
+        .replace(/^["']|["']$/g, '')
+        .trim()
+      if (cleanToken.toLowerCase().startsWith('bearer ')) {
+        cleanToken = cleanToken.substring(7).trim()
+      }
+      cleanToken = cleanToken.replace(/\s+/g, '')
+
+      if (!cleanToken) {
         throw new Error(
           'A credencial técnica (BELLE_TOKEN) não foi encontrada nas variáveis de ambiente ou secrets.',
         )
       }
-
-      let cleanToken = token.replace(/['"]/g, '').replace(/\s+/g, '')
 
       let lastSync = null
       try {
@@ -84,127 +94,20 @@ onRecordAfterCreateSuccess((e) => {
         dateFilter = `&dataAtualizacao=${yyyy}-${mm}-${dd}`
       }
 
-      const currentJob = $app.findRecordById('sync_jobs', jobId)
-      let page = currentJob.get('last_processed_page') || 0
+      let currentJob
+      try {
+        currentJob = $app.findRecordById('sync_jobs', jobId)
+      } catch (e) {
+        return // job deleted or not found
+      }
+
+      let page = currentJob.get('last_processed_page') || 1
+      if (page <= 0) page = 1
+
       let totalProcessed = currentJob.get('records_processed') || 0
       let totalExpected = currentJob.get('total_records_expected') || 0
 
-      // Recalculate total for incremental sync if needed
-      if (dateFilter && page <= 1) {
-        try {
-          const specificCount = $http.send({
-            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}${dateFilter}`,
-            method: 'GET',
-            headers: {
-              Authorization: cleanToken,
-              'x-sync-token': cleanToken,
-              Accept: 'application/json',
-            },
-            timeout: 30,
-          })
-
-          if (specificCount.statusCode === 200) {
-            const scData = specificCount.json
-            if (scData) {
-              const incrementalTotal = Number(
-                scData.total ||
-                  scData.count ||
-                  scData.total_registros ||
-                  (typeof scData === 'number' ? scData : 0),
-              )
-              if (incrementalTotal >= 0 && incrementalTotal !== totalExpected) {
-                totalExpected = incrementalTotal
-                currentJob.set('total_records_expected', totalExpected)
-                $app.save(currentJob)
-              }
-            }
-          }
-        } catch (e) {}
-      }
-
-      // Conectivity Validation & Init Count Feature
-      if (page <= 1 && (!totalExpected || isNaN(totalExpected) || totalExpected === 0)) {
-        try {
-          const countRes = $http.send({
-            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=1${dateFilter}`,
-            method: 'GET',
-            headers: {
-              Authorization: cleanToken,
-              'x-sync-token': cleanToken,
-              Accept: 'application/json',
-            },
-            timeout: 30,
-          })
-
-          if (countRes.statusCode !== 200) {
-            const job = $app.findRecordById('sync_jobs', jobId)
-            job.set('status', 'error')
-            job.set(
-              'error_log',
-              `Falha na conexão com a API Belle: ${countRes.statusCode} - ${countRes.string || 'Erro desconhecido'}`,
-            )
-            $app.save(job)
-            return
-          }
-
-          const cData = countRes.json
-
-          if (cData && !Array.isArray(cData)) {
-            totalExpected = Number(
-              cData.total ||
-                cData.totalRegistros ||
-                cData.totalCount ||
-                cData.total_registros ||
-                cData.quantidade ||
-                0,
-            )
-          }
-
-          if (!totalExpected || isNaN(totalExpected)) {
-            const specificCount = $http.send({
-              url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes/count?codEstab=${estab}${dateFilter}`,
-              method: 'GET',
-              headers: {
-                Authorization: cleanToken,
-                'x-sync-token': cleanToken,
-                Accept: 'application/json',
-              },
-              timeout: 30,
-            })
-
-            if (specificCount.statusCode === 200) {
-              const scData = specificCount.json
-              if (scData) {
-                totalExpected = Number(
-                  scData.total ||
-                    scData.count ||
-                    scData.total_registros ||
-                    (typeof scData === 'number' ? scData : 0),
-                )
-              }
-            }
-          }
-
-          if (totalExpected > 0) {
-            const job = $app.findRecordById('sync_jobs', jobId)
-            job.set('total_records_expected', totalExpected)
-            $app.save(job)
-          }
-        } catch (err) {
-          const job = $app.findRecordById('sync_jobs', jobId)
-          job.set('status', 'error')
-          job.set(
-            'error_log',
-            `Falha na conexão com a API Belle: Erro de rede ou timeout. ${err.message}`,
-          )
-          $app.save(job)
-          return
-        }
-      }
-
       const patientsCol = $app.findCollectionByNameOrId('patients')
-
-      if (page <= 0) page = 1
 
       const processPage = () => {
         try {
@@ -226,21 +129,28 @@ onRecordAfterCreateSuccess((e) => {
             return
           }
 
-          const resCl = $http.send({
-            url: `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=${page}${dateFilter}`,
-            method: 'GET',
-            headers: {
-              Authorization: cleanToken,
-              'x-sync-token': cleanToken,
-              Accept: 'application/json',
-            },
-            timeout: 60,
-          })
+          let url = `https://app.bellesoftware.com.br/api/release/controller/IntegracaoExterna/v1.0/clientes?codEstab=${estab}&pagina=${page}${dateFilter}`
+
+          let resCl
+          try {
+            resCl = $http.send({
+              url: url,
+              method: 'GET',
+              headers: {
+                Authorization: cleanToken,
+                'x-sync-token': cleanToken,
+                Accept: 'application/json',
+              },
+              timeout: 60,
+            })
+          } catch (reqErr) {
+            throw new Error(`Falha de rede ao contatar Belle API: ${reqErr.message}`)
+          }
 
           if (resCl.statusCode !== 200) {
-            if (resCl.statusCode === 401) {
+            if (resCl.statusCode === 401 || resCl.statusCode === 403) {
               throw new Error(
-                `Acesso Negado (HTTP 401): O token configurado é inválido. Verifique suas credenciais.`,
+                `Acesso Negado (HTTP ${resCl.statusCode}): O token configurado é inválido. Verifique suas credenciais.`,
               )
             }
             throw new Error(
@@ -248,7 +158,13 @@ onRecordAfterCreateSuccess((e) => {
             )
           }
 
-          const data = resCl.json
+          let data = null
+          try {
+            data = resCl.json
+          } catch (e) {
+            throw new Error(`Erro ao processar JSON da resposta: ${resCl.string}`)
+          }
+
           let clientes = []
           if (Array.isArray(data)) {
             clientes = data
@@ -270,9 +186,8 @@ onRecordAfterCreateSuccess((e) => {
           }
 
           if (!Array.isArray(clientes) || clientes.length === 0) {
-            const job = $app.findRecordById('sync_jobs', jobId)
-            job.set('status', 'completed')
-            $app.save(job)
+            jobCheck.set('status', 'completed')
+            $app.save(jobCheck)
             saveLastSync()
             return
           }
@@ -285,7 +200,7 @@ onRecordAfterCreateSuccess((e) => {
             const belleIdStr = String(c.codigo || c.id || '')
             if (!belleIdStr) continue
 
-            const patientName = c.nome ? String(c.nome).trim() : ''
+            const patientName = c.nome ? String(c.nome).trim() : 'Paciente sem nome'
 
             try {
               let formattedAddress = c.rua || c.endereco || ''
@@ -303,10 +218,6 @@ onRecordAfterCreateSuccess((e) => {
                   .split(',')
                   .map((t) => String(t).trim())
                   .filter(Boolean)
-              }
-
-              if (!patientName) {
-                throw new Error(`Campo 'name' não pode ser vazio`)
               }
 
               const payload = {
@@ -373,18 +284,12 @@ onRecordAfterCreateSuccess((e) => {
                 if (errData && typeof errData === 'object') {
                   const parts = []
                   for (let k in errData) {
-                    if (errData[k] && errData[k].message) {
-                      parts.push(`${k}: ${errData[k].message}`)
-                    } else {
-                      parts.push(`${k}: ${JSON.stringify(errData[k])}`)
-                    }
+                    if (errData[k] && errData[k].message) parts.push(`${k}: ${errData[k].message}`)
                   }
-                  if (parts.length > 0) {
-                    detailStr = `Falha de validação - ${parts.join(', ')}`
-                  }
+                  if (parts.length > 0) detailStr = `Falha de validação - ${parts.join(', ')}`
                 }
               } catch (e) {}
-              currentLog += `\n[Erro] Cliente ID ${belleIdStr} (${patientName}): ${detailStr}`
+              currentLog += `\n[Erro] ID ${belleIdStr}: ${detailStr}`
             }
           }
 
@@ -401,9 +306,14 @@ onRecordAfterCreateSuccess((e) => {
               jobToUpdate.set('error_log', currentLog.trim())
             }
 
-            if (!jobToUpdate.get('total_records_expected') && totalExpected > 0) {
-              jobToUpdate.set('total_records_expected', totalExpected)
+            // Update total expected based on data structure if available
+            if (!totalExpected || totalExpected === 0) {
+              if (data && typeof data === 'object' && (data.total || data.totalRegistros)) {
+                totalExpected = Number(data.total || data.totalRegistros || 0)
+                if (totalExpected > 0) jobToUpdate.set('total_records_expected', totalExpected)
+              }
             }
+
             $app.save(jobToUpdate)
           } catch (e) {}
 
@@ -415,7 +325,7 @@ onRecordAfterCreateSuccess((e) => {
           } else {
             page++
             // Resilient Sync Hook Optimization: yielding to avoid timeouts
-            setTimeout(processPage, 300)
+            setTimeout(processPage, 100)
           }
         } catch (err) {
           console.log('Background Sync Batch Error:', err)
@@ -423,7 +333,7 @@ onRecordAfterCreateSuccess((e) => {
             const job = $app.findRecordById('sync_jobs', jobId)
             job.set('status', 'failed')
             let currentLog = job.get('error_log') || ''
-            currentLog += '\nErro no lote de clientes: ' + String(err.message || err)
+            currentLog += '\nErro geral no lote: ' + String(err.message || err)
             if (currentLog.length > 10000) currentLog = currentLog.slice(-10000)
             job.set('error_log', currentLog.trim())
             $app.save(job)
@@ -456,7 +366,7 @@ onRecordAfterCreateSuccess((e) => {
         $app.save(job)
       } catch (e) {}
     }
-  }, 100)
+  }, 10)
 
   e.next()
 }, 'sync_jobs')
