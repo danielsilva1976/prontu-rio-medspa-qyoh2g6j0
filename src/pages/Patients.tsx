@@ -183,21 +183,34 @@ export default function Patients() {
       })
 
       // Validated Payload: minimal and strictly follows the schema
-      await pb.collection('sync_jobs').create({
-        status: 'pending',
-        estabelecimento: String(belleSoftware.estabelecimento || '1'),
-        last_processed_page: 0,
-        records_processed: 0,
-        total_records_expected: 0,
-        retry_count: 0,
-      })
+      await pb.collection('sync_jobs').create(
+        {
+          status: 'pending',
+          estabelecimento: String(belleSoftware.estabelecimento || '1'),
+          last_processed_page: 0,
+          records_processed: 0,
+          total_records_expected: 0,
+          retry_count: 0,
+        },
+        { requestKey: null },
+      )
 
       toast({
         title: 'Sincronização Iniciada',
-        description: 'O processo está rodando em segundo plano no servidor.',
+        description: 'O processo está rodando no servidor.',
       })
       addLog('Sincronização Belle Software Iniciada', 'SYSTEM')
     } catch (error: any) {
+      // Handle network timeouts gracefully (status 0) since the hook might take longer than the proxy timeout
+      if (error.status === 0 || error.isAbort) {
+        toast({
+          title: 'Processamento em Lote',
+          description:
+            'O servidor está processando um grande volume de dados. Acompanhe o progresso.',
+        })
+        return // Leave syncing state active, SSE will handle updates
+      }
+
       setBelleLastSync('error', new Date().toISOString())
       addLog(`Erro ao Iniciar Sincronização`, 'SYSTEM')
 
@@ -212,7 +225,7 @@ export default function Patients() {
 
       toast({
         title: 'Falha na Sincronização',
-        description: 'Sincronização interrompida devido a timeout ou erro de servidor.',
+        description: 'Sincronização interrompida devido a erro de servidor.',
         variant: 'destructive',
       })
       setIsSyncing(false)
