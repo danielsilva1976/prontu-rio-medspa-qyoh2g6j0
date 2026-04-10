@@ -1,14 +1,5 @@
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Settings,
-  FileText,
-  Bell,
-  Search,
-  Menu,
-} from 'lucide-react'
+import { Users, Settings, FileText, Bell, Search, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -34,8 +25,6 @@ export default function Layout() {
   }
 
   const navItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard, show: currentUser.role === 'Médico' },
-    { name: 'Agenda', href: '/', icon: Calendar, show: currentUser.role !== 'Médico' },
     { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
     {
       name: 'Documentos',

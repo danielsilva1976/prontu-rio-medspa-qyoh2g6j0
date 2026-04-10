@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -10,7 +10,6 @@ import { DocumentProvider } from '@/stores/useDocumentStore'
 import Layout from './components/Layout'
 
 // Pages
-import Index from './pages/Index'
 import Patients from './pages/Patients'
 import Consultation from './pages/Consultation'
 import Documents from './pages/Documents'
@@ -31,7 +30,7 @@ const App = () => (
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route element={<Layout />}>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<Navigate to="/pacientes" replace />} />
                     <Route path="/pacientes" element={<Patients />} />
                     <Route path="/prontuario/:id" element={<Consultation />} />
                     <Route path="/documentos" element={<Documents />} />

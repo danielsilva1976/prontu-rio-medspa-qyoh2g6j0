@@ -485,8 +485,7 @@ export default function Patients() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-destructive">Falha na Sincronização</p>
                   <p className="text-xs text-destructive/80 mt-1 mb-1">
-                    Sincronização interrompida devido a timeout ou erro de servidor. Verifique o
-                    Painel de Diagnóstico (Ver Logs de Erro) para mais detalhes.
+                    Sincronização interrompida devido a timeout ou erro de servidor.
                   </p>
                   <p className="text-xs text-destructive/60 mb-3 font-mono bg-destructive/10 p-2 rounded whitespace-pre-wrap max-h-32 overflow-y-auto">
                     {errorMsg}
