@@ -1,7 +1,6 @@
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
-import { Users, Settings, FileText, Bell, Search, Menu } from 'lucide-react'
+import { Users, Settings, FileText, Bell, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -108,24 +107,7 @@ export default function Layout() {
       <div className="md:pl-72 flex flex-col flex-1 min-w-0">
         <header className="sticky top-0 z-20 flex h-16 flex-shrink-0 items-center gap-x-4 border-b border-border bg-background/95 backdrop-blur px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <form className="relative flex flex-1" action="#" method="GET">
-              <label htmlFor="search-field" className="sr-only">
-                Buscar
-              </label>
-              <div className="relative w-full max-w-md items-center flex">
-                <Search
-                  className="absolute left-3 h-4 w-4 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <Input
-                  id="search-field"
-                  className="pl-9 bg-muted/50 border-transparent focus-visible:bg-background focus-visible:border-primary transition-colors"
-                  placeholder="Buscar pacientes, prontuários..."
-                  type="search"
-                  name="search"
-                />
-              </div>
-            </form>
+            <div className="flex flex-1" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               <Button
                 variant="ghost"
