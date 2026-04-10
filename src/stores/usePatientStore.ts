@@ -58,7 +58,7 @@ type PatientState = {
   isLoading: boolean
   syncProgress: { current: number; total: number } | null
   setSyncProgress: (progress: { current: number; total: number } | null) => void
-  fetchPatients: (page?: number, search?: string, status?: string) => Promise<void>
+  fetchPatients: (page?: number, search?: string) => Promise<void>
 }
 
 const PatientContext = createContext<PatientState>({} as PatientState)
@@ -141,52 +141,44 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const fetchPatients = useCallback(
-    async (p: number = 1, search: string = '', status: string = 'Todos') => {
-      const currentFetchId = ++fetchIdRef.current
-      setIsLoading(true)
-      try {
-        await ensureAuth()
-        const filters: string[] = []
-        if (search) {
-          // Prevent injection and use proper syntax
-          const safeSearch = search.replace(/"/g, '\\"')
-          filters.push(`(name ~ "${safeSearch}" || cpf ~ "${safeSearch}")`)
-        }
-        if (status === 'Ativos') {
-          filters.push(`(status = "active" || status = "scheduled")`)
-        } else if (status === 'Inativos') {
-          filters.push(`status = "inactive"`)
-        }
-
-        const filter = filters.length > 0 ? filters.join(' && ') : ''
-
-        const result = await pb.collection('patients').getList(p, 20, {
-          filter,
-          sort: 'name',
-          requestKey: 'fetch_patients_list', // Aborts any pending list request, improving performance
-        })
-
-        // Only update state if this is the most recent fetch
-        if (currentFetchId === fetchIdRef.current) {
-          setPatients(result.items.map(mapRecordToPatient))
-          setPage(result.page)
-          setTotalPages(result.totalPages)
-          setTotalItems(result.totalItems)
-        }
-      } catch (error: any) {
-        if (error?.isAbort) return // Ignore aborted requests
-        if (currentFetchId === fetchIdRef.current) {
-          console.error('Failed to fetch patients', error)
-        }
-      } finally {
-        if (currentFetchId === fetchIdRef.current) {
-          setIsLoading(false)
-        }
+  const fetchPatients = useCallback(async (p: number = 1, search: string = '') => {
+    const currentFetchId = ++fetchIdRef.current
+    setIsLoading(true)
+    try {
+      await ensureAuth()
+      const filters: string[] = []
+      if (search) {
+        // Prevent injection and use proper syntax
+        const safeSearch = search.replace(/"/g, '\\"')
+        filters.push(`name ~ "${safeSearch}"`)
       }
-    },
-    [],
-  )
+
+      const filter = filters.length > 0 ? filters.join(' && ') : ''
+
+      const result = await pb.collection('patients').getList(p, 20, {
+        filter,
+        sort: 'name',
+        requestKey: 'fetch_patients_list', // Aborts any pending list request, improving performance
+      })
+
+      // Only update state if this is the most recent fetch
+      if (currentFetchId === fetchIdRef.current) {
+        setPatients(result.items.map(mapRecordToPatient))
+        setPage(result.page)
+        setTotalPages(result.totalPages)
+        setTotalItems(result.totalItems)
+      }
+    } catch (error: any) {
+      if (error?.isAbort) return // Ignore aborted requests
+      if (currentFetchId === fetchIdRef.current) {
+        console.error('Failed to fetch patients', error)
+      }
+    } finally {
+      if (currentFetchId === fetchIdRef.current) {
+        setIsLoading(false)
+      }
+    }
+  }, [])
 
   const addPatient = async (patient: any) => {
     await ensureAuth()

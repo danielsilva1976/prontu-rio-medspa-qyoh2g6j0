@@ -3,13 +3,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Search, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -28,7 +21,6 @@ import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
-import { SyncDiagnosticPanel } from '@/components/patients/SyncDiagnosticPanel'
 import { testBelleConnection } from '@/lib/api/belle'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
@@ -53,7 +45,6 @@ export default function Patients() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('Todos')
   const [currentPage, setCurrentPage] = useState(1)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [activeJob, setActiveJob] = useState<any>(null)
@@ -69,11 +60,11 @@ export default function Patients() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearch, statusFilter])
+  }, [debouncedSearch])
 
   useEffect(() => {
-    fetchPatients(currentPage, debouncedSearch, statusFilter)
-  }, [currentPage, debouncedSearch, statusFilter, fetchPatients])
+    fetchPatients(currentPage, debouncedSearch)
+  }, [currentPage, debouncedSearch, fetchPatients])
 
   useEffect(() => {
     return () => {
@@ -86,7 +77,7 @@ export default function Patients() {
 
     if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current)
     realtimeTimeoutRef.current = setTimeout(() => {
-      fetchPatients(currentPage, debouncedSearch, statusFilter)
+      fetchPatients(currentPage, debouncedSearch)
     }, 1500)
   })
 
@@ -322,7 +313,7 @@ export default function Patients() {
           title: 'Sincronização Concluída',
           description: 'Todos os pacientes foram atualizados com sucesso.',
         })
-        fetchPatients(currentPage, debouncedSearch, statusFilter)
+        fetchPatients(currentPage, debouncedSearch)
       } else if (job.status === 'error' || job.status === 'failed') {
         setActiveJob(null)
         setIsSyncing(false)
@@ -415,7 +406,6 @@ export default function Patients() {
           )}
           {canSync && (
             <>
-              <SyncDiagnosticPanel />
               <Button
                 variant="outline"
                 className="bg-white border-primary/20 text-primary hover:bg-primary/5 min-w-[170px]"
@@ -433,28 +423,14 @@ export default function Patients() {
 
       <Card className="border-none shadow-subtle">
         <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por Nome ou CPF"
-                className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="w-full sm:w-48">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-12 bg-white border-muted rounded-xl text-base focus:ring-primary">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Todos">Todos</SelectItem>
-                  <SelectItem value="Ativos">Ativos</SelectItem>
-                  <SelectItem value="Inativos">Inativos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="mb-6 relative w-full lg:max-w-md">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por Nome"
+              className="pl-10 h-12 bg-muted/30 border-muted rounded-xl text-base focus-visible:ring-primary transition-all w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
           <div className="grid gap-4">
