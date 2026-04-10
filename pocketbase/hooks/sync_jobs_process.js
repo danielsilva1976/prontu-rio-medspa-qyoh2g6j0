@@ -7,6 +7,14 @@ onRecordAfterCreateSuccess((e) => {
 
   let token =
     $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN') || ''
+
+  if (!token) {
+    try {
+      const setting = $app.findFirstRecordByData('app_settings', 'key', 'BELLE_TOKEN')
+      token = setting.get('value')
+    } catch (e) {}
+  }
+
   let cleanToken = String(token)
     .replace(/^["']|["']$/g, '')
     .trim()
