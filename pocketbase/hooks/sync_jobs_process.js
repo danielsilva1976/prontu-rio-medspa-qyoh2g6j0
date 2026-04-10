@@ -5,6 +5,27 @@ onRecordAfterCreateSuccess((e) => {
     return
   }
 
+  let token =
+    $secrets.get('BELLE_TOKEN') || $os.getenv('BELLE_TOKEN') || $os.getenv('VITE_BELLE_TOKEN') || ''
+  let cleanToken = String(token)
+    .replace(/^["']|["']$/g, '')
+    .trim()
+  if (cleanToken.toLowerCase().startsWith('bearer ')) {
+    cleanToken = cleanToken.substring(7).trim()
+  }
+  cleanToken = cleanToken.replace(/\s+/g, '')
+
+  if (!cleanToken) {
+    record.set('status', 'failed')
+    record.set(
+      'error_log',
+      'Erro crítico: Credencial BELLE_TOKEN não encontrada no ambiente de execução.',
+    )
+    $app.saveNoValidate(record)
+    e.next()
+    return
+  }
+
   const jobId = record.id
   const estab = record.get('estabelecimento') || '1'
 
@@ -52,23 +73,6 @@ onRecordAfterCreateSuccess((e) => {
   $app.saveNoValidate(record)
 
   try {
-    let token =
-      $secrets.get('BELLE_TOKEN') ||
-      $os.getenv('BELLE_TOKEN') ||
-      $os.getenv('VITE_BELLE_TOKEN') ||
-      ''
-    let cleanToken = String(token)
-      .replace(/^["']|["']$/g, '')
-      .trim()
-    if (cleanToken.toLowerCase().startsWith('bearer ')) {
-      cleanToken = cleanToken.substring(7).trim()
-    }
-    cleanToken = cleanToken.replace(/\s+/g, '')
-
-    if (!cleanToken) {
-      throw new Error('A credencial técnica (BELLE_TOKEN) não foi encontrada.')
-    }
-
     let lastSync = null
     try {
       const setting = $app.findFirstRecordByData('app_settings', 'key', 'last_successful_sync')
