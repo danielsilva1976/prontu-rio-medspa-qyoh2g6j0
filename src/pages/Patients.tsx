@@ -243,6 +243,7 @@ export default function Patients() {
             `(status="pending" || status="processing") && estabelecimento="${estab}"`,
             { sort: '-created' },
           )
+
         if (job) {
           setActiveJob(job)
           setIsSyncing(true)
@@ -250,26 +251,36 @@ export default function Patients() {
             current: job.records_processed || 0,
             total: job.total_records_expected || 0,
           })
-        } else {
+        }
+      } catch (e: any) {
+        // No active job found (PocketBase throws 404 when getFirstListItem finds no matches)
+        if (e.status === 404) {
           setActiveJob(null)
-          // Check for recently failed jobs to persist error state locally
-          const estab = belleSoftware.estabelecimento || '1'
-          const failedJob = await pb
-            .collection('sync_jobs')
-            .getFirstListItem(`(status="failed" || status="error") && estabelecimento="${estab}"`, {
-              sort: '-created',
-            })
-            .catch(() => null)
+          setIsSyncing(false)
+          setSyncProgress(null)
 
-          if (failedJob && !isSyncing) {
-            const failedAt = new Date(failedJob.updated).getTime()
-            if (new Date().getTime() - failedAt < 60000) {
-              setErrorMsg(failedJob.error_log || 'Falha ao iniciar sincronização.')
+          // Check for recently failed jobs to persist error state locally
+          try {
+            const estab = belleSoftware.estabelecimento || '1'
+            const failedJob = await pb
+              .collection('sync_jobs')
+              .getFirstListItem(
+                `(status="failed" || status="error") && estabelecimento="${estab}"`,
+                {
+                  sort: '-created',
+                },
+              )
+
+            if (failedJob) {
+              const failedAt = new Date(failedJob.updated).getTime()
+              if (new Date().getTime() - failedAt < 60000) {
+                setErrorMsg(failedJob.error_log || 'Falha ao iniciar sincronização.')
+              }
             }
+          } catch (err) {
+            // Ignore if no failed jobs found
           }
         }
-      } catch (e) {
-        // No active job
       }
     }
 
@@ -325,6 +336,12 @@ export default function Patients() {
           description: 'Sincronização interrompida devido a timeout ou erro de servidor.',
           variant: 'destructive',
         })
+      }
+    } else if (e.action === 'delete') {
+      if (activeJob && job.id === activeJob.id) {
+        setActiveJob(null)
+        setIsSyncing(false)
+        setSyncProgress(null)
       }
     }
   })
