@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ClipboardList } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import PlanningForm, { type SavedPlan } from './PlanningForm'
 import PlanningList from './PlanningList'
+import pb from '@/lib/pocketbase/client'
 
 export default function PlanningTab({
   isSigned,
@@ -15,51 +16,48 @@ export default function PlanningTab({
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
 
-  // Starting with mock data to showcase the end-to-end functionality
-  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([
-    {
-      id: 'mock-1',
-      date: '15/10/2023 14:30',
-      planName: 'Protocolo Rejuvenescimento Global 360',
-      objective: 'Melhorar textura e flacidez da pele com bioestimuladores e laser.',
-      totalInvestment: 6500,
-      entries: [
-        {
-          id: 'e1',
-          timing: 'Sessão 01',
-          procedure: 'Bioestimulador de Colágeno',
-          quantity: '1',
-          standardValue: '2500',
-          discountValue: '0',
-          discountType: 'currency',
-          finalValue: '2500',
-        },
-        {
-          id: 'e2',
-          timing: 'Sessão 02',
-          procedure: 'Laser Lavieen',
-          quantity: '2',
-          standardValue: '2000',
-          discountValue: '0',
-          discountType: 'currency',
-          finalValue: '4000',
-        },
-      ],
-      downPayment: 1500,
-      downPaymentMethod: 'pix',
-      installments: 5,
-      installmentValue: 1000,
-      paymentMethod: 'credit',
-    },
-  ])
+  const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleSavePlan = (newPlan: SavedPlan) => {
-    setSavedPlans((prev) => [newPlan, ...prev])
+  useEffect(() => {
+    setIsLoading(true)
+    pb.collection('patients')
+      .getOne(patientId)
+      .then((record) => {
+        if (record.procedures && Array.isArray(record.procedures)) {
+          setSavedPlans(record.procedures)
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching patient procedures:', err)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [patientId])
+
+  const handleSavePlan = async (newPlan: SavedPlan) => {
+    const updatedPlans = [newPlan, ...savedPlans]
+    // Optimistic update
+    setSavedPlans(updatedPlans)
     setIsCreating(false)
-    toast({
-      title: 'Planejamento Salvo',
-      description: 'O plano estratégico foi salvo com sucesso.',
-    })
+
+    try {
+      await pb.collection('patients').update(patientId, { procedures: updatedPlans })
+      toast({
+        title: 'Planejamento Salvo',
+        description: 'O plano estratégico foi salvo com sucesso.',
+      })
+    } catch (err) {
+      console.error('Error saving plan:', err)
+      // Revert optimistic update
+      setSavedPlans(savedPlans)
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Não foi possível sincronizar o planejamento.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -74,7 +72,11 @@ export default function PlanningTab({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
-        {isCreating ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : isCreating ? (
           <PlanningForm
             isSigned={isSigned}
             patientId={patientId}

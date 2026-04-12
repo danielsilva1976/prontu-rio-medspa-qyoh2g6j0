@@ -48,7 +48,7 @@ export default function Consultation() {
     let newTab = activeTab
 
     // Redirect if trying to access disabled "Novo Atendimento" tabs while consultation is not started
-    const novoAtendimentoTabs = ['anamnese', 'exame', 'planejamento', 'procedimentos', 'evolucao']
+    const novoAtendimentoTabs = ['anamnese', 'exame', 'procedimentos', 'evolucao']
     if (!isStarted && novoAtendimentoTabs.includes(activeTab)) {
       newTab = 'historico'
     }
@@ -159,14 +159,12 @@ export default function Consultation() {
               </button>
             )}
             <button
-              disabled={!isStarted}
               onClick={() => handleTabChange('planejamento')}
               className={cn(
                 'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                 activeTab === 'planejamento'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
               )}
             >
               Planejamento
@@ -253,7 +251,7 @@ export default function Consultation() {
               </div>
             )}
             <div className={cn(activeTab !== 'planejamento' && 'hidden')}>
-              <PlanningTab isSigned={!isStarted} patientId={patientId} />
+              <PlanningTab isSigned={false} patientId={patientId} />
             </div>
             <div className={cn(activeTab !== 'procedimentos' && 'hidden')}>
               <ProcedureTab isSigned={!isStarted} patientId={patientId} />
