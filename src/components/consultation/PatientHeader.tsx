@@ -1,21 +1,8 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ArrowLeft,
-  Clock,
-  MapPin,
-  Briefcase,
-  CreditCard,
-  Edit2,
-  Phone,
-  History,
-  Lock,
-} from 'lucide-react'
+import { ArrowLeft, Clock, MapPin, Briefcase, CreditCard, Edit2, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import CompleteHistoryModal from './CompleteHistoryModal'
-import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 
@@ -27,18 +14,10 @@ type Props = {
 }
 
 export default function PatientHeader({ patient, id, isFinalized, onFinalize }: Props) {
-  const { addLog } = useAuditStore()
   const { patients } = usePatientStore()
 
   const storePatient = patients.find((p) => p.id === id)
   const displayPatient = storePatient || patient
-
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-
-  const handleOpenHistory = () => {
-    setIsHistoryOpen(true)
-    addLog('Histórico Completo visualizado', id)
-  }
 
   return (
     <div className="px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -64,20 +43,13 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
               {displayPatient.name}
             </h1>
 
-            {isFinalized ? (
+            {isFinalized && (
               <Badge
                 variant="outline"
                 className="text-destructive border-destructive bg-destructive/5 hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
               >
                 <Lock className="w-3.5 h-3.5" />
                 Consulta Finalizada - Edição Desabilitada
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="text-primary border-primary bg-primary/5 shrink-0 hidden sm:inline-flex"
-              >
-                Atendimento em curso
               </Badge>
             )}
 
@@ -118,14 +90,6 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0">
-        <Button
-          variant="outline"
-          className="border-primary/50 text-primary hover:bg-primary/5 w-full sm:w-auto"
-          onClick={handleOpenHistory}
-        >
-          <History className="w-4 h-4 mr-2" />
-          Histórico Completo
-        </Button>
         {!isFinalized && (
           <Button
             onClick={onFinalize}
@@ -135,12 +99,6 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
           </Button>
         )}
       </div>
-
-      <CompleteHistoryModal
-        isOpen={isHistoryOpen}
-        onClose={setIsHistoryOpen}
-        patient={displayPatient}
-      />
     </div>
   )
 }
