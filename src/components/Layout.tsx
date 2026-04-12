@@ -1,5 +1,18 @@
-import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
-import { Users, Settings, FileText, Bell, Menu } from 'lucide-react'
+import { Link, Outlet, useLocation, Navigate, matchPath, useSearchParams } from 'react-router-dom'
+import {
+  Users,
+  Settings,
+  FileText,
+  Bell,
+  Menu,
+  ArrowLeft,
+  History,
+  Activity,
+  ClipboardList,
+  Syringe,
+  Clock,
+  ShieldCheck,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -11,17 +24,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 import useUserStore from '@/stores/useUserStore'
 
 export default function Layout() {
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { currentUser, users, switchUser, isAuthenticated, logout } = useUserStore()
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
+
+  const matchClinical = matchPath({ path: '/prontuario/:id' }, location.pathname)
+  const isClinical = !!matchClinical
+  const patientId = matchClinical?.params?.id
+  const activeTab = searchParams.get('tab') || 'historico'
+
+  const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
+  const showDocs = currentUser.role === 'Médico'
+  const showAudit = currentUser.id === 'usr-admin'
 
   const navItems = [
     { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
@@ -41,15 +70,19 @@ export default function Layout() {
 
   const filteredNav = navItems.filter((item) => item.show)
 
-  const SidebarContent = () => (
+  const LogoHeader = () => (
+    <div className="flex h-28 shrink-0 items-center justify-center px-6 mb-2 mt-4 border-b border-border/50 pb-6">
+      <img
+        src={logoMarca}
+        alt="Clínica MEDSPA"
+        className="h-[4.5rem] w-auto object-contain mix-blend-multiply transition-transform hover:scale-105 duration-300"
+      />
+    </div>
+  )
+
+  const GlobalSidebarContent = () => (
     <>
-      <div className="flex h-28 shrink-0 items-center justify-center px-6 mb-2 mt-4 border-b border-border/50 pb-6">
-        <img
-          src={logoMarca}
-          alt="Clínica MEDSPA"
-          className="h-[4.5rem] w-auto object-contain mix-blend-multiply transition-transform hover:scale-105 duration-300"
-        />
-      </div>
+      <LogoHeader />
       <div className="flex flex-1 flex-col overflow-y-auto">
         <nav className="flex-1 space-y-1 px-3 py-4">
           {filteredNav.map((item) => {
@@ -83,6 +116,94 @@ export default function Layout() {
       </div>
     </>
   )
+
+  const ClinicalTabLink = ({ id, label, icon: Icon, className }: any) => {
+    const isActive = activeTab === id
+    return (
+      <Link
+        to={`/prontuario/${patientId}?tab=${id}`}
+        replace
+        className={cn(
+          'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+          isActive
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          className,
+        )}
+      >
+        <Icon className="w-4 h-4" />
+        {label}
+      </Link>
+    )
+  }
+
+  const ClinicalSidebarContent = () => (
+    <>
+      <LogoHeader />
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4 space-y-6">
+        <div>
+          <Link
+            to="/pacientes"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors border border-border shadow-sm bg-white"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Pacientes
+          </Link>
+        </div>
+
+        <div className="space-y-1">
+          <ClinicalTabLink id="historico" label="Histórico" icon={History} />
+        </div>
+
+        <Accordion type="multiple" defaultValue={['novo-atendimento']} className="w-full">
+          <AccordionItem value="novo-atendimento" className="border-none">
+            <AccordionTrigger className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent">
+              Novo Atendimento
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-0">
+              <div className="space-y-1">
+                {showAnamneseExame && (
+                  <>
+                    <ClinicalTabLink id="anamnese" label="Anamnese" icon={FileText} />
+                    <ClinicalTabLink id="exame" label="Exame Físico" icon={Activity} />
+                  </>
+                )}
+                <ClinicalTabLink id="planejamento" label="Planejamento" icon={ClipboardList} />
+                <ClinicalTabLink id="procedimentos" label="Procedimentos" icon={Syringe} />
+                <ClinicalTabLink id="evolucao" label="Evolução" icon={Clock} />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        {(showDocs || showAudit) && (
+          <div>
+            <h4 className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+              Documentos e Auditoria
+            </h4>
+            <div className="space-y-1">
+              {showDocs && (
+                <>
+                  <ClinicalTabLink id="receitas" label="Receitas" icon={FileText} />
+                  <ClinicalTabLink id="laudos" label="Laudos" icon={FileText} />
+                </>
+              )}
+              {showAudit && (
+                <ClinicalTabLink
+                  id="auditoria"
+                  label="Auditoria"
+                  icon={ShieldCheck}
+                  className="mt-4 text-amber-600 hover:text-amber-700 hover:bg-amber-50/50"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+
+  const SidebarContent = isClinical ? ClinicalSidebarContent : GlobalSidebarContent
 
   return (
     <div className="flex min-h-screen bg-muted/30">
