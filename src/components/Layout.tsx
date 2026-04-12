@@ -60,13 +60,13 @@ export default function Layout() {
   const { currentUser, users, switchUser, isAuthenticated, logout } = useUserStore()
   const { activeConsultations } = useConsultationStore()
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
   const navigate = useNavigate()
   const [showLeaveAlert, setShowLeaveAlert] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
 
   const matchClinical = matchPath({ path: '/prontuario/:id' }, location.pathname)
   const isClinical = !!matchClinical
