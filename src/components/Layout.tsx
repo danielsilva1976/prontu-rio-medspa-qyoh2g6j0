@@ -205,8 +205,20 @@ export default function Layout() {
         <div>
           <Button
             variant="outline"
-            className="w-full justify-start text-muted-foreground hover:text-foreground shadow-sm bg-white"
-            onClick={() => handleProtectedAction(() => navigate('/pacientes'))}
+            className={cn(
+              'w-full justify-start shadow-sm bg-white transition-all',
+              isStarted
+                ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+            onClick={(e) => {
+              if (isStarted) {
+                e.preventDefault()
+                return
+              }
+              handleProtectedAction(() => navigate('/pacientes'))
+            }}
+            disabled={isStarted}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar para Pacientes
