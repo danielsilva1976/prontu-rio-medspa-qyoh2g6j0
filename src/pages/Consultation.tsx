@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import PatientHeader from '@/components/consultation/PatientHeader'
+import ConsultationSidebar from '@/components/consultation/ConsultationSidebar'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
 import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
 import ProcedureTab from '@/components/consultation/ProcedureTab'
@@ -113,10 +114,19 @@ export default function Consultation() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
+        <ConsultationSidebar
+          activeTab={activeTab}
+          isStarted={isStarted}
+          showAnamneseExame={showAnamneseExame}
+          showDocs={showDocs}
+          showAudit={showAudit}
+          onTabChange={handleTabChange}
+        />
+
         {/* Main Content Area */}
         <div className="flex-1 overflow-auto bg-muted/20 p-4 md:p-6 w-full relative">
           {/* Mobile Navigation Scroll */}
-          <div className="md:hidden flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4 scroll-smooth">
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
               onClick={() => handleTabChange('historico')}
               className={cn(
@@ -159,17 +169,6 @@ export default function Consultation() {
               </button>
             )}
             <button
-              onClick={() => handleTabChange('planejamento')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'planejamento'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-              )}
-            >
-              Planejamento
-            </button>
-            <button
               disabled={!isStarted}
               onClick={() => handleTabChange('procedimentos')}
               className={cn(
@@ -195,6 +194,23 @@ export default function Consultation() {
             >
               Evolução
             </button>
+
+            <div className="w-px bg-border shrink-0 mx-1 my-1" />
+
+            <button
+              onClick={() => handleTabChange('planejamento')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'planejamento'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
+            >
+              Planejamento
+            </button>
+
+            {showDocs && <div className="w-px bg-border shrink-0 mx-1 my-1" />}
+
             {showDocs && (
               <button
                 onClick={() => handleTabChange('receitas')}
