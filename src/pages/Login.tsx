@@ -40,10 +40,9 @@ export default function Login() {
             alt="Clínica MEDSPA"
             className="h-28 w-auto object-contain mix-blend-multiply mb-4 hover:scale-105 transition-transform duration-500"
           />
-          <h2 className="text-2xl font-serif text-primary tracking-tight">Acesso Restrito</h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Identifique-se para acessar o sistema
-          </p>
+          <h2 className="text-2xl font-serif text-primary tracking-tight">
+            Sistema de Prontuário Eletrônico
+          </h2>
         </div>
 
         <Card className="border border-border/50 shadow-elevation bg-white rounded-2xl overflow-hidden">
