@@ -1,15 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  ArrowLeft,
-  Clock,
-  MapPin,
-  Briefcase,
-  CreditCard,
-  Edit2,
-  Phone,
-  Lock,
-  Activity,
-} from 'lucide-react'
+import { ArrowLeft, Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -53,24 +43,6 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2 truncate">
               {displayPatient.name}
             </h1>
-
-            {isStarted ? (
-              <Badge
-                variant="outline"
-                className="text-primary border-primary bg-primary/5 hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
-              >
-                <Activity className="w-3.5 h-3.5" />
-                Em Atendimento
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="text-muted-foreground border-border bg-muted hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
-              >
-                <Lock className="w-3.5 h-3.5" />
-                Atendimento Inativo - Edição Desabilitada
-              </Badge>
-            )}
 
             <PatientDialog
               patient={displayPatient}
