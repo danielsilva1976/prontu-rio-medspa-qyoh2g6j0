@@ -8,8 +8,8 @@ import {
   ClipboardList,
   ShieldCheck,
   AlertCircle,
+  History,
 } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import PatientHeader from '@/components/consultation/PatientHeader'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
@@ -19,9 +19,11 @@ import EvolutionTab from '@/components/consultation/EvolutionTab'
 import DocumentsTab from '@/components/consultation/DocumentsTab'
 import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
+import HistoryTab from '@/components/consultation/HistoryTab'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
+import { cn } from '@/lib/utils'
 
 export default function Consultation() {
   const { id } = useParams<{ id: string }>()
@@ -39,7 +41,7 @@ export default function Consultation() {
   const showAudit = currentUser.id === 'usr-admin'
 
   const tabParam = searchParams.get('tab')
-  const defaultTab = tabParam || (showAnamneseExame ? 'anamnese' : 'planejamento')
+  const defaultTab = tabParam || 'historico'
   const [activeTab, setActiveTab] = useState(defaultTab)
 
   const patient = patients.find((p) => p.id === patientId)
@@ -97,155 +99,307 @@ export default function Consultation() {
     )
   }
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'historico':
+        return <HistoryTab patientId={patientId} />
+      case 'anamnese':
+        return showAnamneseExame ? (
+          <AnamnesisTab isSigned={isFinalized} patientId={patientId} />
+        ) : null
+      case 'exame':
+        return showAnamneseExame ? (
+          <PhysicalExamTab isSigned={isFinalized} patientId={patientId} />
+        ) : null
+      case 'planejamento':
+        return <PlanningTab isSigned={isFinalized} patientId={patientId} />
+      case 'procedimentos':
+        return <ProcedureTab isSigned={isFinalized} patientId={patientId} />
+      case 'evolucao':
+        return <EvolutionTab isSigned={isFinalized} patientId={patientId} />
+      case 'receitas':
+        return showDocs ? (
+          <DocumentsTab type="receita" isSigned={isFinalized} patientId={patientId} />
+        ) : null
+      case 'laudos':
+        return showDocs ? (
+          <DocumentsTab type="laudo" isSigned={isFinalized} patientId={patientId} />
+        ) : null
+      case 'auditoria':
+        return showAudit ? <AuditLogTab patientId={patientId} /> : null
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Patient Header */}
-      <div className="bg-white border-b border-border shadow-sm z-10">
+      <div className="bg-white border-b border-border shadow-sm z-10 shrink-0">
         <PatientHeader
           patient={patient}
           id={patientId}
           isFinalized={isFinalized}
           onFinalize={handleFinalize}
         />
+      </div>
 
-        {/* Custom Branded Tabs Navigation */}
-        <div className="px-6 overflow-x-auto">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full min-w-max">
-            <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent p-0 h-auto">
-              {showAnamneseExame && (
-                <>
-                  <TabsTrigger
-                    value="anamnese"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-                  >
-                    <FileText className="h-4 w-4 mr-2 inline-block" />
-                    Anamnese
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="exame"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-                  >
-                    <Activity className="h-4 w-4 mr-2 inline-block" />
-                    Exame Físico
-                  </TabsTrigger>
-                </>
-              )}
-              <TabsTrigger
-                value="planejamento"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Desktop */}
+        <div className="w-64 border-r border-border bg-white flex-col overflow-y-auto hidden md:flex shrink-0">
+          <nav className="flex-1 p-4 space-y-6">
+            {/* Histórico */}
+            <div>
+              <button
+                onClick={() => handleTabChange('historico')}
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  activeTab === 'historico'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                )}
               >
-                <ClipboardList className="h-4 w-4 mr-2 inline-block" />
-                Planejamento
-              </TabsTrigger>
-              <TabsTrigger
-                value="procedimentos"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-              >
-                <Syringe className="h-4 w-4 mr-2 inline-block" />
-                Procedimentos
-              </TabsTrigger>
-              <TabsTrigger
-                value="evolucao"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
-              >
-                <Clock className="h-4 w-4 mr-2 inline-block" />
-                Evolução
-              </TabsTrigger>
+                <History className="w-4 h-4" />
+                Histórico
+              </button>
+            </div>
+
+            {/* Novo Atendimento */}
+            <div>
+              <h4 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Novo Atendimento
+              </h4>
+              <div className="space-y-1">
+                {showAnamneseExame && (
+                  <>
+                    <button
+                      onClick={() => handleTabChange('anamnese')}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                        activeTab === 'anamnese'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <FileText className="w-4 h-4" />
+                      Anamnese
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('exame')}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                        activeTab === 'exame'
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <Activity className="w-4 h-4" />
+                      Exame Físico
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => handleTabChange('planejamento')}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    activeTab === 'planejamento'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Planejamento
+                </button>
+                <button
+                  onClick={() => handleTabChange('procedimentos')}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    activeTab === 'procedimentos'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  <Syringe className="w-4 h-4" />
+                  Procedimentos
+                </button>
+                <button
+                  onClick={() => handleTabChange('evolucao')}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    activeTab === 'evolucao'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  <Clock className="w-4 h-4" />
+                  Evolução
+                </button>
+              </div>
+            </div>
+
+            {/* Documentos e Auditoria */}
+            <div className="space-y-1">
               {showDocs && (
                 <>
-                  <TabsTrigger
-                    value="receitas"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+                  <button
+                    onClick={() => handleTabChange('receitas')}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      activeTab === 'receitas'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    )}
                   >
-                    <FileText className="h-4 w-4 mr-2 inline-block" />
+                    <FileText className="w-4 h-4" />
                     Receitas
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="laudos"
-                    className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none hover:text-foreground"
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('laudos')}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      activeTab === 'laudos'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    )}
                   >
-                    <FileText className="h-4 w-4 mr-2 inline-block" />
+                    <FileText className="w-4 h-4" />
                     Laudos
-                  </TabsTrigger>
+                  </button>
                 </>
               )}
               {showAudit && (
-                <TabsTrigger
-                  value="auditoria"
-                  className="relative rounded-none border-b-2 border-transparent bg-transparent px-4 pb-3 pt-4 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-amber-600 data-[state=active]:text-amber-700 data-[state=active]:shadow-none hover:text-foreground"
+                <button
+                  onClick={() => handleTabChange('auditoria')}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors mt-4',
+                    activeTab === 'auditoria'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
                 >
-                  <ShieldCheck className="h-4 w-4 mr-2 inline-block" />
+                  <ShieldCheck className="w-4 h-4" />
                   Auditoria
-                </TabsTrigger>
+                </button>
               )}
-            </TabsList>
-          </Tabs>
+            </div>
+          </nav>
         </div>
-      </div>
 
-      {/* Tab Content Area */}
-      <div className="flex-1 overflow-auto bg-muted/20 p-6">
-        <div className="max-w-5xl mx-auto">
-          <Tabs value={activeTab} className="w-full">
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto bg-muted/20 p-4 md:p-6 w-full relative">
+          {/* Mobile Navigation Scroll */}
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4 scroll-smooth">
+            <button
+              onClick={() => handleTabChange('historico')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'historico'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
+            >
+              Histórico
+            </button>
             {showAnamneseExame && (
-              <>
-                <TabsContent
-                  value="anamnese"
-                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <AnamnesisTab isSigned={isFinalized} patientId={patientId} />
-                </TabsContent>
-                <TabsContent
-                  value="exame"
-                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <PhysicalExamTab isSigned={isFinalized} patientId={patientId} />
-                </TabsContent>
-              </>
+              <button
+                onClick={() => handleTabChange('anamnese')}
+                className={cn(
+                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                  activeTab === 'anamnese'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                )}
+              >
+                Anamnese
+              </button>
             )}
-            <TabsContent
-              value="planejamento"
-              className="m-0 focus-visible:outline-none focus-visible:ring-0"
+            {showAnamneseExame && (
+              <button
+                onClick={() => handleTabChange('exame')}
+                className={cn(
+                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                  activeTab === 'exame'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                )}
+              >
+                Exame Físico
+              </button>
+            )}
+            <button
+              onClick={() => handleTabChange('planejamento')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'planejamento'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
             >
-              <PlanningTab isSigned={isFinalized} patientId={patientId} />
-            </TabsContent>
-            <TabsContent
-              value="procedimentos"
-              className="m-0 focus-visible:outline-none focus-visible:ring-0"
+              Planejamento
+            </button>
+            <button
+              onClick={() => handleTabChange('procedimentos')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'procedimentos'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
             >
-              <ProcedureTab isSigned={isFinalized} patientId={patientId} />
-            </TabsContent>
-            <TabsContent
-              value="evolucao"
-              className="m-0 focus-visible:outline-none focus-visible:ring-0"
+              Procedimentos
+            </button>
+            <button
+              onClick={() => handleTabChange('evolucao')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'evolucao'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
             >
-              <EvolutionTab isSigned={isFinalized} patientId={patientId} />
-            </TabsContent>
+              Evolução
+            </button>
             {showDocs && (
-              <>
-                <TabsContent
-                  value="receitas"
-                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <DocumentsTab type="receita" isSigned={isFinalized} patientId={patientId} />
-                </TabsContent>
-                <TabsContent
-                  value="laudos"
-                  className="m-0 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <DocumentsTab type="laudo" isSigned={isFinalized} patientId={patientId} />
-                </TabsContent>
-              </>
+              <button
+                onClick={() => handleTabChange('receitas')}
+                className={cn(
+                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                  activeTab === 'receitas'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                )}
+              >
+                Receitas
+              </button>
+            )}
+            {showDocs && (
+              <button
+                onClick={() => handleTabChange('laudos')}
+                className={cn(
+                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                  activeTab === 'laudos'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                )}
+              >
+                Laudos
+              </button>
             )}
             {showAudit && (
-              <TabsContent
-                value="auditoria"
-                className="m-0 focus-visible:outline-none focus-visible:ring-0"
+              <button
+                onClick={() => handleTabChange('auditoria')}
+                className={cn(
+                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                  activeTab === 'auditoria'
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                )}
               >
-                <AuditLogTab patientId={patientId} />
-              </TabsContent>
+                Auditoria
+              </button>
             )}
-          </Tabs>
+          </div>
+
+          <div className="max-w-5xl mx-auto">{renderContent()}</div>
         </div>
       </div>
     </div>
