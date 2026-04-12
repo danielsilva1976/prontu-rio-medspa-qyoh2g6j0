@@ -308,18 +308,18 @@ export default function Layout() {
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72 p-0 bg-sidebar">
+        <SheetContent side="left" className="w-56 p-0 bg-sidebar">
           <SidebarContent />
         </SheetContent>
       </Sheet>
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
+      <div className="hidden md:flex md:w-56 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
         <SidebarContent />
       </div>
 
       {/* Main content */}
-      <div className="md:pl-72 flex flex-col flex-1 min-w-0">
+      <div className="md:pl-56 flex flex-col flex-1 min-w-0">
         <header className="sticky top-0 z-20 flex h-16 flex-shrink-0 items-center gap-x-4 border-b border-border bg-background/95 backdrop-blur px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
