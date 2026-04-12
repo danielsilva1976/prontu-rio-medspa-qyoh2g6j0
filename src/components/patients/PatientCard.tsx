@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Calendar, Clock, FileText, Plus, Edit2 } from 'lucide-react'
+import { Calendar, Clock, FileText, Edit2 } from 'lucide-react'
 import { PatientDialog } from './PatientDialog'
 import { Patient } from '@/stores/usePatientStore'
 import { Badge } from '@/components/ui/badge'
@@ -119,21 +119,11 @@ export function PatientCard({ patient }: { patient: Patient }) {
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <Button
             asChild
-            variant="outline"
-            className="w-full sm:w-auto rounded-full shrink-0 group-hover:border-primary/40 bg-white transition-colors"
+            className="w-full sm:w-auto rounded-full shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all sm:hover:scale-[1.02]"
           >
             <Link to={`/prontuario/${patient.id}`}>
               <FileText className="w-4 h-4 mr-2" />
               Prontuário
-            </Link>
-          </Button>
-          <Button
-            asChild
-            className="w-full sm:w-auto rounded-full shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all sm:hover:scale-[1.02]"
-          >
-            <Link to={`/prontuario/${patient.id}?tab=evolucao`}>
-              <Plus className="w-4 h-4 mr-1.5" />
-              Novo Atendimento
             </Link>
           </Button>
         </div>
