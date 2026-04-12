@@ -152,8 +152,16 @@ export default function Layout() {
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4 space-y-6">
         <div>
           <Link
-            to="/pacientes"
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors border border-border shadow-sm bg-white"
+            to={isStarted ? '#' : '/pacientes'}
+            onClick={(e) => {
+              if (isStarted) e.preventDefault()
+            }}
+            className={cn(
+              'w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border border-border shadow-sm bg-white',
+              isStarted
+                ? 'opacity-50 cursor-not-allowed text-muted-foreground bg-muted/50'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar para Pacientes
