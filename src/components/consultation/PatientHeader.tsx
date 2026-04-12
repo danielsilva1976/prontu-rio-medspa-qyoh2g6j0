@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
+import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -23,15 +22,6 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
   return (
     <div className="px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4">
       <div className="flex items-start gap-4">
-        <Link to="/pacientes">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary mt-1"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
         <Avatar className="h-16 w-16 border border-border mt-0.5 shadow-sm shrink-0">
           <AvatarImage src={displayPatient.avatar} className="object-cover" />
           <AvatarFallback className="bg-primary/5 text-primary text-xl font-medium">
