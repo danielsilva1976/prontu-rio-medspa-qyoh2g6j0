@@ -1,19 +1,30 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Clock, MapPin, Briefcase, CreditCard, Edit2, Phone, Lock } from 'lucide-react'
+import {
+  ArrowLeft,
+  Clock,
+  MapPin,
+  Briefcase,
+  CreditCard,
+  Edit2,
+  Phone,
+  Lock,
+  Activity,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import usePatientStore from '@/stores/usePatientStore'
 import { PatientDialog } from '@/components/patients/PatientDialog'
+import { cn } from '@/lib/utils'
 
 type Props = {
   patient: any
   id: string
-  isFinalized: boolean
-  onFinalize: () => void
+  isStarted: boolean
+  onToggleConsultation: () => void
 }
 
-export default function PatientHeader({ patient, id, isFinalized, onFinalize }: Props) {
+export default function PatientHeader({ patient, id, isStarted, onToggleConsultation }: Props) {
   const { patients } = usePatientStore()
 
   const storePatient = patients.find((p) => p.id === id)
@@ -43,30 +54,36 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
               {displayPatient.name}
             </h1>
 
-            {isFinalized && (
+            {isStarted ? (
               <Badge
                 variant="outline"
-                className="text-destructive border-destructive bg-destructive/5 hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
+                className="text-primary border-primary bg-primary/5 hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
+              >
+                <Activity className="w-3.5 h-3.5" />
+                Em Atendimento
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="text-muted-foreground border-border bg-muted hidden sm:flex items-center gap-1.5 px-3 py-0.5 shrink-0"
               >
                 <Lock className="w-3.5 h-3.5" />
-                Consulta Finalizada - Edição Desabilitada
+                Atendimento Inativo - Edição Desabilitada
               </Badge>
             )}
 
-            {!isFinalized && (
-              <PatientDialog
-                patient={displayPatient}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted shrink-0"
-                  >
-                    <Edit2 className="h-3.5 w-3.5" />
-                  </Button>
-                }
-              />
-            )}
+            <PatientDialog
+              patient={displayPatient}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted shrink-0"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                </Button>
+              }
+            />
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
@@ -90,14 +107,16 @@ export default function PatientHeader({ patient, id, isFinalized, onFinalize }: 
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0">
-        {!isFinalized && (
-          <Button
-            onClick={onFinalize}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm w-full sm:w-auto"
-          >
-            Finalizar Atendimento
-          </Button>
-        )}
+        <Button
+          onClick={onToggleConsultation}
+          variant={isStarted ? 'destructive' : 'default'}
+          className={cn(
+            'shadow-sm w-full sm:w-auto transition-colors',
+            !isStarted && 'bg-primary hover:bg-primary/90 text-primary-foreground',
+          )}
+        >
+          {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
+        </Button>
       </div>
     </div>
   )

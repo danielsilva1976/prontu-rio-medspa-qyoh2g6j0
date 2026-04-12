@@ -33,6 +33,7 @@ import {
 import { cn } from '@/lib/utils'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 import useUserStore from '@/stores/useUserStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 
 export default function Layout() {
   const location = useLocation()
@@ -45,8 +46,11 @@ export default function Layout() {
 
   const matchClinical = matchPath({ path: '/prontuario/:id' }, location.pathname)
   const isClinical = !!matchClinical
-  const patientId = matchClinical?.params?.id
+  const patientId = matchClinical?.params?.id || ''
   const activeTab = searchParams.get('tab') || 'historico'
+
+  const { activeConsultations } = useConsultationStore()
+  const isStarted = activeConsultations[patientId] || false
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
@@ -117,17 +121,22 @@ export default function Layout() {
     </>
   )
 
-  const ClinicalTabLink = ({ id, label, icon: Icon, className }: any) => {
+  const ClinicalTabLink = ({ id, label, icon: Icon, className, disabled }: any) => {
     const isActive = activeTab === id
     return (
       <Link
-        to={`/prontuario/${patientId}?tab=${id}`}
+        to={disabled ? '#' : `/prontuario/${patientId}?tab=${id}`}
         replace
+        onClick={(e) => {
+          if (disabled) e.preventDefault()
+        }}
         className={cn(
           'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
           isActive
             ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            : disabled
+              ? 'text-muted-foreground/40 cursor-not-allowed'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           className,
         )}
       >
@@ -164,13 +173,38 @@ export default function Layout() {
               <div className="space-y-1">
                 {showAnamneseExame && (
                   <>
-                    <ClinicalTabLink id="anamnese" label="Anamnese" icon={FileText} />
-                    <ClinicalTabLink id="exame" label="Exame Físico" icon={Activity} />
+                    <ClinicalTabLink
+                      id="anamnese"
+                      label="Anamnese"
+                      icon={FileText}
+                      disabled={!isStarted}
+                    />
+                    <ClinicalTabLink
+                      id="exame"
+                      label="Exame Físico"
+                      icon={Activity}
+                      disabled={!isStarted}
+                    />
                   </>
                 )}
-                <ClinicalTabLink id="planejamento" label="Planejamento" icon={ClipboardList} />
-                <ClinicalTabLink id="procedimentos" label="Procedimentos" icon={Syringe} />
-                <ClinicalTabLink id="evolucao" label="Evolução" icon={Clock} />
+                <ClinicalTabLink
+                  id="planejamento"
+                  label="Planejamento"
+                  icon={ClipboardList}
+                  disabled={!isStarted}
+                />
+                <ClinicalTabLink
+                  id="procedimentos"
+                  label="Procedimentos"
+                  icon={Syringe}
+                  disabled={!isStarted}
+                />
+                <ClinicalTabLink
+                  id="evolucao"
+                  label="Evolução"
+                  icon={Clock}
+                  disabled={!isStarted}
+                />
               </div>
             </AccordionContent>
           </AccordionItem>

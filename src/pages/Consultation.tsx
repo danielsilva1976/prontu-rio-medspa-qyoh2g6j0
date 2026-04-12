@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import HistoryTab from '@/components/consultation/HistoryTab'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 import { cn } from '@/lib/utils'
 
 export default function Consultation() {
@@ -24,8 +25,9 @@ export default function Consultation() {
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
   const { patients } = usePatientStore()
+  const { activeConsultations, startConsultation, endConsultation } = useConsultationStore()
 
-  const [isFinalized, setIsFinalized] = useState(false)
+  const isStarted = activeConsultations[patientId] || false
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
@@ -44,28 +46,41 @@ export default function Consultation() {
   // Sync tab state with URL and ensure tab access is valid for role
   useEffect(() => {
     let newTab = activeTab
+
+    // Redirect if trying to access disabled "Novo Atendimento" tabs while consultation is not started
+    const novoAtendimentoTabs = ['anamnese', 'exame', 'planejamento', 'procedimentos', 'evolucao']
+    if (!isStarted && novoAtendimentoTabs.includes(activeTab)) {
+      newTab = 'historico'
+    }
+
     if (!showAnamneseExame && (activeTab === 'anamnese' || activeTab === 'exame')) {
-      newTab = 'planejamento'
+      newTab = newTab === activeTab ? 'historico' : newTab
     }
     if (!showDocs && (activeTab === 'receitas' || activeTab === 'laudos')) {
-      newTab = 'planejamento'
+      newTab = newTab === activeTab ? 'historico' : newTab
     }
     if (!showAudit && activeTab === 'auditoria') {
-      newTab = 'planejamento'
+      newTab = newTab === activeTab ? 'historico' : newTab
     }
 
     if (newTab !== activeTab) {
       setSearchParams({ tab: newTab }, { replace: true })
     }
-  }, [showAnamneseExame, showDocs, showAudit, activeTab, setSearchParams])
+  }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value }, { replace: true })
   }
 
-  const handleFinalize = () => {
-    setIsFinalized(true)
-    addLog('Status alterado: Consulta Finalizada', patientId)
+  const handleToggleConsultation = () => {
+    if (isStarted) {
+      endConsultation(patientId)
+      addLog('Status alterado: Consulta Finalizada', patientId)
+      setSearchParams({ tab: 'historico' }, { replace: true })
+    } else {
+      startConsultation(patientId)
+      addLog('Status alterado: Consulta Iniciada', patientId)
+    }
   }
 
   // Graceful error state if patient doesn't exist
@@ -92,8 +107,8 @@ export default function Consultation() {
         <PatientHeader
           patient={patient}
           id={patientId}
-          isFinalized={isFinalized}
-          onFinalize={handleFinalize}
+          isStarted={isStarted}
+          onToggleConsultation={handleToggleConsultation}
         />
       </div>
 
@@ -115,12 +130,14 @@ export default function Consultation() {
             </button>
             {showAnamneseExame && (
               <button
+                disabled={!isStarted}
                 onClick={() => handleTabChange('anamnese')}
                 className={cn(
                   'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                   activeTab === 'anamnese'
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                  !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
                 )}
               >
                 Anamnese
@@ -128,46 +145,54 @@ export default function Consultation() {
             )}
             {showAnamneseExame && (
               <button
+                disabled={!isStarted}
                 onClick={() => handleTabChange('exame')}
                 className={cn(
                   'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                   activeTab === 'exame'
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                  !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
                 )}
               >
                 Exame Físico
               </button>
             )}
             <button
+              disabled={!isStarted}
               onClick={() => handleTabChange('planejamento')}
               className={cn(
                 'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                 activeTab === 'planejamento'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
               )}
             >
               Planejamento
             </button>
             <button
+              disabled={!isStarted}
               onClick={() => handleTabChange('procedimentos')}
               className={cn(
                 'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                 activeTab === 'procedimentos'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
               )}
             >
               Procedimentos
             </button>
             <button
+              disabled={!isStarted}
               onClick={() => handleTabChange('evolucao')}
               className={cn(
                 'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                 activeTab === 'evolucao'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
               )}
             >
               Evolução
@@ -219,31 +244,31 @@ export default function Consultation() {
             </div>
             {showAnamneseExame && (
               <div className={cn(activeTab !== 'anamnese' && 'hidden')}>
-                <AnamnesisTab isSigned={isFinalized} patientId={patientId} />
+                <AnamnesisTab isSigned={!isStarted} patientId={patientId} />
               </div>
             )}
             {showAnamneseExame && (
               <div className={cn(activeTab !== 'exame' && 'hidden')}>
-                <PhysicalExamTab isSigned={isFinalized} patientId={patientId} />
+                <PhysicalExamTab isSigned={!isStarted} patientId={patientId} />
               </div>
             )}
             <div className={cn(activeTab !== 'planejamento' && 'hidden')}>
-              <PlanningTab isSigned={isFinalized} patientId={patientId} />
+              <PlanningTab isSigned={!isStarted} patientId={patientId} />
             </div>
             <div className={cn(activeTab !== 'procedimentos' && 'hidden')}>
-              <ProcedureTab isSigned={isFinalized} patientId={patientId} />
+              <ProcedureTab isSigned={!isStarted} patientId={patientId} />
             </div>
             <div className={cn(activeTab !== 'evolucao' && 'hidden')}>
-              <EvolutionTab isSigned={isFinalized} patientId={patientId} />
+              <EvolutionTab isSigned={!isStarted} patientId={patientId} />
             </div>
             {showDocs && (
               <div className={cn(activeTab !== 'receitas' && 'hidden')}>
-                <DocumentsTab type="receita" isSigned={isFinalized} patientId={patientId} />
+                <DocumentsTab type="receita" isSigned={false} patientId={patientId} />
               </div>
             )}
             {showDocs && (
               <div className={cn(activeTab !== 'laudos' && 'hidden')}>
-                <DocumentsTab type="laudo" isSigned={isFinalized} patientId={patientId} />
+                <DocumentsTab type="laudo" isSigned={false} patientId={patientId} />
               </div>
             )}
             {showAudit && (
