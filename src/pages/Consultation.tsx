@@ -3,7 +3,6 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import PatientHeader from '@/components/consultation/PatientHeader'
-import ConsultationSidebar from '@/components/consultation/ConsultationSidebar'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
 import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
 import ProcedureTab from '@/components/consultation/ProcedureTab'
@@ -69,10 +68,6 @@ export default function Consultation() {
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
-  const handleTabChange = (value: string) => {
-    setSearchParams({ tab: value }, { replace: true })
-  }
-
   const handleToggleConsultation = () => {
     if (isStarted) {
       endConsultation(patientId)
@@ -114,144 +109,8 @@ export default function Consultation() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <ConsultationSidebar
-          activeTab={activeTab}
-          isStarted={isStarted}
-          showAnamneseExame={showAnamneseExame}
-          showDocs={showDocs}
-          showAudit={showAudit}
-          onTabChange={handleTabChange}
-        />
-
         {/* Main Content Area */}
         <div className="flex-1 overflow-auto bg-muted/20 p-4 md:p-6 w-full relative">
-          {/* Mobile Navigation Scroll */}
-          <div className="md:hidden flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <button
-              onClick={() => handleTabChange('planejamento')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'planejamento'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-              )}
-            >
-              Planejamento
-            </button>
-            <button
-              onClick={() => handleTabChange('historico')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'historico'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-              )}
-            >
-              Histórico
-            </button>
-
-            <div className="w-px bg-border shrink-0 mx-1 my-1" />
-
-            {showAnamneseExame && (
-              <button
-                disabled={!isStarted}
-                onClick={() => handleTabChange('anamnese')}
-                className={cn(
-                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  activeTab === 'anamnese'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                  !isStarted && 'opacity-50 pointer-events-none bg-muted',
-                )}
-              >
-                Anamnese
-              </button>
-            )}
-            {showAnamneseExame && (
-              <button
-                disabled={!isStarted}
-                onClick={() => handleTabChange('exame')}
-                className={cn(
-                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  activeTab === 'exame'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                  !isStarted && 'opacity-50 pointer-events-none bg-muted',
-                )}
-              >
-                Exame Físico
-              </button>
-            )}
-            <button
-              disabled={!isStarted}
-              onClick={() => handleTabChange('procedimentos')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'procedimentos'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                !isStarted && 'opacity-50 pointer-events-none bg-muted',
-              )}
-            >
-              Procedimentos
-            </button>
-            <button
-              disabled={!isStarted}
-              onClick={() => handleTabChange('evolucao')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'evolucao'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                !isStarted && 'opacity-50 pointer-events-none bg-muted',
-              )}
-            >
-              Evolução
-            </button>
-
-            {showDocs && <div className="w-px bg-border shrink-0 mx-1 my-1" />}
-
-            {showDocs && (
-              <button
-                onClick={() => handleTabChange('receitas')}
-                className={cn(
-                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  activeTab === 'receitas'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                )}
-              >
-                Receitas
-              </button>
-            )}
-            {showDocs && (
-              <button
-                onClick={() => handleTabChange('laudos')}
-                className={cn(
-                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  activeTab === 'laudos'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                )}
-              >
-                Laudos
-              </button>
-            )}
-            {showAudit && (
-              <button
-                onClick={() => handleTabChange('auditoria')}
-                className={cn(
-                  'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  activeTab === 'auditoria'
-                    ? 'bg-amber-600 text-white border-amber-600'
-                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                )}
-              >
-                Auditoria
-              </button>
-            )}
-          </div>
-
           <div className="max-w-5xl mx-auto">
             <div className={cn(activeTab !== 'historico' && 'hidden')}>
               <HistoryTab patientId={patientId} />

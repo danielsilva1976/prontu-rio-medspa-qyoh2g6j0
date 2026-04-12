@@ -169,6 +169,7 @@ export default function Layout() {
         </div>
 
         <div className="space-y-1">
+          <ClinicalTabLink id="planejamento" label="Planejamento" icon={ClipboardList} />
           <ClinicalTabLink id="historico" label="Histórico" icon={History} />
         </div>
 
@@ -195,12 +196,6 @@ export default function Layout() {
                     />
                   </>
                 )}
-                <ClinicalTabLink
-                  id="planejamento"
-                  label="Planejamento"
-                  icon={ClipboardList}
-                  disabled={!isStarted}
-                />
                 <ClinicalTabLink
                   id="procedimentos"
                   label="Procedimentos"
