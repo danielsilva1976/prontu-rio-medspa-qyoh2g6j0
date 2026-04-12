@@ -56,8 +56,7 @@ export default function ConsultationSidebar({
               ? 'bg-amber-100 text-amber-900'
               : 'bg-primary/10 text-primary font-semibold'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-          disabled &&
-            'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground',
+          disabled && 'opacity-50 pointer-events-none',
         )}
       >
         <Icon
@@ -77,7 +76,7 @@ export default function ConsultationSidebar({
         variant="outline"
         className={cn(
           'w-full justify-start gap-2 text-muted-foreground hover:text-foreground',
-          isStarted && 'opacity-50 cursor-not-allowed hover:text-muted-foreground',
+          isStarted && 'opacity-50 pointer-events-none',
         )}
         disabled={isStarted}
         asChild={!isStarted}
@@ -96,6 +95,14 @@ export default function ConsultationSidebar({
       </Button>
 
       <nav className="flex flex-col gap-1 mt-2">
+        <div className="mb-1 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          Tratamento
+        </div>
+        <NavItem tab="planejamento" label="Planejamento" icon={ClipboardList} />
+
+        <div className="mt-4 mb-1 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          Geral
+        </div>
         <NavItem tab="historico" label="Histórico" icon={History} />
 
         <div className="mt-4 mb-1 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -109,11 +116,6 @@ export default function ConsultationSidebar({
         )}
         <NavItem tab="procedimentos" label="Procedimentos" disabled={!isStarted} icon={Syringe} />
         <NavItem tab="evolucao" label="Evolução" disabled={!isStarted} icon={Activity} />
-
-        <div className="mt-4 mb-1 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-          Tratamento
-        </div>
-        <NavItem tab="planejamento" label="Planejamento" icon={ClipboardList} />
 
         {showDocs && (
           <>

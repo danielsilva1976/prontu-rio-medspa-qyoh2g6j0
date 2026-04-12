@@ -128,6 +128,17 @@ export default function Consultation() {
           {/* Mobile Navigation Scroll */}
           <div className="md:hidden flex gap-2 overflow-x-auto pb-4 mb-2 -mx-4 px-4 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <button
+              onClick={() => handleTabChange('planejamento')}
+              className={cn(
+                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
+                activeTab === 'planejamento'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
+              )}
+            >
+              Planejamento
+            </button>
+            <button
               onClick={() => handleTabChange('historico')}
               className={cn(
                 'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
@@ -138,6 +149,9 @@ export default function Consultation() {
             >
               Histórico
             </button>
+
+            <div className="w-px bg-border shrink-0 mx-1 my-1" />
+
             {showAnamneseExame && (
               <button
                 disabled={!isStarted}
@@ -147,7 +161,7 @@ export default function Consultation() {
                   activeTab === 'anamnese'
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                  !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
+                  !isStarted && 'opacity-50 pointer-events-none bg-muted',
                 )}
               >
                 Anamnese
@@ -162,7 +176,7 @@ export default function Consultation() {
                   activeTab === 'exame'
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                  !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
+                  !isStarted && 'opacity-50 pointer-events-none bg-muted',
                 )}
               >
                 Exame Físico
@@ -176,7 +190,7 @@ export default function Consultation() {
                 activeTab === 'procedimentos'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
+                !isStarted && 'opacity-50 pointer-events-none bg-muted',
               )}
             >
               Procedimentos
@@ -189,24 +203,10 @@ export default function Consultation() {
                 activeTab === 'evolucao'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                !isStarted && 'opacity-50 cursor-not-allowed bg-muted hover:bg-muted',
+                !isStarted && 'opacity-50 pointer-events-none bg-muted',
               )}
             >
               Evolução
-            </button>
-
-            <div className="w-px bg-border shrink-0 mx-1 my-1" />
-
-            <button
-              onClick={() => handleTabChange('planejamento')}
-              className={cn(
-                'shrink-0 px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                activeTab === 'planejamento'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white text-muted-foreground border-border hover:bg-muted',
-              )}
-            >
-              Planejamento
             </button>
 
             {showDocs && <div className="w-px bg-border shrink-0 mx-1 my-1" />}
