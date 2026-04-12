@@ -39,6 +39,7 @@ export default function Layout() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const { currentUser, users, switchUser, isAuthenticated, logout } = useUserStore()
+  const { activeConsultations } = useConsultationStore()
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
@@ -49,7 +50,6 @@ export default function Layout() {
   const patientId = matchClinical?.params?.id || ''
   const activeTab = searchParams.get('tab') || 'historico'
 
-  const { activeConsultations } = useConsultationStore()
   const isStarted = activeConsultations[patientId] || false
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
