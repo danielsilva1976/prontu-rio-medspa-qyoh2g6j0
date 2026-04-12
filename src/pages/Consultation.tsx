@@ -11,7 +11,6 @@ import DocumentsTab from '@/components/consultation/DocumentsTab'
 import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
 import HistoryTab from '@/components/consultation/HistoryTab'
-import ConsultationSidebar from '@/components/consultation/ConsultationSidebar'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -110,13 +109,6 @@ export default function Consultation() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <ConsultationSidebar
-          activeTab={activeTab}
-          isStarted={isStarted}
-          showAnamneseExame={showAnamneseExame}
-          showDocs={showDocs}
-          showAudit={showAudit}
-        />
         {/* Main Content Area */}
         <div className="flex-1 overflow-auto bg-muted/20 p-4 md:p-6 w-full relative">
           <div className="max-w-5xl mx-auto">
