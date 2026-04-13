@@ -1,7 +1,8 @@
-import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
+import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { useNavigate } from 'react-router-dom'
 import usePatientStore from '@/stores/usePatientStore'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { cn } from '@/lib/utils'
@@ -15,70 +16,88 @@ type Props = {
 
 export default function PatientHeader({ patient, id, isStarted, onToggleConsultation }: Props) {
   const { patients } = usePatientStore()
+  const navigate = useNavigate()
 
   const storePatient = patients.find((p) => p.id === id)
   const displayPatient = storePatient || patient
 
   return (
-    <div className="px-6 py-4 flex flex-col md:flex-row md:items-start justify-between gap-4">
-      <div className="flex items-start gap-4">
-        <Avatar className="h-16 w-16 border border-border mt-0.5 shadow-sm shrink-0">
-          <AvatarImage src={displayPatient.avatar} className="object-cover" />
-          <AvatarFallback className="bg-primary/5 text-primary text-xl font-medium">
-            {displayPatient.name.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col gap-1.5 min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2 truncate">
-              {displayPatient.name}
-            </h1>
+    <div className="px-6 py-4 flex flex-col gap-3">
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            'text-muted-foreground -ml-3 hover:text-foreground',
+            isStarted && 'opacity-50 cursor-not-allowed',
+          )}
+          onClick={() => !isStarted && navigate('/pacientes')}
+          disabled={isStarted}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar para Pacientes
+        </Button>
+      </div>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16 border border-border mt-0.5 shadow-sm shrink-0">
+            <AvatarImage src={displayPatient.avatar} className="object-cover" />
+            <AvatarFallback className="bg-primary/5 text-primary text-xl font-medium">
+              {displayPatient.name?.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2 truncate">
+                {displayPatient.name}
+              </h1>
 
-            <PatientDialog
-              patient={displayPatient}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted shrink-0"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </Button>
-              }
-            />
-          </div>
+              <PatientDialog
+                patient={displayPatient}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted shrink-0"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </Button>
+                }
+              />
+            </div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5 font-medium text-foreground/80">
-              <Clock className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.age} anos
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CreditCard className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.cpf}
-            </span>
-            <span className="flex items-center gap-1.5 hidden sm:flex">
-              <Briefcase className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.profissao}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.phone}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/70" />
-            <span className="truncate">{displayPatient.endereco}</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5 font-medium text-foreground/80">
+                <Clock className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.age} anos
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CreditCard className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.cpf}
+              </span>
+              <span className="flex items-center gap-1.5 hidden sm:flex">
+                <Briefcase className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.profissao}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.phone}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/70" />
+              <span className="truncate">{displayPatient.endereco}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0">
-        <Button
-          onClick={onToggleConsultation}
-          variant={isStarted ? 'destructive' : 'default'}
-          className={cn(
-            'shadow-sm w-full sm:w-auto transition-colors',
-            !isStarted && 'bg-primary hover:bg-primary/90 text-primary-foreground',
-          )}
-        >
-          {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0">
+          <Button
+            onClick={onToggleConsultation}
+            variant={isStarted ? 'destructive' : 'default'}
+            className={cn(
+              'shadow-sm w-full sm:w-auto transition-colors',
+              !isStarted && 'bg-primary hover:bg-primary/90 text-primary-foreground',
+            )}
+          >
+            {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
+          </Button>
+        </div>
       </div>
     </div>
   )
