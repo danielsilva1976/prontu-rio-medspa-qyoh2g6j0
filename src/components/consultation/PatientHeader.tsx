@@ -28,11 +28,19 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
           variant="ghost"
           size="sm"
           className={cn(
-            'text-muted-foreground -ml-3 hover:text-foreground',
-            isStarted && 'opacity-50 cursor-not-allowed',
+            'text-muted-foreground -ml-3 transition-colors',
+            isStarted
+              ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground'
+              : 'hover:text-foreground',
           )}
-          onClick={() => !isStarted && navigate('/pacientes')}
-          disabled={isStarted}
+          onClick={(e) => {
+            if (isStarted) {
+              e.preventDefault()
+              return
+            }
+            navigate('/pacientes')
+          }}
+          aria-disabled={isStarted}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para Pacientes
