@@ -77,7 +77,7 @@ export default function Layout() {
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
-  const showAudit = currentUser.id === 'usr-admin'
+  const showAudit = true
 
   const handleProtectedAction = (action: () => void) => {
     if (isStarted) {
@@ -270,29 +270,20 @@ export default function Layout() {
           </AccordionItem>
         </Accordion>
 
-        {(showDocs || showAudit) && (
-          <div>
-            <h4 className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-              Documentos e Auditoria
-            </h4>
-            <div className="space-y-1">
-              {showDocs && (
-                <>
-                  <ClinicalTabLink id="receitas" label="Receitas" icon={FileText} />
-                  <ClinicalTabLink id="laudos" label="Laudos" icon={FileText} />
-                </>
-              )}
-              {showAudit && (
-                <ClinicalTabLink
-                  id="auditoria"
-                  label="Auditoria"
-                  icon={ShieldCheck}
-                  className="mt-4 text-amber-600 hover:text-amber-700 hover:bg-amber-50/50"
-                />
-              )}
-            </div>
+        <div>
+          <h4 className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            Documentos e Auditoria
+          </h4>
+          <div className="space-y-1">
+            {showDocs && (
+              <>
+                <ClinicalTabLink id="receitas" label="Receitas" icon={FileText} />
+                <ClinicalTabLink id="laudos" label="Laudos" icon={FileText} />
+              </>
+            )}
+            {showAudit && <ClinicalTabLink id="auditoria" label="Auditoria" icon={ShieldCheck} />}
           </div>
-        )}
+        </div>
       </div>
     </>
   )

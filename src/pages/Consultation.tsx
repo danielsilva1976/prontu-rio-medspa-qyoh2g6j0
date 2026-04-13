@@ -31,7 +31,7 @@ export default function Consultation() {
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
-  const showAudit = currentUser.id === 'usr-admin'
+  const showAudit = true
 
   const activeTab = searchParams.get('tab') || 'historico'
 
