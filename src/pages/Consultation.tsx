@@ -82,7 +82,7 @@ export default function Consultation() {
   // Graceful error state if patient doesn't exist
   if (!patient) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] bg-muted/20 p-6 animate-fade-in text-center">
+      <div className="flex flex-col items-center justify-center h-[calc(100dvh-4rem)] bg-muted/20 p-6 animate-fade-in text-center">
         <div className="w-20 h-20 bg-white border border-border rounded-full flex items-center justify-center mb-6 shadow-sm">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50" />
         </div>
@@ -98,8 +98,9 @@ export default function Consultation() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <div className="bg-white border-b border-border shadow-sm z-10 shrink-0">
+    <div className="flex flex-col h-[calc(100dvh-4rem)] overflow-hidden bg-muted/20">
+      {/* Fixed Header */}
+      <div className="bg-white border-b border-border shadow-sm z-20 shrink-0 relative">
         <PatientHeader
           patient={patient}
           id={patientId}
@@ -108,10 +109,10 @@ export default function Consultation() {
         />
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-auto bg-muted/20 p-4 md:p-6 w-full relative">
-          <div className="max-w-5xl mx-auto">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Main Content Area with Independent Scrollbar aligned below the header */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full relative scroll-smooth">
+          <div className="max-w-5xl mx-auto pb-8">
             <div className={cn(activeTab !== 'historico' && 'hidden')}>
               <HistoryTab patientId={patientId} />
             </div>
