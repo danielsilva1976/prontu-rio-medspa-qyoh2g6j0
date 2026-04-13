@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Link,
   Outlet,
@@ -39,16 +38,6 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 import useUserStore from '@/stores/useUserStore'
@@ -61,8 +50,6 @@ export default function Layout() {
   const { activeConsultations } = useConsultationStore()
 
   const navigate = useNavigate()
-  const [showLeaveAlert, setShowLeaveAlert] = useState(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
@@ -78,20 +65,6 @@ export default function Layout() {
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
   const showAudit = true
-
-  const handleProtectedAction = (action: () => void) => {
-    if (isStarted) {
-      setPendingAction(() => action)
-      setShowLeaveAlert(true)
-    } else {
-      action()
-    }
-  }
-
-  const confirmLeave = () => {
-    setShowLeaveAlert(false)
-    if (pendingAction) pendingAction()
-  }
 
   const navItems = [
     { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
@@ -160,20 +133,10 @@ export default function Layout() {
 
   const ClinicalTabLink = ({ id, label, icon: Icon, className, disabled }: any) => {
     const isActive = activeTab === id
-    const novoAtendimentoTabs = ['anamnese', 'exame', 'procedimentos', 'evolucao']
-    const isOutsideSession = !novoAtendimentoTabs.includes(id)
 
     const handleClick = (e: React.MouseEvent) => {
       if (disabled) {
         e.preventDefault()
-        return
-      }
-
-      if (isStarted && isOutsideSession && !isActive) {
-        e.preventDefault()
-        handleProtectedAction(() => {
-          navigate(`/prontuario/${patientId}?tab=${id}`, { replace: true })
-        })
       }
     }
 
@@ -205,20 +168,8 @@ export default function Layout() {
         <div>
           <Button
             variant="outline"
-            className={cn(
-              'w-full justify-start shadow-sm bg-white transition-all',
-              isStarted
-                ? 'opacity-50 cursor-not-allowed text-muted-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-            onClick={(e) => {
-              if (isStarted) {
-                e.preventDefault()
-                return
-              }
-              handleProtectedAction(() => navigate('/pacientes'))
-            }}
-            disabled={isStarted}
+            className="w-full justify-start shadow-sm bg-white transition-all text-muted-foreground hover:text-foreground"
+            onClick={() => navigate('/pacientes')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar para Pacientes
@@ -403,22 +354,6 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
-
-      <AlertDialog open={showLeaveAlert} onOpenChange={setShowLeaveAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Consulta em andamento</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você tem uma consulta ativa para este paciente. Se você sair desta seção agora, a
-              consulta continuará aberta em segundo plano. Tem certeza que deseja continuar?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmLeave}>Sim, continuar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
