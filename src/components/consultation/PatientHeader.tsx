@@ -1,8 +1,7 @@
-import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone, ArrowLeft } from 'lucide-react'
+import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { useNavigate } from 'react-router-dom'
 import usePatientStore from '@/stores/usePatientStore'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { cn } from '@/lib/utils'
@@ -16,37 +15,12 @@ type Props = {
 
 export default function PatientHeader({ patient, id, isStarted, onToggleConsultation }: Props) {
   const { patients } = usePatientStore()
-  const navigate = useNavigate()
 
   const storePatient = patients.find((p) => p.id === id)
   const displayPatient = storePatient || patient
 
   return (
     <div className="px-6 py-4 flex flex-col gap-3">
-      <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={isStarted}
-          aria-disabled={isStarted}
-          className={cn(
-            'text-muted-foreground -ml-3 transition-colors',
-            isStarted
-              ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground'
-              : 'hover:text-foreground',
-          )}
-          onClick={(e) => {
-            if (isStarted) {
-              e.preventDefault()
-              return
-            }
-            navigate('/pacientes')
-          }}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar para Pacientes
-        </Button>
-      </div>
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16 border border-border mt-0.5 shadow-sm shrink-0">
