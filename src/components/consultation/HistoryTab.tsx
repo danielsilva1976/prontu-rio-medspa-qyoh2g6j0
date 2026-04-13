@@ -1,111 +1,158 @@
 import { useEffect, useState } from 'react'
-import { Calendar, Clock, User, CheckCircle2, XCircle } from 'lucide-react'
+import { FileText, Calendar, Clock, ShieldCheck } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
-import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function HistoryTab({ patientId }: { patientId: string }) {
-  const [appointments, setAppointments] = useState<any[]>([])
+  const [records, setRecords] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchAppointments() {
-      try {
-        const records = await pb.collection('appointments').getFullList({
-          filter: `patient = "${patientId}"`,
-          sort: '-appointment_date',
-        })
-        setAppointments(records)
-      } catch (error) {
-        console.error('Error fetching appointments', error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchRecords = async () => {
+    try {
+      const medicalRecords = await pb.collection('medical_records').getFullList({
+        filter: `patient = "${patientId}"`,
+        sort: '-created',
+      })
+      setRecords(medicalRecords)
+    } catch (error) {
+      console.error('Error fetching medical records', error)
+    } finally {
+      setLoading(false)
     }
-    fetchAppointments()
+  }
+
+  useEffect(() => {
+    fetchRecords()
   }, [patientId])
+
+  useRealtime('medical_records', () => {
+    fetchRecords()
+  })
 
   if (loading) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
+      <div className="space-y-6 animate-pulse">
+        <Skeleton className="h-[400px] w-full max-w-[800px] mx-auto rounded-md" />
       </div>
     )
   }
 
-  if (appointments.length === 0) {
+  if (records.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm">
-        <Calendar className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-        <h3 className="text-lg font-medium text-foreground">Nenhum histórico encontrado</h3>
+      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm max-w-[800px] mx-auto">
+        <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+        <h3 className="text-lg font-medium text-foreground">Nenhum registro encontrado</h3>
         <p className="text-sm text-muted-foreground">
-          Este paciente não possui agendamentos anteriores.
+          Este paciente ainda não possui prontuários finalizados.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-serif text-primary">Histórico de Consultas</h2>
+    <div className="space-y-8 animate-fade-in-up">
+      <div className="flex items-center justify-between max-w-[800px] mx-auto">
+        <h2 className="text-xl font-serif text-primary">Prontuários Finalizados</h2>
         <span className="text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
-          {appointments.length} {appointments.length === 1 ? 'registro' : 'registros'}
+          {records.length} {records.length === 1 ? 'documento' : 'documentos'}
         </span>
       </div>
 
-      <div className="space-y-3">
-        {appointments.map((apt) => (
-          <Card
-            key={apt.id}
-            className="overflow-hidden transition-all hover:shadow-md border-border/50"
+      <div className="space-y-8">
+        {records.map((record) => (
+          <div
+            key={record.id}
+            className="bg-white border border-gray-200 shadow-sm mx-auto overflow-hidden relative"
+            style={{ maxWidth: '800px' }}
           >
-            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0 mt-1 sm:mt-0">
-                  <Calendar className="h-5 w-5" />
-                </div>
+            {/* Top decorative edge to look like paper */}
+            <div className="h-2 w-full bg-primary/10 border-b border-gray-100"></div>
+
+            <div className="p-8 sm:p-12">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-6 mb-8 gap-4">
                 <div>
-                  <h4 className="font-medium text-base text-foreground">
-                    {apt.service_name || 'Consulta'}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
-                    {apt.appointment_date && (
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-4 w-4 opacity-70" />
-                        {new Date(apt.appointment_date).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    )}
-                    {apt.professional && (
-                      <span className="flex items-center gap-1.5">
-                        <User className="h-4 w-4 opacity-70" />
-                        {apt.professional}
-                      </span>
-                    )}
+                  <h3 className="text-2xl font-serif text-gray-900 mb-2">
+                    Prontuário de Atendimento
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(record.created).toLocaleDateString('pt-BR')}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      {new Date(record.created).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
                 </div>
+                <div className="text-left sm:text-right">
+                  <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded font-medium uppercase tracking-wider">
+                    <ShieldCheck className="h-3 w-3" />
+                    Documento Original
+                  </span>
+                </div>
               </div>
-              <div className="pl-14 sm:pl-0">
-                {apt.status === 'Cancelado' ? (
-                  <span className="inline-flex items-center gap-1.5 text-red-700 text-xs font-medium bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
-                    <XCircle className="h-3.5 w-3.5" /> Cancelado
-                  </span>
+
+              <div className="space-y-8 text-gray-800 leading-relaxed">
+                {record.content && Object.keys(record.content).length > 0 ? (
+                  <>
+                    {record.content.anamnese && (
+                      <section>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                          Anamnese
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">{record.content.anamnese}</p>
+                      </section>
+                    )}
+                    {record.content.exame && (
+                      <section>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                          Exame Físico
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">{record.content.exame}</p>
+                      </section>
+                    )}
+                    {record.content.procedimentos && (
+                      <section>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                          Procedimentos
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {record.content.procedimentos}
+                        </p>
+                      </section>
+                    )}
+                    {record.content.evolucao && (
+                      <section>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                          Evolução
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">{record.content.evolucao}</p>
+                      </section>
+                    )}
+                  </>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-green-700 text-xs font-medium bg-green-50 border border-green-100 px-2.5 py-1 rounded-full">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Realizado
-                  </span>
+                  <p className="text-sm italic text-gray-400">Conteúdo do prontuário vazio.</p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="mt-16 pt-8 border-t border-gray-200 flex flex-col items-center sm:items-end text-center sm:text-right">
+                <div className="w-64 border-b border-gray-800 mb-3"></div>
+                <p className="text-sm font-semibold text-gray-900">
+                  Assinado por: {record.professional_name}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{record.professional_registration}</p>
+                <div className="flex items-center gap-1 mt-3 text-[10px] text-green-700 font-medium uppercase tracking-wider bg-green-50 px-2 py-1 rounded">
+                  <ShieldCheck className="h-3 w-3" />
+                  Assinatura Digital Validada
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>

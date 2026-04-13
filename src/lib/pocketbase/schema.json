@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-13T20:15:21.197Z",
+  "generatedAt": "2026-04-13T21:23:59.053Z",
   "collections": [
     {
       "name": "patients",
@@ -403,6 +403,59 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_app_settings_key ON app_settings (key)"]
+    },
+    {
+      "name": "medical_records",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "content",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "professional_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "professional_registration",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_medical_records_patient ON medical_records (patient)"]
     }
   ]
 }
