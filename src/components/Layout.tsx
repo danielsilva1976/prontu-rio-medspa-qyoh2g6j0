@@ -168,7 +168,12 @@ export default function Layout() {
         <div>
           <Button
             variant="outline"
-            className="w-full justify-start shadow-sm bg-white transition-all text-muted-foreground hover:text-foreground"
+            disabled={isStarted}
+            className={cn(
+              'w-full justify-start shadow-sm bg-white transition-all text-muted-foreground hover:text-foreground',
+              isStarted &&
+                'opacity-50 cursor-not-allowed hover:text-muted-foreground pointer-events-none',
+            )}
             onClick={() => navigate('/pacientes')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
