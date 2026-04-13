@@ -34,7 +34,13 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
               ? 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground'
               : 'hover:text-foreground',
           )}
-          onClick={() => navigate('/pacientes')}
+          onClick={(e) => {
+            if (isStarted) {
+              e.preventDefault()
+              return
+            }
+            navigate('/pacientes')
+          }}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para Pacientes
