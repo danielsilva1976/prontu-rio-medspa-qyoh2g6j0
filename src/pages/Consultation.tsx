@@ -43,6 +43,14 @@ export default function Consultation() {
     }
   }, [patientId, patient, addLog])
 
+  // Lock global scrolling to ensure header remains pinned and internal scroll works perfectly
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
   // Sync tab state with URL and ensure tab access is valid for role
   useEffect(() => {
     let newTab = activeTab
@@ -82,7 +90,7 @@ export default function Consultation() {
   // Graceful error state if patient doesn't exist
   if (!patient) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100dvh-4rem)] bg-muted/20 p-6 animate-fade-in text-center">
+      <div className="flex flex-col flex-1 w-full min-h-0 items-center justify-center h-[calc(100dvh-4rem)] bg-muted/20 p-6 animate-fade-in text-center">
         <div className="w-20 h-20 bg-white border border-border rounded-full flex items-center justify-center mb-6 shadow-sm">
           <AlertCircle className="w-10 h-10 text-muted-foreground/50" />
         </div>
@@ -98,7 +106,7 @@ export default function Consultation() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)] overflow-hidden bg-muted/20">
+    <div className="flex flex-col flex-1 w-full min-h-0 h-[calc(100dvh-4rem)] overflow-hidden bg-muted/20">
       {/* Fixed Header */}
       <div className="bg-white border-b border-border shadow-sm z-20 shrink-0 relative">
         <PatientHeader
