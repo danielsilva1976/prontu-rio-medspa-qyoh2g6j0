@@ -28,6 +28,7 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
           variant="ghost"
           size="sm"
           disabled={isStarted}
+          aria-disabled={isStarted}
           className={cn(
             'text-muted-foreground -ml-3 transition-colors',
             isStarted
