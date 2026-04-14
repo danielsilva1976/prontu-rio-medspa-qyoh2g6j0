@@ -53,13 +53,6 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex items-center justify-between max-w-[800px] mx-auto">
-        <h2 className="text-xl font-serif text-primary">Prontuários Finalizados</h2>
-        <span className="text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
-          {records.length} {records.length === 1 ? 'documento' : 'documentos'}
-        </span>
-      </div>
-
       <div className="space-y-8">
         {records.map((record) => (
           <div
