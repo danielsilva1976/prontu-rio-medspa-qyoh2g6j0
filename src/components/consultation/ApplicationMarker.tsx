@@ -467,7 +467,9 @@ export default function ApplicationMarker({
     if (isSigned || !drawV) return
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch (_) {}
+    } catch (_) {
+      // ignore
+    }
     if ((tool === 'vector' || tool === 'line') && drawV) {
       if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 5) {
         if (tool === 'vector') {
