@@ -34,14 +34,14 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <Skeleton className="h-[400px] w-full max-w-[800px] mx-auto rounded-md" />
+        <Skeleton className="h-[400px] w-full max-w-5xl mx-auto rounded-md" />
       </div>
     )
   }
 
   if (records.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm max-w-[800px] mx-auto">
+      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm max-w-5xl mx-auto">
         <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
         <h3 className="text-lg font-medium text-foreground">Nenhum registro encontrado</h3>
         <p className="text-sm text-muted-foreground">
@@ -52,13 +52,12 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
-      <div className="space-y-8">
+    <div className="space-y-4 animate-fade-in-up">
+      <div className="space-y-4">
         {records.map((record) => (
           <div
             key={record.id}
-            className="bg-white border border-gray-200 shadow-sm mx-auto overflow-hidden relative"
-            style={{ maxWidth: '800px' }}
+            className="bg-white border border-gray-200 shadow-sm mx-auto overflow-hidden relative w-full max-w-5xl"
           >
             {/* Top decorative edge to look like paper */}
             <div className="h-2 w-full bg-primary/10 border-b border-gray-100"></div>
