@@ -102,6 +102,21 @@ export default {
       transitionTimingFunction: {
         apple: 'cubic-bezier(0.42, 0, 0.58, 1)',
       },
+      keyframes: {
+        'gold-pulse': {
+          '0%, 100%': {
+            boxShadow: '0 0 0 0 rgba(234, 179, 8, 0.6)',
+            color: 'rgba(202, 138, 4, 1)',
+          },
+          '50%': {
+            boxShadow: '0 0 0 8px rgba(234, 179, 8, 0)',
+            color: 'rgba(234, 179, 8, 1)',
+          },
+        },
+      },
+      animation: {
+        'gold-pulse': 'gold-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
     },
   },
   plugins: [animatePlugin, typographyPlugin, aspectRatioPlugin],
