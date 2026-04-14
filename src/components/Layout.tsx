@@ -188,7 +188,12 @@ export default function Layout() {
 
         <Accordion type="multiple" defaultValue={['novo-atendimento']} className="w-full">
           <AccordionItem value="novo-atendimento" className="border-none">
-            <AccordionTrigger className="px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent">
+            <AccordionTrigger
+              className={cn(
+                'px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent',
+                isStarted && 'animate-gold-pulse',
+              )}
+            >
               Novo Atendimento
             </AccordionTrigger>
             <AccordionContent className="pt-2 pb-0">

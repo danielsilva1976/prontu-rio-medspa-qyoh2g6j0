@@ -105,12 +105,12 @@ export default {
       keyframes: {
         'gold-pulse': {
           '0%, 100%': {
-            boxShadow: '0 0 0 0 rgba(234, 179, 8, 0.6)',
-            color: 'rgba(202, 138, 4, 1)',
+            boxShadow: '0 0 0 0 hsl(var(--primary) / 0.6)',
+            color: 'hsl(var(--primary))',
           },
           '50%': {
-            boxShadow: '0 0 0 8px rgba(234, 179, 8, 0)',
-            color: 'rgba(234, 179, 8, 1)',
+            boxShadow: '0 0 0 8px hsl(var(--primary) / 0)',
+            color: 'hsl(var(--primary))',
           },
         },
       },

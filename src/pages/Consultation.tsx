@@ -84,49 +84,6 @@ export default function Consultation() {
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
-  // Apply visual cue for "Novo Atendimento" menu
-  useEffect(() => {
-    const novoAtendimentoTabs = ['anamnese', 'exame', 'procedimentos', 'evolucao', 'planejamento']
-    const hasSelectedSection = novoAtendimentoTabs.includes(activeTab)
-    const isWaitingSelection = isStarted && !hasSelectedSection
-
-    const applyPulse = () => {
-      const els = Array.from(
-        document.querySelectorAll('button, [role="button"], [role="menuitem"]'),
-      )
-      const target = els.find((el) => {
-        const text = el.textContent?.trim()
-        return text && text.includes('Novo Atendimento')
-      })
-
-      if (target && !target.classList.contains('active-gold-pulse')) {
-        target.classList.add('active-gold-pulse', 'animate-gold-pulse', 'rounded-md')
-      }
-    }
-
-    if (!isWaitingSelection) {
-      document.querySelectorAll('.active-gold-pulse').forEach((el) => {
-        el.classList.remove('active-gold-pulse', 'animate-gold-pulse', 'rounded-md')
-      })
-      return
-    }
-
-    applyPulse()
-
-    const observer = new MutationObserver(() => {
-      applyPulse()
-    })
-
-    observer.observe(document.body, { childList: true, subtree: true })
-
-    return () => {
-      observer.disconnect()
-      document.querySelectorAll('.active-gold-pulse').forEach((el) => {
-        el.classList.remove('active-gold-pulse', 'animate-gold-pulse', 'rounded-md')
-      })
-    }
-  }, [isStarted, activeTab])
-
   const buildContent = () => {
     const draftData = drafts[patientId] || {}
     const finalContent: Record<string, Record<string, any>> = {}
