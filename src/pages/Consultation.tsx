@@ -124,11 +124,21 @@ export default function Consultation() {
 
     if (draftData.anamnese) {
       const anamneseSection: Record<string, string> = {}
-      Object.entries(draftData.anamnese).forEach(([k, v]) => {
+
+      const orderedAnamneseKeys = Object.keys(anamneseMap)
+      orderedAnamneseKeys.forEach((k) => {
+        const v = draftData.anamnese[k]
         if (v && typeof v === 'string' && v.trim() !== '') {
+          anamneseSection[anamneseMap[k]] = v.trim()
+        }
+      })
+
+      Object.entries(draftData.anamnese).forEach(([k, v]) => {
+        if (!orderedAnamneseKeys.includes(k) && v && typeof v === 'string' && v.trim() !== '') {
           anamneseSection[anamneseMap[k] || k] = v.trim()
         }
       })
+
       if (Object.keys(anamneseSection).length > 0) finalContent['Anamnese'] = anamneseSection
     }
 
@@ -150,11 +160,21 @@ export default function Consultation() {
 
     if (draftData.exame) {
       const exameSection: Record<string, string> = {}
-      Object.entries(draftData.exame).forEach(([k, v]) => {
+
+      const orderedExameKeys = Object.keys(exameMap)
+      orderedExameKeys.forEach((k) => {
+        const v = draftData.exame[k]
         if (v && typeof v === 'string' && v.trim() !== '') {
+          exameSection[exameMap[k]] = v.trim()
+        }
+      })
+
+      Object.entries(draftData.exame).forEach(([k, v]) => {
+        if (!orderedExameKeys.includes(k) && v && typeof v === 'string' && v.trim() !== '') {
           exameSection[exameMap[k] || k] = v.trim()
         }
       })
+
       if (Object.keys(exameSection).length > 0) finalContent['Exame Físico'] = exameSection
     }
 
@@ -468,7 +488,7 @@ export default function Consultation() {
             <div className={cn(activeTab !== 'resumo' && 'hidden')}>
               <ReviewTab
                 content={dbDraft || {}}
-                onEdit={() => setSearchParams({ tab: 'evolucao' }, { replace: true })}
+                onEdit={() => setSearchParams({ tab: 'anamnese' }, { replace: true })}
                 onFinalize={handleToggleConsultation}
               />
             </div>

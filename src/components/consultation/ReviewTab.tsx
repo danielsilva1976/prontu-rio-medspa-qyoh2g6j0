@@ -86,9 +86,9 @@ export default function ReviewTab({
             </Button>
             <Button
               onClick={onFinalize}
-              className="w-full sm:w-auto h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+              className="w-full sm:w-auto h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-semibold"
             >
-              <CheckCircle className="w-5 h-5 mr-2" /> Assinar e Finalizar
+              <CheckCircle className="w-5 h-5 mr-2" /> Finalizar e Assinar
             </Button>
           </div>
         </div>
