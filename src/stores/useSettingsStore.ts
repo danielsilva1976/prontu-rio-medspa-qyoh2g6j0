@@ -107,7 +107,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       let record
       try {
         record = await pb.collection('app_settings').getFirstListItem('key="procedures_config"')
-      } catch (e) {}
+      } catch (e) {
+        // Record may not exist yet, ignoring error
+      }
 
       if (record) {
         await pb.collection('app_settings').update(record.id, { value: JSON.stringify(payload) })
