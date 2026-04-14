@@ -75,7 +75,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const loadSettings = async () => {
       try {
         if (!pb.authStore.isValid) return
-        const record = await pb.collection('app_settings').getFirstListItem('key="procedures_config"')
+        const record = await pb
+          .collection('app_settings')
+          .getFirstListItem('key="procedures_config"')
         if (record && record.value) {
           const parsed = JSON.parse(record.value)
           setData((prev) => ({ ...prev, ...parsed }))
@@ -101,7 +103,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         prices: newData.prices,
         belleSoftware: newData.belleSoftware,
       }
-      
+
       let record
       try {
         record = await pb.collection('app_settings').getFirstListItem('key="procedures_config"')
@@ -110,7 +112,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       if (record) {
         await pb.collection('app_settings').update(record.id, { value: JSON.stringify(payload) })
       } else {
-        await pb.collection('app_settings').create({ key: 'procedures_config', value: JSON.stringify(payload) })
+        await pb
+          .collection('app_settings')
+          .create({ key: 'procedures_config', value: JSON.stringify(payload) })
       }
     } catch (e) {
       console.error('Erro ao salvar configurações', e)
@@ -136,7 +140,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setData((prev) => {
       const newPrices = { ...prev.prices }
       delete newPrices[item]
-      const newData = { ...prev, [category]: prev[category].filter((i) => i !== item), prices: newPrices }
+      const newData = {
+        ...prev,
+        [category]: prev[category].filter((i) => i !== item),
+        prices: newPrices,
+      }
       saveToBackend(newData)
       return newData
     })
@@ -176,16 +184,18 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       | 'multipart/form-data'
       | 'application/json' = 'application/json',
   ) => {
-    setData((prev) => ({
-      ...prev,
-      belleSoftware: {
-        ...prev.belleSoftware,
-        estabelecimento,
-        webhookContentType: contentType,
-      },
-    }
-    setData(newData)
-    saveToBackend(newData)
+    setData((prev) => {
+      const newData = {
+        ...prev,
+        belleSoftware: {
+          ...prev.belleSoftware,
+          estabelecimento,
+          webhookContentType: contentType,
+        },
+      }
+      saveToBackend(newData)
+      return newData
+    })
   }
 
   const setBelleLastSync = (status: 'success' | 'error', date: string) => {
