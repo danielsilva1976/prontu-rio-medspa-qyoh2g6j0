@@ -83,19 +83,102 @@ export default function Consultation() {
   const handleToggleConsultation = async () => {
     if (isStarted) {
       try {
-        let draftData = drafts[patientId] || {}
+        const draftData = drafts[patientId] || {}
+        const finalContent: Record<string, Record<string, string>> = {}
 
-        // Mock some data if empty so the document doesn't look empty for the demo
-        if (Object.keys(draftData).length === 0) {
-          draftData = {
-            anamnese:
-              'Paciente relata queixas leves. Sem histórico de doenças crônicas ou alergias relatadas.',
-            exame:
-              'Pele com boa hidratação, tônus preservado. Ausência de lesões elementares aparentes no momento do exame.',
-            procedimentos:
-              'Realizada avaliação estética facial e protocolo de limpeza de pele superficial.',
-            evolucao:
-              'Procedimento realizado sem intercorrências. Paciente tolerou bem. Liberado com orientações de cuidados domiciliares e uso de protetor solar.',
+        const anamneseMap: Record<string, string> = {
+          queixa: 'Queixa Principal',
+          ciclo: 'Ciclo Menstrual',
+          contraceptivos: 'Uso de Contraceptivos',
+          hormonais: 'Alterações Hormonais',
+          menarca: 'Menarca/Menopausa',
+          cirurgias_gineco: 'Cirurgias Ginecológicas',
+          atopias: 'Atopias',
+          alergias_meds: 'Alergias Medicamentosas',
+          alergias_cosmeticos: 'Alergias a Cosméticos',
+          tipo_cirurgia: 'Cirurgias Gerais',
+          cirurgias_plasticas: 'Cirurgias Plásticas',
+          marcapasso: 'Marcapasso',
+          proteses: 'Próteses',
+          laser: 'Laser',
+          peeling: 'Peeling',
+          preenchimentos: 'Preenchimentos',
+          toxina: 'Toxina Botulínica',
+          tratamentos_derm: 'Tratamentos Dermatológicos',
+          farmacos_ant: 'Fármacos Anteriores',
+          farmacos_atual: 'Fármacos Atuais',
+          herpes: 'Herpes',
+          tratamentos_esteticos: 'Tratamentos Estéticos',
+          cosmeticos: 'Cosméticos em Uso',
+          habitos: 'Hábitos Alimentares',
+          atividade: 'Atividade Física',
+          sol: 'Exposição Solar',
+          tabagismo: 'Tabagismo',
+          patologias: 'Patologias',
+          medicacoes: 'Medicações em Uso',
+        }
+
+        if (draftData.anamnese) {
+          const anamneseSection: Record<string, string> = {}
+          Object.entries(draftData.anamnese).forEach(([k, v]) => {
+            if (v && typeof v === 'string' && v.trim() !== '') {
+              anamneseSection[anamneseMap[k] || k] = v.trim()
+            }
+          })
+          if (Object.keys(anamneseSection).length > 0) finalContent['Anamnese'] = anamneseSection
+        }
+
+        const exameMap: Record<string, string> = {
+          fototipo: 'Fototipo (Fitzpatrick)',
+          glogau: 'Grau de Envelhecimento (Glogau)',
+          tipoPele: 'Tipo de Pele',
+          inspecaoFacial: 'Inspeção Facial',
+          padraoQueda: 'Padrão de Queda',
+          testeTracao: 'Teste de Tração',
+          textura: 'Textura do Fio',
+          densidade: 'Densidade',
+          tricoscopia: 'Tricoscopia',
+          grauCelulite: 'Grau de Celulite (FEG)',
+          flacidez: 'Flacidez Tissular',
+          gordura: 'Gordura Localizada',
+          inspecaoCorporal: 'Inspeção Corporal',
+        }
+
+        if (draftData.exame) {
+          const exameSection: Record<string, string> = {}
+          Object.entries(draftData.exame).forEach(([k, v]) => {
+            if (v && typeof v === 'string' && v.trim() !== '') {
+              exameSection[exameMap[k] || k] = v.trim()
+            }
+          })
+          if (Object.keys(exameSection).length > 0) finalContent['Exame Físico'] = exameSection
+        }
+
+        if (draftData.procedimentos) {
+          const procSection: Record<string, string> = {}
+          if (draftData.procedimentos.generalNotes?.trim()) {
+            procSection['Observações Gerais'] = draftData.procedimentos.generalNotes.trim()
+          }
+          if (Array.isArray(draftData.procedimentos.entries)) {
+            draftData.procedimentos.entries.forEach((entry: any, idx: number) => {
+              const details = []
+              if (entry.type) details.push(`Tipo: ${entry.type}`)
+              if (entry.area) details.push(`Área: ${entry.area}`)
+              if (entry.product)
+                details.push(`Produto: ${entry.product} ${entry.brand ? `(${entry.brand})` : ''}`)
+              if (entry.dose) details.push(`Dose/Qtd: ${entry.dose}`)
+              if (details.length > 0) {
+                procSection[`Procedimento ${idx + 1}`] = details.join(' | ')
+              }
+            })
+          }
+          if (Object.keys(procSection).length > 0)
+            finalContent['Procedimentos Realizados'] = procSection
+        }
+
+        if (draftData.evolucao && draftData.evolucao.note?.trim()) {
+          finalContent['Evolução Clínica'] = {
+            Registro: draftData.evolucao.note.trim(),
           }
         }
 
@@ -108,7 +191,7 @@ export default function Consultation() {
 
         await pb.collection('medical_records').create({
           patient: patientId,
-          content: draftData,
+          content: finalContent,
           professional_name: currentUser.name,
           professional_registration: registration,
         })

@@ -7,6 +7,7 @@ import { Syringe, Plus, Save } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import ProcedureEntryCard, { type ProcedureEntry } from './ProcedureEntryCard'
 import useAuditStore from '@/stores/useAuditStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 
 export default function ProcedureTab({
   isSigned,
@@ -17,29 +18,15 @@ export default function ProcedureTab({
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
+  const { drafts, updateDraft } = useConsultationStore()
 
-  const [entries, setEntries] = useState<ProcedureEntry[]>(() => [
-    {
-      id: Math.random().toString(36).slice(2),
-      type: '',
-      area: '',
-      technology: '',
-      product: '',
-      brand: '',
-      batch: '',
-      dose: '',
-      enableMarking: false,
-      markingArea: '',
-      points: [],
-      vectors: [],
-      lines: [],
-    },
-  ])
-  const [generalNotes, setGeneralNotes] = useState('')
+  const procData = drafts[patientId]?.procedimentos || { entries: [], generalNotes: '' }
+  const entries: ProcedureEntry[] = procData.entries || []
+  const generalNotes: string = procData.generalNotes || ''
 
   const addEntry = () => {
-    setEntries((prev) => [
-      ...prev,
+    const newEntries = [
+      ...entries,
       {
         id: Math.random().toString(36).slice(2),
         type: '',
@@ -55,15 +42,22 @@ export default function ProcedureTab({
         vectors: [],
         lines: [],
       },
-    ])
+    ]
+    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
   }
 
   const removeEntry = (id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id))
+    const newEntries = entries.filter((e) => e.id !== id)
+    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
   }
 
   const updateEntry = (id: string, field: keyof ProcedureEntry, value: any) => {
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))
+    const newEntries = entries.map((e) => (e.id === id ? { ...e, [field]: value } : e))
+    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
+  }
+
+  const setGeneralNotes = (val: string) => {
+    updateDraft(patientId, 'procedimentos', { ...procData, generalNotes: val })
   }
 
   const handleSave = () => {

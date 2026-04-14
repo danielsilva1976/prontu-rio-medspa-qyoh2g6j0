@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,44 +7,13 @@ import { Stethoscope, Save } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import useAuditStore from '@/stores/useAuditStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-
-const MOCK_DATA: Record<string, string> = {
-  queixa: 'Paciente relata incômodo com linhas de expressão na região frontal e flacidez leve.',
-  ciclo: 'Regular (28 dias)',
-  contraceptivos: 'Anticoncepcional oral (Yaz)',
-  hormonais: 'Nega reposição hormonal atual.',
-  menarca: 'Menarca aos 12 anos.',
-  cirurgias_gineco: 'Cesárea (2018).',
-  atopias: 'Rinite alérgica sazonal.',
-  alergias_meds: 'Dipirona (urticária).',
-  alergias_cosmeticos: 'Nega alergias a cosméticos.',
-  tipo_cirurgia: 'Apendicectomia (2010).',
-  cirurgias_plasticas: 'Rinoplastia (2015).',
-  marcapasso: 'Não',
-  proteses: 'Prótese mamária de silicone (2016).',
-  laser: 'Laser Lavieen (2022).',
-  peeling: 'Peeling de retinoico (inverno 2021).',
-  preenchimentos: 'Ácido hialurônico em lábios (2022).',
-  toxina: 'No terço superior (há 8 meses).',
-  tratamentos_derm: 'Tratamento para acne na adolescência.',
-  farmacos_ant: 'Isotretinoína (2010).',
-  farmacos_atual: 'Vitamina C, Protetor Solar.',
-  herpes: 'Ocasional (último episódio há 1 ano).',
-  tratamentos_esteticos: 'Limpeza de pele a cada 2 meses.',
-  cosmeticos: 'Sabonete Actine, Epidrat Calm.',
-  habitos: 'Dieta balanceada, consumo adequado de água (2L/dia).',
-  atividade: 'Musculação 3x por semana.',
-  sol: 'Exposição solar recreativa com proteção.',
-  tabagismo: 'Nega tabagismo.',
-  patologias: 'Hipotireoidismo (controlado).',
-  medicacoes: 'Puran T4 50mcg.',
-}
 
 const SECTIONS = [
   {
@@ -119,12 +87,14 @@ export default function AnamnesisTab({
   isSigned: boolean
   patientId: string
 }) {
-  const [formData, setFormData] = useState(MOCK_DATA)
   const { addLog } = useAuditStore()
   const { toast } = useToast()
+  const { drafts, updateDraft } = useConsultationStore()
+
+  const formData = drafts[patientId]?.anamnese || {}
 
   const handleChange = (id: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [id]: value }))
+    updateDraft(patientId, 'anamnese', { ...formData, [id]: value })
   }
 
   const handleSave = () => {

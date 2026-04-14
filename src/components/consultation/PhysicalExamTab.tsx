@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 import {
   Select,
   SelectContent,
@@ -24,28 +25,12 @@ export default function PhysicalExamTab({
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
+  const { drafts, updateDraft } = useConsultationStore()
 
-  const [examData, setExamData] = useState({
-    // Facial
-    fototipo: '',
-    glogau: '',
-    tipoPele: '',
-    inspecaoFacial: '',
-    // Cabelo
-    padraoQueda: '',
-    testeTracao: '',
-    textura: '',
-    densidade: '',
-    tricoscopia: '',
-    // Corporal
-    grauCelulite: '',
-    flacidez: '',
-    gordura: '',
-    inspecaoCorporal: '',
-  })
+  const examData = drafts[patientId]?.exame || {}
 
-  const handleChange = (field: keyof typeof examData, value: string) => {
-    setExamData((prev) => ({ ...prev, [field]: value }))
+  const handleChange = (field: string, value: string) => {
+    updateDraft(patientId, 'exame', { ...examData, [field]: value })
   }
 
   const handleSave = () => {

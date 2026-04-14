@@ -99,44 +99,29 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
               <div className="space-y-8 text-gray-800 leading-relaxed">
                 {record.content && Object.keys(record.content).length > 0 ? (
-                  <>
-                    {record.content.anamnese && (
-                      <section>
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                          Anamnese
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">{record.content.anamnese}</p>
-                      </section>
-                    )}
-                    {record.content.exame && (
-                      <section>
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                          Exame Físico
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">{record.content.exame}</p>
-                      </section>
-                    )}
-                    {record.content.procedimentos && (
-                      <section>
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                          Procedimentos
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">
-                          {record.content.procedimentos}
-                        </p>
-                      </section>
-                    )}
-                    {record.content.evolucao && (
-                      <section>
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                          Evolução
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">{record.content.evolucao}</p>
-                      </section>
-                    )}
-                  </>
+                  Object.entries(record.content).map(([sectionName, sectionData]) => (
+                    <section key={sectionName} className="mb-6">
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-100 pb-2">
+                        {sectionName}
+                      </h4>
+                      <div className="grid grid-cols-1 gap-y-3">
+                        {Object.entries(sectionData as Record<string, string>).map(
+                          ([key, value]) => (
+                            <div key={key} className="text-sm">
+                              <span className="font-semibold text-gray-700 block mb-0.5">
+                                {key}:
+                              </span>
+                              <span className="text-gray-600 whitespace-pre-wrap">{value}</span>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </section>
+                  ))
                 ) : (
-                  <p className="text-sm italic text-gray-400">Conteúdo do prontuário vazio.</p>
+                  <p className="text-sm italic text-gray-400">
+                    Prontuário encerrado sem anotações clínicas.
+                  </p>
                 )}
               </div>
 

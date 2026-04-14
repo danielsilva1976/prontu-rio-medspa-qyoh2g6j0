@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { History, Save } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
+import useConsultationStore from '@/stores/useConsultationStore'
 
 export default function EvolutionTab({
   isSigned,
@@ -15,7 +16,13 @@ export default function EvolutionTab({
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
-  const [note, setNote] = useState('')
+  const { drafts, updateDraft } = useConsultationStore()
+
+  const note = drafts[patientId]?.evolucao?.note || ''
+
+  const setNote = (val: string) => {
+    updateDraft(patientId, 'evolucao', { note: val })
+  }
 
   const handleSave = () => {
     if (!note.trim()) return
