@@ -38,6 +38,7 @@ export default function ProcedureTab({
         dose: '',
         enableMarking: false,
         markingArea: '',
+        photo: '',
         points: [],
         vectors: [],
         lines: [],

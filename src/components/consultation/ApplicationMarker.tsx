@@ -408,6 +408,7 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
 
 type Props = {
   area: string
+  photo?: string
   points: PointMark[]
   vectors: VectorMark[]
   lines: LineMark[]
@@ -417,6 +418,7 @@ type Props = {
 
 export default function ApplicationMarker({
   area,
+  photo,
   points,
   vectors,
   lines,
@@ -618,8 +620,25 @@ export default function ApplicationMarker({
             >
               <polygon points="0 0, 8 3, 0 6" fill="hsl(var(--primary))" />
             </marker>
+            {photo && (
+              <clipPath id="photo-clip">
+                <rect width="500" height="500" rx="0" />
+              </clipPath>
+            )}
           </defs>
-          {DIAGRAMS[area]}
+
+          {photo ? (
+            <image
+              href={photo}
+              width="500"
+              height="500"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath="url(#photo-clip)"
+              opacity={0.9}
+            />
+          ) : (
+            DIAGRAMS[area]
+          )}
 
           {lines.map((l) => (
             <line

@@ -1,6 +1,9 @@
+import React, { useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -8,10 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Trash2 } from 'lucide-react'
-import useSettingsStore from '@/stores/useSettingsStore'
+import { Trash2, ImagePlus, X } from 'lucide-react'
 import ApplicationMarker, {
   type PointMark,
   type VectorMark,
@@ -27,11 +27,12 @@ export type ProcedureEntry = {
   brand: string
   batch: string
   dose: string
-  enableMarking?: boolean
-  markingArea?: string
-  points?: PointMark[]
-  vectors?: VectorMark[]
-  lines?: LineMark[]
+  enableMarking: boolean
+  markingArea: string
+  photo?: string
+  points: PointMark[]
+  vectors: VectorMark[]
+  lines: LineMark[]
 }
 
 type Props = {
@@ -43,179 +44,135 @@ type Props = {
 }
 
 export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }: Props) {
-  const { procedures, areas, products, brands, technologies } = useSettingsStore()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        onUpdate(entry.id, 'photo', ev.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   return (
-    <Card className="relative border border-border bg-muted/5 shadow-sm animate-fade-in">
-      <CardContent className="p-6 pt-8">
-        <div className="absolute top-0 left-0 bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg">
-          Procedimento {index + 1}
+    <Card className="border border-border shadow-sm rounded-xl overflow-hidden relative group">
+      <CardContent className="p-5 space-y-5">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h4 className="font-semibold text-primary/80">Procedimento {index + 1}</h4>
+          {!isSigned && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(entry.id)}
+              className="text-destructive hover:bg-destructive/10 h-8 w-8 rounded-full"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        {!isSigned && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors"
-            onClick={() => onRemove(entry.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-2">
-          <div className="space-y-2 md:col-span-2 lg:col-span-3">
-            <Label className="text-foreground">Tipo de Procedimento</Label>
-            <Select
-              disabled={isSigned}
-              value={entry.type}
-              onValueChange={(val) => onUpdate(entry.id, 'type', val)}
-            >
-              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
-                <SelectValue placeholder="Selecione o procedimento..." />
-              </SelectTrigger>
-              <SelectContent>
-                {procedures.map((proc) => (
-                  <SelectItem key={proc} value={proc}>
-                    {proc}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Área Aplicada</Label>
-            <Select
-              disabled={isSigned}
-              value={entry.area}
-              onValueChange={(val) => onUpdate(entry.id, 'area', val)}
-            >
-              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
-                <SelectValue placeholder="Selecione a área..." />
-              </SelectTrigger>
-              <SelectContent>
-                {areas.map((a) => (
-                  <SelectItem key={a} value={a}>
-                    {a}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Tecnologia</Label>
-            <Select
-              disabled={isSigned}
-              value={entry.technology}
-              onValueChange={(val) => onUpdate(entry.id, 'technology', val)}
-            >
-              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
-                <SelectValue placeholder="Selecione a tecnologia..." />
-              </SelectTrigger>
-              <SelectContent>
-                {technologies.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Produto</Label>
-            <Select
-              disabled={isSigned}
-              value={entry.product}
-              onValueChange={(val) => onUpdate(entry.id, 'product', val)}
-            >
-              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
-                <SelectValue placeholder="Selecione o produto..." />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Marca</Label>
-            <Select
-              disabled={isSigned}
-              value={entry.brand}
-              onValueChange={(val) => onUpdate(entry.id, 'brand', val)}
-            >
-              <SelectTrigger className="bg-white border-border rounded-xl focus:ring-primary shadow-sm">
-                <SelectValue placeholder="Selecione a marca..." />
-              </SelectTrigger>
-              <SelectContent>
-                {brands.map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Lote</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Tipo</Label>
             <Input
-              placeholder="Ex: AB12345"
-              className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm"
-              value={entry.batch}
+              value={entry.type || ''}
+              onChange={(e) => onUpdate(entry.id, 'type', e.target.value)}
+              disabled={isSigned}
+              placeholder="Ex: Preenchimento"
+              className="bg-muted/30 focus-visible:bg-background"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Área</Label>
+            <Input
+              value={entry.area || ''}
+              onChange={(e) => onUpdate(entry.id, 'area', e.target.value)}
+              disabled={isSigned}
+              placeholder="Ex: Mandíbula"
+              className="bg-muted/30 focus-visible:bg-background"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Técnica</Label>
+            <Input
+              value={entry.technology || ''}
+              onChange={(e) => onUpdate(entry.id, 'technology', e.target.value)}
+              disabled={isSigned}
+              placeholder="Ex: Agulha 27G"
+              className="bg-muted/30 focus-visible:bg-background"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Produto</Label>
+            <Input
+              value={entry.product || ''}
+              onChange={(e) => onUpdate(entry.id, 'product', e.target.value)}
+              disabled={isSigned}
+              placeholder="Ex: Ácido Hialurônico"
+              className="bg-muted/30 focus-visible:bg-background"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Marca</Label>
+            <Input
+              value={entry.brand || ''}
+              onChange={(e) => onUpdate(entry.id, 'brand', e.target.value)}
+              disabled={isSigned}
+              placeholder="Ex: Restylane"
+              className="bg-muted/30 focus-visible:bg-background"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Lote</Label>
+            <Input
+              value={entry.batch || ''}
               onChange={(e) => onUpdate(entry.id, 'batch', e.target.value)}
               disabled={isSigned}
+              placeholder="Nº do Lote"
+              className="bg-muted/30 focus-visible:bg-background"
             />
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-foreground">Dose / Volume / Parâmetros</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Dose/Volume</Label>
             <Input
-              placeholder="Ex: 50U, 1mL, 20J/cm²"
-              className="bg-white border-border rounded-xl focus-visible:ring-primary shadow-sm"
-              value={entry.dose}
+              value={entry.dose || ''}
               onChange={(e) => onUpdate(entry.id, 'dose', e.target.value)}
               disabled={isSigned}
+              placeholder="Ex: 1ml"
+              className="bg-muted/30 focus-visible:bg-background"
             />
           </div>
         </div>
 
-        {/* Application Marking Module */}
-        <div className="pt-6 mt-6 border-t border-border/60">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-base font-semibold text-foreground">
-                Módulo de Marcação de Aplicação
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Adicione esquemas visuais para detalhar pontos, vetores e linhas no corpo do
-                paciente.
-              </p>
-            </div>
+        <div className="pt-4 border-t border-border/40">
+          <div className="flex items-center space-x-3">
             <Switch
-              disabled={isSigned}
               checked={entry.enableMarking || false}
-              onCheckedChange={(val) => onUpdate(entry.id, 'enableMarking', val)}
+              onCheckedChange={(v) => onUpdate(entry.id, 'enableMarking', v)}
+              disabled={isSigned}
+              id={`marking-${entry.id}`}
             />
+            <Label htmlFor={`marking-${entry.id}`} className="font-medium cursor-pointer">
+              Habilitar Marcação de Aplicação
+            </Label>
           </div>
+        </div>
 
-          {entry.enableMarking && (
-            <div className="mt-6 p-5 bg-white rounded-xl border border-border/50 shadow-sm animate-in fade-in slide-in-from-top-2">
-              <div className="space-y-2 max-w-xs mb-6">
-                <Label className="text-foreground">Área Anatômica do Diagrama</Label>
+        {entry.enableMarking && (
+          <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-4 rounded-xl border border-border/50">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Diagrama Base</Label>
                 <Select
+                  value={entry.markingArea || ''}
+                  onValueChange={(v) => onUpdate(entry.id, 'markingArea', v)}
                   disabled={isSigned}
-                  value={entry.markingArea}
-                  onValueChange={(val) => onUpdate(entry.id, 'markingArea', val)}
                 >
-                  <SelectTrigger className="bg-muted/10 border-border rounded-xl">
-                    <SelectValue placeholder="Selecione a área..." />
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue placeholder="Selecione um diagrama anatômico..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Face">Face</SelectItem>
@@ -226,25 +183,70 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
                     <SelectItem value="Pernas">Pernas</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Selecione um diagrama pré-definido para usar como base das marcações.
+                </p>
               </div>
 
-              {entry.markingArea && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Ou Foto do Paciente</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handlePhotoUpload}
+                    disabled={isSigned}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full bg-background hover:bg-muted/50 border-dashed"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isSigned}
+                  >
+                    <ImagePlus className="w-4 h-4 mr-2 text-primary" />
+                    {entry.photo ? 'Trocar Foto' : 'Fazer Upload de Foto'}
+                  </Button>
+                  {entry.photo && !isSigned && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onUpdate(entry.id, 'photo', '')}
+                      className="text-destructive hover:bg-destructive/10 shrink-0"
+                      title="Remover Foto"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Faça upload de uma foto real para marcações personalizadas. A foto substitui o
+                  diagrama.
+                </p>
+              </div>
+            </div>
+
+            {(entry.markingArea || entry.photo) && (
+              <div className="bg-muted/10 p-2 md:p-6 rounded-xl border border-border/30">
                 <ApplicationMarker
-                  area={entry.markingArea}
+                  area={entry.markingArea || 'Face'}
+                  photo={entry.photo}
                   points={entry.points || []}
                   vectors={entry.vectors || []}
                   lines={entry.lines || []}
-                  onChange={(points, vectors, lines) => {
-                    onUpdate(entry.id, 'points', points)
-                    onUpdate(entry.id, 'vectors', vectors)
-                    onUpdate(entry.id, 'lines', lines)
-                  }}
                   isSigned={isSigned}
+                  onChange={(p, v, l) => {
+                    onUpdate(entry.id, 'points', p)
+                    onUpdate(entry.id, 'vectors', v)
+                    onUpdate(entry.id, 'lines', l)
+                  }}
                 />
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
