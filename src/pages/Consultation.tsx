@@ -242,7 +242,9 @@ export default function Consultation() {
       for (const record of records) {
         await pb.collection('medical_records').delete(record.id)
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Erro ao remover rascunho do prontuário:', e)
+    }
 
     toast({
       title: 'Atendimento cancelado',
