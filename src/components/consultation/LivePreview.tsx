@@ -1,5 +1,6 @@
 import { ShieldAlert } from 'lucide-react'
 import ApplicationMarker from './ApplicationMarker'
+import { sortSectionEntries, sortSections } from '@/lib/consultation-utils'
 
 export default function LivePreview({ content }: { content: Record<string, any> }) {
   if (!content || Object.keys(content).length === 0) return null
@@ -24,43 +25,47 @@ export default function LivePreview({ content }: { content: Record<string, any> 
         </div>
 
         <div className="space-y-8 text-gray-800 leading-relaxed">
-          {Object.entries(content).map(([sectionName, sectionData]) => (
-            <section key={sectionName} className="mb-4">
-              <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3 border-b border-primary/10 pb-2">
-                {sectionName}
-              </h4>
-              <div className="grid grid-cols-1 gap-y-3">
-                {Object.entries(sectionData as Record<string, any>).map(([key, value]) => {
-                  if (key.startsWith('_markers_')) {
-                    return (
-                      <div
-                        key={key}
-                        className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-5 shadow-sm"
-                      >
-                        <span className="font-semibold text-gray-700 block mb-4">
-                          Mapeamento Visual - {value.area}:
-                        </span>
-                        <ApplicationMarker
-                          area={value.area}
-                          points={value.points || []}
-                          vectors={value.vectors || []}
-                          lines={value.lines || []}
-                          isSigned={true}
-                          onChange={() => {}}
-                        />
-                      </div>
-                    )
-                  }
-                  return (
-                    <div key={key} className="text-sm">
-                      <span className="font-semibold text-gray-700 block mb-0.5">{key}:</span>
-                      <span className="text-gray-600 whitespace-pre-wrap">{String(value)}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          ))}
+          {Object.entries(content)
+            .sort(sortSections)
+            .map(([sectionName, sectionData]) => (
+              <section key={sectionName} className="mb-4">
+                <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3 border-b border-primary/10 pb-2">
+                  {sectionName}
+                </h4>
+                <div className="grid grid-cols-1 gap-y-3">
+                  {Object.entries(sectionData as Record<string, any>)
+                    .sort(sortSectionEntries)
+                    .map(([key, value]) => {
+                      if (key.startsWith('_markers_')) {
+                        return (
+                          <div
+                            key={key}
+                            className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-5 shadow-sm"
+                          >
+                            <span className="font-semibold text-gray-700 block mb-4">
+                              Mapeamento Visual - {value.area}:
+                            </span>
+                            <ApplicationMarker
+                              area={value.area}
+                              points={value.points || []}
+                              vectors={value.vectors || []}
+                              lines={value.lines || []}
+                              isSigned={true}
+                              onChange={() => {}}
+                            />
+                          </div>
+                        )
+                      }
+                      return (
+                        <div key={key} className="text-sm">
+                          <span className="font-semibold text-gray-700 block mb-0.5">{key}:</span>
+                          <span className="text-gray-600 whitespace-pre-wrap">{String(value)}</span>
+                        </div>
+                      )
+                    })}
+                </div>
+              </section>
+            ))}
         </div>
       </div>
     </div>
