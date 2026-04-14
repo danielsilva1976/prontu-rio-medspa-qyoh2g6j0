@@ -80,6 +80,18 @@ export default function Consultation() {
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
+  const handleCancelConsultation = () => {
+    endConsultation(patientId)
+    clearDraft(patientId)
+    addLog('Status alterado: Atendimento Cancelado', patientId)
+    setSearchParams({ tab: 'historico' }, { replace: true })
+
+    toast({
+      title: 'Atendimento cancelado',
+      description: 'O atendimento foi encerrado sem salvar os dados.',
+    })
+  }
+
   const handleToggleConsultation = async () => {
     if (isStarted) {
       try {
@@ -259,13 +271,25 @@ export default function Consultation() {
   return (
     <div className="flex flex-col flex-1 w-full min-h-0 h-[calc(100dvh-4rem)] overflow-hidden bg-muted/20">
       {/* Fixed Header */}
-      <div className="bg-white border-b border-border shadow-sm z-20 shrink-0 relative">
+      <div className="bg-white border-b border-border shadow-sm z-20 shrink-0 relative flex flex-col">
         <PatientHeader
           patient={patient}
           id={patientId}
           isStarted={isStarted}
           onToggleConsultation={handleToggleConsultation}
         />
+        {isStarted && (
+          <div className="w-full bg-slate-50/80 border-t border-border px-4 md:px-6 py-2 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCancelConsultation}
+              className="text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground transition-colors h-8 text-xs font-medium"
+            >
+              Cancelar Atendimento
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
