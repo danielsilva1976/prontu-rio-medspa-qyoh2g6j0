@@ -12,9 +12,11 @@ import useConsultationStore from '@/stores/useConsultationStore'
 export default function ProcedureTab({
   isSigned,
   patientId,
+  onSaveSection,
 }: {
   isSigned: boolean
   patientId: string
+  onSaveSection?: () => void
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
@@ -87,6 +89,7 @@ export default function ProcedureTab({
 
   const handleSave = () => {
     addLog('Procedimentos atualizados', patientId)
+    if (onSaveSection) onSaveSection()
     toast({
       title: 'Procedimentos salvos',
       description: 'O registro técnico das aplicações foi atualizado.',

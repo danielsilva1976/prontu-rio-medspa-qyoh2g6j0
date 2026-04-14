@@ -10,9 +10,11 @@ import useConsultationStore from '@/stores/useConsultationStore'
 export default function EvolutionTab({
   isSigned,
   patientId,
+  onSaveSection,
 }: {
   isSigned: boolean
   patientId: string
+  onSaveSection?: () => void
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
@@ -27,6 +29,7 @@ export default function EvolutionTab({
   const handleSave = () => {
     if (!note.trim()) return
     addLog('Evolução adicionada', patientId)
+    if (onSaveSection) onSaveSection()
     toast({
       title: 'Evolução salva',
       description: 'O registro de evolução clínica foi adicionado com sucesso.',

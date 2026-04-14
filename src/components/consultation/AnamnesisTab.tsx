@@ -83,9 +83,11 @@ const SECTIONS = [
 export default function AnamnesisTab({
   isSigned,
   patientId,
+  onSaveSection,
 }: {
   isSigned: boolean
   patientId: string
+  onSaveSection?: () => void
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
@@ -99,6 +101,7 @@ export default function AnamnesisTab({
 
   const handleSave = () => {
     addLog('Anamnese atualizada', patientId)
+    if (onSaveSection) onSaveSection()
     toast({
       title: 'Anamnese salva',
       description: 'As informações do histórico clínico foram atualizadas.',

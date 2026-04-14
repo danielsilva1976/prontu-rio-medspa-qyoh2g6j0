@@ -13,7 +13,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}"`,
-        sort: '+created',
+        sort: '-created',
       })
       setRecords(medicalRecords)
     } catch (error) {
@@ -81,10 +81,17 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                   </div>
                 </div>
                 <div className="text-left sm:text-right">
-                  <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded font-medium uppercase tracking-wider">
-                    <ShieldCheck className="h-3 w-3" />
-                    Documento Original
-                  </span>
+                  {record.professional_registration === 'Sem Assinatura' ? (
+                    <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs px-2.5 py-1 rounded font-medium uppercase tracking-wider">
+                      <Clock className="h-3 w-3" />
+                      Sem Assinatura
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded font-medium uppercase tracking-wider">
+                      <ShieldCheck className="h-3 w-3" />
+                      Documento Original
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -143,11 +150,17 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                 <p className="text-sm font-semibold text-gray-900">
                   Assinado por: {record.professional_name}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{record.professional_registration}</p>
-                <div className="flex items-center gap-1 mt-3 text-[10px] text-green-700 font-medium uppercase tracking-wider bg-green-50 px-2 py-1 rounded">
-                  <ShieldCheck className="h-3 w-3" />
-                  Assinatura Digital Validada
-                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {record.professional_registration === 'Sem Assinatura'
+                    ? 'Registro em Andamento'
+                    : record.professional_registration}
+                </p>
+                {record.professional_registration !== 'Sem Assinatura' && (
+                  <div className="flex items-center gap-1 mt-3 text-[10px] text-green-700 font-medium uppercase tracking-wider bg-green-50 px-2 py-1 rounded">
+                    <ShieldCheck className="h-3 w-3" />
+                    Assinatura Digital Validada
+                  </div>
+                )}
               </div>
             </div>
           </div>

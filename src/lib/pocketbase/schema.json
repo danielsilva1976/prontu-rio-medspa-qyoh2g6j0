@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-14T20:21:05.662Z",
+  "generatedAt": "2026-04-14T20:33:28.290Z",
   "collections": [
     {
       "name": "patients",
@@ -411,8 +411,8 @@
         "list": "@request.auth.id != ''",
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != ''",
-        "update": null,
-        "delete": null
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
       },
       "fields": [
         {

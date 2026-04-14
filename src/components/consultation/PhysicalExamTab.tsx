@@ -19,9 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export default function PhysicalExamTab({
   isSigned,
   patientId,
+  onSaveSection,
 }: {
   isSigned: boolean
   patientId: string
+  onSaveSection?: () => void
 }) {
   const { addLog } = useAuditStore()
   const { toast } = useToast()
@@ -35,6 +37,7 @@ export default function PhysicalExamTab({
 
   const handleSave = () => {
     addLog('Exame Físico atualizado', patientId)
+    if (onSaveSection) onSaveSection()
     toast({
       title: 'Exame físico salvo',
       description: 'As avaliações e classificações clínicas foram registradas.',

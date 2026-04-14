@@ -80,11 +80,169 @@ export default function Consultation() {
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
-  const handleCancelConsultation = () => {
+  const buildContent = () => {
+    const draftData = drafts[patientId] || {}
+    const finalContent: Record<string, Record<string, any>> = {}
+
+    const anamneseMap: Record<string, string> = {
+      queixa: 'Queixa Principal',
+      ciclo: 'Ciclo Menstrual',
+      contraceptivos: 'Uso de Contraceptivos',
+      hormonais: 'Alterações Hormonais',
+      menarca: 'Menarca/Menopausa',
+      cirurgias_gineco: 'Cirurgias Ginecológicas',
+      atopias: 'Atopias',
+      alergias_meds: 'Alergias Medicamentosas',
+      alergias_cosmeticos: 'Alergias a Cosméticos',
+      tipo_cirurgia: 'Cirurgias Gerais',
+      cirurgias_plasticas: 'Cirurgias Plásticas',
+      marcapasso: 'Marcapasso',
+      proteses: 'Próteses',
+      laser: 'Laser',
+      peeling: 'Peeling',
+      preenchimentos: 'Preenchimentos',
+      toxina: 'Toxina Botulínica',
+      tratamentos_derm: 'Tratamentos Dermatológicos',
+      farmacos_ant: 'Fármacos Anteriores',
+      farmacos_atual: 'Fármacos Atuais',
+      herpes: 'Herpes',
+      tratamentos_esteticos: 'Tratamentos Estéticos',
+      cosmeticos: 'Cosméticos em Uso',
+      habitos: 'Hábitos Alimentares',
+      atividade: 'Atividade Física',
+      sol: 'Exposição Solar',
+      tabagismo: 'Tabagismo',
+      patologias: 'Patologias',
+      medicacoes: 'Medicações em Uso',
+    }
+
+    if (draftData.anamnese) {
+      const anamneseSection: Record<string, string> = {}
+      Object.entries(draftData.anamnese).forEach(([k, v]) => {
+        if (v && typeof v === 'string' && v.trim() !== '') {
+          anamneseSection[anamneseMap[k] || k] = v.trim()
+        }
+      })
+      if (Object.keys(anamneseSection).length > 0) finalContent['Anamnese'] = anamneseSection
+    }
+
+    const exameMap: Record<string, string> = {
+      fototipo: 'Fototipo (Fitzpatrick)',
+      glogau: 'Grau de Envelhecimento (Glogau)',
+      tipoPele: 'Tipo de Pele',
+      inspecaoFacial: 'Inspeção Facial',
+      padraoQueda: 'Padrão de Queda',
+      testeTracao: 'Teste de Tração',
+      textura: 'Textura do Fio',
+      densidade: 'Densidade',
+      tricoscopia: 'Tricoscopia',
+      grauCelulite: 'Grau de Celulite (FEG)',
+      flacidez: 'Flacidez Tissular',
+      gordura: 'Gordura Localizada',
+      inspecaoCorporal: 'Inspeção Corporal',
+    }
+
+    if (draftData.exame) {
+      const exameSection: Record<string, string> = {}
+      Object.entries(draftData.exame).forEach(([k, v]) => {
+        if (v && typeof v === 'string' && v.trim() !== '') {
+          exameSection[exameMap[k] || k] = v.trim()
+        }
+      })
+      if (Object.keys(exameSection).length > 0) finalContent['Exame Físico'] = exameSection
+    }
+
+    if (draftData.procedimentos) {
+      const procSection: Record<string, any> = {}
+      if (draftData.procedimentos.generalNotes?.trim()) {
+        procSection['Observações Gerais'] = draftData.procedimentos.generalNotes.trim()
+      }
+      if (Array.isArray(draftData.procedimentos.entries)) {
+        draftData.procedimentos.entries.forEach((entry: any, idx: number) => {
+          const details = []
+          if (entry.type) details.push(`Tipo: ${entry.type}`)
+          if (entry.area) details.push(`Área: ${entry.area}`)
+          if (entry.technology) details.push(`Tecnologia: ${entry.technology}`)
+          if (entry.product)
+            details.push(`Produto: ${entry.product} ${entry.brand ? `(${entry.brand})` : ''}`)
+          if (entry.batch) details.push(`Lote: ${entry.batch}`)
+          if (entry.dose) details.push(`Dose/Qtd: ${entry.dose}`)
+
+          const hasMarkers =
+            entry.points?.length > 0 || entry.vectors?.length > 0 || entry.lines?.length > 0
+
+          if (details.length > 0 || hasMarkers) {
+            if (details.length > 0) {
+              procSection[`Procedimento ${idx + 1}`] = details.join(' | ')
+            } else {
+              procSection[`Procedimento ${idx + 1}`] = 'Mapeamento visual registrado.'
+            }
+
+            if (hasMarkers) {
+              procSection[`_markers_${idx + 1}`] = {
+                area: entry.markingArea || entry.area || 'Face',
+                points: entry.points || [],
+                vectors: entry.vectors || [],
+                lines: entry.lines || [],
+              }
+            }
+          }
+        })
+      }
+      if (Object.keys(procSection).length > 0)
+        finalContent['Procedimentos Realizados'] = procSection
+    }
+
+    if (draftData.evolucao && draftData.evolucao.note?.trim()) {
+      finalContent['Evolução Clínica'] = {
+        Registro: draftData.evolucao.note.trim(),
+      }
+    }
+
+    return finalContent
+  }
+
+  const handleSaveSection = async () => {
+    const finalContent = buildContent()
+    if (Object.keys(finalContent).length === 0) return
+
+    try {
+      const records = await pb.collection('medical_records').getFullList({
+        filter: `patient = "${patientId}" && professional_registration = "Sem Assinatura"`,
+      })
+
+      if (records.length > 0) {
+        await pb.collection('medical_records').update(records[0].id, {
+          content: finalContent,
+          professional_name: currentUser.name,
+        })
+      } else {
+        await pb.collection('medical_records').create({
+          patient: patientId,
+          content: finalContent,
+          professional_name: currentUser.name,
+          professional_registration: 'Sem Assinatura',
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao salvar rascunho na base:', error)
+    }
+  }
+
+  const handleCancelConsultation = async () => {
     endConsultation(patientId)
     clearDraft(patientId)
     addLog('Status alterado: Atendimento Cancelado', patientId)
     setSearchParams({ tab: 'historico' }, { replace: true })
+
+    try {
+      const records = await pb.collection('medical_records').getFullList({
+        filter: `patient = "${patientId}" && professional_registration = "Sem Assinatura"`,
+      })
+      for (const record of records) {
+        await pb.collection('medical_records').delete(record.id)
+      }
+    } catch (e) {}
 
     toast({
       title: 'Atendimento cancelado',
@@ -95,123 +253,7 @@ export default function Consultation() {
   const handleToggleConsultation = async () => {
     if (isStarted) {
       try {
-        const draftData = drafts[patientId] || {}
-        const finalContent: Record<string, Record<string, any>> = {}
-
-        const anamneseMap: Record<string, string> = {
-          queixa: 'Queixa Principal',
-          ciclo: 'Ciclo Menstrual',
-          contraceptivos: 'Uso de Contraceptivos',
-          hormonais: 'Alterações Hormonais',
-          menarca: 'Menarca/Menopausa',
-          cirurgias_gineco: 'Cirurgias Ginecológicas',
-          atopias: 'Atopias',
-          alergias_meds: 'Alergias Medicamentosas',
-          alergias_cosmeticos: 'Alergias a Cosméticos',
-          tipo_cirurgia: 'Cirurgias Gerais',
-          cirurgias_plasticas: 'Cirurgias Plásticas',
-          marcapasso: 'Marcapasso',
-          proteses: 'Próteses',
-          laser: 'Laser',
-          peeling: 'Peeling',
-          preenchimentos: 'Preenchimentos',
-          toxina: 'Toxina Botulínica',
-          tratamentos_derm: 'Tratamentos Dermatológicos',
-          farmacos_ant: 'Fármacos Anteriores',
-          farmacos_atual: 'Fármacos Atuais',
-          herpes: 'Herpes',
-          tratamentos_esteticos: 'Tratamentos Estéticos',
-          cosmeticos: 'Cosméticos em Uso',
-          habitos: 'Hábitos Alimentares',
-          atividade: 'Atividade Física',
-          sol: 'Exposição Solar',
-          tabagismo: 'Tabagismo',
-          patologias: 'Patologias',
-          medicacoes: 'Medicações em Uso',
-        }
-
-        if (draftData.anamnese) {
-          const anamneseSection: Record<string, string> = {}
-          Object.entries(draftData.anamnese).forEach(([k, v]) => {
-            if (v && typeof v === 'string' && v.trim() !== '') {
-              anamneseSection[anamneseMap[k] || k] = v.trim()
-            }
-          })
-          if (Object.keys(anamneseSection).length > 0) finalContent['Anamnese'] = anamneseSection
-        }
-
-        const exameMap: Record<string, string> = {
-          fototipo: 'Fototipo (Fitzpatrick)',
-          glogau: 'Grau de Envelhecimento (Glogau)',
-          tipoPele: 'Tipo de Pele',
-          inspecaoFacial: 'Inspeção Facial',
-          padraoQueda: 'Padrão de Queda',
-          testeTracao: 'Teste de Tração',
-          textura: 'Textura do Fio',
-          densidade: 'Densidade',
-          tricoscopia: 'Tricoscopia',
-          grauCelulite: 'Grau de Celulite (FEG)',
-          flacidez: 'Flacidez Tissular',
-          gordura: 'Gordura Localizada',
-          inspecaoCorporal: 'Inspeção Corporal',
-        }
-
-        if (draftData.exame) {
-          const exameSection: Record<string, string> = {}
-          Object.entries(draftData.exame).forEach(([k, v]) => {
-            if (v && typeof v === 'string' && v.trim() !== '') {
-              exameSection[exameMap[k] || k] = v.trim()
-            }
-          })
-          if (Object.keys(exameSection).length > 0) finalContent['Exame Físico'] = exameSection
-        }
-
-        if (draftData.procedimentos) {
-          const procSection: Record<string, any> = {}
-          if (draftData.procedimentos.generalNotes?.trim()) {
-            procSection['Observações Gerais'] = draftData.procedimentos.generalNotes.trim()
-          }
-          if (Array.isArray(draftData.procedimentos.entries)) {
-            draftData.procedimentos.entries.forEach((entry: any, idx: number) => {
-              const details = []
-              if (entry.type) details.push(`Tipo: ${entry.type}`)
-              if (entry.area) details.push(`Área: ${entry.area}`)
-              if (entry.technology) details.push(`Tecnologia: ${entry.technology}`)
-              if (entry.product)
-                details.push(`Produto: ${entry.product} ${entry.brand ? `(${entry.brand})` : ''}`)
-              if (entry.batch) details.push(`Lote: ${entry.batch}`)
-              if (entry.dose) details.push(`Dose/Qtd: ${entry.dose}`)
-
-              const hasMarkers =
-                entry.points?.length > 0 || entry.vectors?.length > 0 || entry.lines?.length > 0
-
-              if (details.length > 0 || hasMarkers) {
-                if (details.length > 0) {
-                  procSection[`Procedimento ${idx + 1}`] = details.join(' | ')
-                } else {
-                  procSection[`Procedimento ${idx + 1}`] = 'Mapeamento visual registrado.'
-                }
-
-                if (hasMarkers) {
-                  procSection[`_markers_${idx + 1}`] = {
-                    area: entry.markingArea || entry.area || 'Face',
-                    points: entry.points || [],
-                    vectors: entry.vectors || [],
-                    lines: entry.lines || [],
-                  }
-                }
-              }
-            })
-          }
-          if (Object.keys(procSection).length > 0)
-            finalContent['Procedimentos Realizados'] = procSection
-        }
-
-        if (draftData.evolucao && draftData.evolucao.note?.trim()) {
-          finalContent['Evolução Clínica'] = {
-            Registro: draftData.evolucao.note.trim(),
-          }
-        }
+        const finalContent = buildContent()
 
         const registration =
           currentUser.role === 'Médico'
@@ -220,13 +262,26 @@ export default function Consultation() {
               ? 'CRBM 1234'
               : 'N/A'
 
-        await pb.collection('medical_records').create({
-          patient: patientId,
-          content: finalContent,
-          professional_name: currentUser.name,
-          professional_registration: registration,
+        const records = await pb.collection('medical_records').getFullList({
+          filter: `patient = "${patientId}" && professional_registration = "Sem Assinatura"`,
         })
 
+        if (records.length > 0) {
+          await pb.collection('medical_records').update(records[0].id, {
+            content: finalContent,
+            professional_name: currentUser.name,
+            professional_registration: registration,
+          })
+        } else {
+          await pb.collection('medical_records').create({
+            patient: patientId,
+            content: finalContent,
+            professional_name: currentUser.name,
+            professional_registration: registration,
+          })
+        }
+
+        const draftData = drafts[patientId] || {}
         if (
           draftData.procedimentos &&
           Array.isArray(draftData.procedimentos.entries) &&
@@ -331,22 +386,38 @@ export default function Consultation() {
             </div>
             {showAnamneseExame && (
               <div className={cn(activeTab !== 'anamnese' && 'hidden')}>
-                <AnamnesisTab isSigned={!isStarted} patientId={patientId} />
+                <AnamnesisTab
+                  isSigned={!isStarted}
+                  patientId={patientId}
+                  onSaveSection={handleSaveSection}
+                />
               </div>
             )}
             {showAnamneseExame && (
               <div className={cn(activeTab !== 'exame' && 'hidden')}>
-                <PhysicalExamTab isSigned={!isStarted} patientId={patientId} />
+                <PhysicalExamTab
+                  isSigned={!isStarted}
+                  patientId={patientId}
+                  onSaveSection={handleSaveSection}
+                />
               </div>
             )}
             <div className={cn(activeTab !== 'planejamento' && 'hidden')}>
               <PlanningTab isSigned={false} patientId={patientId} />
             </div>
             <div className={cn(activeTab !== 'procedimentos' && 'hidden')}>
-              <ProcedureTab isSigned={!isStarted} patientId={patientId} />
+              <ProcedureTab
+                isSigned={!isStarted}
+                patientId={patientId}
+                onSaveSection={handleSaveSection}
+              />
             </div>
             <div className={cn(activeTab !== 'evolucao' && 'hidden')}>
-              <EvolutionTab isSigned={!isStarted} patientId={patientId} />
+              <EvolutionTab
+                isSigned={!isStarted}
+                patientId={patientId}
+                onSaveSection={handleSaveSection}
+              />
             </div>
             {showDocs && (
               <div className={cn(activeTab !== 'receitas' && 'hidden')}>
