@@ -17,6 +17,7 @@ import ApplicationMarker, {
   type VectorMark,
   type LineMark,
 } from './ApplicationMarker'
+import useSettingsStore from '@/stores/useSettingsStore'
 
 export type ProcedureEntry = {
   id: string
@@ -45,6 +46,13 @@ type Props = {
 
 export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { procedures, areas, technologies, products, brands } = useSettingsStore()
+
+  const typeOptions = Array.from(new Set([...procedures, entry.type].filter(Boolean)))
+  const areaOptions = Array.from(new Set([...areas, entry.area].filter(Boolean)))
+  const techOptions = Array.from(new Set([...technologies, entry.technology].filter(Boolean)))
+  const prodOptions = Array.from(new Set([...products, entry.product].filter(Boolean)))
+  const brandOptions = Array.from(new Set([...brands, entry.brand].filter(Boolean)))
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -77,53 +85,113 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Tipo</Label>
-            <Input
-              value={entry.type || ''}
-              onChange={(e) => onUpdate(entry.id, 'type', e.target.value)}
+            <Select
+              value={entry.type || undefined}
+              onValueChange={(v) => onUpdate(entry.id, 'type', v === '_none' ? '' : v)}
               disabled={isSigned}
-              placeholder="Ex: Preenchimento"
-              className="bg-muted/30 focus-visible:bg-background"
-            />
+            >
+              <SelectTrigger className="bg-muted/30 focus-visible:bg-background">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none" className="text-muted-foreground italic">
+                  Nenhum / Limpar
+                </SelectItem>
+                {typeOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Área</Label>
-            <Input
-              value={entry.area || ''}
-              onChange={(e) => onUpdate(entry.id, 'area', e.target.value)}
+            <Select
+              value={entry.area || undefined}
+              onValueChange={(v) => onUpdate(entry.id, 'area', v === '_none' ? '' : v)}
               disabled={isSigned}
-              placeholder="Ex: Mandíbula"
-              className="bg-muted/30 focus-visible:bg-background"
-            />
+            >
+              <SelectTrigger className="bg-muted/30 focus-visible:bg-background">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none" className="text-muted-foreground italic">
+                  Nenhum / Limpar
+                </SelectItem>
+                {areaOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Técnica</Label>
-            <Input
-              value={entry.technology || ''}
-              onChange={(e) => onUpdate(entry.id, 'technology', e.target.value)}
+            <Select
+              value={entry.technology || undefined}
+              onValueChange={(v) => onUpdate(entry.id, 'technology', v === '_none' ? '' : v)}
               disabled={isSigned}
-              placeholder="Ex: Agulha 27G"
-              className="bg-muted/30 focus-visible:bg-background"
-            />
+            >
+              <SelectTrigger className="bg-muted/30 focus-visible:bg-background">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none" className="text-muted-foreground italic">
+                  Nenhum / Limpar
+                </SelectItem>
+                {techOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Produto</Label>
-            <Input
-              value={entry.product || ''}
-              onChange={(e) => onUpdate(entry.id, 'product', e.target.value)}
+            <Select
+              value={entry.product || undefined}
+              onValueChange={(v) => onUpdate(entry.id, 'product', v === '_none' ? '' : v)}
               disabled={isSigned}
-              placeholder="Ex: Ácido Hialurônico"
-              className="bg-muted/30 focus-visible:bg-background"
-            />
+            >
+              <SelectTrigger className="bg-muted/30 focus-visible:bg-background">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none" className="text-muted-foreground italic">
+                  Nenhum / Limpar
+                </SelectItem>
+                {prodOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Marca</Label>
-            <Input
-              value={entry.brand || ''}
-              onChange={(e) => onUpdate(entry.id, 'brand', e.target.value)}
+            <Select
+              value={entry.brand || undefined}
+              onValueChange={(v) => onUpdate(entry.id, 'brand', v === '_none' ? '' : v)}
               disabled={isSigned}
-              placeholder="Ex: Restylane"
-              className="bg-muted/30 focus-visible:bg-background"
-            />
+            >
+              <SelectTrigger className="bg-muted/30 focus-visible:bg-background">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none" className="text-muted-foreground italic">
+                  Nenhum / Limpar
+                </SelectItem>
+                {brandOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground font-medium">Lote</Label>

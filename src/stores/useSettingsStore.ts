@@ -1,4 +1,5 @@
-import { useState, useContext, createContext, ReactNode, createElement } from 'react'
+import { useState, useContext, createContext, ReactNode, createElement, useEffect } from 'react'
+import pb from '@/lib/pocketbase/client'
 
 export type SettingsCategory = 'procedures' | 'areas' | 'products' | 'brands' | 'technologies'
 
@@ -68,15 +69,66 @@ const SettingsContext = createContext<SettingsState>({} as SettingsState)
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState(defaultData)
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        if (!pb.authStore.isValid) return
+        const record = await pb.collection('app_settings').getFirstListItem('key="procedures_config"')
+        if (record && record.value) {
+          const parsed = JSON.parse(record.value)
+          setData((prev) => ({ ...prev, ...parsed }))
+        }
+      } catch (e) {
+        // Ignorar se não existir
+      } finally {
+        setIsLoaded(true)
+      }
+    }
+    loadSettings()
+  }, [])
+
+  const saveToBackend = async (newData: any) => {
+    try {
+      if (!pb.authStore.isValid) return
+      const payload = {
+        procedures: newData.procedures,
+        areas: newData.areas,
+        products: newData.products,
+        brands: newData.brands,
+        technologies: newData.technologies,
+        prices: newData.prices,
+        belleSoftware: newData.belleSoftware,
+      }
+      
+      let record
+      try {
+        record = await pb.collection('app_settings').getFirstListItem('key="procedures_config"')
+      } catch (e) {}
+
+      if (record) {
+        await pb.collection('app_settings').update(record.id, { value: JSON.stringify(payload) })
+      } else {
+        await pb.collection('app_settings').create({ key: 'procedures_config', value: JSON.stringify(payload) })
+      }
+    } catch (e) {
+      console.error('Erro ao salvar configurações', e)
+    }
+  }
 
   const addItem = (category: SettingsCategory, item: string, price?: string) => {
     const trimmed = item.trim()
     if (trimmed && !data[category].includes(trimmed)) {
-      setData((prev) => ({
-        ...prev,
-        [category]: [...prev[category], trimmed],
-        prices: price ? { ...prev.prices, [trimmed]: price } : prev.prices,
-      }))
+      setData((prev) => {
+        const newData = {
+          ...prev,
+          [category]: [...prev[category], trimmed],
+          prices: price ? { ...prev.prices, [trimmed]: price } : prev.prices,
+        }
+        saveToBackend(newData)
+        return newData
+      })
     }
   }
 
@@ -84,7 +136,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setData((prev) => {
       const newPrices = { ...prev.prices }
       delete newPrices[item]
-      return { ...prev, [category]: prev[category].filter((i) => i !== item), prices: newPrices }
+      const newData = { ...prev, [category]: prev[category].filter((i) => i !== item), prices: newPrices }
+      saveToBackend(newData)
+      return newData
     })
   }
 
@@ -95,18 +149,22 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         const newPrices = { ...prev.prices }
         delete newPrices[old]
         if (price) newPrices[trimmed] = price
-        return {
+        const newData = {
           ...prev,
           [cat]: prev[cat].map((i) => (i === old ? trimmed : i)),
           prices: newPrices,
         }
+        saveToBackend(newData)
+        return newData
       })
     } else if (trimmed === old) {
       setData((prev) => {
         const newPrices = { ...prev.prices }
         if (price) newPrices[trimmed] = price
         else delete newPrices[trimmed]
-        return { ...prev, prices: newPrices }
+        const newData = { ...prev, prices: newPrices }
+        saveToBackend(newData)
+        return newData
       })
     }
   }
@@ -125,14 +183,18 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         estabelecimento,
         webhookContentType: contentType,
       },
-    }))
+    }
+    setData(newData)
+    saveToBackend(newData)
   }
 
   const setBelleLastSync = (status: 'success' | 'error', date: string) => {
-    setData((prev) => ({
-      ...prev,
-      belleSoftware: { ...prev.belleSoftware, lastSyncStatus: status, lastSync: date },
-    }))
+    const newData = {
+      ...data,
+      belleSoftware: { ...data.belleSoftware, lastSyncStatus: status, lastSync: date },
+    }
+    setData(newData)
+    saveToBackend(newData)
   }
 
   return createElement(

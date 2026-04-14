@@ -227,6 +227,36 @@ export default function Consultation() {
           professional_registration: registration,
         })
 
+        if (
+          draftData.procedimentos &&
+          Array.isArray(draftData.procedimentos.entries) &&
+          draftData.procedimentos.entries.length > 0
+        ) {
+          try {
+            const patientRecord = await pb.collection('patients').getOne(patientId)
+            const existingProcedures = patientRecord.procedures || []
+            const newProcedures = draftData.procedimentos.entries
+              .filter((e: any) => e.type || e.product)
+              .map((e: any) => ({
+                date: new Date().toISOString(),
+                type: e.type,
+                area: e.area,
+                product: e.product,
+                brand: e.brand,
+                dose: e.dose,
+                technology: e.technology,
+              }))
+
+            if (newProcedures.length > 0) {
+              await pb.collection('patients').update(patientId, {
+                procedures: [...existingProcedures, ...newProcedures],
+              })
+            }
+          } catch (e) {
+            console.error('Erro ao atualizar procedimentos do paciente', e)
+          }
+        }
+
         endConsultation(patientId)
         clearDraft(patientId)
         addLog('Status alterado: Consulta Finalizada e Prontuário Salvo', patientId)
