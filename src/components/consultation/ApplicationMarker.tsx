@@ -419,9 +419,9 @@ type Props = {
 export default function ApplicationMarker({
   area,
   photo,
-  points,
-  vectors,
-  lines,
+  points = [],
+  vectors = [],
+  lines = [],
   onChange,
   isSigned,
 }: Props) {
@@ -440,14 +440,15 @@ export default function ApplicationMarker({
     }
   }
 
-  const onDown = (e: React.PointerEvent) => {
+  const onDown = (e: React.PointerEvent<SVGSVGElement>) => {
     if (isSigned) return
+    e.currentTarget.setPointerCapture(e.pointerId)
     const { x, y } = getCoords(e)
     if (tool === 'point') {
       onChange(
-        [...points, { id: Math.random().toString(36).slice(2), x, y, units: '' }],
-        vectors,
-        lines,
+        [...(points || []), { id: Math.random().toString(36).slice(2), x, y, units: '' }],
+        vectors || [],
+        lines || [],
       )
     } else if (tool === 'vector' || tool === 'line') {
       setDrawV({ sX: x, sY: y, eX: x, eY: y })
@@ -456,21 +457,24 @@ export default function ApplicationMarker({
     }
   }
 
-  const onMove = (e: React.PointerEvent) => {
+  const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
     if (isSigned || !drawV || (tool !== 'vector' && tool !== 'line')) return
     const { x, y } = getCoords(e)
     setDrawV({ ...drawV, eX: x, eY: y })
   }
 
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent<SVGSVGElement>) => {
     if (isSigned || !drawV) return
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch (_) {}
     if ((tool === 'vector' || tool === 'line') && drawV) {
       if (Math.hypot(drawV.eX - drawV.sX, drawV.eY - drawV.sY) > 5) {
         if (tool === 'vector') {
           onChange(
-            points,
+            points || [],
             [
-              ...vectors,
+              ...(vectors || []),
               {
                 id: Math.random().toString(36).slice(2),
                 startX: drawV.sX,
@@ -479,11 +483,11 @@ export default function ApplicationMarker({
                 endY: drawV.eY,
               },
             ],
-            lines,
+            lines || [],
           )
         } else {
-          onChange(points, vectors, [
-            ...lines,
+          onChange(points || [], vectors || [], [
+            ...(lines || []),
             {
               id: Math.random().toString(36).slice(2),
               startX: drawV.sX,
@@ -521,30 +525,34 @@ export default function ApplicationMarker({
   }
 
   const eraseNearest = (x: number, y: number) => {
-    const pt = points.find((p) => Math.hypot(p.x - x, p.y - y) < 15)
+    const safePoints = points || []
+    const safeVectors = vectors || []
+    const safeLines = lines || []
+
+    const pt = safePoints.find((p) => Math.hypot(p.x - x, p.y - y) < 15)
     if (pt) {
       return onChange(
-        points.filter((p) => p.id !== pt.id),
-        vectors,
-        lines,
+        safePoints.filter((p) => p.id !== pt.id),
+        safeVectors,
+        safeLines,
       )
     }
 
-    const vec = vectors.find((v) => checkLineIntersection(x, y, v))
+    const vec = safeVectors.find((v) => checkLineIntersection(x, y, v))
     if (vec) {
       return onChange(
-        points,
-        vectors.filter((v) => v.id !== vec.id),
-        lines,
+        safePoints,
+        safeVectors.filter((v) => v.id !== vec.id),
+        safeLines,
       )
     }
 
-    const lin = lines.find((l) => checkLineIntersection(x, y, l))
+    const lin = safeLines.find((l) => checkLineIntersection(x, y, l))
     if (lin) {
       return onChange(
-        points,
-        vectors,
-        lines.filter((l) => l.id !== lin.id),
+        safePoints,
+        safeVectors,
+        safeLines.filter((l) => l.id !== lin.id),
       )
     }
   }
@@ -640,7 +648,7 @@ export default function ApplicationMarker({
             DIAGRAMS[area]
           )}
 
-          {lines.map((l) => (
+          {(lines || []).map((l) => (
             <line
               key={l.id}
               x1={l.startX}
@@ -653,7 +661,7 @@ export default function ApplicationMarker({
             />
           ))}
 
-          {vectors.map((v) => (
+          {(vectors || []).map((v) => (
             <line
               key={v.id}
               x1={v.startX}
@@ -694,7 +702,7 @@ export default function ApplicationMarker({
             />
           )}
 
-          {points.map((p) => (
+          {(points || []).map((p) => (
             <circle
               key={p.id}
               cx={p.x}
@@ -707,7 +715,7 @@ export default function ApplicationMarker({
             />
           ))}
         </svg>
-        {points.map((p) => (
+        {(points || []).map((p) => (
           <div
             key={p.id}
             style={{ left: `${(p.x / 500) * 100}%`, top: `${(p.y / 500) * 100}%` }}
@@ -718,9 +726,11 @@ export default function ApplicationMarker({
               value={p.units}
               onChange={(e) =>
                 onChange(
-                  points.map((pt) => (pt.id === p.id ? { ...pt, units: e.target.value } : pt)),
-                  vectors,
-                  lines,
+                  (points || []).map((pt) =>
+                    pt.id === p.id ? { ...pt, units: e.target.value } : pt,
+                  ),
+                  vectors || [],
+                  lines || [],
                 )
               }
               disabled={isSigned}

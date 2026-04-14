@@ -25,8 +25,15 @@ export default function ProcedureTab({
   const generalNotes: string = procData.generalNotes || ''
 
   const addEntry = () => {
+    const currentDrafts = useConsultationStore.getState().drafts
+    const currentProcData = currentDrafts[patientId]?.procedimentos || {
+      entries: [],
+      generalNotes: '',
+    }
+    const currentEntries = currentProcData.entries || []
+
     const newEntries = [
-      ...entries,
+      ...currentEntries,
       {
         id: Math.random().toString(36).slice(2),
         type: '',
@@ -44,21 +51,38 @@ export default function ProcedureTab({
         lines: [],
       },
     ]
-    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
+    updateDraft(patientId, 'procedimentos', { ...currentProcData, entries: newEntries })
   }
 
   const removeEntry = (id: string) => {
-    const newEntries = entries.filter((e) => e.id !== id)
-    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
+    const currentDrafts = useConsultationStore.getState().drafts
+    const currentProcData = currentDrafts[patientId]?.procedimentos || {
+      entries: [],
+      generalNotes: '',
+    }
+    const currentEntries = currentProcData.entries || []
+    const newEntries = currentEntries.filter((e: any) => e.id !== id)
+    updateDraft(patientId, 'procedimentos', { ...currentProcData, entries: newEntries })
   }
 
   const updateEntry = (id: string, field: keyof ProcedureEntry, value: any) => {
-    const newEntries = entries.map((e) => (e.id === id ? { ...e, [field]: value } : e))
-    updateDraft(patientId, 'procedimentos', { ...procData, entries: newEntries })
+    const currentDrafts = useConsultationStore.getState().drafts
+    const currentProcData = currentDrafts[patientId]?.procedimentos || {
+      entries: [],
+      generalNotes: '',
+    }
+    const currentEntries = currentProcData.entries || []
+    const newEntries = currentEntries.map((e: any) => (e.id === id ? { ...e, [field]: value } : e))
+    updateDraft(patientId, 'procedimentos', { ...currentProcData, entries: newEntries })
   }
 
   const setGeneralNotes = (val: string) => {
-    updateDraft(patientId, 'procedimentos', { ...procData, generalNotes: val })
+    const currentDrafts = useConsultationStore.getState().drafts
+    const currentProcData = currentDrafts[patientId]?.procedimentos || {
+      entries: [],
+      generalNotes: '',
+    }
+    updateDraft(patientId, 'procedimentos', { ...currentProcData, generalNotes: val })
   }
 
   const handleSave = () => {
