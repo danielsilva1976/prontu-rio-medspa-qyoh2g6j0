@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import DocumentsTab from '@/components/consultation/DocumentsTab'
 import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
 import HistoryTab from '@/components/consultation/HistoryTab'
+import LivePreview from '@/components/consultation/LivePreview'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -206,7 +207,29 @@ export default function Consultation() {
     return finalContent
   }
 
-  const handleSaveSection = async () => {
+  const [dbDraft, setDbDraft] = useState<any>(null)
+
+  const fetchDbDraft = async () => {
+    if (!patientId) return
+    try {
+      const records = await pb.collection('medical_records').getFullList({
+        filter: `patient = "${patientId}" && professional_registration = "Sem Assinatura"`,
+      })
+      if (records.length > 0) {
+        setDbDraft(records[0].content)
+      } else {
+        setDbDraft(null)
+      }
+    } catch (e) {
+      console.error('Erro ao buscar rascunho:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchDbDraft()
+  }, [patientId, isStarted])
+
+  const handleSaveSection = async (tab?: string) => {
     const finalContent = buildContent()
     if (Object.keys(finalContent).length === 0) return
 
@@ -228,6 +251,16 @@ export default function Consultation() {
           professional_registration: 'Sem Assinatura',
         })
       }
+
+      await fetchDbDraft()
+
+      if (tab) {
+        const tabsSequence = ['anamnese', 'exame', 'procedimentos', 'evolucao']
+        const currentIndex = tabsSequence.indexOf(tab)
+        if (currentIndex !== -1 && currentIndex < tabsSequence.length - 1) {
+          setSearchParams({ tab: tabsSequence[currentIndex + 1] }, { replace: true })
+        }
+      }
     } catch (error) {
       console.error('Erro ao salvar rascunho na base:', error)
     }
@@ -236,6 +269,7 @@ export default function Consultation() {
   const handleCancelConsultation = async () => {
     endConsultation(patientId)
     clearDraft(patientId)
+    setDbDraft(null)
     addLog('Status alterado: Atendimento Cancelado', patientId)
     setSearchParams({ tab: 'historico' }, { replace: true })
 
@@ -320,6 +354,7 @@ export default function Consultation() {
 
         endConsultation(patientId)
         clearDraft(patientId)
+        setDbDraft(null)
         addLog('Status alterado: Consulta Finalizada e Prontuário Salvo', patientId)
         setSearchParams({ tab: 'historico' }, { replace: true })
 
@@ -388,6 +423,9 @@ export default function Consultation() {
         {/* Main Content Area with Independent Scrollbar aligned below the header */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full relative scroll-smooth">
           <div className="max-w-5xl mx-auto pb-8">
+            {isStarted && dbDraft && Object.keys(dbDraft).length > 0 && (
+              <LivePreview content={dbDraft} />
+            )}
             <div className={cn(activeTab !== 'historico' && 'hidden')}>
               <HistoryTab patientId={patientId} />
             </div>
@@ -396,7 +434,7 @@ export default function Consultation() {
                 <AnamnesisTab
                   isSigned={!isStarted}
                   patientId={patientId}
-                  onSaveSection={handleSaveSection}
+                  onSaveSection={() => handleSaveSection('anamnese')}
                 />
               </div>
             )}
@@ -405,7 +443,7 @@ export default function Consultation() {
                 <PhysicalExamTab
                   isSigned={!isStarted}
                   patientId={patientId}
-                  onSaveSection={handleSaveSection}
+                  onSaveSection={() => handleSaveSection('exame')}
                 />
               </div>
             )}
@@ -416,14 +454,14 @@ export default function Consultation() {
               <ProcedureTab
                 isSigned={!isStarted}
                 patientId={patientId}
-                onSaveSection={handleSaveSection}
+                onSaveSection={() => handleSaveSection('procedimentos')}
               />
             </div>
             <div className={cn(activeTab !== 'evolucao' && 'hidden')}>
               <EvolutionTab
                 isSigned={!isStarted}
                 patientId={patientId}
-                onSaveSection={handleSaveSection}
+                onSaveSection={() => handleSaveSection('evolucao')}
               />
             </div>
             {showDocs && (
