@@ -84,7 +84,7 @@ export default function Consultation() {
     if (isStarted) {
       try {
         const draftData = drafts[patientId] || {}
-        const finalContent: Record<string, Record<string, string>> = {}
+        const finalContent: Record<string, Record<string, any>> = {}
 
         const anamneseMap: Record<string, string> = {
           queixa: 'Queixa Principal',
@@ -155,7 +155,7 @@ export default function Consultation() {
         }
 
         if (draftData.procedimentos) {
-          const procSection: Record<string, string> = {}
+          const procSection: Record<string, any> = {}
           if (draftData.procedimentos.generalNotes?.trim()) {
             procSection['Observações Gerais'] = draftData.procedimentos.generalNotes.trim()
           }
@@ -164,11 +164,30 @@ export default function Consultation() {
               const details = []
               if (entry.type) details.push(`Tipo: ${entry.type}`)
               if (entry.area) details.push(`Área: ${entry.area}`)
+              if (entry.technology) details.push(`Tecnologia: ${entry.technology}`)
               if (entry.product)
                 details.push(`Produto: ${entry.product} ${entry.brand ? `(${entry.brand})` : ''}`)
+              if (entry.batch) details.push(`Lote: ${entry.batch}`)
               if (entry.dose) details.push(`Dose/Qtd: ${entry.dose}`)
-              if (details.length > 0) {
-                procSection[`Procedimento ${idx + 1}`] = details.join(' | ')
+
+              const hasMarkers =
+                entry.points?.length > 0 || entry.vectors?.length > 0 || entry.lines?.length > 0
+
+              if (details.length > 0 || hasMarkers) {
+                if (details.length > 0) {
+                  procSection[`Procedimento ${idx + 1}`] = details.join(' | ')
+                } else {
+                  procSection[`Procedimento ${idx + 1}`] = 'Mapeamento visual registrado.'
+                }
+
+                if (hasMarkers) {
+                  procSection[`_markers_${idx + 1}`] = {
+                    area: entry.markingArea || entry.area || 'Face',
+                    points: entry.points || [],
+                    vectors: entry.vectors || [],
+                    lines: entry.lines || [],
+                  }
+                }
               }
             })
           }

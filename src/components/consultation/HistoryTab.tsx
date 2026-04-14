@@ -3,6 +3,7 @@ import { FileText, Calendar, Clock, ShieldCheck } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRealtime } from '@/hooks/use-realtime'
+import ApplicationMarker from './ApplicationMarker'
 
 export default function HistoryTab({ patientId }: { patientId: string }) {
   const [records, setRecords] = useState<any[]>([])
@@ -12,7 +13,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}"`,
-        sort: 'created',
+        sort: '+created',
       })
       setRecords(medicalRecords)
     } catch (error) {
@@ -72,9 +73,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
             <div className="p-8 sm:p-12">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-6 mb-8 gap-4">
                 <div>
-                  <h3 className="text-2xl font-serif text-gray-900 mb-2">
-                    Prontuário de Atendimento
-                  </h3>
+                  <h3 className="text-2xl font-serif text-gray-900 mb-2">Prontuário Médico</h3>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <Calendar className="h-4 w-4" />
@@ -105,16 +104,38 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                         {sectionName}
                       </h4>
                       <div className="grid grid-cols-1 gap-y-3">
-                        {Object.entries(sectionData as Record<string, string>).map(
-                          ([key, value]) => (
+                        {Object.entries(sectionData as Record<string, any>).map(([key, value]) => {
+                          if (key.startsWith('_markers_')) {
+                            return (
+                              <div
+                                key={key}
+                                className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-4 shadow-sm"
+                              >
+                                <span className="font-semibold text-gray-700 block mb-4">
+                                  Mapeamento Visual - {value.area}:
+                                </span>
+                                <ApplicationMarker
+                                  area={value.area}
+                                  points={value.points || []}
+                                  vectors={value.vectors || []}
+                                  lines={value.lines || []}
+                                  isSigned={true}
+                                  onChange={() => {}}
+                                />
+                              </div>
+                            )
+                          }
+                          return (
                             <div key={key} className="text-sm">
                               <span className="font-semibold text-gray-700 block mb-0.5">
                                 {key}:
                               </span>
-                              <span className="text-gray-600 whitespace-pre-wrap">{value}</span>
+                              <span className="text-gray-600 whitespace-pre-wrap">
+                                {String(value)}
+                              </span>
                             </div>
-                          ),
-                        )}
+                          )
+                        })}
                       </div>
                     </section>
                   ))
