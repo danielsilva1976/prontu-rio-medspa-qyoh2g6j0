@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useId } from 'react'
 import { MapPin, ArrowUpRight, Eraser, Trash2, Minus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -427,6 +427,8 @@ export default function ApplicationMarker({
 }: Props) {
   const [tool, setTool] = useState<'point' | 'vector' | 'line' | 'erase'>('point')
   const svgRef = useRef<SVGSVGElement>(null)
+  const markerId = useId().replace(/:/g, '') + '-arr'
+  const clipId = useId().replace(/:/g, '') + '-clip'
   const [drawV, setDrawV] = useState<{ sX: number; sY: number; eX: number; eY: number } | null>(
     null,
   )
@@ -620,7 +622,7 @@ export default function ApplicationMarker({
         >
           <defs>
             <marker
-              id="arr"
+              id={markerId}
               markerWidth="8"
               markerHeight="6"
               refX="7"
@@ -631,7 +633,7 @@ export default function ApplicationMarker({
               <polygon points="0 0, 8 3, 0 6" fill="hsl(var(--primary))" />
             </marker>
             {photo && (
-              <clipPath id="photo-clip">
+              <clipPath id={clipId}>
                 <rect width="500" height="500" rx="0" />
               </clipPath>
             )}
@@ -643,7 +645,7 @@ export default function ApplicationMarker({
               width="500"
               height="500"
               preserveAspectRatio="xMidYMid meet"
-              clipPath="url(#photo-clip)"
+              clipPath={`url(#${clipId})`}
               opacity={0.9}
             />
           ) : (
@@ -672,7 +674,7 @@ export default function ApplicationMarker({
               y2={v.endY}
               stroke="hsl(var(--primary))"
               strokeWidth="1.5"
-              markerEnd="url(#arr)"
+              markerEnd={`url(#${markerId})`}
               strokeLinecap="round"
             />
           ))}
@@ -685,7 +687,7 @@ export default function ApplicationMarker({
               y2={drawV.eY}
               stroke="hsl(var(--primary))"
               strokeWidth="1.5"
-              markerEnd="url(#arr)"
+              markerEnd={`url(#${markerId})`}
               opacity={0.5}
               strokeLinecap="round"
             />
