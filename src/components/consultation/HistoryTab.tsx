@@ -12,7 +12,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}"`,
-        sort: '-created',
+        sort: 'created',
       })
       setRecords(medicalRecords)
     } catch (error) {
