@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Syringe, Plus, Save } from 'lucide-react'
+import { Syringe, Plus, Save, Eraser } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import ProcedureEntryCard, { type ProcedureEntry } from './ProcedureEntryCard'
 import useAuditStore from '@/stores/useAuditStore'
@@ -93,6 +93,10 @@ export default function ProcedureTab({
     })
   }
 
+  const handleClear = () => {
+    updateDraft(patientId, 'procedimentos', { entries: [], generalNotes: '' })
+  }
+
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
       <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
@@ -141,7 +145,10 @@ export default function ProcedureTab({
         </div>
 
         {!isSigned && (
-          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+          <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border/50">
+            <Button onClick={handleClear} variant="outline" className="shadow-sm">
+              <Eraser className="w-4 h-4 mr-2" /> Limpar
+            </Button>
             <Button
               onClick={handleSave}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"

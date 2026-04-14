@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Save } from 'lucide-react'
+import { Save, Eraser } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
 import useConsultationStore from '@/stores/useConsultationStore'
@@ -39,6 +39,10 @@ export default function PhysicalExamTab({
       title: 'Exame físico salvo',
       description: 'As avaliações e classificações clínicas foram registradas.',
     })
+  }
+
+  const handleClear = () => {
+    updateDraft(patientId, 'exame', {})
   }
 
   return (
@@ -309,7 +313,10 @@ export default function PhysicalExamTab({
         </Tabs>
 
         {!isSigned && (
-          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+          <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border/50">
+            <Button onClick={handleClear} variant="outline" className="shadow-sm">
+              <Eraser className="w-4 h-4 mr-2" /> Limpar
+            </Button>
             <Button
               onClick={handleSave}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"

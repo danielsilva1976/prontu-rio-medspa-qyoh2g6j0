@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { History, Save } from 'lucide-react'
+import { History, Save, Eraser } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import useAuditStore from '@/stores/useAuditStore'
 import useConsultationStore from '@/stores/useConsultationStore'
@@ -33,6 +33,10 @@ export default function EvolutionTab({
     })
   }
 
+  const handleClear = () => {
+    updateDraft(patientId, 'evolucao', { note: '' })
+  }
+
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
       <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
@@ -53,7 +57,10 @@ export default function EvolutionTab({
         />
 
         {!isSigned && (
-          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+          <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-border/50">
+            <Button onClick={handleClear} variant="outline" className="shadow-sm">
+              <Eraser className="w-4 h-4 mr-2" /> Limpar
+            </Button>
             <Button
               onClick={handleSave}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
