@@ -68,7 +68,7 @@ export default function EvolutionTab({
               onClick={handleSave}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
             >
-              <Save className="w-4 h-4 mr-2" /> Salvar Evolução
+              <Save className="w-4 h-4 mr-2" /> Salvar e Revisar Atendimento
             </Button>
           </div>
         )}

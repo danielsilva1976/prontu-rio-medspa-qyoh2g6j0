@@ -7,6 +7,7 @@ import AnamnesisTab from '@/components/consultation/AnamnesisTab'
 import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
 import ProcedureTab from '@/components/consultation/ProcedureTab'
 import EvolutionTab from '@/components/consultation/EvolutionTab'
+import ReviewTab from '@/components/consultation/ReviewTab'
 import DocumentsTab from '@/components/consultation/DocumentsTab'
 import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
@@ -61,7 +62,7 @@ export default function Consultation() {
     let newTab = activeTab
 
     // Redirect if trying to access disabled "Novo Atendimento" tabs while consultation is not started
-    const novoAtendimentoTabs = ['anamnese', 'exame', 'procedimentos', 'evolucao']
+    const novoAtendimentoTabs = ['anamnese', 'exame', 'procedimentos', 'evolucao', 'resumo']
     if (!isStarted && novoAtendimentoTabs.includes(activeTab)) {
       newTab = 'historico'
     }
@@ -255,7 +256,7 @@ export default function Consultation() {
       await fetchDbDraft()
 
       if (tab) {
-        const tabsSequence = ['anamnese', 'exame', 'procedimentos', 'evolucao']
+        const tabsSequence = ['anamnese', 'exame', 'procedimentos', 'evolucao', 'resumo']
         const currentIndex = tabsSequence.indexOf(tab)
         if (currentIndex !== -1 && currentIndex < tabsSequence.length - 1) {
           setSearchParams({ tab: tabsSequence[currentIndex + 1] }, { replace: true })
@@ -423,7 +424,7 @@ export default function Consultation() {
         {/* Main Content Area with Independent Scrollbar aligned below the header */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full relative scroll-smooth">
           <div className="max-w-5xl mx-auto pb-8">
-            {isStarted && dbDraft && Object.keys(dbDraft).length > 0 && (
+            {isStarted && dbDraft && Object.keys(dbDraft).length > 0 && activeTab !== 'resumo' && (
               <LivePreview content={dbDraft} />
             )}
             <div className={cn(activeTab !== 'historico' && 'hidden')}>
@@ -462,6 +463,13 @@ export default function Consultation() {
                 isSigned={!isStarted}
                 patientId={patientId}
                 onSaveSection={() => handleSaveSection('evolucao')}
+              />
+            </div>
+            <div className={cn(activeTab !== 'resumo' && 'hidden')}>
+              <ReviewTab
+                content={dbDraft || {}}
+                onEdit={() => setSearchParams({ tab: 'evolucao' }, { replace: true })}
+                onFinalize={handleToggleConsultation}
               />
             </div>
             {showDocs && (
