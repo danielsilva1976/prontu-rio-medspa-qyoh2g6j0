@@ -219,9 +219,35 @@ export default function Consultation() {
         finalContent['Procedimentos Realizados'] = procSection
     }
 
-    if (draftData.evolucao && draftData.evolucao.note?.trim()) {
-      finalContent['Evolução Clínica'] = {
-        Registro: draftData.evolucao.note.trim(),
+    if (draftData.evolucao) {
+      const evolucaoSection: Record<string, string> = {}
+
+      if (typeof draftData.evolucao === 'string' && draftData.evolucao.trim() !== '') {
+        evolucaoSection['Registro'] = draftData.evolucao.trim()
+      } else {
+        Object.entries(draftData.evolucao).forEach(([k, v]) => {
+          if (v && typeof v === 'string' && v.trim() !== '') {
+            let keyName = k.charAt(0).toUpperCase() + k.slice(1)
+            if (
+              [
+                'note',
+                'text',
+                'evolucao',
+                'content',
+                'registro',
+                'descricao',
+                'observacao',
+              ].includes(k.toLowerCase())
+            ) {
+              keyName = 'Registro'
+            }
+            evolucaoSection[keyName] = v.trim()
+          }
+        })
+      }
+
+      if (Object.keys(evolucaoSection).length > 0) {
+        finalContent['Evolução Clínica'] = evolucaoSection
       }
     }
 
