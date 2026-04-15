@@ -62,29 +62,31 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   return (
     <div className="flex flex-col md:flex-row gap-8 xl:gap-12 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
       {/* Sidebar Timeline */}
-      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-0 md:-ml-8 lg:-ml-16 xl:-ml-24 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2 pb-4 no-scrollbar">
-        <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2">
+      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-0 md:-ml-8 lg:-ml-16 xl:-ml-24 max-h-[calc(100dvh-8rem)] flex flex-col pr-2 pb-4">
+        <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2">
           <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
         </h3>
-        <div className="relative border-l-2 border-primary/20 ml-4 space-y-6">
-          {records.map((record) => (
-            <div
-              key={`timeline-${record.id}`}
-              className="relative pl-6 cursor-pointer group"
-              onClick={() => scrollToRecord(record.id)}
-            >
-              <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-amber-500 shadow-sm group-hover:scale-125 transition-transform" />
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors flex items-center gap-2">
-                  {new Date(record.created).toLocaleDateString('pt-BR')}
-                </span>
-                <span className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
-                  <User className="h-3 w-3" />
-                  {record.professional_name}
-                </span>
+        <div className="overflow-y-auto flex-1 no-scrollbar pb-8">
+          <div className="relative border-l-2 border-primary/20 ml-4 space-y-6">
+            {records.map((record) => (
+              <div
+                key={`timeline-${record.id}`}
+                className="relative pl-6 cursor-pointer group"
+                onClick={() => scrollToRecord(record.id)}
+              >
+                <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-amber-500 shadow-sm group-hover:scale-125 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors flex items-center gap-2">
+                    {new Date(record.created).toLocaleDateString('pt-BR')}
+                  </span>
+                  <span className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
+                    <User className="h-3 w-3" />
+                    {record.professional_name}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
