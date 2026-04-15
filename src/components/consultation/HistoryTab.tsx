@@ -14,7 +14,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}" && professional_registration != 'Sem Assinatura'`,
-        sort: '-created',
+        sort: 'created',
       })
       setRecords(medicalRecords)
     } catch (error) {
@@ -60,9 +60,9 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
+    <div className="flex flex-col md:flex-row gap-8 xl:gap-12 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
       {/* Sidebar Timeline */}
-      <div className="w-full md:w-56 shrink-0 md:sticky md:top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 pb-4 no-scrollbar">
+      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-0 md:-ml-8 lg:-ml-16 xl:-ml-24 max-h-[calc(100vh-2rem)] overflow-y-auto pr-2 pb-4 no-scrollbar">
         <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2">
           <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
         </h3>
@@ -94,7 +94,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
           <div
             key={record.id}
             id={`record-${record.id}`}
-            className="bg-white border border-primary/30 shadow-md mx-auto overflow-hidden relative w-full rounded-xl scroll-mt-32 transition-all duration-300"
+            className="bg-white border border-primary/30 shadow-md mx-auto overflow-hidden relative w-full rounded-xl scroll-mt-6 transition-all duration-300"
           >
             <div className="h-2 w-full bg-primary border-b border-primary/20"></div>
             <div className="p-6 sm:p-10">
