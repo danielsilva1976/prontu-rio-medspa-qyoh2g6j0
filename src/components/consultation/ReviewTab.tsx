@@ -44,47 +44,153 @@ export default function ReviewTab({
           <div className="space-y-8 text-gray-800 leading-relaxed">
             {Object.entries(content)
               .sort(sortSections)
-              .map(([sectionName, sectionData]) => (
-                <section key={sectionName} className="mb-6">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-100 pb-2">
-                    {sectionName}
-                  </h4>
-                  <div className="grid grid-cols-1 gap-y-3">
-                    {Object.entries(sectionData as Record<string, any>)
-                      .sort(sortSectionEntries)
-                      .map(([key, value]) => {
-                        if (key.startsWith('_markers_')) {
-                          return (
-                            <div
-                              key={key}
-                              className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-4 shadow-sm"
-                            >
-                              <span className="font-semibold text-gray-700 block mb-4">
-                                Mapeamento Visual - {value.area}:
-                              </span>
-                              <ApplicationMarker
-                                area={value.area}
-                                points={value.points || []}
-                                vectors={value.vectors || []}
-                                lines={value.lines || []}
-                                isSigned={true}
-                                onChange={() => {}}
-                              />
-                            </div>
-                          )
-                        }
+              .map(([sectionName, sectionData]) => {
+                const entries = Object.entries(sectionData as Record<string, any>).sort(
+                  sortSectionEntries,
+                )
+
+                const renderEntry = (key: string, value: any) => {
+                  if (key.startsWith('_markers_')) {
+                    return (
+                      <div
+                        key={key}
+                        className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-4 shadow-sm"
+                      >
+                        <span className="font-semibold text-gray-700 block mb-4">
+                          Mapeamento Visual - {value.area}:
+                        </span>
+                        <ApplicationMarker
+                          area={value.area}
+                          points={value.points || []}
+                          vectors={value.vectors || []}
+                          lines={value.lines || []}
+                          isSigned={true}
+                          onChange={() => {}}
+                        />
+                      </div>
+                    )
+                  }
+                  return (
+                    <div key={key} className="text-sm">
+                      <span className="font-semibold text-gray-700 block mb-0.5">{key}:</span>
+                      <span className="text-gray-600 whitespace-pre-wrap">{String(value)}</span>
+                    </div>
+                  )
+                }
+
+                let sectionContent
+
+                if (sectionName === 'Exame Físico') {
+                  const groups: Record<string, typeof entries> = {
+                    Facial: [],
+                    Cabelo: [],
+                    'Tipo de Pele': [],
+                    Outros: [],
+                  }
+
+                  const hairTerms = [
+                    'cabelo',
+                    'haste',
+                    'couro',
+                    'alopécia',
+                    'eflúvio',
+                    'tricoscopia',
+                    'capilar',
+                    'queda',
+                    'fio',
+                    'calvície',
+                    'densidade',
+                  ]
+                  const skinTerms = [
+                    'pele',
+                    'fototipo',
+                    'hidratação',
+                    'oleosidade',
+                    'espessura',
+                    'textura',
+                    'acne',
+                    'melasma',
+                    'mancha',
+                    'poro',
+                    'rosácea',
+                    'fotoenvelhecimento',
+                    'sensibilidade',
+                    'cicatriz',
+                    'estria',
+                    'celulite',
+                    'lesão',
+                    'flacidez tissular',
+                    'turgor',
+                    'elasticidade',
+                    'pigmentação',
+                  ]
+                  const otherTerms = [
+                    'anotação',
+                    'anotações',
+                    'observação',
+                    'observações',
+                    'outros',
+                    'geral',
+                    'adicional',
+                    'adicionais',
+                  ]
+
+                  entries.forEach(([key, value]) => {
+                    if (key.startsWith('_markers_')) {
+                      groups['Outros'].push([key, value])
+                      return
+                    }
+
+                    const k = key.toLowerCase()
+                    if (hairTerms.some((term) => k.includes(term))) {
+                      groups['Cabelo'].push([key, value])
+                    } else if (skinTerms.some((term) => k.includes(term))) {
+                      groups['Tipo de Pele'].push([key, value])
+                    } else if (otherTerms.some((term) => k.includes(term))) {
+                      groups['Outros'].push([key, value])
+                    } else {
+                      groups['Facial'].push([key, value])
+                    }
+                  })
+
+                  sectionContent = (
+                    <>
+                      {['Facial', 'Cabelo', 'Tipo de Pele', 'Outros'].map((groupName) => {
+                        const groupEntries = groups[groupName]
+                        if (groupEntries.length === 0) return null
+
                         return (
-                          <div key={key} className="text-sm">
-                            <span className="font-semibold text-gray-700 block mb-0.5">{key}:</span>
-                            <span className="text-gray-600 whitespace-pre-wrap">
-                              {String(value)}
-                            </span>
+                          <div key={groupName} className="mb-5">
+                            {groupName !== 'Outros' && (
+                              <h5 className="text-sm font-semibold text-amber-600 mb-3 border-b border-amber-100 pb-1">
+                                {groupName}
+                              </h5>
+                            )}
+                            <div className="grid grid-cols-1 gap-y-3">
+                              {groupEntries.map(([key, value]) => renderEntry(key, value))}
+                            </div>
                           </div>
                         )
                       })}
-                  </div>
-                </section>
-              ))}
+                    </>
+                  )
+                } else {
+                  sectionContent = (
+                    <div className="grid grid-cols-1 gap-y-3">
+                      {entries.map(([key, value]) => renderEntry(key, value))}
+                    </div>
+                  )
+                }
+
+                return (
+                  <section key={sectionName} className="mb-6">
+                    <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-3 border-b border-amber-600/20 pb-2">
+                      {sectionName}
+                    </h4>
+                    {sectionContent}
+                  </section>
+                )
+              })}
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
