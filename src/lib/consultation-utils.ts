@@ -72,7 +72,7 @@ export const sortSectionEntries = (a: [string, any], b: [string, any]) => {
   return 0
 }
 
-export const SECTION_ORDER = ['Anamnese', 'Exame Físico', 'Evolução']
+export const SECTION_ORDER = ['Anamnese', 'Exame Físico', 'Procedimentos Realizados', 'Evolução']
 
 export const sortSections = (a: [string, any], b: [string, any]) => {
   const idxA = SECTION_ORDER.indexOf(a[0])
