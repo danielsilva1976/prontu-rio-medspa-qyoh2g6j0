@@ -1,6 +1,6 @@
 import { ShieldAlert } from 'lucide-react'
 import ApplicationMarker from './ApplicationMarker'
-import { sortSectionEntries, sortSections } from '@/lib/consultation-utils'
+import { sortSectionEntries } from '@/lib/consultation-utils'
 
 export default function LivePreview({ content }: { content: Record<string, any> }) {
   if (!content || Object.keys(content).length === 0) return null
@@ -26,7 +26,15 @@ export default function LivePreview({ content }: { content: Record<string, any> 
 
         <div className="space-y-8 text-gray-800 leading-relaxed">
           {Object.entries(content)
-            .sort(sortSections)
+            .sort((a, b) => {
+              const order = ['Anamnese', 'Exame Físico', 'Procedimentos Realizados', 'Evolução']
+              const idxA = order.indexOf(a[0])
+              const idxB = order.indexOf(b[0])
+              if (idxA !== -1 && idxB !== -1) return idxA - idxB
+              if (idxA !== -1) return -1
+              if (idxB !== -1) return 1
+              return a[0].localeCompare(b[0])
+            })
             .map(([sectionName, sectionData]) => {
               const entries = Object.entries(sectionData as Record<string, any>).sort(
                 sortSectionEntries,
