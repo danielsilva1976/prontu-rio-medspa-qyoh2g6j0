@@ -41,15 +41,15 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <Skeleton className="h-[400px] w-full max-w-5xl mx-auto rounded-md" />
+      <div className="space-y-6 animate-pulse w-full max-w-[1600px] mx-auto">
+        <Skeleton className="h-[400px] w-full rounded-md" />
       </div>
     )
   }
 
   if (records.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm max-w-5xl mx-auto">
+      <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-border/50 shadow-sm w-full max-w-[1600px] mx-auto">
         <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
         <h3 className="text-lg font-medium text-foreground">Nenhum registro encontrado</h3>
         <p className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto animate-fade-in-up items-start">
+    <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
       {/* Sidebar Timeline */}
       <div className="w-full md:w-56 shrink-0 md:sticky md:top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 pb-4 no-scrollbar">
         <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2">
