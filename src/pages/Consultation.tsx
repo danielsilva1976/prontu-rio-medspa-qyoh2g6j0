@@ -13,6 +13,7 @@ import PlanningTab from '@/components/consultation/PlanningTab'
 import AuditLogTab from '@/components/consultation/AuditLogTab'
 import HistoryTab from '@/components/consultation/HistoryTab'
 import LivePreview from '@/components/consultation/LivePreview'
+import UploadRecordTab from '@/components/consultation/UploadRecordTab'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import usePatientStore from '@/stores/usePatientStore'
@@ -74,7 +75,10 @@ export default function Consultation() {
     if (!showAnamneseExame && (activeTab === 'anamnese' || activeTab === 'exame')) {
       newTab = newTab === activeTab ? 'historico' : newTab
     }
-    if (!showDocs && (activeTab === 'receitas' || activeTab === 'laudos')) {
+    if (
+      !showDocs &&
+      (activeTab === 'receitas' || activeTab === 'laudos' || activeTab === 'inclusao')
+    ) {
       newTab = newTab === activeTab ? 'historico' : newTab
     }
     if (!showAudit && activeTab === 'auditoria') {
@@ -365,6 +369,7 @@ export default function Consultation() {
             content: finalContent,
             professional_name: currentUser.name,
             professional_registration: registration,
+            appointment_date: new Date().toISOString(),
           })
         }
 
@@ -531,6 +536,11 @@ export default function Consultation() {
             {showAudit && (
               <div className={cn(activeTab !== 'auditoria' && 'hidden')}>
                 <AuditLogTab patientId={patientId} />
+              </div>
+            )}
+            {showDocs && (
+              <div className={cn(activeTab !== 'inclusao' && 'hidden')}>
+                <UploadRecordTab patientId={patientId} />
               </div>
             )}
           </div>
