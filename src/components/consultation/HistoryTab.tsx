@@ -57,12 +57,15 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   return (
     <div className="flex flex-col md:flex-row gap-8 xl:gap-12 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
       {/* Sidebar Timeline */}
-      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-24 md:-ml-8 lg:-ml-16 xl:-ml-24 h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain flex flex-col pr-2 pb-4 scroll-smooth">
-        <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-slate-50 z-10">
+      <div
+        className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-24 md:-ml-8 lg:-ml-16 xl:-ml-24 flex flex-col pr-2 pb-4"
+        style={{ height: 'calc(100vh - 160px)' }}
+      >
+        <h3 className="text-xs font-bold text-gray-900 mb-2 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-slate-50 z-10">
           <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
         </h3>
-        <div className="flex-1 min-h-0 pb-8 pr-2">
-          <div className="relative border-l-2 border-primary/20 ml-4 space-y-6">
+        <div className="flex-1 min-h-0 pb-8 pr-2 overflow-y-auto overscroll-contain scroll-smooth">
+          <div className="relative border-l-2 border-primary/20 ml-4 space-y-6 pt-2">
             {records.map((record) => (
               <div
                 key={`timeline-${record.id}`}
