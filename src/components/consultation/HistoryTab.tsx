@@ -91,7 +91,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 space-y-12 pb-12 w-full min-w-0">
+      <div className="flex-1 space-y-4 pb-12 w-full min-w-0">
         {records.map((record) => (
           <div
             key={record.id}
