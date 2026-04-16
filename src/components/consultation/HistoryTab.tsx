@@ -57,8 +57,8 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   return (
     <div className="flex flex-col md:flex-row gap-8 xl:gap-12 w-full max-w-[1600px] mx-auto animate-fade-in-up items-start">
       {/* Sidebar Timeline */}
-      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-6 md:-ml-8 lg:-ml-16 xl:-ml-24 flex flex-col h-[calc(100dvh-8rem)] pr-2 pb-4">
-        <h3 className="text-xs font-bold text-gray-900 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2 pt-2 sticky top-0 bg-slate-50 z-[100]">
+      <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-6 md:-ml-8 lg:-ml-16 xl:-ml-24 flex flex-col h-[calc(100vh-10rem)] pr-2 pb-4">
+        <h3 className="text-xs font-bold text-gray-900 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-200 pb-2 pt-2 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-[100]">
           <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
         </h3>
         <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 pb-8 pr-2 scroll-smooth">
