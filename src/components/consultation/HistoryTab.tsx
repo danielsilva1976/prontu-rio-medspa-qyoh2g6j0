@@ -66,7 +66,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
         <h3 className="text-xs font-bold text-gray-900 mb-6 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-100 pb-2">
           <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
         </h3>
-        <div className="overflow-y-auto flex-1 pb-8 pr-2">
+        <div className="overflow-y-auto flex-1 min-h-0 pb-8 pr-2">
           <div className="relative border-l-2 border-primary/20 ml-4 space-y-6">
             {records.map((record) => (
               <div
