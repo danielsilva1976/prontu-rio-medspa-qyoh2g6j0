@@ -57,57 +57,6 @@ export default function Consultation() {
     }
   }, [])
 
-  // Fix Timeline sidebar scrolling behavior via DOM to preserve original UI component structure
-  useEffect(() => {
-    if (activeTab === 'historico') {
-      const applyTimelineFix = () => {
-        const wrapper = document.querySelector('.history-tab-wrapper')
-        if (!wrapper) return
-
-        let sidebar: HTMLElement | null = null
-
-        // Support both Fragment return and Container return patterns from HistoryTab
-        if (wrapper.children.length >= 2) {
-          sidebar = wrapper.firstElementChild as HTMLElement
-        } else if (wrapper.firstElementChild && wrapper.firstElementChild.children.length >= 2) {
-          sidebar = wrapper.firstElementChild.firstElementChild as HTMLElement
-        } else if (wrapper.firstElementChild) {
-          // Fallback if there's only one child rendered
-          sidebar = wrapper.firstElementChild as HTMLElement
-        }
-
-        if (sidebar && !sidebar.classList.contains('overflow-y-auto')) {
-          sidebar.classList.add(
-            'max-h-[calc(100vh-16rem)]',
-            'overflow-y-auto',
-            'overscroll-contain',
-            'sticky',
-            'top-0',
-            'pr-1',
-            'scroll-smooth',
-          )
-        }
-      }
-
-      // Apply initial fix after mount
-      const timer = setTimeout(applyTimelineFix, 150)
-
-      // Observe mutations to re-apply if the component loads data asynchronously
-      const wrapper = document.querySelector('.history-tab-wrapper')
-      let observer: MutationObserver | null = null
-
-      if (wrapper) {
-        observer = new MutationObserver(applyTimelineFix)
-        observer.observe(wrapper, { childList: true, subtree: true })
-      }
-
-      return () => {
-        clearTimeout(timer)
-        if (observer) observer.disconnect()
-      }
-    }
-  }, [activeTab])
-
   // Sync tab state with URL and ensure tab access is valid for role
   useEffect(() => {
     let newTab = activeTab
