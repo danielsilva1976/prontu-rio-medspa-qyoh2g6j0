@@ -20,6 +20,7 @@ import {
   Syringe,
   Clock,
   ShieldCheck,
+  Upload,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -243,6 +244,9 @@ export default function Layout() {
               </>
             )}
             {showAudit && <ClinicalTabLink id="auditoria" label="Auditoria" icon={ShieldCheck} />}
+            {showDocs && (
+              <ClinicalTabLink id="inclusao" label="Inclusão de Prontuário" icon={Upload} />
+            )}
           </div>
         </div>
       </div>

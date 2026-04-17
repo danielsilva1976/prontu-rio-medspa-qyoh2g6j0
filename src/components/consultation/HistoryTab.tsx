@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import ApplicationMarker from './ApplicationMarker'
 import { sortSectionEntries } from '@/lib/consultation-utils'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function HistoryTab({ patientId }: { patientId: string }) {
   const [, setSearchParams] = useSearchParams()
@@ -36,6 +37,10 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   useEffect(() => {
     fetchRecords()
   }, [patientId])
+
+  useRealtime('medical_records', () => {
+    fetchRecords()
+  })
 
   const scrollToRecord = (id: string) => {
     const element = document.getElementById(`record-${id}`)
