@@ -161,36 +161,85 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                 <div className="space-y-8 text-gray-800 leading-relaxed">
                   {record.attachment && (
                     <div className="mb-10 w-full flex flex-col gap-2">
-                      <div className="w-full">
+                      <div className="w-full relative min-h-[100px] flex items-center justify-center bg-white">
                         {record.attachment.toLowerCase().endsWith('.pdf') ? (
-                          <object
-                            data={`${pb.files.getUrl(record, record.attachment)}#toolbar=0&navpanes=0&view=FitH`}
-                            type="application/pdf"
-                            className="w-full min-h-[700px] border border-gray-200 rounded-md"
-                          >
-                            <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 border border-gray-200 rounded-md bg-gray-50">
+                          <>
+                            <iframe
+                              src={`${pb.files.getUrl(record, record.attachment, { token: pb.authStore.token })}#toolbar=0&navpanes=0&view=FitH`}
+                              title="Visualizador de PDF"
+                              className="w-full min-h-[800px] border-none bg-white block"
+                              onError={(e) => {
+                                const target = e.target as HTMLIFrameElement
+                                target.style.display = 'none'
+                                const fallback = target.nextElementSibling as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                            />
+                            <div
+                              style={{ display: 'none' }}
+                              className="flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 w-full"
+                            >
                               <p>Não foi possível carregar o visualizador de PDF.</p>
                               <Button
                                 variant="link"
                                 className="text-primary"
                                 onClick={() =>
-                                  window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                                  window.open(
+                                    pb.files.getUrl(record, record.attachment, {
+                                      token: pb.authStore.token,
+                                    }),
+                                    '_blank',
+                                  )
                                 }
                               >
-                                Abrir documento em nova aba
+                                Tentar abrir documento em nova aba
                               </Button>
                             </div>
-                          </object>
+                          </>
                         ) : record.attachment
                             .toLowerCase()
                             .match(/\.(jpeg|jpg|gif|png|webp|bmp)$/) ? (
-                          <img
-                            src={pb.files.getUrl(record, record.attachment)}
-                            alt="Documento Anexado"
-                            className="w-full h-auto object-contain rounded-md border border-gray-200"
-                          />
+                          <>
+                            <img
+                              src={pb.files.getUrl(record, record.attachment, {
+                                token: pb.authStore.token,
+                              })}
+                              alt="Documento Anexado"
+                              className="w-full h-auto object-contain border-none bg-white opacity-0 transition-opacity duration-500 block"
+                              onLoad={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.classList.remove('opacity-0')
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                                const fallback = target.nextElementSibling as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                            />
+                            <div
+                              style={{ display: 'none' }}
+                              className="flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 w-full"
+                            >
+                              <p>Não foi possível carregar a imagem.</p>
+                              <Button
+                                variant="link"
+                                className="text-primary"
+                                onClick={() =>
+                                  window.open(
+                                    pb.files.getUrl(record, record.attachment, {
+                                      token: pb.authStore.token,
+                                    }),
+                                    '_blank',
+                                  )
+                                }
+                              >
+                                Tentar abrir imagem em nova aba
+                              </Button>
+                            </div>
+                          </>
                         ) : (
-                          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 border border-gray-200 rounded-md bg-gray-50">
+                          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 w-full">
                             <p>Formato de arquivo não suportado para visualização em linha.</p>
                           </div>
                         )}
@@ -201,11 +250,16 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                           size="sm"
                           className="text-muted-foreground hover:text-primary px-0 h-auto py-1"
                           onClick={() =>
-                            window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                            window.open(
+                              pb.files.getUrl(record, record.attachment, {
+                                token: pb.authStore.token,
+                              }),
+                              '_blank',
+                            )
                           }
                         >
                           <Download className="w-3.5 h-3.5 mr-1.5" />
-                          Abrir anexo em nova aba
+                          Baixar anexo
                         </Button>
                       </div>
                     </div>
