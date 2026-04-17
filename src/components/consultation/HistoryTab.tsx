@@ -17,13 +17,17 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}" && professional_registration != 'Sem Assinatura'`,
-        sort: '-created',
+        sort: 'created',
       })
 
       const sortedRecords = medicalRecords.sort((a, b) => {
         const dateA = a.appointment_date ? new Date(a.appointment_date) : new Date(a.created)
         const dateB = b.appointment_date ? new Date(b.appointment_date) : new Date(b.created)
-        return dateB.getTime() - dateA.getTime()
+
+        if (dateA.getTime() === dateB.getTime()) {
+          return new Date(a.created).getTime() - new Date(b.created).getTime()
+        }
+        return dateA.getTime() - dateB.getTime()
       })
 
       setRecords(sortedRecords)
