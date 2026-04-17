@@ -80,25 +80,22 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
 
     setIsUploading(true)
     try {
-      const formData = new FormData()
-      formData.append('patient', patientId)
-      formData.append('appointment_date', parsedDate.toISOString())
-      formData.append('attachment', file)
-
       const registration =
-        currentUser.role === 'Médico'
+        currentUser?.role === 'Médico'
           ? 'CRM-SP 123456'
-          : currentUser.role === 'Estético'
+          : currentUser?.role === 'Estético'
             ? 'CRBM 1234'
             : 'N/A'
-      formData.append('professional_name', currentUser.name)
-      formData.append('professional_registration', registration)
-      formData.append(
-        'content',
-        JSON.stringify({ Observação: 'Prontuário histórico importado via upload de JPEG.' }),
-      )
 
-      await pb.collection('medical_records').create(formData)
+      await pb.collection('medical_records').create({
+        patient: patientId,
+        appointment_date: parsedDate.toISOString(),
+        attachment: file,
+        professional_name: currentUser?.name || 'Profissional',
+        professional_registration: registration,
+        content: { Observação: 'Prontuário histórico importado via upload de JPEG.' },
+      })
+
       addLog('Prontuário histórico importado (JPEG)', patientId)
 
       toast({
@@ -106,11 +103,12 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
         description: 'Prontuário histórico importado com sucesso.',
       })
       setSearchParams({ tab: 'historico' }, { replace: true })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer upload:', error)
+      const errorMsg = error?.response?.message || error?.message || 'Erro desconhecido'
       toast({
         title: 'Erro no upload',
-        description: 'Não foi possível salvar o prontuário. Tente novamente.',
+        description: `Não foi possível salvar o prontuário: ${errorMsg}. Tente novamente.`,
         variant: 'destructive',
       })
     } finally {
