@@ -265,8 +265,20 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                     </div>
                   )}
 
-                  {record.content && Object.keys(record.content).length > 0 ? (
+                  {record.content &&
+                  typeof record.content === 'object' &&
+                  !Array.isArray(record.content) &&
+                  Object.entries(record.content).filter(
+                    ([_, data]) =>
+                      typeof data === 'object' && data !== null && !Array.isArray(data),
+                  ).length > 0 ? (
                     Object.entries(record.content)
+                      .filter(
+                        ([_, sectionData]) =>
+                          typeof sectionData === 'object' &&
+                          sectionData !== null &&
+                          !Array.isArray(sectionData),
+                      )
                       .sort((a, b) => {
                         const order = [
                           'Anamnese',
@@ -431,11 +443,11 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                           </section>
                         )
                       })
-                  ) : (
+                  ) : !record.attachment ? (
                     <p className="text-sm italic text-gray-400 p-4 bg-muted/10 rounded-lg border border-gray-100">
                       Prontuário encerrado sem anotações clínicas.
                     </p>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col items-center justify-center gap-2">
