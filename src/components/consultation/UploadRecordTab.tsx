@@ -47,10 +47,14 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selected = e.target.files[0]
-      if (selected.type !== 'image/jpeg' && selected.type !== 'image/jpg') {
+      if (
+        selected.type !== 'image/jpeg' &&
+        selected.type !== 'image/jpg' &&
+        selected.type !== 'application/pdf'
+      ) {
         toast({
           title: 'Formato inválido',
-          description: 'Por favor, selecione um arquivo JPEG.',
+          description: 'Por favor, selecione um arquivo JPEG ou PDF.',
           variant: 'destructive',
         })
         return
@@ -72,7 +76,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     if (!parsedDate || !file) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Por favor, preencha uma data válida e selecione o arquivo JPEG.',
+        description: 'Por favor, preencha uma data válida e selecione o arquivo (JPEG ou PDF).',
         variant: 'destructive',
       })
       return
@@ -93,10 +97,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
         attachment: file,
         professional_name: currentUser?.name || 'Profissional',
         professional_registration: registration,
-        content: { Observação: 'Prontuário histórico importado via upload de JPEG.' },
+        content: { Observação: 'Prontuário histórico importado via upload de arquivo.' },
       })
 
-      addLog('Prontuário histórico importado (JPEG)', patientId)
+      addLog('Prontuário histórico importado', patientId)
 
       toast({
         title: 'Sucesso',
@@ -105,10 +109,9 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       setSearchParams({ tab: 'historico' }, { replace: true })
     } catch (error: any) {
       console.error('Erro ao fazer upload:', error)
-      const errorMsg = error?.response?.message || error?.message || 'Erro desconhecido'
       toast({
         title: 'Erro no upload',
-        description: `Não foi possível salvar o prontuário: ${errorMsg}. Tente novamente.`,
+        description: 'erro de upload, não foi possivel salvar o prontuário, tente novamente',
         variant: 'destructive',
       })
     } finally {
@@ -143,7 +146,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
 
         <div className="space-y-2">
           <Label className="text-sm font-semibold text-gray-700">
-            Arquivo do Prontuário (JPEG)
+            Arquivo do Prontuário (JPEG ou PDF)
           </Label>
           <div className="flex items-center gap-4">
             <Button
@@ -154,12 +157,12 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
               <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
                 <FileText className="h-8 w-8 text-muted-foreground" />
                 <span className="text-sm font-medium text-gray-600">
-                  {file ? file.name : 'Clique para selecionar o JPEG (Máx. 5MB)'}
+                  {file ? file.name : 'Clique para selecionar o arquivo (Máx. 5MB)'}
                 </span>
                 <input
                   type="file"
                   className="hidden"
-                  accept="image/jpeg, image/jpg"
+                  accept=".jpg, .jpeg, .pdf, image/jpeg, application/pdf"
                   onChange={handleFileChange}
                 />
               </label>
