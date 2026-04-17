@@ -157,31 +157,56 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
                 <div className="space-y-8 text-gray-800 leading-relaxed">
                   {record.attachment && (
-                    <div className="mb-8 p-4 bg-muted/10 border border-border/50 rounded-xl flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5" />
+                    <div className="mb-8 border border-border/50 rounded-xl overflow-hidden bg-muted/5 shadow-sm">
+                      <div className="p-4 bg-white border-b border-border/50 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm text-foreground">
+                              Documento Anexado
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {record.attachment.toLowerCase().endsWith('.pdf')
+                                ? 'Visualizador de PDF'
+                                : 'Imagem anexada'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-sm text-foreground">
-                            Prontuário Anexado (PDF)
-                          </h4>
-                          <p className="text-xs text-muted-foreground">
-                            Documento histórico importado
-                          </p>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() =>
+                            window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                          }
+                        >
+                          <Download className="w-4 h-4" />
+                          Abrir / Baixar
+                        </Button>
                       </div>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() =>
-                          window.open(pb.files.getUrl(record, record.attachment), '_blank')
-                        }
-                      >
-                        <Download className="w-4 h-4" />
-                        Visualizar
-                      </Button>
+                      <div className="w-full bg-muted/20 flex items-center justify-center min-h-[200px]">
+                        {record.attachment.toLowerCase().endsWith('.pdf') ? (
+                          <iframe
+                            src={`${pb.files.getUrl(record, record.attachment)}#view=FitH`}
+                            className="w-full h-[600px] border-0"
+                            title="Visualizador de PDF"
+                          />
+                        ) : record.attachment
+                            .toLowerCase()
+                            .match(/\.(jpeg|jpg|gif|png|webp|bmp)$/) ? (
+                          <img
+                            src={pb.files.getUrl(record, record.attachment)}
+                            alt="Documento Anexado"
+                            className="max-w-full h-auto object-contain max-h-[800px] rounded-b-xl"
+                          />
+                        ) : (
+                          <div className="p-8 text-center text-muted-foreground">
+                            <p>Formato de arquivo não suportado para visualização em linha.</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
