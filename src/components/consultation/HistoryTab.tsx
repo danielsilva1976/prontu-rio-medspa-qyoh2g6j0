@@ -183,27 +183,47 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                           }
                         >
                           <Download className="w-4 h-4" />
-                          Abrir / Baixar
+                          Abrir em nova aba
                         </Button>
                       </div>
                       <div className="w-full bg-muted/20 flex items-center justify-center min-h-[200px]">
                         {record.attachment.toLowerCase().endsWith('.pdf') ? (
-                          <iframe
-                            src={`${pb.files.getUrl(record, record.attachment)}#view=FitH`}
-                            className="w-full h-[600px] border-0"
-                            title="Visualizador de PDF"
-                          />
+                          <object
+                            data={`${pb.files.getUrl(record, record.attachment)}#view=FitH`}
+                            type="application/pdf"
+                            className="w-full min-h-[500px] lg:h-[700px] border-0 rounded-b-xl"
+                          >
+                            <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4">
+                              <p>Não foi possível carregar o visualizador.</p>
+                              <Button
+                                variant="default"
+                                onClick={() =>
+                                  window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                                }
+                              >
+                                Clique aqui para abrir o PDF
+                              </Button>
+                            </div>
+                          </object>
                         ) : record.attachment
                             .toLowerCase()
                             .match(/\.(jpeg|jpg|gif|png|webp|bmp)$/) ? (
                           <img
                             src={pb.files.getUrl(record, record.attachment)}
                             alt="Documento Anexado"
-                            className="max-w-full h-auto object-contain max-h-[800px] rounded-b-xl"
+                            className="w-full h-auto object-contain rounded-b-xl"
                           />
                         ) : (
-                          <div className="p-8 text-center text-muted-foreground">
+                          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4">
                             <p>Formato de arquivo não suportado para visualização em linha.</p>
+                            <Button
+                              variant="default"
+                              onClick={() =>
+                                window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                              }
+                            >
+                              Abrir arquivo
+                            </Button>
                           </div>
                         )}
                       </div>
