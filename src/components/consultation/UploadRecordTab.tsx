@@ -47,10 +47,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selected = e.target.files[0]
-      if (selected.type !== 'application/pdf') {
+      if (selected.type !== 'image/jpeg' && selected.type !== 'image/jpg') {
         toast({
           title: 'Formato inválido',
-          description: 'Por favor, selecione um arquivo PDF.',
+          description: 'Por favor, selecione um arquivo JPEG.',
           variant: 'destructive',
         })
         return
@@ -72,7 +72,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     if (!parsedDate || !file) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Por favor, preencha uma data válida e selecione o arquivo PDF.',
+        description: 'Por favor, preencha uma data válida e selecione o arquivo JPEG.',
         variant: 'destructive',
       })
       return
@@ -95,11 +95,11 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       formData.append('professional_registration', registration)
       formData.append(
         'content',
-        JSON.stringify({ Observação: 'Prontuário histórico importado via upload de PDF.' }),
+        JSON.stringify({ Observação: 'Prontuário histórico importado via upload de JPEG.' }),
       )
 
       await pb.collection('medical_records').create(formData)
-      addLog('Prontuário histórico importado (PDF)', patientId)
+      addLog('Prontuário histórico importado (JPEG)', patientId)
 
       toast({
         title: 'Sucesso',
@@ -126,8 +126,8 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
           Inclusão de Prontuário
         </h2>
         <p className="text-muted-foreground mt-2">
-          Faça o upload de cópias em PDF de consultas anteriores para manter o histórico cronológico
-          completo do paciente.
+          Faça o upload de cópias em JPEG de consultas anteriores para manter o histórico
+          cronológico completo do paciente.
         </p>
       </div>
 
@@ -144,7 +144,9 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700">Arquivo do Prontuário (PDF)</Label>
+          <Label className="text-sm font-semibold text-gray-700">
+            Arquivo do Prontuário (JPEG)
+          </Label>
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -154,12 +156,12 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
               <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
                 <FileText className="h-8 w-8 text-muted-foreground" />
                 <span className="text-sm font-medium text-gray-600">
-                  {file ? file.name : 'Clique para selecionar o PDF (Máx. 5MB)'}
+                  {file ? file.name : 'Clique para selecionar o JPEG (Máx. 5MB)'}
                 </span>
                 <input
                   type="file"
                   className="hidden"
-                  accept="application/pdf"
+                  accept="image/jpeg, image/jpg"
                   onChange={handleFileChange}
                 />
               </label>
