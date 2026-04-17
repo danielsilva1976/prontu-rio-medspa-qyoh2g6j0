@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import ApplicationMarker from './ApplicationMarker'
 import { sortSectionEntries } from '@/lib/consultation-utils'
 import { useRealtime } from '@/hooks/use-realtime'
+import { cn } from '@/lib/utils'
 
 export default function HistoryTab({ patientId }: { patientId: string }) {
   const [, setSearchParams] = useSearchParams()
@@ -119,15 +120,17 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 space-y-4 pb-12 w-full min-w-0">
-          {records.map((record) => (
+        <div className="flex-1 w-full min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-12">
+          {records.map((record, index) => (
             <div
               key={record.id}
               id={`record-${record.id}`}
-              className="bg-white border border-primary/30 shadow-md mx-auto overflow-hidden relative w-full rounded-xl scroll-mt-6 transition-all duration-300"
+              className={cn(
+                'relative w-full scroll-mt-6 transition-all duration-300',
+                index > 0 && 'border-t border-gray-200',
+              )}
             >
-              <div className="h-2 w-full bg-primary border-b border-primary/20"></div>
-              <div className="p-6 sm:p-10">
+              <div className="p-8 sm:p-12">
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-6 mb-8 gap-4">
                   <div>
                     <h3 className="text-2xl font-serif text-gray-900 mb-2">Prontuário Médico</h3>
@@ -157,51 +160,24 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
                 <div className="space-y-8 text-gray-800 leading-relaxed">
                   {record.attachment && (
-                    <div className="mb-8 border border-border/50 rounded-xl overflow-hidden bg-muted/5 shadow-sm">
-                      <div className="p-4 bg-white border-b border-border/50 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-sm text-foreground">
-                              Documento Anexado
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {record.attachment.toLowerCase().endsWith('.pdf')
-                                ? 'Visualizador de PDF'
-                                : 'Imagem anexada'}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2"
-                          onClick={() =>
-                            window.open(pb.files.getUrl(record, record.attachment), '_blank')
-                          }
-                        >
-                          <Download className="w-4 h-4" />
-                          Abrir em nova aba
-                        </Button>
-                      </div>
-                      <div className="w-full bg-muted/20 flex items-center justify-center min-h-[200px]">
+                    <div className="mb-10 w-full flex flex-col gap-2">
+                      <div className="w-full">
                         {record.attachment.toLowerCase().endsWith('.pdf') ? (
                           <object
-                            data={`${pb.files.getUrl(record, record.attachment)}#view=FitH`}
+                            data={`${pb.files.getUrl(record, record.attachment)}#toolbar=0&navpanes=0&view=FitH`}
                             type="application/pdf"
-                            className="w-full min-h-[500px] lg:h-[700px] border-0 rounded-b-xl"
+                            className="w-full min-h-[700px] border border-gray-200 rounded-md"
                           >
-                            <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4">
-                              <p>Não foi possível carregar o visualizador.</p>
+                            <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 border border-gray-200 rounded-md bg-gray-50">
+                              <p>Não foi possível carregar o visualizador de PDF.</p>
                               <Button
-                                variant="default"
+                                variant="link"
+                                className="text-primary"
                                 onClick={() =>
                                   window.open(pb.files.getUrl(record, record.attachment), '_blank')
                                 }
                               >
-                                Clique aqui para abrir o PDF
+                                Abrir documento em nova aba
                               </Button>
                             </div>
                           </object>
@@ -211,21 +187,26 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                           <img
                             src={pb.files.getUrl(record, record.attachment)}
                             alt="Documento Anexado"
-                            className="w-full h-auto object-contain rounded-b-xl"
+                            className="w-full h-auto object-contain rounded-md border border-gray-200"
                           />
                         ) : (
-                          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4">
+                          <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground space-y-4 border border-gray-200 rounded-md bg-gray-50">
                             <p>Formato de arquivo não suportado para visualização em linha.</p>
-                            <Button
-                              variant="default"
-                              onClick={() =>
-                                window.open(pb.files.getUrl(record, record.attachment), '_blank')
-                              }
-                            >
-                              Abrir arquivo
-                            </Button>
                           </div>
                         )}
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="text-muted-foreground hover:text-primary px-0 h-auto py-1"
+                          onClick={() =>
+                            window.open(pb.files.getUrl(record, record.attachment), '_blank')
+                          }
+                        >
+                          <Download className="w-3.5 h-3.5 mr-1.5" />
+                          Abrir anexo em nova aba
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -254,21 +235,20 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                         const renderEntry = (key: string, value: any) => {
                           if (key.startsWith('_markers_')) {
                             return (
-                              <div
-                                key={key}
-                                className="mt-4 mb-6 border border-border/50 rounded-xl overflow-hidden bg-muted/10 p-5 shadow-sm"
-                              >
+                              <div key={key} className="mt-4 mb-6">
                                 <span className="font-semibold text-gray-700 block mb-4">
                                   Mapeamento Visual - {value.area}:
                                 </span>
-                                <ApplicationMarker
-                                  area={value.area}
-                                  points={value.points || []}
-                                  vectors={value.vectors || []}
-                                  lines={value.lines || []}
-                                  isSigned={true}
-                                  onChange={() => {}}
-                                />
+                                <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
+                                  <ApplicationMarker
+                                    area={value.area}
+                                    points={value.points || []}
+                                    vectors={value.vectors || []}
+                                    lines={value.lines || []}
+                                    isSigned={true}
+                                    onChange={() => {}}
+                                  />
+                                </div>
                               </div>
                             )
                           }
