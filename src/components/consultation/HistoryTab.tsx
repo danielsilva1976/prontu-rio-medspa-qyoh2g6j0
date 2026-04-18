@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FileText, Clock, ShieldCheck, User, Upload, Download } from 'lucide-react'
+import { FileText, Clock, ShieldCheck, User, Download } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -76,16 +76,6 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto">
-      <div className="flex justify-end mb-6">
-        <Button
-          variant="outline"
-          className="gap-2 shadow-sm"
-          onClick={() => setSearchParams({ tab: 'inclusao' }, { replace: true })}
-        >
-          <Upload className="w-4 h-4" />
-          Inclusão de prontuário
-        </Button>
-      </div>
       <div className="flex flex-col md:flex-row gap-8 xl:gap-12 animate-fade-in-up items-start">
         {/* Sidebar Timeline */}
         <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-6 flex flex-col h-[calc(100dvh-16rem)] max-h-[calc(100dvh-16rem)] pr-2 pb-4">
