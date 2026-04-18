@@ -62,11 +62,13 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       formData.append('patient', patientId)
       formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
       formData.append('horario', time)
-      formData.append('content', JSON.stringify({}))
+      formData.append('content', JSON.stringify({ metadata: 'Documento Externo' }))
+      formData.append('professional_name', '')
+      formData.append('professional_registration', '')
 
       formData.append('attachment', file)
 
-      await pb.collection('medical_records').create(formData)
+      const created = await pb.collection('medical_records').create(formData)
 
       addLog('Prontuário externo incluído', patientId)
 
@@ -87,6 +89,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       setSearchParams(
         (prev) => {
           prev.set('tab', 'historico')
+          prev.set('highlight', created.id)
           return prev
         },
         { replace: true },

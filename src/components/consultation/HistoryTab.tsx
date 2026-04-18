@@ -10,7 +10,7 @@ import { useRealtime } from '@/hooks/use-realtime'
 import { cn } from '@/lib/utils'
 
 export default function HistoryTab({ patientId }: { patientId: string }) {
-  const [, setSearchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [records, setRecords] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -51,8 +51,26 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     const element = document.getElementById(`record-${id}`)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      element.classList.add('bg-amber-50')
+      setTimeout(() => element.classList.remove('bg-amber-50'), 2000)
     }
   }
+
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight')
+    if (highlightId && !loading && records.some((r) => r.id === highlightId)) {
+      setTimeout(() => {
+        scrollToRecord(highlightId)
+        setSearchParams(
+          (prev) => {
+            prev.delete('highlight')
+            return prev
+          },
+          { replace: true },
+        )
+      }, 300)
+    }
+  }, [loading, records, searchParams, setSearchParams])
 
   if (loading) {
     return (
@@ -101,10 +119,12 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                         <span className="text-xs font-normal text-gray-500">{record.horario}</span>
                       )}
                     </span>
-                    <span className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
-                      <User className="h-3 w-3" />
-                      {record.professional_name}
-                    </span>
+                    {record.professional_name && (
+                      <span className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
+                        <User className="h-3 w-3" />
+                        {record.professional_name}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -145,10 +165,17 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs px-2.5 py-1.5 rounded font-bold uppercase tracking-wider shadow-sm">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      Assinado Digitalmente
-                    </span>
+                    {record.professional_name && record.professional_registration ? (
+                      <span className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs px-2.5 py-1.5 rounded font-bold uppercase tracking-wider shadow-sm">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Assinado Digitalmente
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs px-2.5 py-1.5 rounded font-bold uppercase tracking-wider shadow-sm">
+                        <FileText className="h-3.5 w-3.5" />
+                        Documento Externo
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -444,17 +471,19 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                   ) : null}
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col items-center justify-center gap-2">
-                  <div className="w-64 h-px bg-gray-400 mb-2"></div>
-                  <div className="text-center">
-                    <p className="text-base font-semibold text-gray-900">
-                      {record.professional_name}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {record.professional_registration}
-                    </p>
+                {record.professional_name && record.professional_registration && (
+                  <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col items-center justify-center gap-2">
+                    <div className="w-64 h-px bg-gray-400 mb-2"></div>
+                    <div className="text-center">
+                      <p className="text-base font-semibold text-gray-900">
+                        {record.professional_name}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {record.professional_registration}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ))}
