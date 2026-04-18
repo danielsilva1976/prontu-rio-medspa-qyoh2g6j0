@@ -494,7 +494,10 @@ export default function Consultation() {
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Main Content Area with Independent Scrollbar aligned below the header */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full relative scroll-smooth">
+        <div
+          id="consultation-scroll-area"
+          className="flex-1 overflow-y-auto p-4 md:p-6 w-full relative scroll-smooth"
+        >
           <div className="max-w-5xl mx-auto pb-8">
             {isStarted && dbDraft && Object.keys(dbDraft).length > 0 && activeTab !== 'resumo' && (
               <LivePreview content={dbDraft} />

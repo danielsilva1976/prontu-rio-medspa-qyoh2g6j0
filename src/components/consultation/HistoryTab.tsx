@@ -59,26 +59,40 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
   const scrollToRecord = (id: string) => {
     const element = document.getElementById(`record-${id}`)
+    const container = document.getElementById('consultation-scroll-area')
+
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      if (container) {
+        const containerRect = container.getBoundingClientRect()
+        const elementRect = element.getBoundingClientRect()
+        container.scrollTo({
+          top: container.scrollTop + elementRect.top - containerRect.top - 24,
+          behavior: 'smooth',
+        })
+      } else {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+
       element.classList.add('bg-amber-50')
-      setTimeout(() => element.classList.remove('bg-amber-50'), 2000)
+      setTimeout(() => element.classList.remove('bg-amber-50'), 2500)
     }
   }
 
   useEffect(() => {
     const highlightId = searchParams.get('highlight')
     if (highlightId && !loading && records.some((r) => r.id === highlightId)) {
-      setTimeout(() => {
-        scrollToRecord(highlightId)
-        setSearchParams(
-          (prev) => {
-            prev.delete('highlight')
-            return prev
-          },
-          { replace: true },
-        )
-      }, 300)
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToRecord(highlightId)
+          setSearchParams(
+            (prev) => {
+              prev.delete('highlight')
+              return prev
+            },
+            { replace: true },
+          )
+        }, 150)
+      })
     }
   }, [loading, records, searchParams, setSearchParams])
 
