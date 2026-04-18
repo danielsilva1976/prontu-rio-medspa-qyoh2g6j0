@@ -97,6 +97,9 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                         ? new Date(record.appointment_date)
                         : new Date(record.created)
                       ).toLocaleDateString('pt-BR')}
+                      {record.horario && (
+                        <span className="text-xs font-normal text-gray-500">{record.horario}</span>
+                      )}
                     </span>
                     <span className="text-xs text-gray-500 flex items-center gap-1.5 mt-1 truncate">
                       <User className="h-3 w-3" />
@@ -131,13 +134,14 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                         : new Date(record.created)
                       ).toLocaleDateString('pt-BR')}{' '}
                       às{' '}
-                      {(record.appointment_date
-                        ? new Date(record.appointment_date)
-                        : new Date(record.created)
-                      ).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {record.horario ||
+                        (record.appointment_date
+                          ? new Date(record.appointment_date)
+                          : new Date(record.created)
+                        ).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                     </p>
                   </div>
                   <div className="text-left sm:text-right">

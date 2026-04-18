@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import PatientHeader from '@/components/consultation/PatientHeader'
 import AnamnesisTab from '@/components/consultation/AnamnesisTab'
 import PhysicalExamTab from '@/components/consultation/PhysicalExamTab'
@@ -35,6 +37,14 @@ export default function Consultation() {
   const { toast } = useToast()
 
   const isStarted = activeConsultations[patientId] || false
+
+  const [appointmentDate, setAppointmentDate] = useState<string>(
+    () => new Date().toISOString().split('T')[0],
+  )
+  const [appointmentTime, setAppointmentTime] = useState<string>(() => {
+    const now = new Date()
+    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+  })
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
   const showDocs = currentUser.role === 'Médico'
@@ -343,6 +353,15 @@ export default function Consultation() {
 
   const handleToggleConsultation = async () => {
     if (isStarted) {
+      if (!appointmentDate || !appointmentTime) {
+        toast({
+          title: 'Atenção',
+          description: 'Por favor, preencha a data e o horário do atendimento antes de salvar.',
+          variant: 'destructive',
+        })
+        return
+      }
+
       try {
         const finalContent = buildContent()
 
@@ -362,6 +381,8 @@ export default function Consultation() {
             content: finalContent,
             professional_name: currentUser.name,
             professional_registration: registration,
+            appointment_date: new Date(`${appointmentDate}T12:00:00Z`).toISOString(),
+            horario: appointmentTime,
           })
         } else {
           await pb.collection('medical_records').create({
@@ -369,7 +390,8 @@ export default function Consultation() {
             content: finalContent,
             professional_name: currentUser.name,
             professional_registration: registration,
-            appointment_date: new Date().toISOString(),
+            appointment_date: new Date(`${appointmentDate}T12:00:00Z`).toISOString(),
+            horario: appointmentTime,
           })
         }
 
@@ -458,7 +480,39 @@ export default function Consultation() {
           onToggleConsultation={handleToggleConsultation}
         />
         {isStarted && (
-          <div className="w-full bg-slate-50/80 border-t border-border px-4 md:px-6 py-2 flex justify-end">
+          <div className="w-full bg-slate-50/80 border-t border-border px-4 md:px-6 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Label
+                  htmlFor="appt-date"
+                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                >
+                  Data
+                </Label>
+                <Input
+                  id="appt-date"
+                  type="date"
+                  value={appointmentDate}
+                  onChange={(e) => setAppointmentDate(e.target.value)}
+                  className="h-8 text-xs w-[130px] bg-white"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label
+                  htmlFor="appt-time"
+                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                >
+                  Horário
+                </Label>
+                <Input
+                  id="appt-time"
+                  type="time"
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
+                  className="h-8 text-xs w-[100px] bg-white"
+                />
+              </div>
+            </div>
             <Button
               variant="outline"
               size="sm"
