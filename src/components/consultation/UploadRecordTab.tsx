@@ -1,16 +1,15 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
-import { Upload, Save, FileText } from 'lucide-react'
+import { Upload, Save, Image as ImageIcon } from 'lucide-react'
 
 export default function UploadRecordTab({ patientId }: { patientId: string }) {
   const [, setSearchParams] = useSearchParams()
@@ -18,12 +17,13 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [time, setTime] = useState(() => {
     const now = new Date()
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
   })
-  const [notes, setNotes] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -57,7 +57,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       )
       formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
       formData.append('horario', time)
-      formData.append('content', JSON.stringify({ Observações: notes }))
+      formData.append('content', JSON.stringify({}))
 
       if (file) {
         formData.append('attachment', file)
@@ -71,6 +71,17 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
         title: 'Sucesso',
         description: 'Prontuário incluído com sucesso.',
       })
+
+      // Reset form fields
+      setDate(new Date().toISOString().split('T')[0])
+      const now = new Date()
+      setTime(
+        `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+      )
+      setFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
 
       // Redirection destination: automatically switch to History (Histórico) tab
       setSearchParams(
@@ -141,30 +152,19 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file">Arquivo Anexo (Opcional)</Label>
+            <Label htmlFor="file">Arquivo Anexo (Opcional, apenas JPG/JPEG)</Label>
             <div className="flex items-center gap-4">
               <Input
                 id="file"
                 type="file"
+                ref={fileInputRef}
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                 className="flex-1 cursor-pointer"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept=".jpg,.jpeg"
               />
-              {file && <FileText className="w-6 h-6 text-muted-foreground shrink-0" />}
+              {file && <ImageIcon className="w-6 h-6 text-muted-foreground shrink-0" />}
             </div>
             {errors.attachment && <p className="text-xs text-destructive">{errors.attachment}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Detalhes ou observações sobre o documento incluído..."
-              className="min-h-[120px] resize-y bg-muted/10 border-border/50 focus-visible:ring-primary"
-            />
-            {errors.content && <p className="text-xs text-destructive">{errors.content}</p>}
           </div>
 
           <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
