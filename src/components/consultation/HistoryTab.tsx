@@ -114,11 +114,21 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   }
 
   const scrolledRef = useRef<string | null>(null)
+  const forceFetchedRef = useRef<string | null>(null)
 
   useEffect(() => {
     const highlightId = searchParams.get('highlight')
 
-    if (highlightId && !loading && records.some((r) => r.id === highlightId)) {
+    if (highlightId && !loading) {
+      if (!records.some((r) => r.id === highlightId)) {
+        // Force refresh if real-time event was missed or delayed
+        if (forceFetchedRef.current !== highlightId) {
+          forceFetchedRef.current = highlightId
+          fetchRecords()
+        }
+        return
+      }
+
       // Prevent multiple scroll attempts for the same record during re-renders
       if (scrolledRef.current === highlightId) return
       scrolledRef.current = highlightId
