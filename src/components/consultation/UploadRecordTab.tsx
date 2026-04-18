@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
 import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
@@ -14,16 +13,14 @@ import { Upload, Save, Image as ImageIcon } from 'lucide-react'
 export default function UploadRecordTab({ patientId }: { patientId: string }) {
   const [, setSearchParams] = useSearchParams()
   const { toast } = useToast()
-  const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [time, setTime] = useState(() => {
-    const now = new Date()
-    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-  })
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [profName, setProfName] = useState('')
+  const [profReg, setProfReg] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -32,10 +29,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     e.preventDefault()
     setErrors({})
 
-    if (!date || !time) {
+    if (!date || !time || !profName || !profReg) {
       toast({
         title: 'Atenção',
-        description: 'Por favor, preencha a data e o horário do atendimento.',
+        description: 'Por favor, preencha todos os campos obrigatórios.',
         variant: 'destructive',
       })
       return
@@ -46,15 +43,8 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     try {
       const formData = new FormData()
       formData.append('patient', patientId)
-      formData.append('professional_name', currentUser?.name || 'Desconhecido')
-      formData.append(
-        'professional_registration',
-        currentUser?.role === 'Médico'
-          ? 'CRM-SP 123456'
-          : currentUser?.role === 'Estético'
-            ? 'CRBM 1234'
-            : 'N/A',
-      )
+      formData.append('professional_name', profName)
+      formData.append('professional_registration', profReg)
       formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
       formData.append('horario', time)
       formData.append('content', JSON.stringify({}))
@@ -73,11 +63,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       })
 
       // Reset form fields
-      setDate(new Date().toISOString().split('T')[0])
-      const now = new Date()
-      setTime(
-        `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
-      )
+      setDate('')
+      setTime('')
+      setProfName('')
+      setProfReg('')
       setFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -148,6 +137,41 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
                 className={errors.horario ? 'border-destructive' : ''}
               />
               {errors.horario && <p className="text-xs text-destructive">{errors.horario}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profName">
+                Nome do Profissional <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="profName"
+                type="text"
+                placeholder="Ex: Dr. João Silva"
+                value={profName}
+                onChange={(e) => setProfName(e.target.value)}
+                required
+                className={errors.professional_name ? 'border-destructive' : ''}
+              />
+              {errors.professional_name && (
+                <p className="text-xs text-destructive">{errors.professional_name}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="profReg">
+                Registro Profissional <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="profReg"
+                type="text"
+                placeholder="Ex: CRM-SP 123456"
+                value={profReg}
+                onChange={(e) => setProfReg(e.target.value)}
+                required
+                className={errors.professional_registration ? 'border-destructive' : ''}
+              />
+              {errors.professional_registration && (
+                <p className="text-xs text-destructive">{errors.professional_registration}</p>
+              )}
             </div>
           </div>
 
