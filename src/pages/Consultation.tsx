@@ -88,7 +88,13 @@ export default function Consultation() {
     }
 
     if (newTab !== activeTab) {
-      setSearchParams({ tab: newTab }, { replace: true })
+      setSearchParams(
+        (prev) => {
+          prev.set('tab', newTab)
+          return prev
+        },
+        { replace: true },
+      )
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 

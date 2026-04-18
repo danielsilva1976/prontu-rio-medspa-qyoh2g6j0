@@ -60,6 +60,10 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   const scrollToRecord = (id: string) => {
     const element = document.getElementById(`record-${id}`)
     const container = document.getElementById('consultation-scroll-area')
+    const timelineItem = document.getElementById(`timeline-item-${id}`)
+    const timelineDot = document.getElementById(`timeline-dot-${id}`)
+    const timelineText = document.getElementById(`timeline-text-${id}`)
+    const timelineContent = document.getElementById(`timeline-content-${id}`)
 
     if (element) {
       if (container) {
@@ -75,6 +79,37 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
       element.classList.add('bg-amber-50')
       setTimeout(() => element.classList.remove('bg-amber-50'), 2500)
+    }
+
+    if (timelineItem) {
+      const timelineContainer = timelineItem.closest('.overflow-y-auto')
+      if (timelineContainer) {
+        const tContainerRect = timelineContainer.getBoundingClientRect()
+        const tItemRect = timelineItem.getBoundingClientRect()
+        timelineContainer.scrollTo({
+          top: timelineContainer.scrollTop + tItemRect.top - tContainerRect.top - 24,
+          behavior: 'smooth',
+        })
+      } else {
+        timelineItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+
+      if (timelineDot) {
+        timelineDot.classList.add('scale-150', '!bg-amber-600')
+      }
+      if (timelineText) {
+        timelineText.classList.add('!text-amber-700')
+      }
+      if (timelineContent) {
+        timelineContent.classList.add('bg-amber-100/50', 'px-2', '-mx-2', 'py-1', '-my-1')
+      }
+
+      setTimeout(() => {
+        if (timelineDot) timelineDot.classList.remove('scale-150', '!bg-amber-600')
+        if (timelineText) timelineText.classList.remove('!text-amber-700')
+        if (timelineContent)
+          timelineContent.classList.remove('bg-amber-100/50', 'px-2', '-mx-2', 'py-1', '-my-1')
+      }, 2500)
     }
   }
 
@@ -129,12 +164,22 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
               {records.map((record) => (
                 <div
                   key={`timeline-${record.id}`}
-                  className="relative pl-6 cursor-pointer group"
+                  id={`timeline-item-${record.id}`}
+                  className="relative pl-6 cursor-pointer group transition-all duration-300"
                   onClick={() => scrollToRecord(record.id)}
                 >
-                  <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-amber-500 shadow-sm group-hover:scale-125 transition-transform" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors flex items-center gap-2">
+                  <div
+                    id={`timeline-dot-${record.id}`}
+                    className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-amber-500 shadow-sm group-hover:scale-125 transition-all duration-300"
+                  />
+                  <div
+                    className="flex flex-col rounded-md transition-all duration-300"
+                    id={`timeline-content-${record.id}`}
+                  >
+                    <span
+                      id={`timeline-text-${record.id}`}
+                      className="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors flex items-center gap-2"
+                    >
                       {(record.appointment_date
                         ? new Date(record.appointment_date)
                         : new Date(record.created)
