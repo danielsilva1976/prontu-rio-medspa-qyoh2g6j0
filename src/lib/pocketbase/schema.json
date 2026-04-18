@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T15:04:24.532Z",
+  "generatedAt": "2026-04-18T17:11:53.943Z",
   "collections": [
     {
       "name": "patients",
@@ -473,7 +473,10 @@
           "system": false
         }
       ],
-      "indexes": ["CREATE INDEX idx_medical_records_patient ON medical_records (patient)"]
+      "indexes": [
+        "CREATE INDEX idx_medical_records_patient ON medical_records (patient)",
+        "CREATE INDEX `idx_medical_records_date_time` ON `medical_records` (appointment_date, horario)"
+      ]
     }
   ]
 }

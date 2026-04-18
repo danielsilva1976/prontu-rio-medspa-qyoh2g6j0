@@ -18,17 +18,27 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     try {
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}" && professional_registration != 'Sem Assinatura'`,
-        sort: 'created',
+        sort: '+appointment_date,+horario,+created',
       })
 
       const sortedRecords = medicalRecords.sort((a, b) => {
         const dateA = a.appointment_date ? new Date(a.appointment_date) : new Date(a.created)
         const dateB = b.appointment_date ? new Date(b.appointment_date) : new Date(b.created)
 
-        if (dateA.getTime() === dateB.getTime()) {
+        const dayA = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate()).getTime()
+        const dayB = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate()).getTime()
+
+        if (dayA === dayB) {
+          const timeA = a.horario || ''
+          const timeB = b.horario || ''
+
+          if (timeA !== timeB) {
+            return timeA.localeCompare(timeB)
+          }
           return new Date(a.created).getTime() - new Date(b.created).getTime()
         }
-        return dateA.getTime() - dateB.getTime()
+
+        return dayA - dayB
       })
 
       setRecords(sortedRecords)
