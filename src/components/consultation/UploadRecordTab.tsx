@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Upload, FileText, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,185 +6,131 @@ import { useToast } from '@/hooks/use-toast'
 import pb from '@/lib/pocketbase/client'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
+import { FileUp, Loader2 } from 'lucide-react'
 
 export default function UploadRecordTab({ patientId }: { patientId: string }) {
-  const [dateStr, setDateStr] = useState<string>('')
-  const [file, setFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [, setSearchParams] = useSearchParams()
-  const { toast } = useToast()
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
+  const { toast } = useToast()
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/\D/g, '')
-    if (val.length > 8) val = val.slice(0, 8)
-    if (val.length > 4) {
-      val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4)
-    } else if (val.length > 2) {
-      val = val.slice(0, 2) + '/' + val.slice(2)
-    }
-    setDateStr(val)
-  }
-
-  const parseDate = (str: string) => {
-    if (str.length !== 10) return null
-    const [d, m, y] = str.split('/')
-    const day = parseInt(d, 10)
-    const month = parseInt(m, 10)
-    const year = parseInt(y, 10)
-
-    if (month < 1 || month > 12) return null
-    if (day < 1 || day > 31) return null
-
-    const date = new Date(year, month - 1, day)
-    if (isNaN(date.getTime())) return null
-    return date
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selected = e.target.files[0]
-      if (
-        selected.type !== 'image/jpeg' &&
-        selected.type !== 'image/jpg' &&
-        selected.type !== 'application/pdf'
-      ) {
-        toast({
-          title: 'Formato inválido',
-          description: 'Por favor, selecione um arquivo JPEG ou PDF.',
-          variant: 'destructive',
-        })
-        return
-      }
-      if (selected.size > 5 * 1024 * 1024) {
-        toast({
-          title: 'Arquivo muito grande',
-          description: 'O tamanho máximo permitido é 5MB.',
-          variant: 'destructive',
-        })
-        return
-      }
-      setFile(selected)
-    }
-  }
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [time, setTime] = useState(() => {
+    const now = new Date()
+    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+  })
+  const [file, setFile] = useState<File | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSave = async () => {
-    const parsedDate = parseDate(dateStr)
-    if (!parsedDate || !file) {
+    if (!date || !time) {
       toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha uma data válida e selecione o arquivo (JPEG ou PDF).',
+        title: 'Atenção',
+        description: 'Por favor, preencha a data e o horário antes de salvar.',
         variant: 'destructive',
       })
       return
     }
 
-    setIsUploading(true)
-    try {
-      const registration =
-        currentUser?.role === 'Médico'
-          ? 'CRM-SP 123456'
-          : currentUser?.role === 'Estético'
-            ? 'CRBM 1234'
-            : 'N/A'
-
-      await pb.collection('medical_records').create({
-        patient: patientId,
-        appointment_date: parsedDate.toISOString(),
-        attachment: file,
-        professional_name: currentUser?.name || 'Profissional',
-        professional_registration: registration,
-        content: { Observação: 'Prontuário histórico importado via upload de arquivo.' },
+    if (!file) {
+      toast({
+        title: 'Atenção',
+        description: 'Por favor, selecione um arquivo para anexar.',
+        variant: 'destructive',
       })
+      return
+    }
 
-      addLog('Prontuário histórico importado', patientId)
+    setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('patient', patientId)
+      formData.append('professional_name', currentUser.name)
+      formData.append('professional_registration', 'Documento Externo')
+      formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
+      formData.append('horario', time)
+      formData.append('attachment', file)
+
+      const content = {
+        'Documento Externo': 'Arquivo anexado via inclusão manual de prontuário anterior.',
+      }
+      formData.append('content', JSON.stringify(content))
+
+      await pb.collection('medical_records').create(formData)
+      addLog('Prontuário externo incluído', patientId)
 
       toast({
         title: 'Sucesso',
-        description: 'Prontuário histórico importado com sucesso.',
+        description: 'Prontuário incluído com sucesso.',
       })
-      setSearchParams({ tab: 'historico' }, { replace: true })
-    } catch (error: any) {
-      console.error('Erro ao fazer upload:', error)
+      setFile(null)
+      const fileInput = document.getElementById('upload-file') as HTMLInputElement
+      if (fileInput) fileInput.value = ''
+    } catch (err: any) {
+      console.error(err)
       toast({
-        title: 'Erro no upload',
-        description: 'erro de upload, não foi possivel salvar o prontuário, tente novamente',
+        title: 'Erro',
+        description: 'Ocorreu um erro ao salvar o prontuário.',
         variant: 'destructive',
       })
     } finally {
-      setIsUploading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 bg-white p-8 rounded-xl border border-border shadow-sm animate-fade-in-up">
-      <div className="mb-8">
-        <h2 className="text-2xl font-serif text-primary flex items-center gap-2">
-          <Upload className="h-6 w-6" />
-          Inclusão de Prontuário
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Faça o upload de cópias em JPEG de consultas anteriores para manter o histórico
-          cronológico completo do paciente.
-        </p>
+    <div className="bg-white p-6 rounded-xl border border-border shadow-sm animate-fade-in space-y-6">
+      <div className="flex items-center gap-3 border-b border-border pb-4">
+        <div className="p-2 bg-primary/10 text-primary rounded-lg">
+          <FileUp className="w-5 h-5" />
+        </div>
+        <div>
+          <h2 className="text-lg font-serif font-medium text-primary">Inclusão de Prontuário</h2>
+          <p className="text-sm text-muted-foreground">
+            Adicione prontuários ou exames anteriores do paciente.
+          </p>
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700">Data do Atendimento</Label>
-          <Input
-            placeholder="DD/MM/AAAA"
-            value={dateStr}
-            onChange={handleDateChange}
-            className="w-full"
-            maxLength={10}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700">
-            Arquivo do Prontuário (JPEG ou PDF)
-          </Label>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              className="w-full relative border-dashed border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all h-32"
-              asChild
-            >
-              <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
-                <FileText className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm font-medium text-gray-600">
-                  {file ? file.name : 'Clique para selecionar o arquivo (Máx. 5MB)'}
-                </span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept=".jpg, .jpeg, .pdf, image/jpeg, application/pdf"
-                  onChange={handleFileChange}
-                />
-              </label>
-            </Button>
+      <div className="space-y-6 max-w-xl">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="upload-date">Data</Label>
+            <Input
+              id="upload-date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label htmlFor="upload-time">Horário</Label>
+            <Input
+              id="upload-time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
           </div>
         </div>
 
-        <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => setSearchParams({ tab: 'historico' }, { replace: true })}
-            disabled={isUploading}
-          >
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={isUploading || dateStr.length !== 10 || !file}>
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Salvando...
-              </>
+        <div className="space-y-2">
+          <Label htmlFor="upload-file">Arquivo (PDF, Imagem)</Label>
+          <Input
+            id="upload-file"
+            type="file"
+            accept=".pdf,image/*"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+        </div>
+
+        <div className="pt-2">
+          <Button onClick={handleSave} disabled={loading} className="w-full md:w-auto">
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
-              'Salvar Atendimento'
+              <FileUp className="w-4 h-4 mr-2" />
             )}
+            Salvar
           </Button>
         </div>
       </div>

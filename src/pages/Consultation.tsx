@@ -278,6 +278,12 @@ export default function Consultation() {
       })
       if (records.length > 0) {
         setDbDraft(records[0].content)
+        if (records[0].appointment_date) {
+          setAppointmentDate(records[0].appointment_date.split('T')[0])
+        }
+        if (records[0].horario) {
+          setAppointmentTime(records[0].horario)
+        }
       } else {
         setDbDraft(null)
       }
@@ -291,6 +297,15 @@ export default function Consultation() {
   }, [patientId, isStarted])
 
   const handleSaveSection = async (tab?: string) => {
+    if (!appointmentDate || !appointmentTime) {
+      toast({
+        title: 'Atenção',
+        description: 'Por favor, preencha a data e o horário do atendimento antes de salvar.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     const finalContent = buildContent()
     if (Object.keys(finalContent).length === 0) return
 
@@ -303,6 +318,8 @@ export default function Consultation() {
         await pb.collection('medical_records').update(records[0].id, {
           content: finalContent,
           professional_name: currentUser.name,
+          appointment_date: new Date(`${appointmentDate}T12:00:00Z`).toISOString(),
+          horario: appointmentTime,
         })
       } else {
         await pb.collection('medical_records').create({
@@ -310,6 +327,8 @@ export default function Consultation() {
           content: finalContent,
           professional_name: currentUser.name,
           professional_registration: 'Sem Assinatura',
+          appointment_date: new Date(`${appointmentDate}T12:00:00Z`).toISOString(),
+          horario: appointmentTime,
         })
       }
 
