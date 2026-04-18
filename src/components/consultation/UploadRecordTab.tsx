@@ -19,8 +19,6 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
-  const [profName, setProfName] = useState('')
-  const [profReg, setProfReg] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -29,7 +27,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     e.preventDefault()
     setErrors({})
 
-    if (!date || !time || !profName || !profReg) {
+    if (!date || !time) {
       toast({
         title: 'Atenção',
         description: 'Por favor, preencha todos os campos obrigatórios.',
@@ -43,8 +41,6 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
     try {
       const formData = new FormData()
       formData.append('patient', patientId)
-      formData.append('professional_name', profName)
-      formData.append('professional_registration', profReg)
       formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
       formData.append('horario', time)
       formData.append('content', JSON.stringify({}))
@@ -65,8 +61,6 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       // Reset form fields
       setDate('')
       setTime('')
-      setProfName('')
-      setProfReg('')
       setFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -138,45 +132,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
               />
               {errors.horario && <p className="text-xs text-destructive">{errors.horario}</p>}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="profName">
-                Nome do Profissional <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="profName"
-                type="text"
-                placeholder="Ex: Dr. João Silva"
-                value={profName}
-                onChange={(e) => setProfName(e.target.value)}
-                required
-                className={errors.professional_name ? 'border-destructive' : ''}
-              />
-              {errors.professional_name && (
-                <p className="text-xs text-destructive">{errors.professional_name}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="profReg">
-                Registro Profissional <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="profReg"
-                type="text"
-                placeholder="Ex: CRM-SP 123456"
-                value={profReg}
-                onChange={(e) => setProfReg(e.target.value)}
-                required
-                className={errors.professional_registration ? 'border-destructive' : ''}
-              />
-              {errors.professional_registration && (
-                <p className="text-xs text-destructive">{errors.professional_registration}</p>
-              )}
-            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file">Arquivo Anexo (Opcional, apenas JPG/JPEG)</Label>
+            <Label htmlFor="file">anexar foto do prontuário (jpg ou jpeg)</Label>
             <div className="flex items-center gap-4">
               <Input
                 id="file"

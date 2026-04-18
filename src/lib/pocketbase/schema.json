@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T14:06:51.190Z",
+  "generatedAt": "2026-04-18T14:18:54.541Z",
   "collections": [
     {
       "name": "patients",
@@ -431,13 +431,13 @@
         {
           "name": "professional_name",
           "type": "text",
-          "required": true,
+          "required": false,
           "system": false
         },
         {
           "name": "professional_registration",
           "type": "text",
-          "required": true,
+          "required": false,
           "system": false
         },
         {
