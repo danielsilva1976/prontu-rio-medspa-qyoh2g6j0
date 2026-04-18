@@ -1,139 +1,184 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import pb from '@/lib/pocketbase/client'
 import useUserStore from '@/stores/useUserStore'
 import useAuditStore from '@/stores/useAuditStore'
-import { FileUp, Loader2 } from 'lucide-react'
+import pb from '@/lib/pocketbase/client'
+import { extractFieldErrors } from '@/lib/pocketbase/errors'
+import { Upload, Save, FileText } from 'lucide-react'
 
 export default function UploadRecordTab({ patientId }: { patientId: string }) {
+  const [, setSearchParams] = useSearchParams()
+  const { toast } = useToast()
   const { currentUser } = useUserStore()
   const { addLog } = useAuditStore()
-  const { toast } = useToast()
 
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [time, setTime] = useState(() => {
     const now = new Date()
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
   })
+  const [notes, setNotes] = useState('')
   const [file, setFile] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSave = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+
     if (!date || !time) {
       toast({
         title: 'Atenção',
-        description: 'Por favor, preencha a data e o horário antes de salvar.',
+        description: 'Por favor, preencha a data e o horário do atendimento.',
         variant: 'destructive',
       })
       return
     }
 
-    if (!file) {
-      toast({
-        title: 'Atenção',
-        description: 'Por favor, selecione um arquivo para anexar.',
-        variant: 'destructive',
-      })
-      return
-    }
+    setIsSubmitting(true)
 
-    setLoading(true)
     try {
       const formData = new FormData()
       formData.append('patient', patientId)
-      formData.append('professional_name', currentUser.name)
-      formData.append('professional_registration', 'Documento Externo')
+      formData.append('professional_name', currentUser?.name || 'Desconhecido')
+      formData.append(
+        'professional_registration',
+        currentUser?.role === 'Médico'
+          ? 'CRM-SP 123456'
+          : currentUser?.role === 'Estético'
+            ? 'CRBM 1234'
+            : 'N/A',
+      )
       formData.append('appointment_date', new Date(`${date}T12:00:00Z`).toISOString())
       formData.append('horario', time)
-      formData.append('attachment', file)
+      formData.append('content', JSON.stringify({ Observações: notes }))
 
-      const content = {
-        'Documento Externo': 'Arquivo anexado via inclusão manual de prontuário anterior.',
+      if (file) {
+        formData.append('attachment', file)
       }
-      formData.append('content', JSON.stringify(content))
 
       await pb.collection('medical_records').create(formData)
+
       addLog('Prontuário externo incluído', patientId)
 
       toast({
         title: 'Sucesso',
         description: 'Prontuário incluído com sucesso.',
       })
-      setFile(null)
-      const fileInput = document.getElementById('upload-file') as HTMLInputElement
-      if (fileInput) fileInput.value = ''
-    } catch (err: any) {
-      console.error(err)
+
+      // Redirection destination: automatically switch to History (Histórico) tab
+      setSearchParams(
+        (prev) => {
+          prev.set('tab', 'historico')
+          return prev
+        },
+        { replace: true },
+      )
+    } catch (error) {
+      console.error('Erro ao incluir prontuário:', error)
+      const fieldErrors = extractFieldErrors(error)
+      setErrors(fieldErrors)
       toast({
         title: 'Erro',
-        description: 'Ocorreu um erro ao salvar o prontuário.',
+        description: 'Ocorreu um erro ao salvar o prontuário. Verifique os campos.',
         variant: 'destructive',
       })
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-border shadow-sm animate-fade-in space-y-6">
-      <div className="flex items-center gap-3 border-b border-border pb-4">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg">
-          <FileUp className="w-5 h-5" />
-        </div>
-        <div>
-          <h2 className="text-lg font-serif font-medium text-primary">Inclusão de Prontuário</h2>
-          <p className="text-sm text-muted-foreground">
-            Adicione prontuários ou exames anteriores do paciente.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-6 max-w-xl">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 space-y-2">
-            <Label htmlFor="upload-date">Data</Label>
-            <Input
-              id="upload-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+    <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
+      <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary"></div>
+      <CardHeader>
+        <CardTitle className="font-serif text-xl text-primary flex items-center gap-2">
+          <Upload className="w-5 h-5 text-primary" /> Inclusão de Prontuário
+        </CardTitle>
+        <CardDescription>
+          Faça o upload de prontuários anteriores ou documentos externos do paciente.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="date">
+                Data do Atendimento <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className={errors.appointment_date ? 'border-destructive' : ''}
+              />
+              {errors.appointment_date && (
+                <p className="text-xs text-destructive">{errors.appointment_date}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="time">
+                Horário <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+                className={errors.horario ? 'border-destructive' : ''}
+              />
+              {errors.horario && <p className="text-xs text-destructive">{errors.horario}</p>}
+            </div>
           </div>
-          <div className="flex-1 space-y-2">
-            <Label htmlFor="upload-time">Horário</Label>
-            <Input
-              id="upload-time"
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
+
+          <div className="space-y-2">
+            <Label htmlFor="file">Arquivo Anexo (Opcional)</Label>
+            <div className="flex items-center gap-4">
+              <Input
+                id="file"
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="flex-1 cursor-pointer"
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              {file && <FileText className="w-6 h-6 text-muted-foreground shrink-0" />}
+            </div>
+            {errors.attachment && <p className="text-xs text-destructive">{errors.attachment}</p>}
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="upload-file">Arquivo (PDF, Imagem)</Label>
-          <Input
-            id="upload-file"
-            type="file"
-            accept=".pdf,image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Observações</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Detalhes ou observações sobre o documento incluído..."
+              className="min-h-[120px] resize-y bg-muted/10 border-border/50 focus-visible:ring-primary"
+            />
+            {errors.content && <p className="text-xs text-destructive">{errors.content}</p>}
+          </div>
 
-        <div className="pt-2">
-          <Button onClick={handleSave} disabled={loading} className="w-full md:w-auto">
-            {loading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <FileUp className="w-4 h-4 mr-2" />
-            )}
-            Salvar
-          </Button>
-        </div>
-      </div>
-    </div>
+          <div className="flex justify-end pt-4 mt-6 border-t border-border/50">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSubmitting ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
