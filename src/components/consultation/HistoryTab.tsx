@@ -123,19 +123,34 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       if (scrolledRef.current === highlightId) return
       scrolledRef.current = highlightId
 
-      const timerId = setTimeout(() => {
-        scrollToRecord(highlightId)
-        setSearchParams(
-          (prev) => {
-            const next = new URLSearchParams(prev)
-            next.delete('highlight')
-            return next
-          },
-          { replace: true },
-        )
-      }, 300) // Give enough time for DOM layout to settle after visibility changes
+      let attempts = 0
+      const maxAttempts = 50 // ~800ms max timeout to prevent infinite polling
+      let rafId: number
 
-      return () => clearTimeout(timerId)
+      // Robust React-compliant method: poll for the element to exist and be painted
+      // This solves race conditions where the DOM element hasn't fully rendered its height yet.
+      const tryScroll = () => {
+        const element = document.getElementById(`record-${highlightId}`)
+        // Check if element exists in the DOM and has layout dimensions (not hidden)
+        if (element && element.getBoundingClientRect().height > 0) {
+          scrollToRecord(highlightId)
+          setSearchParams(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.delete('highlight')
+              return next
+            },
+            { replace: true },
+          )
+        } else if (attempts < maxAttempts) {
+          attempts++
+          rafId = requestAnimationFrame(tryScroll)
+        }
+      }
+
+      rafId = requestAnimationFrame(tryScroll)
+
+      return () => cancelAnimationFrame(rafId)
     }
   }, [loading, records, searchParams, setSearchParams])
 
