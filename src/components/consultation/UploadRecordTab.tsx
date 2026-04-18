@@ -36,6 +36,25 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       return
     }
 
+    if (!file) {
+      toast({
+        title: 'Atenção',
+        description: 'O anexo da foto do prontuário é obrigatório.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase()
+    if (fileExt !== 'jpg' && fileExt !== 'jpeg') {
+      toast({
+        title: 'Atenção',
+        description: 'Apenas arquivos .jpg ou .jpeg são permitidos.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -45,9 +64,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       formData.append('horario', time)
       formData.append('content', JSON.stringify({}))
 
-      if (file) {
-        formData.append('attachment', file)
-      }
+      formData.append('attachment', file)
 
       await pb.collection('medical_records').create(formData)
 
