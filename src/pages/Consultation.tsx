@@ -90,8 +90,9 @@ export default function Consultation() {
     if (newTab !== activeTab) {
       setSearchParams(
         (prev) => {
-          prev.set('tab', newTab)
-          return prev
+          const next = new URLSearchParams(prev)
+          next.set('tab', newTab)
+          return next
         },
         { replace: true },
       )
@@ -430,9 +431,10 @@ export default function Consultation() {
 
         setSearchParams(
           (prev) => {
-            prev.set('tab', 'historico')
-            prev.set('highlight', createdRecordId)
-            return prev
+            const next = new URLSearchParams(prev)
+            next.set('tab', 'historico')
+            next.set('highlight', createdRecordId)
+            return next
           },
           { replace: true },
         )

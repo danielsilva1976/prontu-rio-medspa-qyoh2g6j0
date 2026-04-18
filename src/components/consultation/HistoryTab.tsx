@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FileText, Clock, ShieldCheck, User, Download } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
@@ -113,21 +113,29 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     }
   }
 
+  const scrolledRef = useRef<string | null>(null)
+
   useEffect(() => {
     const highlightId = searchParams.get('highlight')
+
     if (highlightId && !loading && records.some((r) => r.id === highlightId)) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          scrollToRecord(highlightId)
-          setSearchParams(
-            (prev) => {
-              prev.delete('highlight')
-              return prev
-            },
-            { replace: true },
-          )
-        }, 150)
-      })
+      // Prevent multiple scroll attempts for the same record during re-renders
+      if (scrolledRef.current === highlightId) return
+      scrolledRef.current = highlightId
+
+      const timerId = setTimeout(() => {
+        scrollToRecord(highlightId)
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.delete('highlight')
+            return next
+          },
+          { replace: true },
+        )
+      }, 300) // Give enough time for DOM layout to settle after visibility changes
+
+      return () => clearTimeout(timerId)
     }
   }, [loading, records, searchParams, setSearchParams])
 
