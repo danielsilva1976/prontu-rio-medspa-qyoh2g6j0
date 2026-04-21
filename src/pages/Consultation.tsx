@@ -88,14 +88,21 @@ export default function Consultation() {
     }
 
     if (newTab !== activeTab) {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          next.set('tab', newTab)
-          return next
-        },
-        { replace: true },
-      )
+      // Use a timeout to prevent race conditions with other navigation actions
+      // (e.g. handleToggleConsultation saving and navigating with a highlight param)
+      const timer = setTimeout(() => {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            // If the tab was already changed by another action, don't overwrite it
+            if (next.get('tab') === newTab) return prev
+            next.set('tab', newTab)
+            return next
+          },
+          { replace: true },
+        )
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [showAnamneseExame, showDocs, showAudit, activeTab, isStarted, setSearchParams])
 
