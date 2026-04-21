@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T16:56:18.266Z",
+  "generatedAt": "2026-04-21T17:20:37.303Z",
   "collections": [
     {
       "name": "patients",
@@ -9,7 +9,7 @@
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
-        "delete": "@request.auth.role = 'admin'"
+        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'"
       },
       "fields": [
         {
@@ -270,11 +270,11 @@
       "name": "sync_jobs",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.role = 'admin'",
-        "view": "@request.auth.role = 'admin'",
+        "list": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "view": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
         "create": "@request.auth.id != ''",
-        "update": "@request.auth.role = 'admin'",
-        "delete": "@request.auth.role = 'admin'"
+        "update": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'"
       },
       "fields": [
         {
@@ -346,10 +346,10 @@
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
+        "list": "id = @request.auth.id || @request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "view": "id = @request.auth.id || @request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
         "create": "",
-        "update": "id = @request.auth.id",
+        "update": "id = @request.auth.id || @request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
         "delete": "id = @request.auth.id"
       },
       "fields": [
@@ -376,11 +376,11 @@
       "name": "app_settings",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.role = 'admin'",
-        "view": "@request.auth.role = 'admin'",
-        "create": "@request.auth.role = 'admin'",
-        "update": "@request.auth.role = 'admin'",
-        "delete": "@request.auth.role = 'admin'"
+        "list": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "view": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "create": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "update": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
+        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'"
       },
       "fields": [
         {
@@ -426,7 +426,7 @@
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
-        "delete": "@request.auth.role = 'admin'"
+        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'"
       },
       "fields": [
         {
