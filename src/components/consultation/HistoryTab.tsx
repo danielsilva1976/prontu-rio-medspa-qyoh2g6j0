@@ -141,17 +141,26 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       // This solves race conditions where the DOM element hasn't fully rendered its height yet.
       const tryScroll = () => {
         const element = document.getElementById(`record-${highlightId}`)
+        const container = document.getElementById('consultation-scroll-area')
+
         // Check if element exists in the DOM and has layout dimensions (not hidden)
-        if (element && element.getBoundingClientRect().height > 0) {
-          scrollToRecord(highlightId)
-          setSearchParams(
-            (prev) => {
-              const next = new URLSearchParams(prev)
-              next.delete('highlight')
-              return next
-            },
-            { replace: true },
-          )
+        if (
+          element &&
+          element.getBoundingClientRect().height > 0 &&
+          container &&
+          container.getBoundingClientRect().height > 0
+        ) {
+          requestAnimationFrame(() => {
+            scrollToRecord(highlightId)
+            setSearchParams(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.delete('highlight')
+                return next
+              },
+              { replace: true },
+            )
+          })
         } else if (attempts < maxAttempts) {
           attempts++
           rafId = requestAnimationFrame(tryScroll)

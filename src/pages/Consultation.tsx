@@ -327,14 +327,12 @@ export default function Consultation() {
   }
 
   const handleCancelConsultation = async () => {
-    setSearchParams({ tab: 'historico' }, { replace: true })
+    endConsultation(patientId)
+    clearDraft(patientId)
+    setDbDraft(null)
+    addLog('Status alterado: Atendimento Cancelado', patientId)
 
-    setTimeout(() => {
-      endConsultation(patientId)
-      clearDraft(patientId)
-      setDbDraft(null)
-      addLog('Status alterado: Atendimento Cancelado', patientId)
-    }, 10)
+    setSearchParams({ tab: 'historico' }, { replace: true })
 
     try {
       const records = await pb.collection('medical_records').getFullList({
@@ -427,6 +425,11 @@ export default function Consultation() {
           }
         }
 
+        endConsultation(patientId)
+        clearDraft(patientId)
+        setDbDraft(null)
+        addLog('Status alterado: Consulta Finalizada e Prontuário Salvo', patientId)
+
         setSearchParams(
           (prev) => {
             const next = new URLSearchParams(prev)
@@ -437,17 +440,10 @@ export default function Consultation() {
           { replace: true },
         )
 
-        setTimeout(() => {
-          endConsultation(patientId)
-          clearDraft(patientId)
-          setDbDraft(null)
-          addLog('Status alterado: Consulta Finalizada e Prontuário Salvo', patientId)
-
-          toast({
-            title: 'Atendimento finalizado',
-            description: 'O prontuário foi assinado e salvo com sucesso no histórico.',
-          })
-        }, 10)
+        toast({
+          title: 'Atendimento finalizado',
+          description: 'O prontuário foi assinado e salvo com sucesso no histórico.',
+        })
       } catch (error) {
         console.error('Erro ao salvar prontuário:', error)
         toast({
