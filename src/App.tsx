@@ -16,6 +16,7 @@ import Documents from './pages/Documents'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
+import { ProtectedRoute } from './components/ProtectedRoute'
 
 const App = () => (
   <UserProvider>
@@ -29,12 +30,14 @@ const App = () => (
                 <Sonner />
                 <Routes>
                   <Route path="/login" element={<Login />} />
-                  <Route element={<Layout />}>
-                    <Route path="/" element={<Navigate to="/pacientes" replace />} />
-                    <Route path="/pacientes" element={<Patients />} />
-                    <Route path="/prontuario/:id" element={<Consultation />} />
-                    <Route path="/documentos" element={<Documents />} />
-                    <Route path="/configuracoes" element={<Settings />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<Layout />}>
+                      <Route path="/" element={<Navigate to="/pacientes" replace />} />
+                      <Route path="/pacientes" element={<Patients />} />
+                      <Route path="/prontuario/:id" element={<Consultation />} />
+                      <Route path="/documentos" element={<Documents />} />
+                      <Route path="/configuracoes" element={<Settings />} />
+                    </Route>
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

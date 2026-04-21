@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,6 +16,19 @@ export default function Login() {
   const { login } = useUserStore()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const user = pb.authStore.record || pb.authStore.model
+    if (
+      pb.authStore.isValid &&
+      user?.collectionName === 'users' &&
+      ['admin', 'secretary'].includes(user.role)
+    ) {
+      const from = location.state?.from?.pathname || '/'
+      navigate(from, { replace: true })
+    }
+  }, [navigate, location])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,7 +38,8 @@ export default function Login() {
 
     setIsLoading(false)
     if (success) {
-      navigate('/')
+      const from = location.state?.from?.pathname || '/'
+      navigate(from, { replace: true })
     } else {
       toast({
         title: 'Acesso negado',
