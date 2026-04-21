@@ -136,6 +136,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       let attempts = 0
       const maxAttempts = 100 // ~1.6s max timeout to prevent infinite polling
       let rafId: number
+      let timeoutId: ReturnType<typeof setTimeout>
 
       // Robust React-compliant method: poll for the element to exist and be painted
       // This solves race conditions where the DOM element hasn't fully rendered its height yet.
@@ -150,17 +151,26 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
           container &&
           container.getBoundingClientRect().height > 0
         ) {
-          requestAnimationFrame(() => {
+          // Use a short delay to allow React to finish all layout reflows (e.g. shrinking headers)
+          timeoutId = setTimeout(() => {
             scrollToRecord(highlightId)
-            setSearchParams(
-              (prev) => {
-                const next = new URLSearchParams(prev)
-                next.delete('highlight')
-                return next
-              },
-              { replace: true },
-            )
-          })
+
+            // Clean up highlight param AFTER the smooth scroll completes (approx 1s)
+            // to avoid React re-renders aborting the browser's native scroll animation
+            setTimeout(() => {
+              setSearchParams(
+                (prev) => {
+                  const next = new URLSearchParams(prev)
+                  if (next.has('highlight')) {
+                    next.delete('highlight')
+                    return next
+                  }
+                  return prev
+                },
+                { replace: true },
+              )
+            }, 1000)
+          }, 150)
         } else if (attempts < maxAttempts) {
           attempts++
           rafId = requestAnimationFrame(tryScroll)
@@ -169,8 +179,11 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
           setSearchParams(
             (prev) => {
               const next = new URLSearchParams(prev)
-              next.delete('highlight')
-              return next
+              if (next.has('highlight')) {
+                next.delete('highlight')
+                return next
+              }
+              return prev
             },
             { replace: true },
           )
@@ -179,7 +192,10 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
 
       rafId = requestAnimationFrame(tryScroll)
 
-      return () => cancelAnimationFrame(rafId)
+      return () => {
+        cancelAnimationFrame(rafId)
+        if (timeoutId) clearTimeout(timeoutId)
+      }
     } else if (!highlightId) {
       // Reset refs when there is no highlight so we can trigger again in the future if needed
       scrolledRef.current = null
