@@ -1,4 +1,5 @@
-import { useState, useContext, createContext, ReactNode, createElement } from 'react'
+import { useState, useContext, createContext, ReactNode, createElement, useEffect } from 'react'
+import pb from '@/lib/pocketbase/client'
 
 export type UserRole = 'Médico' | 'Estético' | 'Secretária'
 export type UserStatus = 'Ativo' | 'Inativo'
@@ -21,35 +22,11 @@ type UserState = {
   toggleStatus: (id: string) => void
   removeUser: (id: string) => void
   switchUser: (id: string) => void
-  login: (email?: string, password?: string) => boolean
+  login: (email?: string, password?: string) => Promise<boolean>
   logout: () => void
 }
 
 const defaultUsers: User[] = [
-  {
-    id: 'usr-1',
-    name: 'Dra. Fabíola Kleinert',
-    email: 'fabiola@medspa.com',
-    role: 'Médico',
-    status: 'Ativo',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1',
-  },
-  {
-    id: 'usr-2',
-    name: 'Dra. Sofia Mendes',
-    email: 'sofia@medspa.com',
-    role: 'Estético',
-    status: 'Ativo',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=2',
-  },
-  {
-    id: 'usr-3',
-    name: 'Mariana Costa',
-    email: 'mariana@medspa.com',
-    role: 'Secretária',
-    status: 'Ativo',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3',
-  },
   {
     id: 'usr-admin',
     name: 'Daniel Silva',
@@ -58,16 +35,46 @@ const defaultUsers: User[] = [
     status: 'Ativo',
     avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
   },
+  {
+    id: 'usr-1',
+    name: 'Dra. Fabíola Kleinert',
+    email: 'fabiola@medspa.com',
+    role: 'Médico',
+    status: 'Ativo',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1',
+  },
 ]
 
 const UserContext = createContext<UserState>({} as UserState)
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [users, setUsers] = useState<User[]>(defaultUsers)
-  const [currentUserId, setCurrentUserId] = useState<string>(defaultUsers[0].id)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
-  const currentUser = users.find((u) => u.id === currentUserId) || users[0]
+  const mapPbUser = (record: any): User | null => {
+    if (!record) return null
+    return {
+      id: record.id,
+      name: record.name || 'Administrador',
+      email: record.email,
+      role: record.role === 'admin' ? 'Médico' : 'Secretária',
+      status: 'Ativo',
+      avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
+    }
+  }
+
+  const [pbUser, setPbUser] = useState<User | null>(mapPbUser(pb.authStore.record))
+  const [currentUserId, setCurrentUserId] = useState<string>(defaultUsers[0].id)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(pb.authStore.isValid)
+
+  useEffect(() => {
+    const unsub = pb.authStore.onChange((token, record) => {
+      setPbUser(mapPbUser(record))
+      setIsAuthenticated(pb.authStore.isValid)
+    })
+    return () => unsub()
+  }, [])
+
+  const currentUser = pbUser || users.find((u) => u.id === currentUserId) || users[0]
 
   const addUser = (userData: Omit<User, 'id' | 'status'>) => {
     const newUser: User = {
@@ -98,29 +105,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUserId(id)
   }
 
-  const login = (email?: string, password?: string) => {
-    // Admin strict check
-    if (email === 'daniel.nefro@gmail.com') {
-      if (password === 'Sucesso2026!') {
-        setCurrentUserId('usr-admin')
-        setIsAuthenticated(true)
-        return true
-      }
+  const login = async (email?: string, password?: string) => {
+    if (!email || !password) return false
+    try {
+      await pb.collection('users').authWithPassword(email, password)
+      return true
+    } catch (e) {
+      console.error('Login failed:', e)
       return false
     }
-
-    // Demo fallback for other users
-    const user = users.find((u) => u.email === email)
-    if (user) {
-      setCurrentUserId(user.id)
-    } else {
-      setCurrentUserId(defaultUsers[0].id)
-    }
-    setIsAuthenticated(true)
-    return true
   }
 
-  const logout = () => setIsAuthenticated(false)
+  const logout = () => {
+    pb.authStore.clear()
+    setIsAuthenticated(false)
+    setPbUser(null)
+  }
 
   return createElement(
     UserContext.Provider,

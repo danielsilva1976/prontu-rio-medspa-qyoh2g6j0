@@ -133,11 +133,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
 
   const ensureAuth = async () => {
     if (!pb.authStore.isValid) {
-      try {
-        await pb.collection('users').authWithPassword('daniel.nefro@gmail.com', 'securepassword123')
-      } catch (e) {
-        console.error('PB Auth failed', e)
-      }
+      console.warn('Usuário não autenticado. As requisições podem falhar.')
     }
   }
 

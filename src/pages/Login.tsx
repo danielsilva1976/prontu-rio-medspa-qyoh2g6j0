@@ -11,21 +11,24 @@ import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 export default function Login() {
   const [loginStr, setLoginStr] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const { login } = useUserStore()
   const { toast } = useToast()
   const navigate = useNavigate()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
 
-    const success = login(loginStr, password)
+    const success = await login(loginStr, password)
 
+    setIsLoading(false)
     if (success) {
       navigate('/')
     } else {
       toast({
         title: 'Acesso negado',
-        description: 'Credenciais incorretas.',
+        description: 'Credenciais incorretas. Verifique seu e-mail e senha.',
         variant: 'destructive',
       })
     }
@@ -87,9 +90,10 @@ export default function Login() {
               <div className="pt-2">
                 <Button
                   type="submit"
+                  disabled={isLoading}
                   className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all sm:hover:scale-[1.02]"
                 >
-                  Entrar
+                  {isLoading ? 'Entrando...' : 'Entrar'}
                 </Button>
               </div>
             </form>

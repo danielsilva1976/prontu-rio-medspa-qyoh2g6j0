@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T18:26:16.378Z",
+  "generatedAt": "2026-04-21T11:07:58.372Z",
   "collections": [
     {
       "name": "patients",
@@ -9,7 +9,7 @@
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "delete": "@request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -270,11 +270,11 @@
       "name": "sync_jobs",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": null
+        "list": "@request.auth.role = 'admin'",
+        "view": "@request.auth.role = 'admin'",
+        "create": "@request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -352,7 +352,21 @@
         "update": "id = @request.auth.id",
         "delete": "id = @request.auth.id"
       },
-      "fields": [],
+      "fields": [
+        {
+          "name": "role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["admin", "secretary"]
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": false,
+          "system": false
+        }
+      ],
       "indexes": [
         "CREATE UNIQUE INDEX `idx_tokenKey_pbc_1736455494` ON `users` (`tokenKey`)",
         "CREATE UNIQUE INDEX `idx_email_pbc_1736455494` ON `users` (`email`) WHERE `email` != ''"
@@ -362,11 +376,11 @@
       "name": "app_settings",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
-        "create": "@request.auth.id != ''",
-        "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "list": "@request.auth.role = 'admin'",
+        "view": "@request.auth.role = 'admin'",
+        "create": "@request.auth.role = 'admin'",
+        "update": "@request.auth.role = 'admin'",
+        "delete": "@request.auth.role = 'admin'"
       },
       "fields": [
         {
@@ -402,7 +416,7 @@
           "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX idx_app_settings_key ON app_settings (key)"]
+      "indexes": ["CREATE UNIQUE INDEX `idx_app_settings_key` ON `app_settings` (key)"]
     },
     {
       "name": "medical_records",
@@ -412,7 +426,7 @@
         "view": "@request.auth.id != ''",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
-        "delete": "@request.auth.id != ''"
+        "delete": "@request.auth.role = 'admin'"
       },
       "fields": [
         {
