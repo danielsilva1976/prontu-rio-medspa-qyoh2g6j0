@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -60,8 +60,12 @@ export default function Consultation() {
     }
   }, [])
 
+  const isNavigatingRef = useRef(false)
+
   // Sync tab state with URL and ensure tab access is valid for role
   useEffect(() => {
+    if (isNavigatingRef.current) return
+
     let newTab = activeTab
 
     // Redirect if trying to access disabled "Novo Atendimento" tabs while consultation is not started
@@ -334,12 +338,18 @@ export default function Consultation() {
   }
 
   const handleCancelConsultation = async () => {
+    isNavigatingRef.current = true
+
     endConsultation(patientId)
     clearDraft(patientId)
     setDbDraft(null)
     addLog('Status alterado: Atendimento Cancelado', patientId)
 
     setSearchParams({ tab: 'historico' }, { replace: true })
+
+    setTimeout(() => {
+      isNavigatingRef.current = false
+    }, 100)
 
     try {
       const records = await pb.collection('medical_records').getFullList({
@@ -432,6 +442,8 @@ export default function Consultation() {
           }
         }
 
+        isNavigatingRef.current = true
+
         endConsultation(patientId)
         clearDraft(patientId)
         setDbDraft(null)
@@ -447,6 +459,10 @@ export default function Consultation() {
           { replace: true },
         )
 
+        setTimeout(() => {
+          isNavigatingRef.current = false
+        }, 100)
+
         toast({
           title: 'Atendimento finalizado',
           description: 'O prontuário foi assinado e salvo com sucesso no histórico.',
@@ -460,9 +476,14 @@ export default function Consultation() {
         })
       }
     } else {
+      isNavigatingRef.current = true
       startConsultation(patientId)
       addLog('Status alterado: Consulta Iniciada', patientId)
       setSearchParams({ tab: 'novo' }, { replace: true })
+
+      setTimeout(() => {
+        isNavigatingRef.current = false
+      }, 100)
     }
   }
 
