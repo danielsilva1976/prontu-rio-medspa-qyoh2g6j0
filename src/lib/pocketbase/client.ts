@@ -9,7 +9,9 @@ class SessionAuthStore extends BaseAuthStore {
       // Clear legacy localStorage token for security
       try {
         window.localStorage.removeItem('pocketbase_auth')
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
 
       try {
         const raw = window.sessionStorage.getItem(this.storageKey)
@@ -28,7 +30,9 @@ class SessionAuthStore extends BaseAuthStore {
     if (typeof window !== 'undefined') {
       try {
         window.sessionStorage.setItem(this.storageKey, JSON.stringify({ token, model }))
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
     }
   }
 
@@ -37,7 +41,9 @@ class SessionAuthStore extends BaseAuthStore {
     if (typeof window !== 'undefined') {
       try {
         window.sessionStorage.removeItem(this.storageKey)
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
     }
   }
 }
