@@ -1,29 +1,49 @@
-import PocketBase, { AsyncAuthStore } from 'pocketbase'
+import PocketBase, { BaseAuthStore } from 'pocketbase'
 
-// Remove any lingering persistent session from localStorage
-if (typeof localStorage !== 'undefined') {
-  localStorage.removeItem('pb_auth')
+class SessionAuthStore extends BaseAuthStore {
+  private storageKey: string
+
+  constructor(storageKey = 'pocketbase_auth') {
+    super()
+    this.storageKey = storageKey
+
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = window.sessionStorage.getItem(this.storageKey)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          this.save(parsed.token, parsed.model)
+        }
+      } catch (e) {
+        console.error('Failed to load SessionAuthStore', e)
+      }
+    }
+  }
+
+  save(token: string, model: any) {
+    super.save(token, model)
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(this.storageKey, JSON.stringify({ token, model }))
+      } catch (e) {
+        console.error('Failed to save SessionAuthStore', e)
+      }
+    }
+  }
+
+  clear() {
+    super.clear()
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.removeItem(this.storageKey)
+      } catch (e) {
+        console.error('Failed to clear SessionAuthStore', e)
+      }
+    }
+  }
 }
 
-// Implement sessionStorage-based AuthStore for the client
-const authStore = new AsyncAuthStore({
-  save: async (serialized) => {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('pb_auth', serialized)
-    }
-  },
-  initial:
-    typeof sessionStorage !== 'undefined'
-      ? sessionStorage.getItem('pb_auth') || undefined
-      : undefined,
-  clear: async () => {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('pb_auth')
-    }
-  },
-})
-
-const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, authStore)
+const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, new SessionAuthStore())
 pb.autoCancellation(false)
 
 export default pb
