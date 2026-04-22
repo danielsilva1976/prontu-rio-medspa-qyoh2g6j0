@@ -1,50 +1,48 @@
 import PocketBase, { BaseAuthStore } from 'pocketbase'
 
 class SessionAuthStore extends BaseAuthStore {
-  private storageKey: string
+  private storageKey = 'pb_auth_session'
 
-  constructor(storageKey = 'pb_auth') {
+  constructor() {
     super()
-    this.storageKey = storageKey
+    if (typeof window !== 'undefined') {
+      // Clear legacy localStorage token for security
+      try {
+        window.localStorage.removeItem('pocketbase_auth')
+      } catch (e) {}
 
-    // Clean up old localStorage data if present
-    try {
-      window.localStorage.removeItem(this.storageKey)
-    } catch (e) {
-      // ignore
-    }
-
-    try {
-      const raw = window.sessionStorage.getItem(this.storageKey)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        this.save(parsed.token, parsed.model)
+      try {
+        const raw = window.sessionStorage.getItem(this.storageKey)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          this.save(parsed.token, parsed.model)
+        }
+      } catch (e) {
+        // ignore
       }
-    } catch (e) {
-      // ignore
     }
   }
 
-  save(token: string, model?: any) {
+  save(token: string, model: any) {
     super.save(token, model)
-    try {
-      window.sessionStorage.setItem(this.storageKey, JSON.stringify({ token, model }))
-    } catch (e) {
-      // ignore
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(this.storageKey, JSON.stringify({ token, model }))
+      } catch (e) {}
     }
   }
 
   clear() {
     super.clear()
-    try {
-      window.sessionStorage.removeItem(this.storageKey)
-    } catch (e) {
-      // ignore
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.removeItem(this.storageKey)
+      } catch (e) {}
     }
   }
 }
 
-const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, new SessionAuthStore('pb_auth'))
+const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, new SessionAuthStore())
 pb.autoCancellation(false)
 
 export default pb
