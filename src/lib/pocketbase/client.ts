@@ -1,54 +1,20 @@
-import PocketBase, { BaseAuthStore } from 'pocketbase'
+import PocketBase, { AsyncAuthStore } from 'pocketbase'
 
-class SessionAuthStore extends BaseAuthStore {
-  private storageKey = 'pb_auth_session'
-
-  constructor() {
-    super()
-    if (typeof window !== 'undefined') {
-      // Clear legacy localStorage token for security
-      try {
-        window.localStorage.removeItem('pocketbase_auth')
-      } catch (e) {
-        // ignore
-      }
-
-      try {
-        const raw = window.sessionStorage.getItem(this.storageKey)
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          this.save(parsed.token, parsed.model)
-        }
-      } catch (e) {
-        // ignore
-      }
+const store = new AsyncAuthStore({
+  save: (serialized) => {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('pb_auth', serialized)
     }
-  }
-
-  save(token: string, model: any) {
-    super.save(token, model)
-    if (typeof window !== 'undefined') {
-      try {
-        window.sessionStorage.setItem(this.storageKey, JSON.stringify({ token, model }))
-      } catch (e) {
-        // ignore
-      }
+  },
+  initial: typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('pb_auth') || '' : '',
+  clear: () => {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('pb_auth')
     }
-  }
+  },
+})
 
-  clear() {
-    super.clear()
-    if (typeof window !== 'undefined') {
-      try {
-        window.sessionStorage.removeItem(this.storageKey)
-      } catch (e) {
-        // ignore
-      }
-    }
-  }
-}
-
-const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, new SessionAuthStore())
+const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL, store)
 pb.autoCancellation(false)
 
 export default pb
