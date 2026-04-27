@@ -14,8 +14,9 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   const [records, setRecords] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchRecords = async () => {
+  const fetchRecords = async (isInitial = false) => {
     try {
+      if (isInitial) setLoading(true)
       const medicalRecords = await pb.collection('medical_records').getFullList({
         filter: `patient = "${patientId}" && professional_registration != 'Sem Assinatura'`,
         sort: '+appointment_date,+horario,+created',
@@ -45,16 +46,16 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
     } catch (error) {
       console.error('Error fetching medical records', error)
     } finally {
-      setLoading(false)
+      if (isInitial) setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchRecords()
+    fetchRecords(true)
   }, [patientId])
 
   useRealtime('medical_records', () => {
-    fetchRecords()
+    fetchRecords(false)
   })
 
   const scrollToRecord = (id: string) => {
@@ -77,8 +78,12 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
 
-      element.classList.add('bg-amber-50')
-      setTimeout(() => element.classList.remove('bg-amber-50'), 2500)
+      // Add highlight styling
+      element.classList.add('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
+        element.classList.add('transition-all', 'duration-1000')
+      }, 2500)
     }
 
     if (timelineItem) {
@@ -124,7 +129,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
         // Force refresh if real-time event was missed or delayed
         if (forceFetchedRef.current !== highlightId) {
           forceFetchedRef.current = highlightId
-          fetchRecords()
+          fetchRecords(false)
         }
         return
       }
@@ -134,7 +139,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       scrolledRef.current = highlightId
 
       let attempts = 0
-      const maxAttempts = 100 // ~1.6s max timeout to prevent infinite polling
+      const maxAttempts = 150 // ~2.5s max timeout to prevent infinite polling
       let rafId: number
       let timeoutId: ReturnType<typeof setTimeout>
 
@@ -145,8 +150,10 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
         const container = document.getElementById('consultation-scroll-area')
 
         // Check if element exists in the DOM and has layout dimensions (not hidden)
+        // Also ensure the tab is not hidden by checking offsetParent
         if (
           element &&
+          element.offsetParent !== null &&
           element.getBoundingClientRect().height > 0 &&
           container &&
           container.getBoundingClientRect().height > 0
@@ -155,7 +162,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
           timeoutId = setTimeout(() => {
             scrollToRecord(highlightId)
 
-            // Clean up highlight param AFTER the smooth scroll completes (approx 1s)
+            // Clean up highlight param AFTER the smooth scroll completes (approx 1.5s)
             // to avoid React re-renders aborting the browser's native scroll animation
             setTimeout(() => {
               setSearchParams(
@@ -169,8 +176,8 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
                 },
                 { replace: true },
               )
-            }, 1000)
-          }, 150)
+            }, 1500)
+          }, 300)
         } else if (attempts < maxAttempts) {
           attempts++
           rafId = requestAnimationFrame(tryScroll)
