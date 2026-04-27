@@ -88,9 +88,10 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       // Redirection destination: automatically switch to History (Histórico) tab
       setSearchParams(
         (prev) => {
-          prev.set('tab', 'historico')
-          prev.set('highlight', created.id)
-          return prev
+          const next = new URLSearchParams(prev)
+          next.set('tab', 'historico')
+          next.set('highlight', created.id)
+          return next
         },
         { replace: true },
       )
