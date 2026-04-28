@@ -10,6 +10,7 @@ import {
   Calculator,
   FileText,
   Printer,
+  Trash2,
 } from 'lucide-react'
 import {
   Sheet,
@@ -19,6 +20,17 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import {
   Table,
   TableBody,
@@ -33,6 +45,7 @@ import { StrategicPlanA4 } from '@/components/documents/StrategicPlanA4'
 import useDocumentStore from '@/stores/useDocumentStore'
 import usePatientStore from '@/stores/usePatientStore'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useToast } from '@/hooks/use-toast'
 
 type Props = {
   plans: SavedPlan[]
@@ -46,12 +59,47 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
   const [printOpen, setPrintOpen] = useState(false)
 
   const { layout } = useDocumentStore()
-  const { patients } = usePatientStore()
+  const { patients, updatePatient } = usePatientStore()
+  const { toast } = useToast()
   const patient = patients.find((p) => p.id === patientId)
   const patientName = patient?.name || 'Paciente'
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
+
+  const handleDeletePlan = async (e: React.MouseEvent, planId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!patientId || !patient) return
+
+    try {
+      const updatedProcedures = patient.procedures.filter((p: any) => {
+        if (typeof p === 'object' && p !== null) {
+          return p.id !== planId
+        }
+        return true
+      })
+
+      await updatePatient(patientId, { procedures: updatedProcedures })
+
+      toast({
+        title: 'Sucesso',
+        description: 'Planejamento excluído com sucesso.',
+      })
+
+      if (selectedPlan?.id === planId) {
+        setSelectedPlan(null)
+      }
+    } catch (error) {
+      console.error('Failed to delete plan:', error)
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o planejamento.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -75,13 +123,45 @@ export default function PlanningList({ plans, onCreate, isSigned, patientId }: P
                     <Calendar className="w-3 h-3" /> Data de criação: {plan.date}
                   </p>
                 </div>
-                <div className="text-left sm:text-right bg-white p-3 rounded-lg border border-border/50 group-hover:border-primary/20 transition-colors">
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                    Investimento Previsto
-                  </p>
-                  <p className="text-lg font-bold text-primary tracking-tight mt-0.5">
-                    {formatCurrency(plan.totalInvestment)}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="text-left sm:text-right bg-white p-3 rounded-lg border border-border/50 group-hover:border-primary/20 transition-colors">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                      Investimento Previsto
+                    </p>
+                    <p className="text-lg font-bold text-primary tracking-tight mt-0.5">
+                      {formatCurrency(plan.totalInvestment)}
+                    </p>
+                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-10 w-10 shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir planejamento</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir este planejamento? Esta ação não pode ser
+                          desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={(e) => handleDeletePlan(e, plan.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </Card>
             ))}
