@@ -647,6 +647,8 @@ export default function ApplicationMarker({
               preserveAspectRatio="xMidYMid meet"
               clipPath={`url(#${clipId})`}
               opacity={0.9}
+              draggable="false"
+              style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
             />
           ) : (
             DIAGRAMS[area]
