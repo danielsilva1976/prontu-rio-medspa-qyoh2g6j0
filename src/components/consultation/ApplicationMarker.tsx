@@ -740,12 +740,4 @@ export default function ApplicationMarker({
                 )
               }
               disabled={isSigned}
-              className="w-12 h-6 text-xs font-bold text-center text-primary border-none bg-transparent shadow-none focus:outline-none focus:ring-0 placeholder:text-primary/50 transition-colors drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]"
-              placeholder="Un"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+              className="w-12 h-6 text-xs font-bold text-center text-primary border-none bg-transparent shadow-none focus:outline-none focus:ring-0 placeholder:text-primary/50 transition-colors drop-shadow-[0_1px_1px_rgb
