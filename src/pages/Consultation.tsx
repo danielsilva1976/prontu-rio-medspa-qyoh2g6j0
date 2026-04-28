@@ -557,8 +557,8 @@ export default function Consultation() {
                 onHighlightClear={handleHighlightClear}
               />
             </div>
-            {showAnamneseExame && (
-              <div className={cn(activeTab !== 'anamnese' && 'hidden')}>
+            {showAnamneseExame && activeTab === 'anamnese' && (
+              <div className="animate-fade-in">
                 <AnamnesisTab
                   isSigned={!isStarted}
                   patientId={patientId}
@@ -566,8 +566,8 @@ export default function Consultation() {
                 />
               </div>
             )}
-            {showAnamneseExame && (
-              <div className={cn(activeTab !== 'exame' && 'hidden')}>
+            {showAnamneseExame && activeTab === 'exame' && (
+              <div className="animate-fade-in">
                 <PhysicalExamTab
                   isSigned={!isStarted}
                   patientId={patientId}
@@ -575,47 +575,55 @@ export default function Consultation() {
                 />
               </div>
             )}
-            <div className={cn(activeTab !== 'planejamento' && 'hidden')}>
-              <PlanningTab isSigned={false} patientId={patientId} />
-            </div>
-            <div className={cn(activeTab !== 'procedimentos' && 'hidden')}>
-              <ProcedureTab
-                isSigned={!isStarted}
-                patientId={patientId}
-                onSaveSection={() => handleSaveSection('procedimentos')}
-              />
-            </div>
-            <div className={cn(activeTab !== 'evolucao' && 'hidden')}>
-              <EvolutionTab
-                isSigned={!isStarted}
-                patientId={patientId}
-                onSaveSection={() => handleSaveSection('evolucao')}
-              />
-            </div>
-            <div className={cn(activeTab !== 'resumo' && 'hidden')}>
-              <ReviewTab
-                content={dbDraft || {}}
-                onEdit={() => setSearchParams({ tab: 'anamnese' }, { replace: true })}
-                onFinalize={handleToggleConsultation}
-              />
-            </div>
-            {showDocs && (
-              <div className={cn(activeTab !== 'receitas' && 'hidden')}>
+            {activeTab === 'planejamento' && (
+              <div className="animate-fade-in">
+                <PlanningTab isSigned={false} patientId={patientId} />
+              </div>
+            )}
+            {activeTab === 'procedimentos' && (
+              <div className="animate-fade-in">
+                <ProcedureTab
+                  isSigned={!isStarted}
+                  patientId={patientId}
+                  onSaveSection={() => handleSaveSection('procedimentos')}
+                />
+              </div>
+            )}
+            {activeTab === 'evolucao' && (
+              <div className="animate-fade-in">
+                <EvolutionTab
+                  isSigned={!isStarted}
+                  patientId={patientId}
+                  onSaveSection={() => handleSaveSection('evolucao')}
+                />
+              </div>
+            )}
+            {activeTab === 'resumo' && (
+              <div className="animate-fade-in">
+                <ReviewTab
+                  content={dbDraft || {}}
+                  onEdit={() => setSearchParams({ tab: 'anamnese' }, { replace: true })}
+                  onFinalize={handleToggleConsultation}
+                />
+              </div>
+            )}
+            {showDocs && activeTab === 'receitas' && (
+              <div className="animate-fade-in">
                 <DocumentsTab type="receita" isSigned={false} patientId={patientId} />
               </div>
             )}
-            {showDocs && (
-              <div className={cn(activeTab !== 'laudos' && 'hidden')}>
+            {showDocs && activeTab === 'laudos' && (
+              <div className="animate-fade-in">
                 <DocumentsTab type="laudo" isSigned={false} patientId={patientId} />
               </div>
             )}
-            {showAudit && (
-              <div className={cn(activeTab !== 'auditoria' && 'hidden')}>
+            {showAudit && activeTab === 'auditoria' && (
+              <div className="animate-fade-in">
                 <AuditLogTab patientId={patientId} />
               </div>
             )}
-            {showDocs && (
-              <div className={cn(activeTab !== 'inclusao' && 'hidden')}>
+            {showDocs && activeTab === 'inclusao' && (
+              <div className="animate-fade-in">
                 <UploadRecordTab
                   patientId={patientId}
                   onRecordUploaded={(id) => {

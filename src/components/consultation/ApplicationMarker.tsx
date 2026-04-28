@@ -443,6 +443,7 @@ export default function ApplicationMarker({
   }
 
   const onDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    e.preventDefault()
     if (isSigned) return
     e.currentTarget.setPointerCapture(e.pointerId)
     const { x, y } = getCoords(e)
@@ -460,12 +461,14 @@ export default function ApplicationMarker({
   }
 
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    e.preventDefault()
     if (isSigned || !drawV || (tool !== 'vector' && tool !== 'line')) return
     const { x, y } = getCoords(e)
     setDrawV({ ...drawV, eX: x, eY: y })
   }
 
   const onUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    e.preventDefault()
     if (isSigned || !drawV) return
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
