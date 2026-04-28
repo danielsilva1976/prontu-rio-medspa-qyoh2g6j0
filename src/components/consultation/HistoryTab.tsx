@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { FileText, Clock, ShieldCheck, User, Download } from 'lucide-react'
 import pb from '@/lib/pocketbase/client'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -9,8 +8,15 @@ import { sortSectionEntries } from '@/lib/consultation-utils'
 import { useRealtime } from '@/hooks/use-realtime'
 import { cn } from '@/lib/utils'
 
-export default function HistoryTab({ patientId }: { patientId: string }) {
-  const [searchParams, setSearchParams] = useSearchParams()
+export default function HistoryTab({
+  patientId,
+  highlightId,
+  onHighlightClear,
+}: {
+  patientId: string
+  highlightId?: string | null
+  onHighlightClear?: () => void
+}) {
   const [records, setRecords] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -122,8 +128,6 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
   const forceFetchedRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const highlightId = searchParams.get('highlight')
-
     if (highlightId && !loading) {
       if (!records.some((r) => r.id === highlightId)) {
         // Force refresh if real-time event was missed or delayed
@@ -165,17 +169,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
             // Clean up highlight param AFTER the smooth scroll completes (approx 1.5s)
             // to avoid React re-renders aborting the browser's native scroll animation
             setTimeout(() => {
-              setSearchParams(
-                (prev) => {
-                  const next = new URLSearchParams(prev)
-                  if (next.has('highlight')) {
-                    next.delete('highlight')
-                    return next
-                  }
-                  return prev
-                },
-                { replace: true },
-              )
+              if (onHighlightClear) onHighlightClear()
             }, 1500)
           }, 300)
         } else if (attempts < maxAttempts) {
@@ -183,17 +177,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
           rafId = requestAnimationFrame(tryScroll)
         } else {
           // If we failed after all attempts, clear the highlight param anyway to avoid getting stuck
-          setSearchParams(
-            (prev) => {
-              const next = new URLSearchParams(prev)
-              if (next.has('highlight')) {
-                next.delete('highlight')
-                return next
-              }
-              return prev
-            },
-            { replace: true },
-          )
+          if (onHighlightClear) onHighlightClear()
         }
       }
 
@@ -208,7 +192,7 @@ export default function HistoryTab({ patientId }: { patientId: string }) {
       scrolledRef.current = null
       forceFetchedRef.current = null
     }
-  }, [loading, records, searchParams, setSearchParams])
+  }, [loading, records, highlightId, onHighlightClear])
 
   if (loading) {
     return (

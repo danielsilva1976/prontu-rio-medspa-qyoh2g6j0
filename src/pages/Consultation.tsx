@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -280,6 +280,20 @@ export default function Consultation() {
 
   const [dbDraft, setDbDraft] = useState<any>(null)
 
+  const handleHighlightClear = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (next.has('highlight')) {
+          next.delete('highlight')
+          return next
+        }
+        return prev
+      },
+      { replace: true },
+    )
+  }, [setSearchParams])
+
   const fetchDbDraft = async () => {
     if (!patientId) return
     try {
@@ -540,7 +554,11 @@ export default function Consultation() {
               <LivePreview content={dbDraft} />
             )}
             <div className={cn(activeTab !== 'historico' && 'hidden', 'history-tab-wrapper')}>
-              <HistoryTab patientId={patientId} />
+              <HistoryTab
+                patientId={patientId}
+                highlightId={searchParams.get('highlight')}
+                onHighlightClear={handleHighlightClear}
+              />
             </div>
             {showAnamneseExame && (
               <div className={cn(activeTab !== 'anamnese' && 'hidden')}>
