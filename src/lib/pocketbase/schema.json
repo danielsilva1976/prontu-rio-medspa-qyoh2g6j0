@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T20:37:54.600Z",
+  "generatedAt": "2026-04-28T20:53:52.301Z",
   "collections": [
     {
       "name": "patients",
@@ -41,14 +41,19 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "cpf",
@@ -254,17 +259,24 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX `idx_appt_ext_id` ON `appointments` (external_id)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX `idx_appt_ext_id` ON `appointments` (external_id)"
+      ]
     },
     {
       "name": "sync_jobs",
@@ -282,14 +294,19 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "error_log",
@@ -358,7 +375,10 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "secretary"]
+          "selectValues": [
+            "admin",
+            "secretary"
+          ]
         },
         {
           "name": "name",
@@ -406,17 +426,24 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX `idx_app_settings_key` ON `app_settings` (key)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX `idx_app_settings_key` ON `app_settings` (key)"
+      ]
     },
     {
       "name": "medical_records",
@@ -459,14 +486,19 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "appointment_date",
