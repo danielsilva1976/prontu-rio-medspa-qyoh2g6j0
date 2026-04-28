@@ -408,7 +408,6 @@ const DIAGRAMS: Record<string, React.ReactNode> = {
 
 type Props = {
   area: string
-  photo?: string
   points: PointMark[]
   vectors: VectorMark[]
   lines: LineMark[]
@@ -418,7 +417,6 @@ type Props = {
 
 export default function ApplicationMarker({
   area,
-  photo,
   points = [],
   vectors = [],
   lines = [],
@@ -428,7 +426,6 @@ export default function ApplicationMarker({
   const [tool, setTool] = useState<'point' | 'vector' | 'line' | 'erase'>('point')
   const svgRef = useRef<SVGSVGElement>(null)
   const markerId = useId().replace(/:/g, '') + '-arr'
-  const clipId = useId().replace(/:/g, '') + '-clip'
   const [drawV, setDrawV] = useState<{ sX: number; sY: number; eX: number; eY: number } | null>(
     null,
   )
@@ -618,10 +615,12 @@ export default function ApplicationMarker({
           ref={svgRef}
           viewBox="0 0 500 500"
           className={`w-full h-full text-foreground/15 ${tool === 'point' ? 'cursor-crosshair' : tool === 'erase' ? 'cursor-no-drop' : 'cursor-default'}`}
+          style={{ touchAction: 'none' }}
           onPointerDown={onDown}
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerLeave={onUp}
+          onDragStart={(e) => e.preventDefault()}
         >
           <defs>
             <marker
@@ -635,27 +634,9 @@ export default function ApplicationMarker({
             >
               <polygon points="0 0, 8 3, 0 6" fill="hsl(var(--primary))" />
             </marker>
-            {photo && (
-              <clipPath id={clipId}>
-                <rect width="500" height="500" rx="0" />
-              </clipPath>
-            )}
           </defs>
 
-          {photo ? (
-            <image
-              href={photo}
-              width="500"
-              height="500"
-              preserveAspectRatio="xMidYMid meet"
-              clipPath={`url(#${clipId})`}
-              opacity={0.9}
-              draggable="false"
-              style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
-            />
-          ) : (
-            DIAGRAMS[area]
-          )}
+          {DIAGRAMS[area]}
 
           {(lines || []).map((l) => (
             <line

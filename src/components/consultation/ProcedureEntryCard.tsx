@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Trash2, ImagePlus, X } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import ApplicationMarker, {
   type PointMark,
   type VectorMark,
@@ -30,7 +30,6 @@ export type ProcedureEntry = {
   dose: string
   enableMarking: boolean
   markingArea: string
-  photo?: string
   points: PointMark[]
   vectors: VectorMark[]
   lines: LineMark[]
@@ -45,7 +44,6 @@ type Props = {
 }
 
 export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, onRemove }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const { procedures, areas, technologies, products, brands } = useSettingsStore()
 
   const typeOptions = Array.from(new Set([...procedures, entry.type].filter(Boolean)))
@@ -53,17 +51,6 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
   const techOptions = Array.from(new Set([...technologies, entry.technology].filter(Boolean)))
   const prodOptions = Array.from(new Set([...products, entry.product].filter(Boolean)))
   const brandOptions = Array.from(new Set([...brands, entry.brand].filter(Boolean)))
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        onUpdate(entry.id, 'photo', ev.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   return (
     <Card className="border border-border shadow-sm rounded-xl overflow-hidden relative group">
@@ -231,7 +218,7 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
 
         {entry.enableMarking && (
           <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-4 rounded-xl border border-border/50">
+            <div className="grid grid-cols-1 gap-6 bg-muted/20 p-4 rounded-xl border border-border/50">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Diagrama Base</Label>
                 <Select
@@ -239,7 +226,7 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
                   onValueChange={(v) => onUpdate(entry.id, 'markingArea', v)}
                   disabled={isSigned}
                 >
-                  <SelectTrigger className="w-full bg-background">
+                  <SelectTrigger className="w-full bg-background max-w-md">
                     <SelectValue placeholder="Selecione um diagrama anatômico..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,52 +242,12 @@ export default function ProcedureEntryCard({ entry, index, isSigned, onUpdate, o
                   Selecione um diagrama pré-definido para usar como base das marcações.
                 </p>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">Ou Foto do Paciente</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handlePhotoUpload}
-                    disabled={isSigned}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full bg-background hover:bg-muted/50 border-dashed"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isSigned}
-                  >
-                    <ImagePlus className="w-4 h-4 mr-2 text-primary" />
-                    {entry.photo ? 'Trocar Foto' : 'Fazer Upload de Foto'}
-                  </Button>
-                  {entry.photo && !isSigned && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onUpdate(entry.id, 'photo', '')}
-                      className="text-destructive hover:bg-destructive/10 shrink-0"
-                      title="Remover Foto"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Faça upload de uma foto real para marcações personalizadas. A foto substitui o
-                  diagrama.
-                </p>
-              </div>
             </div>
 
-            {(entry.markingArea || entry.photo) && (
+            {entry.markingArea && (
               <div className="bg-muted/10 p-2 md:p-6 rounded-xl border border-border/30">
                 <ApplicationMarker
-                  area={entry.markingArea || 'Face'}
-                  photo={entry.photo}
+                  area={entry.markingArea}
                   points={entry.points || []}
                   vectors={entry.vectors || []}
                   lines={entry.lines || []}

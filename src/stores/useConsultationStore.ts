@@ -43,6 +43,24 @@ const useConsultationStore = create<ConsultationStore>()(
     }),
     {
       name: 'consultation-storage',
+      partialize: (state) => {
+        const cleanDrafts = { ...state.drafts }
+        // Remove base64 photos to prevent QuotaExceededError in localStorage
+        Object.keys(cleanDrafts).forEach((patientId) => {
+          if (cleanDrafts[patientId]?.procedimentos?.entries) {
+            cleanDrafts[patientId].procedimentos.entries = cleanDrafts[
+              patientId
+            ].procedimentos.entries.map((entry: any) => {
+              const { photo, ...rest } = entry
+              return rest
+            })
+          }
+        })
+        return {
+          activeConsultations: state.activeConsultations,
+          drafts: cleanDrafts,
+        }
+      },
     },
   ),
 )
