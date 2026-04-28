@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,8 +9,13 @@ import pb from '@/lib/pocketbase/client'
 import { extractFieldErrors } from '@/lib/pocketbase/errors'
 import { Upload, Save, Image as ImageIcon } from 'lucide-react'
 
-export default function UploadRecordTab({ patientId }: { patientId: string }) {
-  const [, setSearchParams] = useSearchParams()
+export default function UploadRecordTab({
+  patientId,
+  onRecordUploaded,
+}: {
+  patientId: string
+  onRecordUploaded: (recordId: string) => void
+}) {
   const { toast } = useToast()
   const { addLog } = useAuditStore()
 
@@ -86,15 +90,7 @@ export default function UploadRecordTab({ patientId }: { patientId: string }) {
       }
 
       // Redirection destination: automatically switch to History (Histórico) tab
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          next.set('tab', 'historico')
-          next.set('highlight', created.id)
-          return next
-        },
-        { replace: true },
-      )
+      onRecordUploaded(created.id)
     } catch (error) {
       console.error('Erro ao incluir prontuário:', error)
       const fieldErrors = extractFieldErrors(error)

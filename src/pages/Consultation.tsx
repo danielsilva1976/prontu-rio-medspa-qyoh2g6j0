@@ -619,7 +619,24 @@ export default function Consultation() {
             )}
             {showDocs && (
               <div className={cn(activeTab !== 'inclusao' && 'hidden')}>
-                <UploadRecordTab patientId={patientId} />
+                <UploadRecordTab
+                  patientId={patientId}
+                  onRecordUploaded={(id) => {
+                    isNavigatingRef.current = true
+                    setSearchParams(
+                      (prev) => {
+                        const next = new URLSearchParams(prev)
+                        next.set('tab', 'historico')
+                        next.set('highlight', id)
+                        return next
+                      },
+                      { replace: true },
+                    )
+                    setTimeout(() => {
+                      isNavigatingRef.current = false
+                    }, 100)
+                  }}
+                />
               </div>
             )}
           </div>
