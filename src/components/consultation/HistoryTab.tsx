@@ -72,8 +72,19 @@ export default function HistoryTab({
     const timelineContent = document.getElementById(`timeline-content-${id}`)
 
     if (element) {
-      // scrollIntoView is native and handles nested scroll containers correctly
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const scrollArea = document.getElementById('consultation-scroll-area')
+      if (scrollArea) {
+        const scrollAreaRect = scrollArea.getBoundingClientRect()
+        const elementRect = element.getBoundingClientRect()
+        const targetScrollTop = scrollArea.scrollTop + (elementRect.top - scrollAreaRect.top) - 24
+
+        scrollArea.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth',
+        })
+      } else {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
 
       // Add highlight styling
       element.classList.add('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
@@ -84,7 +95,18 @@ export default function HistoryTab({
     }
 
     if (timelineItem) {
-      timelineItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      const timelineScrollArea = document.getElementById('timeline-scroll-area')
+      if (timelineScrollArea) {
+        const areaRect = timelineScrollArea.getBoundingClientRect()
+        const itemRect = timelineItem.getBoundingClientRect()
+        const targetTop = timelineScrollArea.scrollTop + (itemRect.top - areaRect.top) - 16
+        timelineScrollArea.scrollTo({
+          top: targetTop,
+          behavior: 'smooth',
+        })
+      } else {
+        timelineItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
 
       if (timelineDot) {
         timelineDot.classList.add('scale-150', '!bg-amber-600')
@@ -200,7 +222,10 @@ export default function HistoryTab({
           <h3 className="text-xs font-bold text-gray-900 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-200 pb-2 pt-2 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-[100]">
             <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
           </h3>
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 pb-8 pr-2 scroll-smooth">
+          <div
+            id="timeline-scroll-area"
+            className="flex-1 overflow-y-auto overscroll-contain min-h-0 pb-8 pr-2 scroll-smooth"
+          >
             <div className="relative border-l-2 border-primary/20 ml-4 space-y-6 pt-2">
               {records.map((record) => (
                 <div
