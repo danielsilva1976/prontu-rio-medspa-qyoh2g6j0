@@ -85,6 +85,16 @@ export default {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        bronze: {
+          DEFAULT: '#B8860B',
+          light: '#CD9B1D',
+          dark: '#8B6508',
+        },
+        gold: {
+          DEFAULT: '#D4AF37',
+          light: '#F3E5AB',
+          dark: '#AA8C2C',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -11,8 +11,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Primary Gold/Bronze from MEDSPA logo */
-    --primary: 34 45% 55%;
+    /* Premium Bronze/Gold Palette */
+    --primary: 43 89% 38%; /* #B8860B */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4.8% 95.9%;
@@ -22,26 +22,26 @@
     --muted-foreground: 240 3.8% 46.1%;
 
     /* Subtle gold tint for accents */
-    --accent: 34 30% 96%;
-    --accent-foreground: 34 45% 40%;
+    --accent: 43 30% 94%;
+    --accent-foreground: 43 89% 38%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 34 45% 55%;
+    --ring: 43 89% 38%;
     --radius: 0.5rem;
 
     /* Sidebar */
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 34 45% 55%;
+    --sidebar-primary: 43 89% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 34 30% 96%;
-    --sidebar-accent-foreground: 34 45% 40%;
+    --sidebar-accent: 43 30% 94%;
+    --sidebar-accent-foreground: 43 89% 38%;
     --sidebar-border: 240 5.9% 90%;
-    --sidebar-ring: 34 45% 55%;
+    --sidebar-ring: 43 89% 38%;
   }
 
   .dark {
@@ -52,8 +52,8 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 34 45% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 46 65% 52%; /* #D4AF37 */
+    --primary-foreground: 240 10% 10%;
 
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -61,25 +61,25 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 34 30% 15%;
-    --accent-foreground: 34 45% 65%;
+    --accent: 43 30% 15%;
+    --accent-foreground: 46 65% 52%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 34 45% 55%;
+    --ring: 46 65% 52%;
 
     /* Sidebar Dark */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 34 45% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 34 30% 15%;
-    --sidebar-accent-foreground: 34 45% 65%;
+    --sidebar-primary: 46 65% 52%;
+    --sidebar-primary-foreground: 240 10% 10%;
+    --sidebar-accent: 43 30% 15%;
+    --sidebar-accent-foreground: 46 65% 52%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 34 45% 55%;
+    --sidebar-ring: 46 65% 52%;
   }
 }
 

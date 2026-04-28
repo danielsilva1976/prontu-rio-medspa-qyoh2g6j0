@@ -87,9 +87,9 @@ export default function HistoryTab({
       }
 
       // Add highlight styling
-      element.classList.add('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
+      element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'bg-primary/5')
       setTimeout(() => {
-        element.classList.remove('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
+        element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'bg-primary/5')
         element.classList.add('transition-all', 'duration-1000')
       }, 2500)
     }
@@ -109,20 +109,20 @@ export default function HistoryTab({
       }
 
       if (timelineDot) {
-        timelineDot.classList.add('scale-150', '!bg-amber-600')
+        timelineDot.classList.add('scale-150', '!bg-primary')
       }
       if (timelineText) {
-        timelineText.classList.add('!text-amber-700')
+        timelineText.classList.add('!text-primary')
       }
       if (timelineContent) {
-        timelineContent.classList.add('bg-amber-100/50', 'px-2', '-mx-2', 'py-1', '-my-1')
+        timelineContent.classList.add('bg-primary/10', 'px-2', '-mx-2', 'py-1', '-my-1')
       }
 
       setTimeout(() => {
-        if (timelineDot) timelineDot.classList.remove('scale-150', '!bg-amber-600')
-        if (timelineText) timelineText.classList.remove('!text-amber-700')
+        if (timelineDot) timelineDot.classList.remove('scale-150', '!bg-primary')
+        if (timelineText) timelineText.classList.remove('!text-primary')
         if (timelineContent)
-          timelineContent.classList.remove('bg-amber-100/50', 'px-2', '-mx-2', 'py-1', '-my-1')
+          timelineContent.classList.remove('bg-primary/10', 'px-2', '-mx-2', 'py-1', '-my-1')
       }, 2500)
     }
   }
@@ -220,13 +220,13 @@ export default function HistoryTab({
         {/* Sidebar Timeline */}
         <div className="w-full md:w-48 lg:w-56 shrink-0 md:sticky md:top-6 flex flex-col h-[calc(100dvh-16rem)] max-h-[calc(100dvh-16rem)] pr-2 pb-4">
           <h3 className="text-xs font-bold text-gray-900 pl-2 flex shrink-0 items-center gap-2 uppercase tracking-widest border-b border-gray-200 pb-2 pt-2 sticky top-0 bg-slate-50/95 backdrop-blur-sm z-[100]">
-            <Clock className="h-4 w-4 text-amber-600" /> Linha do Tempo
+            <Clock className="h-4 w-4 text-primary" /> Linha do Tempo
           </h3>
           <div
             id="timeline-scroll-area"
             className="flex-1 overflow-y-auto overscroll-contain min-h-0 pb-8 pr-2 scroll-smooth"
           >
-            <div className="relative border-l-2 border-primary/20 ml-4 space-y-6 pt-2">
+            <div className="relative border-l-2 border-primary/30 ml-4 space-y-6 pt-2">
               {records.map((record) => (
                 <div
                   key={`timeline-${record.id}`}
@@ -236,7 +236,7 @@ export default function HistoryTab({
                 >
                   <div
                     id={`timeline-dot-${record.id}`}
-                    className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-amber-500 shadow-sm group-hover:scale-125 transition-all duration-300"
+                    className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white bg-primary shadow-sm group-hover:scale-125 transition-all duration-300"
                   />
                   <div
                     className="flex flex-col rounded-md transition-all duration-300"
@@ -244,7 +244,7 @@ export default function HistoryTab({
                   >
                     <span
                       id={`timeline-text-${record.id}`}
-                      className="text-sm font-semibold text-gray-900 group-hover:text-amber-600 transition-colors flex items-center gap-2"
+                      className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors flex items-center gap-2"
                     >
                       {(record.appointment_date
                         ? new Date(record.appointment_date)
@@ -570,7 +570,7 @@ export default function HistoryTab({
                                 return (
                                   <div key={groupName} className="mb-5">
                                     {groupName !== 'Outros' && (
-                                      <h5 className="text-sm font-semibold text-amber-600 mb-3 border-b border-amber-100 pb-1">
+                                      <h5 className="text-sm font-semibold text-primary mb-3 border-b border-primary/20 pb-1">
                                         {groupName}
                                       </h5>
                                     )}
@@ -592,7 +592,7 @@ export default function HistoryTab({
 
                         return (
                           <section key={sectionName} className="mb-4">
-                            <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-3 border-b border-amber-600/20 pb-2">
+                            <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3 border-b border-primary/20 pb-2">
                               {sectionName}
                             </h4>
                             {sectionContent}

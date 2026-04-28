@@ -20,8 +20,8 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
   const displayPatient = storePatient || patient
 
   return (
-    <div className="px-6 py-4 flex flex-col gap-3">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+    <div className="px-6 py-4 flex flex-col gap-3 relative overflow-hidden bg-gradient-to-r from-background via-accent/20 to-background border-b border-primary/10">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 relative z-10">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16 border border-border mt-0.5 shadow-sm shrink-0">
             <AvatarImage src={displayPatient.avatar} className="object-cover" />
@@ -74,8 +74,9 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
             onClick={onToggleConsultation}
             variant={isStarted ? 'destructive' : 'default'}
             className={cn(
-              'shadow-sm w-full sm:w-auto transition-colors',
-              !isStarted && 'bg-primary hover:bg-primary/90 text-primary-foreground',
+              'shadow-sm w-full sm:w-auto transition-all',
+              !isStarted &&
+                'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-md hover:shadow-lg border-none',
             )}
           >
             {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
