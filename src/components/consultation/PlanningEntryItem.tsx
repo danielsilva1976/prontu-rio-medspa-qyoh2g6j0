@@ -14,6 +14,21 @@ import {
 } from '@/components/ui/command'
 import { Trash2, Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useParams } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
+import usePatientStore from '@/stores/usePatientStore'
+import pb from '@/lib/pocketbase/client'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export type ChronogramEntry = {
   id: string
@@ -47,6 +62,56 @@ export default function PlanningEntryItem({
   onRemove,
 }: Props) {
   const [open, setOpen] = useState(false)
+  const { id: patientId } = useParams()
+  const { toast } = useToast()
+  const { patients, updatePatient } = usePatientStore()
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    // Optimistic UI update
+    onRemove(entry.id)
+
+    try {
+      if (patientId) {
+        // Remove from patients collection procedures array
+        const patient = patients.find((p) => p.id === patientId)
+        if (patient && Array.isArray(patient.procedures)) {
+          const updatedProcedures = patient.procedures.filter((p: any) => {
+            if (typeof p === 'string') return p !== entry.procedure
+            if (typeof p === 'object' && p !== null) return p.id !== entry.id
+            return true
+          })
+
+          if (updatedProcedures.length !== patient.procedures.length) {
+            await updatePatient(patientId, { procedures: updatedProcedures })
+          }
+        }
+
+        // If the item represents a standalone medical record, attempt deletion
+        if (entry.id && entry.id.length === 15 && !entry.id.includes('-')) {
+          try {
+            await pb.collection('medical_records').delete(entry.id)
+          } catch (err: any) {
+            // Ignore 404 if it wasn't a standalone medical record
+            if (err?.status !== 404) throw err
+          }
+        }
+      }
+
+      toast({
+        title: 'Sucesso',
+        description: 'Plano excluído com sucesso.',
+      })
+    } catch (error) {
+      console.error('Failed to delete planning entry:', error)
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o plano do banco de dados.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const unitPrice = parseFloat(entry.standardValue) || 0
   const qty = parseInt(entry.quantity, 10) || 1
@@ -183,14 +248,35 @@ export default function PlanningEntryItem({
           </div>
           {!isSigned && (
             <div className="flex justify-end pt-5 md:pt-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onRemove(entry.id)}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2 md:mr-0 h-8 w-8"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mr-2 md:mr-0 h-8 w-8"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir plano</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Deseja realmente excluir este plano? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
         </div>
