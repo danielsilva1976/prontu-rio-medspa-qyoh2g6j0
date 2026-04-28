@@ -281,6 +281,7 @@ export default function Consultation() {
   const [dbDraft, setDbDraft] = useState<any>(null)
 
   const handleHighlightClear = useCallback(() => {
+    isNavigatingRef.current = false
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
@@ -363,7 +364,7 @@ export default function Consultation() {
 
     setTimeout(() => {
       isNavigatingRef.current = false
-    }, 100)
+    }, 500)
 
     try {
       const records = await pb.collection('medical_records').getFullList({
@@ -473,10 +474,6 @@ export default function Consultation() {
           { replace: true },
         )
 
-        setTimeout(() => {
-          isNavigatingRef.current = false
-        }, 100)
-
         toast({
           title: 'Atendimento finalizado',
           description: 'O prontuário foi assinado e salvo com sucesso no histórico.',
@@ -497,7 +494,7 @@ export default function Consultation() {
 
       setTimeout(() => {
         isNavigatingRef.current = false
-      }, 100)
+      }, 500)
     }
   }
 
@@ -632,9 +629,6 @@ export default function Consultation() {
                       },
                       { replace: true },
                     )
-                    setTimeout(() => {
-                      isNavigatingRef.current = false
-                    }, 100)
                   }}
                 />
               </div>

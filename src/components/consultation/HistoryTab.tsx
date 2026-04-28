@@ -66,23 +66,14 @@ export default function HistoryTab({
 
   const scrollToRecord = (id: string) => {
     const element = document.getElementById(`record-${id}`)
-    const container = document.getElementById('consultation-scroll-area')
     const timelineItem = document.getElementById(`timeline-item-${id}`)
     const timelineDot = document.getElementById(`timeline-dot-${id}`)
     const timelineText = document.getElementById(`timeline-text-${id}`)
     const timelineContent = document.getElementById(`timeline-content-${id}`)
 
     if (element) {
-      if (container) {
-        const containerRect = container.getBoundingClientRect()
-        const elementRect = element.getBoundingClientRect()
-        container.scrollTo({
-          top: container.scrollTop + elementRect.top - containerRect.top - 24,
-          behavior: 'smooth',
-        })
-      } else {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
+      // scrollIntoView is native and handles nested scroll containers correctly
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
       // Add highlight styling
       element.classList.add('ring-2', 'ring-amber-500', 'ring-offset-2', 'bg-amber-50/30')
@@ -93,17 +84,7 @@ export default function HistoryTab({
     }
 
     if (timelineItem) {
-      const timelineContainer = timelineItem.closest('.overflow-y-auto')
-      if (timelineContainer) {
-        const tContainerRect = timelineContainer.getBoundingClientRect()
-        const tItemRect = timelineItem.getBoundingClientRect()
-        timelineContainer.scrollTo({
-          top: timelineContainer.scrollTop + tItemRect.top - tContainerRect.top - 24,
-          behavior: 'smooth',
-        })
-      } else {
-        timelineItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }
+      timelineItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
       if (timelineDot) {
         timelineDot.classList.add('scale-150', '!bg-amber-600')
@@ -134,6 +115,12 @@ export default function HistoryTab({
         if (forceFetchedRef.current !== highlightId) {
           forceFetchedRef.current = highlightId
           fetchRecords(false)
+        } else {
+          // Fallback: If after force fetching it's still missing, don't block navigation
+          const timer = setTimeout(() => {
+            if (onHighlightClear) onHighlightClear()
+          }, 3000)
+          return () => clearTimeout(timer)
         }
         return
       }
@@ -151,27 +138,18 @@ export default function HistoryTab({
       // This solves race conditions where the DOM element hasn't fully rendered its height yet.
       const tryScroll = () => {
         const element = document.getElementById(`record-${highlightId}`)
-        const container = document.getElementById('consultation-scroll-area')
 
         // Check if element exists in the DOM and has layout dimensions (not hidden)
-        // Also ensure the tab is not hidden by checking offsetParent
-        if (
-          element &&
-          element.offsetParent !== null &&
-          element.getBoundingClientRect().height > 0 &&
-          container &&
-          container.getBoundingClientRect().height > 0
-        ) {
-          // Use a short delay to allow React to finish all layout reflows (e.g. shrinking headers)
-          timeoutId = setTimeout(() => {
+        if (element && element.offsetParent !== null && element.offsetHeight > 0) {
+          // Let any pending layout shifts settle
+          rafId = requestAnimationFrame(() => {
             scrollToRecord(highlightId)
 
             // Clean up highlight param AFTER the smooth scroll completes (approx 1.5s)
-            // to avoid React re-renders aborting the browser's native scroll animation
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
               if (onHighlightClear) onHighlightClear()
             }, 1500)
-          }, 300)
+          })
         } else if (attempts < maxAttempts) {
           attempts++
           rafId = requestAnimationFrame(tryScroll)
