@@ -60,6 +60,36 @@ export default function PlanningTab({
     }
   }
 
+  const handleDeletePlan = async (planId: string) => {
+    const previousPlans = [...savedPlans]
+    const updatedPlans = savedPlans.filter((p: any) => {
+      if (typeof p === 'object' && p !== null) {
+        return p.id !== planId
+      }
+      return true
+    })
+
+    // Optimistic update
+    setSavedPlans(updatedPlans)
+
+    try {
+      await pb.collection('patients').update(patientId, { procedures: updatedPlans })
+      toast({
+        title: 'Sucesso',
+        description: 'Planejamento excluído com sucesso.',
+      })
+    } catch (err) {
+      console.error('Error deleting plan:', err)
+      // Revert optimistic update
+      setSavedPlans(previousPlans)
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o planejamento.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   return (
     <Card className="border-none shadow-subtle overflow-hidden animate-slide-up">
       <div className="h-1 w-full bg-gradient-to-r from-primary/20 to-primary" />
@@ -87,6 +117,7 @@ export default function PlanningTab({
           <PlanningList
             plans={savedPlans}
             onCreate={() => setIsCreating(true)}
+            onDelete={handleDeletePlan}
             isSigned={isSigned}
             patientId={patientId}
           />

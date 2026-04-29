@@ -45,71 +45,48 @@ import { StrategicPlanA4 } from '@/components/documents/StrategicPlanA4'
 import useDocumentStore from '@/stores/useDocumentStore'
 import usePatientStore from '@/stores/usePatientStore'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useToast } from '@/hooks/use-toast'
 
 type Props = {
   plans: SavedPlan[]
   onCreate: () => void
+  onDelete: (planId: string) => void
   isSigned: boolean
   patientId: string
 }
 
-export default function PlanningList({ plans, onCreate, isSigned, patientId }: Props) {
+export default function PlanningList({ plans, onCreate, onDelete, isSigned, patientId }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<SavedPlan | null>(null)
   const [printOpen, setPrintOpen] = useState(false)
 
   const { layout } = useDocumentStore()
-  const { patients, updatePatient } = usePatientStore()
-  const { toast } = useToast()
+  const { patients } = usePatientStore()
   const patient = patients.find((p) => p.id === patientId)
   const patientName = patient?.name || 'Paciente'
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
-  const handleDeletePlan = async (e: React.MouseEvent, planId: string) => {
+  const handleDeletePlan = (e: React.MouseEvent, planId: string) => {
     e.preventDefault()
     e.stopPropagation()
+    onDelete(planId)
 
-    if (!patientId || !patient) return
-
-    try {
-      const updatedProcedures = patient.procedures.filter((p: any) => {
-        if (typeof p === 'object' && p !== null) {
-          return p.id !== planId
-        }
-        return true
-      })
-
-      await updatePatient(patientId, { procedures: updatedProcedures })
-
-      toast({
-        title: 'Sucesso',
-        description: 'Planejamento excluído com sucesso.',
-      })
-
-      if (selectedPlan?.id === planId) {
-        setSelectedPlan(null)
-      }
-    } catch (error) {
-      console.error('Failed to delete plan:', error)
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível excluir o planejamento.',
-        variant: 'destructive',
-      })
+    if (selectedPlan?.id === planId) {
+      setSelectedPlan(null)
     }
   }
 
+  const validPlans = plans.filter((p: any) => typeof p === 'object' && p !== null && p.id)
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {plans.length > 0 ? (
+      {validPlans.length > 0 ? (
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <History className="w-4 h-4 text-primary" /> Histórico de Planejamentos
           </h3>
           <div className="grid gap-3">
-            {plans.map((plan) => (
+            {validPlans.map((plan) => (
               <Card
                 key={plan.id}
                 onClick={() => setSelectedPlan(plan)}
