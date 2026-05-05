@@ -9,9 +9,13 @@ export function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Check if user is in 'users' collection and has admin or secretary role
+  // Check if user is in 'users' collection and has admin, aesthetic or secretary role
   const user = pb.authStore.record || pb.authStore.model
-  if (!user || user.collectionName !== 'users' || !['admin', 'secretary'].includes(user.role)) {
+  if (
+    !user ||
+    user.collectionName !== 'users' ||
+    !['admin', 'secretary', 'aesthetic'].includes(user.role)
+  ) {
     // Clear invalid session and redirect
     pb.authStore.clear()
     return <Navigate to="/login" state={{ from: location }} replace />

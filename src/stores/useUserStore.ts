@@ -17,53 +17,39 @@ type UserState = {
   users: User[]
   currentUser: User
   isAuthenticated: boolean
-  addUser: (user: Omit<User, 'id' | 'status'>) => void
-  updateUser: (id: string, data: Partial<User>) => void
-  toggleStatus: (id: string) => void
-  removeUser: (id: string) => void
-  switchUser: (id: string) => void
+  fetchUsers: () => Promise<void>
+  addUser: (user: any) => Promise<void>
+  updateUser: (id: string, data: any) => Promise<void>
+  removeUser: (id: string) => Promise<void>
   login: (email?: string, password?: string) => Promise<boolean>
   logout: () => void
 }
 
-const defaultUsers: User[] = [
-  {
-    id: 'usr-admin',
-    name: 'Daniel Silva',
-    email: 'daniel.nefro@gmail.com',
-    role: 'Médico',
-    status: 'Ativo',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
-  },
-  {
-    id: 'usr-1',
-    name: 'Dra. Fabíola Kleinert',
-    email: 'fabiola@medspa.com',
-    role: 'Médico',
-    status: 'Ativo',
-    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1',
-  },
-]
-
 const UserContext = createContext<UserState>({} as UserState)
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [users, setUsers] = useState<User[]>(defaultUsers)
+  const mapPbRole = (r: string): UserRole => {
+    if (r === 'admin') return 'Médico'
+    if (r === 'aesthetic') return 'Estético'
+    return 'Secretária'
+  }
 
   const mapPbUser = (record: any): User | null => {
     if (!record) return null
     return {
       id: record.id,
-      name: record.name || 'Administrador',
+      name: record.name || 'Usuário',
       email: record.email,
-      role: record.role === 'admin' ? 'Médico' : 'Secretária',
+      role: mapPbRole(record.role),
       status: 'Ativo',
-      avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
+      avatar: record.avatar
+        ? pb.files.getURL(record, record.avatar)
+        : `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${record.id}`,
     }
   }
 
+  const [users, setUsers] = useState<User[]>([])
   const [pbUser, setPbUser] = useState<User | null>(mapPbUser(pb.authStore.record))
-  const [currentUserId, setCurrentUserId] = useState<string>(defaultUsers[0].id)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(pb.authStore.isValid)
 
   useEffect(() => {
@@ -74,35 +60,82 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     return () => unsub()
   }, [])
 
-  const currentUser = pbUser || users.find((u) => u.id === currentUserId) || users[0]
+  const currentUser = pbUser || {
+    id: 'guest',
+    name: 'Convidado',
+    email: '',
+    role: 'Secretária',
+    status: 'Ativo',
+  }
 
-  const addUser = (userData: Omit<User, 'id' | 'status'>) => {
-    const newUser: User = {
-      ...userData,
-      id: `usr-${Date.now()}`,
-      status: 'Ativo',
+  const fetchUsers = async () => {
+    if (currentUser.role === 'Médico') {
+      try {
+        const records = await pb.collection('users').getFullList({ sort: 'name' })
+        setUsers(records.map((r) => mapPbUser(r) as User))
+      } catch (e) {
+        console.error('Error fetching users', e)
+      }
     }
-    setUsers((prev) => [...prev, newUser])
   }
 
-  const updateUser = (id: string, data: Partial<User>) => {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)))
+  useEffect(() => {
+    fetchUsers()
+  }, [currentUser.role, isAuthenticated])
+
+  const addUser = async (userData: any) => {
+    const pbRole =
+      userData.role === 'Médico'
+        ? 'admin'
+        : userData.role === 'Estético'
+          ? 'aesthetic'
+          : 'secretary'
+
+    const formData = new FormData()
+    formData.append('email', userData.email)
+    formData.append('password', userData.password)
+    formData.append('passwordConfirm', userData.password)
+    formData.append('name', userData.name)
+    formData.append('role', pbRole)
+
+    if (userData.avatar && userData.avatar.startsWith('data:')) {
+      const res = await fetch(userData.avatar)
+      const blob = await res.blob()
+      formData.append('avatar', blob, 'avatar.png')
+    }
+
+    await pb.collection('users').create(formData)
+    await fetchUsers()
   }
 
-  const toggleStatus = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, status: u.status === 'Ativo' ? 'Inativo' : 'Ativo' } : u,
-      ),
-    )
+  const updateUser = async (id: string, data: any) => {
+    const formData = new FormData()
+    if (data.name) formData.append('name', data.name)
+    if (data.email) formData.append('email', data.email)
+    if (data.role) {
+      const pbRole =
+        data.role === 'Médico' ? 'admin' : data.role === 'Estético' ? 'aesthetic' : 'secretary'
+      formData.append('role', pbRole)
+    }
+
+    if (data.avatar && data.avatar.startsWith('data:')) {
+      const res = await fetch(data.avatar)
+      const blob = await res.blob()
+      formData.append('avatar', blob, 'avatar.png')
+    }
+
+    await pb.collection('users').update(id, formData)
+    await fetchUsers()
+
+    if (id === currentUser.id) {
+      const record = await pb.collection('users').getOne(id)
+      setPbUser(mapPbUser(record))
+    }
   }
 
-  const removeUser = (id: string) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id))
-  }
-
-  const switchUser = (id: string) => {
-    setCurrentUserId(id)
+  const removeUser = async (id: string) => {
+    await pb.collection('users').delete(id)
+    await fetchUsers()
   }
 
   const login = async (email?: string, password?: string) => {
@@ -120,6 +153,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     pb.authStore.clear()
     setIsAuthenticated(false)
     setPbUser(null)
+    setUsers([])
   }
 
   return createElement(
@@ -129,11 +163,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         users,
         currentUser,
         isAuthenticated,
+        fetchUsers,
         addUser,
         updateUser,
-        toggleStatus,
         removeUser,
-        switchUser,
         login,
         logout,
       },

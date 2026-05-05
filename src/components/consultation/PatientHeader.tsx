@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import usePatientStore from '@/stores/usePatientStore'
+import useUserStore from '@/stores/useUserStore'
 import { PatientDialog } from '@/components/patients/PatientDialog'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ type Props = {
 
 export default function PatientHeader({ patient, id, isStarted, onToggleConsultation }: Props) {
   const { patients } = usePatientStore()
+  const { currentUser } = useUserStore()
 
   const storePatient = patients.find((p) => p.id === id)
   const displayPatient = storePatient || patient
@@ -70,17 +72,19 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0">
-          <Button
-            onClick={onToggleConsultation}
-            variant={isStarted ? 'destructive' : 'default'}
-            className={cn(
-              'shadow-sm w-full sm:w-auto transition-all',
-              !isStarted &&
-                'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-md hover:shadow-lg border-none',
-            )}
-          >
-            {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
-          </Button>
+          {(currentUser.role === 'Médico' || currentUser.role === 'Estético') && (
+            <Button
+              onClick={onToggleConsultation}
+              variant={isStarted ? 'destructive' : 'default'}
+              className={cn(
+                'shadow-sm w-full sm:w-auto transition-all',
+                !isStarted &&
+                  'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-md hover:shadow-lg border-none',
+              )}
+            >
+              {isStarted ? 'Finalizar Atendimento' : 'Iniciar Atendimento'}
+            </Button>
+          )}
         </div>
       </div>
     </div>

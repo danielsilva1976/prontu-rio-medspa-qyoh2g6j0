@@ -60,19 +60,28 @@ export function AddUserDialog() {
     },
   })
 
-  const onSubmit = (values: FormValues) => {
-    addUser({
-      name: values.name,
-      email: values.email,
-      role: values.role,
-      avatar: values.avatar,
-    })
-    toast({
-      title: 'Usuário adicionado',
-      description: `${values.name} foi adicionado à equipe com sucesso.`,
-    })
-    setOpen(false)
-    form.reset()
+  const onSubmit = async (values: FormValues) => {
+    try {
+      await addUser({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        role: values.role,
+        avatar: values.avatar,
+      })
+      toast({
+        title: 'Usuário adicionado',
+        description: `${values.name} foi adicionado à equipe com sucesso.`,
+      })
+      setOpen(false)
+      form.reset()
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao adicionar usuário',
+        description: error.message || 'Falha ao processar solicitação.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (

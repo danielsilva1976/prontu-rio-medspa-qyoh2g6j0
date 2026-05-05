@@ -69,18 +69,26 @@ export function EditUserDialog({ user }: { user: User }) {
     }
   }, [open, user, form])
 
-  const onSubmit = (values: FormValues) => {
-    updateUser(user.id, {
-      name: values.name,
-      email: values.email,
-      role: values.role,
-      avatar: values.avatar,
-    })
-    toast({
-      title: 'Usuário atualizado',
-      description: `Os dados de ${values.name} foram atualizados com sucesso.`,
-    })
-    setOpen(false)
+  const onSubmit = async (values: FormValues) => {
+    try {
+      await updateUser(user.id, {
+        name: values.name,
+        email: values.email,
+        role: values.role,
+        avatar: values.avatar,
+      })
+      toast({
+        title: 'Usuário atualizado',
+        description: `Os dados de ${values.name} foram atualizados com sucesso.`,
+      })
+      setOpen(false)
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao atualizar usuário',
+        description: error.message || 'Falha ao processar solicitação.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (

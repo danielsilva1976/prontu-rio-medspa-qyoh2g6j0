@@ -47,7 +47,7 @@ import useConsultationStore from '@/stores/useConsultationStore'
 export default function Layout() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const { currentUser, users, switchUser, isAuthenticated, logout } = useUserStore()
+  const { currentUser, isAuthenticated, logout } = useUserStore()
   const { activeConsultations } = useConsultationStore()
 
   const navigate = useNavigate()
@@ -64,8 +64,9 @@ export default function Layout() {
   const isStarted = activeConsultations[patientId] || false
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
-  const showDocs = currentUser.role === 'Médico'
-  const showAudit = true
+  const showDocs = currentUser.role === 'Médico' || currentUser.role === 'Secretária'
+  const showAudit = currentUser.role === 'Médico'
+  const showNovoAtendimento = currentUser.role === 'Médico' || currentUser.role === 'Estético'
 
   const navItems = [
     { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
@@ -187,50 +188,52 @@ export default function Layout() {
           <ClinicalTabLink id="planejamento" label="Planejamento" icon={ClipboardList} />
         </div>
 
-        <Accordion type="multiple" defaultValue={['novo-atendimento']} className="w-full">
-          <AccordionItem value="novo-atendimento" className="border-none">
-            <AccordionTrigger
-              className={cn(
-                'px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent',
-                isStarted && 'animate-gold-pulse',
-              )}
-            >
-              Novo Atendimento
-            </AccordionTrigger>
-            <AccordionContent className="pt-2 pb-0">
-              <div className="space-y-1">
-                {showAnamneseExame && (
-                  <>
-                    <ClinicalTabLink
-                      id="anamnese"
-                      label="Anamnese"
-                      icon={FileText}
-                      disabled={!isStarted}
-                    />
-                    <ClinicalTabLink
-                      id="exame"
-                      label="Exame Físico"
-                      icon={Activity}
-                      disabled={!isStarted}
-                    />
-                  </>
+        {showNovoAtendimento && (
+          <Accordion type="multiple" defaultValue={['novo-atendimento']} className="w-full">
+            <AccordionItem value="novo-atendimento" className="border-none">
+              <AccordionTrigger
+                className={cn(
+                  'px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent',
+                  isStarted && 'animate-gold-pulse',
                 )}
-                <ClinicalTabLink
-                  id="procedimentos"
-                  label="Procedimentos"
-                  icon={Syringe}
-                  disabled={!isStarted}
-                />
-                <ClinicalTabLink
-                  id="evolucao"
-                  label="Evolução"
-                  icon={Clock}
-                  disabled={!isStarted}
-                />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+              >
+                Novo Atendimento
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 pb-0">
+                <div className="space-y-1">
+                  {showAnamneseExame && (
+                    <>
+                      <ClinicalTabLink
+                        id="anamnese"
+                        label="Anamnese"
+                        icon={FileText}
+                        disabled={!isStarted}
+                      />
+                      <ClinicalTabLink
+                        id="exame"
+                        label="Exame Físico"
+                        icon={Activity}
+                        disabled={!isStarted}
+                      />
+                    </>
+                  )}
+                  <ClinicalTabLink
+                    id="procedimentos"
+                    label="Procedimentos"
+                    icon={Syringe}
+                    disabled={!isStarted}
+                  />
+                  <ClinicalTabLink
+                    id="evolucao"
+                    label="Evolução"
+                    icon={Clock}
+                    disabled={!isStarted}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
 
         <div>
           <h4 className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
@@ -298,12 +301,7 @@ export default function Layout() {
                     className="relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
                   >
                     <Avatar className="h-9 w-9 border border-primary/20 shadow-sm">
-                      <AvatarImage
-                        src={`https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${
-                          currentUser.id === 'usr-1' ? 1 : 2
-                        }`}
-                        alt={currentUser.name}
-                      />
+                      <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
                       <AvatarFallback className="bg-primary/10 text-primary font-medium">
                         {currentUser.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -322,36 +320,7 @@ export default function Layout() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
-                    Alternar Usuário (Demo)
-                  </DropdownMenuLabel>
-                  {users.map((u) => (
-                    <DropdownMenuItem
-                      key={u.id}
-                      className="cursor-pointer py-2"
-                      onClick={() => switchUser(u.id)}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-[10px] bg-primary/5 text-primary">
-                            {u.name.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <span
-                            className={cn(
-                              'text-sm',
-                              currentUser.id === u.id && 'font-bold text-primary',
-                            )}
-                          >
-                            {u.name}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{u.role}</span>
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
+
                   <DropdownMenuItem
                     onClick={logout}
                     className="text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10"

@@ -39,8 +39,9 @@ export default function Consultation() {
   const isStarted = activeConsultations[patientId] || false
 
   const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
-  const showDocs = currentUser.role === 'Médico'
-  const showAudit = true
+  const showDocs = currentUser.role === 'Médico' || currentUser.role === 'Secretária'
+  const showAudit = currentUser.role === 'Médico'
+  const showProcedimentosEvolucao = currentUser.role === 'Médico' || currentUser.role === 'Estético'
 
   const activeTab = searchParams.get('tab') || 'historico'
 
@@ -79,6 +80,12 @@ export default function Consultation() {
     }
 
     if (!showAnamneseExame && (activeTab === 'anamnese' || activeTab === 'exame')) {
+      newTab = newTab === activeTab ? 'historico' : newTab
+    }
+    if (
+      !showProcedimentosEvolucao &&
+      (activeTab === 'procedimentos' || activeTab === 'evolucao' || activeTab === 'resumo')
+    ) {
       newTab = newTab === activeTab ? 'historico' : newTab
     }
     if (

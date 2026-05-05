@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Trash2, Shield, User, ShieldAlert } from 'lucide-react'
 import useUserStore from '@/stores/useUserStore'
+import { useToast } from '@/hooks/use-toast'
 import { AddUserDialog } from './AddUserDialog'
 import { EditUserDialog } from './EditUserDialog'
 
@@ -22,8 +23,21 @@ interface UserManagementProps {
 
 export function UserManagement({ title, description }: UserManagementProps) {
   const { users, currentUser, removeUser } = useUserStore()
+  const { toast } = useToast()
 
-  const isAdmin = currentUser.email === 'daniel.nefro@gmail.com'
+  const isAdmin = currentUser.role === 'Médico'
+
+  const handleRemove = async (id: string) => {
+    try {
+      await removeUser(id)
+      toast({
+        title: 'Usuário removido',
+        description: 'O membro da equipe foi excluído com sucesso.',
+      })
+    } catch (e: any) {
+      toast({ title: 'Erro ao remover', description: e.message, variant: 'destructive' })
+    }
+  }
 
   return (
     <Card className="border-none shadow-subtle animate-fade-in-up">
@@ -87,11 +101,11 @@ export function UserManagement({ title, description }: UserManagementProps) {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         <EditUserDialog user={user} />
-                        {user.id !== currentUser.id && (
+                        {user.email !== 'daniel.nefro@gmail.com' && user.id !== currentUser.id && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeUser(user.id)}
+                            onClick={() => handleRemove(user.id)}
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             title="Remover Usuário"
                           >
