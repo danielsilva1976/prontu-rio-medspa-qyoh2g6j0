@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ShieldAlert,
   ArrowLeft,
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,6 +28,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import pb from '@/lib/pocketbase/client'
+import { useToast } from '@/hooks/use-toast'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import useAuditStore from '@/stores/useAuditStore'
 import useDocumentStore, { IssuedDocument } from '@/stores/useDocumentStore'
@@ -43,13 +56,16 @@ export default function DocumentsTab({
   patientId: string
 }) {
   const { addLog } = useAuditStore()
-  const { templates, layout, issuedDocs, issueDocument } = useDocumentStore()
+  const documentStore = useDocumentStore()
+  const { templates, layout, issuedDocs, issueDocument } = documentStore
   const { patients } = usePatientStore()
+  const { toast } = useToast()
 
   const patient = patients.find((p) => p.id === patientId)
   const patientName = patient?.name || 'Paciente'
 
   const [isCreating, setIsCreating] = useState(false)
+  const [docToDelete, setDocToDelete] = useState<IssuedDocument | null>(null)
   const [content, setContent] = useState('')
   const [title, setTitle] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('none')
@@ -75,6 +91,54 @@ export default function DocumentsTab({
   const handlePreview = (doc: IssuedDocument) => {
     setSelectedDoc(doc)
     setPreviewOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!docToDelete) return
+
+    try {
+      await pb.collection('medical_records').delete(docToDelete.id)
+    } catch (e: any) {
+      if (e.status === 403) {
+        toast({
+          title: 'Acesso Negado',
+          description: 'Você não tem permissão para excluir este registro.',
+          variant: 'destructive',
+        })
+        setDocToDelete(null)
+        return
+      }
+      if (e.status && e.status !== 404) {
+        console.error('Erro ao excluir do PocketBase:', e)
+        toast({
+          title: 'Erro de comunicação',
+          description: 'Ocorreu um erro ao excluir o registro no servidor.',
+          variant: 'destructive',
+        })
+        setDocToDelete(null)
+        return
+      }
+    }
+
+    const storeAny = documentStore as any
+    if (storeAny.removeDocument) {
+      storeAny.removeDocument(docToDelete.id)
+    } else if (useDocumentStore.setState) {
+      useDocumentStore.setState((state: any) => ({
+        issuedDocs: state.issuedDocs.filter((d: any) => d.id !== docToDelete.id),
+      }))
+    }
+
+    addLog(`Documento excluído (${type})`, patientId)
+    toast({
+      title: 'Excluído com sucesso',
+      description:
+        type === 'receita'
+          ? 'A receita foi removida permanentemente.'
+          : 'O laudo foi removido permanentemente.',
+    })
+
+    setDocToDelete(null)
   }
 
   const handleConfirmAndSign = () => {
@@ -275,7 +339,20 @@ export default function DocumentsTab({
                         {doc.date}
                       </span>
                     </div>
-                    <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mt-1"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDocToDelete(doc)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <CheckCircle2 className="h-5 w-5 text-success shrink-0 -mt-1" />
+                    </div>
                   </div>
                   <div className="flex-1 text-sm text-muted-foreground line-clamp-3 font-serif mb-4 opacity-80">
                     {doc.content}
@@ -340,6 +417,27 @@ export default function DocumentsTab({
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!docToDelete} onOpenChange={(open) => !open && setDocToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir {type === 'receita' ? 'Receita' : 'Laudo'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir est{type === 'receita' ? 'a receita' : 'e laudo'}? Esta
+              ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
