@@ -37,6 +37,7 @@ type DocumentState = {
   removeTemplate: (id: string) => void
   updateLayout: (l: Partial<LayoutConfig>) => void
   issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => IssuedDocument
+  removeIssuedDocument: (id: string) => void
 }
 
 const defaultLayout: LayoutConfig = {
@@ -114,6 +115,10 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
     return newDoc
   }
 
+  const removeIssuedDocument = (id: string) => {
+    setIssuedDocs((prev) => prev.filter((d) => d.id !== id))
+  }
+
   return createElement(
     DocumentContext.Provider,
     {
@@ -126,6 +131,7 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
         removeTemplate,
         updateLayout,
         issueDocument,
+        removeIssuedDocument,
       },
     },
     children,

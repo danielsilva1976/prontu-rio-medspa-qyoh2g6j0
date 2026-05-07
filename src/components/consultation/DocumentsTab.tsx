@@ -57,7 +57,7 @@ export default function DocumentsTab({
 }) {
   const { addLog } = useAuditStore()
   const documentStore = useDocumentStore()
-  const { templates, layout, issuedDocs, issueDocument } = documentStore
+  const { templates, layout, issuedDocs, issueDocument, removeIssuedDocument } = documentStore
   const { patients } = usePatientStore()
   const { toast } = useToast()
 
@@ -120,14 +120,7 @@ export default function DocumentsTab({
       }
     }
 
-    const storeAny = documentStore as any
-    if (storeAny.removeDocument) {
-      storeAny.removeDocument(docToDelete.id)
-    } else if (useDocumentStore.setState) {
-      useDocumentStore.setState((state: any) => ({
-        issuedDocs: state.issuedDocs.filter((d: any) => d.id !== docToDelete.id),
-      }))
-    }
+    removeIssuedDocument(docToDelete.id)
 
     addLog(`Documento excluído (${type})`, patientId)
     toast({
