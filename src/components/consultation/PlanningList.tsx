@@ -44,6 +44,7 @@ import { getPaymentMethodLabel } from './PlanningForm'
 import { StrategicPlanA4 } from '@/components/documents/StrategicPlanA4'
 import useDocumentStore from '@/stores/useDocumentStore'
 import usePatientStore from '@/stores/usePatientStore'
+import useUserStore from '@/stores/useUserStore'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 type Props = {
@@ -60,8 +61,13 @@ export default function PlanningList({ plans, onCreate, onDelete, isSigned, pati
 
   const { layout } = useDocumentStore()
   const { patients } = usePatientStore()
+  const { currentUser } = useUserStore()
   const patient = patients.find((p) => p.id === patientId)
   const patientName = patient?.name || 'Paciente'
+
+  const isSecretary =
+    currentUser.role === 'Secretária' && currentUser.email !== 'daniel.nefro@gmail.com'
+  const canEdit = !isSigned && !isSecretary
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
@@ -109,36 +115,38 @@ export default function PlanningList({ plans, onCreate, onDelete, isSigned, pati
                       {formatCurrency(plan.totalInvestment)}
                     </p>
                   </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-10 w-10 shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir planejamento</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja excluir este planejamento? Esta ação não pode ser
-                          desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={(e) => handleDeletePlan(e, plan.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  {canEdit && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-10 w-10 shrink-0"
                         >
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir planejamento</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir este planejamento? Esta ação não pode ser
+                            desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={(e) => handleDeletePlan(e, plan.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </Card>
             ))}
@@ -156,7 +164,7 @@ export default function PlanningList({ plans, onCreate, onDelete, isSigned, pati
         </div>
       )}
 
-      {!isSigned && (
+      {canEdit && (
         <Button
           onClick={onCreate}
           className="w-full h-14 text-base rounded-xl mt-2 border border-primary/10 shadow-sm"

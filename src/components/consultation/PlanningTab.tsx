@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast'
 import PlanningForm, { type SavedPlan } from './PlanningForm'
 import PlanningList from './PlanningList'
 import pb from '@/lib/pocketbase/client'
+import useUserStore from '@/stores/useUserStore'
 
 export default function PlanningTab({
   isSigned,
@@ -15,9 +16,14 @@ export default function PlanningTab({
 }) {
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
+  const { currentUser } = useUserStore()
 
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const isSecretary =
+    currentUser.role === 'Secretária' && currentUser.email !== 'daniel.nefro@gmail.com'
+  const canEdit = !isSigned && !isSecretary
 
   useEffect(() => {
     setIsLoading(true)
@@ -106,7 +112,7 @@ export default function PlanningTab({
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
-        ) : isCreating ? (
+        ) : isCreating && canEdit ? (
           <PlanningForm
             isSigned={isSigned}
             patientId={patientId}
@@ -116,7 +122,9 @@ export default function PlanningTab({
         ) : (
           <PlanningList
             plans={savedPlans}
-            onCreate={() => setIsCreating(true)}
+            onCreate={() => {
+              if (canEdit) setIsCreating(true)
+            }}
             onDelete={handleDeletePlan}
             isSigned={isSigned}
             patientId={patientId}
