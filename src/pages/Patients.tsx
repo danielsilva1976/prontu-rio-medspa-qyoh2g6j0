@@ -51,7 +51,12 @@ export default function Patients() {
   const hasAttemptedAutoSync = useRef(false)
   const realtimeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const canSync = currentUser.role === 'Médico' || currentUser.email === 'daniel.nefro@gmail.com'
+  const canSync =
+    currentUser.role === 'Médico' ||
+    currentUser.role === 'admin' ||
+    currentUser.role === 'Secretária' ||
+    currentUser.role === 'secretary' ||
+    currentUser.email === 'daniel.nefro@gmail.com'
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500)
