@@ -19,7 +19,6 @@ import useSettingsStore from '@/stores/useSettingsStore'
 import useAuditStore from '@/stores/useAuditStore'
 import useUserStore from '@/stores/useUserStore'
 import { useToast } from '@/hooks/use-toast'
-import { PatientDialog } from '@/components/patients/PatientDialog'
 import { PatientCard } from '@/components/patients/PatientCard'
 import { testBelleConnection } from '@/lib/api/belle'
 import pb from '@/lib/pocketbase/client'
@@ -422,7 +421,6 @@ export default function Patients() {
               </Button>
             </>
           )}
-          <PatientDialog />
         </div>
       </div>
 
