@@ -40,6 +40,7 @@ const allTabs: TabItem[] = [
     label: 'Integrações',
     icon: LinkIcon,
     desc: 'Configure a integração e sincronização com o Belle Software.',
+    adminOnly: true,
   },
   {
     id: 'procedures',
@@ -82,13 +83,22 @@ const allTabs: TabItem[] = [
 
 export default function Settings() {
   const { currentUser } = useUserStore()
-  const [activeTab, setActiveTab] = useState<string>(allTabs[0]?.id || 'procedures')
 
-  if (currentUser.role !== 'Médico') {
+  const isSuperAdmin = currentUser.email === 'daniel.nefro@gmail.com'
+  const isAdmin = currentUser.role === 'Médico' || isSuperAdmin
+  const isSecretary = currentUser.role === 'Secretária'
+
+  const visibleTabs = allTabs.filter((t) => isAdmin || !t.adminOnly)
+
+  const [activeTab, setActiveTab] = useState<string>(
+    visibleTabs.find((t) => t.id === 'procedures')?.id || visibleTabs[0]?.id || 'procedures',
+  )
+
+  if (!isAdmin && !isSecretary) {
     return <Navigate to="/" replace />
   }
 
-  const activeData = allTabs.find((t) => t.id === activeTab)!
+  const activeData = visibleTabs.find((t) => t.id === activeTab) || visibleTabs[0]
 
   return (
     <div className="space-y-6 animate-slide-up p-6 lg:p-8">
@@ -101,7 +111,7 @@ export default function Settings() {
 
       <div className="grid gap-8 md:grid-cols-[240px_1fr] max-w-6xl items-start">
         <nav className="flex flex-col gap-2 sticky top-24">
-          {allTabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <Button
               key={tab.id}
               variant="ghost"
@@ -122,11 +132,11 @@ export default function Settings() {
         </nav>
 
         <div className="min-w-0">
-          {activeTab === 'users' ? (
+          {activeTab === 'users' && isAdmin ? (
             <UserManagement title={activeData.label} description={activeData.desc} />
-          ) : activeTab === 'integrations' ? (
+          ) : activeTab === 'integrations' && isAdmin ? (
             <IntegrationSettings title={activeData.label} description={activeData.desc} />
-          ) : activeTab === 'audit' ? (
+          ) : activeTab === 'audit' && isAdmin ? (
             <SystemAuditLog title={activeData.label} description={activeData.desc} />
           ) : (
             <SettingsList

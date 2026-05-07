@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T10:36:12.359Z",
+  "generatedAt": "2026-05-07T10:52:02.229Z",
   "collections": [
     {
       "name": "patients",
@@ -382,11 +382,11 @@
       "name": "app_settings",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
-        "view": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
-        "create": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
-        "update": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'",
-        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com'"
+        "list": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com' || (@request.auth.role = 'secretary' && (key = 'procedures' || key = 'areas' || key = 'technologies' || key = 'products' || key = 'brands'))",
+        "view": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com' || (@request.auth.role = 'secretary' && (key = 'procedures' || key = 'areas' || key = 'technologies' || key = 'products' || key = 'brands'))",
+        "create": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com' || (@request.auth.role = 'secretary' && (key = 'procedures' || key = 'areas' || key = 'technologies' || key = 'products' || key = 'brands'))",
+        "update": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com' || (@request.auth.role = 'secretary' && (key = 'procedures' || key = 'areas' || key = 'technologies' || key = 'products' || key = 'brands'))",
+        "delete": "@request.auth.role = 'admin' || @request.auth.email = 'daniel.nefro@gmail.com' || (@request.auth.role = 'secretary' && (key = 'procedures' || key = 'areas' || key = 'technologies' || key = 'products' || key = 'brands'))"
       },
       "fields": [
         {

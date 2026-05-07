@@ -63,10 +63,14 @@ export default function Layout() {
 
   const isStarted = activeConsultations[patientId] || false
 
-  const showAnamneseExame = currentUser.role === 'Médico' || currentUser.role === 'Estético'
-  const showDocs = currentUser.role === 'Médico' || currentUser.role === 'Secretária'
-  const showAudit = currentUser.role === 'Médico'
-  const showNovoAtendimento = currentUser.role === 'Médico' || currentUser.role === 'Estético'
+  const isSuperAdmin = currentUser.email === 'daniel.nefro@gmail.com'
+  const isAdmin = currentUser.role === 'Médico' || isSuperAdmin
+  const isSecretary = currentUser.role === 'Secretária'
+
+  const showAnamneseExame = isAdmin || currentUser.role === 'Estético'
+  const showDocs = isAdmin || currentUser.role === 'Secretária'
+  const showAudit = isAdmin
+  const showNovoAtendimento = isAdmin || currentUser.role === 'Estético'
 
   const navItems = [
     { name: 'Pacientes', href: '/pacientes', icon: Users, show: true },
@@ -74,13 +78,13 @@ export default function Layout() {
       name: 'Documentos',
       href: '/documentos',
       icon: FileText,
-      show: currentUser.role === 'Médico',
+      show: isAdmin || currentUser.role === 'Médico',
     },
     {
       name: 'Configurações',
       href: '/configuracoes',
       icon: Settings,
-      show: currentUser.role === 'Médico',
+      show: isAdmin || isSecretary,
     },
   ]
 
