@@ -26634,17 +26634,6 @@ var defaultLayout = {
 	contact: "(11) 99999-9999 • contato@medspa.com.br",
 	disclaimer: "Documento assinado digitalmente conforme MP nº 2.200-2/2001, que institui a Infraestrutura de Chaves Públicas Brasileira - ICP-Brasil."
 };
-var defaultTemplates = [{
-	id: "t-1",
-	type: "receita",
-	title: "Rotina Skincare Diária",
-	content: "Uso Tópico:\n\n1. Vitamina C 10% - Aplicar 3 a 4 gotas na face pela manhã, antes do protetor solar.\n\n2. Protetor Solar FPS 50+ - Reaplicar a cada 3 horas.\n\n3. Ácido Retinoico 0.025% (Creme) - Aplicar pequena quantidade à noite. Iniciar uso em dias alternados para evitar sensibilização."
-}, {
-	id: "t-2",
-	type: "laudo",
-	title: "Laudo de Toxina Botulínica",
-	content: "Atesto para os devidos fins que a paciente submeteu-se, nesta data, a procedimento dermatológico estético minimamente invasivo (Aplicação de Toxina Botulínica tipo A) nas regiões frontal, glabelar e periorbicular.\n\nProcedimento transcorreu sem intercorrências.\n\nRecomendações pós-procedimento fornecidas por escrito à paciente."
-}];
 var defaultIssuedDocs = [{
 	id: "doc-1",
 	patientId: "p-001",
@@ -26656,29 +26645,73 @@ var defaultIssuedDocs = [{
 }];
 var DocumentContext = (0, import_react.createContext)({});
 var DocumentProvider = ({ children }) => {
-	const [templates, setTemplates] = (0, import_react.useState)(defaultTemplates);
+	const [templates, setTemplates] = (0, import_react.useState)([]);
 	const [layout, setLayout] = (0, import_react.useState)(defaultLayout);
 	const [issuedDocs, setIssuedDocs] = (0, import_react.useState)(defaultIssuedDocs);
-	const addTemplate = (t) => {
-		setTemplates((prev) => [...prev, {
-			...t,
-			id: `t-${Date.now()}`
-		}]);
+	const [isLoading, setIsLoading] = (0, import_react.useState)(true);
+	(0, import_react.useEffect)(() => {
+		let active = true;
+		const loadData = async () => {
+			try {
+				if (!pb.authStore.isValid) return;
+				setIsLoading(true);
+				const [templatesRecords, layoutRecord] = await Promise.allSettled([pb.collection("doc_templates").getFullList({ sort: "-created" }), pb.collection("app_settings").getFirstListItem("key=\"document_layout_config\"").catch(() => null)]);
+				if (!active) return;
+				if (templatesRecords.status === "fulfilled") setTemplates(templatesRecords.value.map((r) => ({
+					id: r.id,
+					type: r.type,
+					name: r.name,
+					content: r.content
+				})));
+				if (layoutRecord.status === "fulfilled" && layoutRecord.value && layoutRecord.value.value) setLayout(JSON.parse(layoutRecord.value.value));
+			} catch (err) {
+				console.error("Failed to load documents data", err);
+			} finally {
+				if (active) setIsLoading(false);
+			}
+		};
+		loadData();
+		return () => {
+			active = false;
+		};
+	}, []);
+	const addTemplate = async (t) => {
+		const record = await pb.collection("doc_templates").create(t);
+		setTemplates((prev) => [{
+			id: record.id,
+			type: record.type,
+			name: record.name,
+			content: record.content
+		}, ...prev]);
 	};
-	const updateTemplate = (id, t) => {
+	const updateTemplate = async (id, t) => {
+		const record = await pb.collection("doc_templates").update(id, t);
 		setTemplates((prev) => prev.map((item) => item.id === id ? {
 			...item,
-			...t
+			type: record.type,
+			name: record.name,
+			content: record.content
 		} : item));
 	};
-	const removeTemplate = (id) => {
+	const removeTemplate = async (id) => {
+		await pb.collection("doc_templates").delete(id);
 		setTemplates((prev) => prev.filter((item) => item.id !== id));
 	};
-	const updateLayout = (l) => {
-		setLayout((prev) => ({
-			...prev,
+	const updateLayout = async (l) => {
+		const newLayout = {
+			...layout,
 			...l
-		}));
+		};
+		setLayout(newLayout);
+		try {
+			const record = await pb.collection("app_settings").getFirstListItem("key=\"document_layout_config\"");
+			await pb.collection("app_settings").update(record.id, { value: JSON.stringify(newLayout) });
+		} catch (err) {
+			await pb.collection("app_settings").create({
+				key: "document_layout_config",
+				value: JSON.stringify(newLayout)
+			});
+		}
 	};
 	const issueDocument = (doc) => {
 		const newDoc = {
@@ -26696,6 +26729,7 @@ var DocumentProvider = ({ children }) => {
 		templates,
 		layout,
 		issuedDocs,
+		isLoading,
 		addTemplate,
 		updateTemplate,
 		removeTemplate,
@@ -52424,7 +52458,7 @@ function DocumentGenerator() {
 											"data-uid": "src/components/documents/DocumentGenerator.tsx:96:23",
 											"data-prohibitions": "[editContent]",
 											value: t.id,
-											children: t.title
+											children: t.name
 										}, t.id))
 									})]
 								})]
@@ -52488,91 +52522,123 @@ function DocumentGenerator() {
 //#endregion
 //#region src/components/documents/TemplatesManager.tsx
 function TemplatesManager() {
-	const { templates, addTemplate, updateTemplate, removeTemplate } = useDocumentStore();
+	const { templates, addTemplate, updateTemplate, removeTemplate, isLoading } = useDocumentStore();
+	const { toast } = useToast();
 	const [isOpen, setIsOpen] = (0, import_react.useState)(false);
 	const [editingId, setEditingId] = (0, import_react.useState)(null);
 	const [form, setForm] = (0, import_react.useState)({
 		type: "receita",
-		title: "",
+		name: "",
 		content: ""
 	});
+	const [fieldErrors, setFieldErrors] = (0, import_react.useState)({});
+	const [isSaving, setIsSaving] = (0, import_react.useState)(false);
 	const openNew = () => {
 		setEditingId(null);
 		setForm({
 			type: "receita",
-			title: "",
+			name: "",
 			content: ""
 		});
+		setFieldErrors({});
 		setIsOpen(true);
 	};
 	const openEdit = (t) => {
 		setEditingId(t.id);
 		setForm(t);
+		setFieldErrors({});
 		setIsOpen(true);
 	};
-	const handleSave = () => {
-		if (editingId) updateTemplate(editingId, form);
-		else addTemplate(form);
-		setIsOpen(false);
+	const handleSave = async () => {
+		setFieldErrors({});
+		setIsSaving(true);
+		try {
+			if (editingId) await updateTemplate(editingId, form);
+			else await addTemplate(form);
+			setIsOpen(false);
+			toast({ title: "Modelo salvo com sucesso!" });
+		} catch (err) {
+			const errs = extractFieldErrors(err);
+			if (Object.keys(errs).length > 0) setFieldErrors(errs);
+			else toast({
+				title: "Erro ao salvar modelo",
+				description: err.message,
+				variant: "destructive"
+			});
+		} finally {
+			setIsSaving(false);
+		}
+	};
+	const handleDelete = async (id) => {
+		try {
+			await removeTemplate(id);
+			toast({ title: "Modelo removido com sucesso" });
+		} catch (err) {
+			toast({
+				title: "Erro ao remover modelo",
+				description: err.message,
+				variant: "destructive"
+			});
+		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/documents/TemplatesManager.tsx:64:5",
+		"data-uid": "src/components/documents/TemplatesManager.tsx:94:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle bg-white",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/documents/TemplatesManager.tsx:65:7",
+			"data-uid": "src/components/documents/TemplatesManager.tsx:95:7",
 			"data-prohibitions": "[]",
 			className: "flex flex-row items-center justify-between pb-6",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/documents/TemplatesManager.tsx:66:9",
+				"data-uid": "src/components/documents/TemplatesManager.tsx:96:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:67:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:97:11",
 					"data-prohibitions": "[]",
 					className: "text-xl font-serif text-primary",
 					children: "Modelos de Documentos"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:68:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:98:11",
 					"data-prohibitions": "[]",
 					children: "Gerencie os textos padrão para prescrições e laudos recorrentes."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-				"data-uid": "src/components/documents/TemplatesManager.tsx:72:9",
+				"data-uid": "src/components/documents/TemplatesManager.tsx:102:9",
 				"data-prohibitions": "[]",
 				onClick: openNew,
 				className: "shadow-sm",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:73:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:103:11",
 					"data-prohibitions": "[editContent]",
 					className: "w-4 h-4 mr-2"
 				}), "Novo Modelo"]
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/documents/TemplatesManager.tsx:77:7",
+			"data-uid": "src/components/documents/TemplatesManager.tsx:107:7",
 			"data-prohibitions": "[editContent]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-				"data-uid": "src/components/documents/TemplatesManager.tsx:78:9",
+				"data-uid": "src/components/documents/TemplatesManager.tsx:108:9",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:79:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:109:11",
 					"data-prohibitions": "[]",
 					className: "bg-muted/30",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-						"data-uid": "src/components/documents/TemplatesManager.tsx:80:13",
+						"data-uid": "src/components/documents/TemplatesManager.tsx:110:13",
 						"data-prohibitions": "[]",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:81:15",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:111:15",
 								"data-prohibitions": "[]",
 								children: "Tipo"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:82:15",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:112:15",
 								"data-prohibitions": "[]",
 								children: "Título do Modelo"
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:83:15",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:113:15",
 								"data-prohibitions": "[]",
 								className: "w-[100px] text-right",
 								children: "Ações"
@@ -52580,68 +52646,87 @@ function TemplatesManager() {
 						]
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:86:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:116:11",
 					"data-prohibitions": "[editContent]",
-					children: templates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
-						"data-uid": "src/components/documents/TemplatesManager.tsx:88:15",
+					children: isLoading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+						"data-uid": "src/components/documents/TemplatesManager.tsx:118:15",
 						"data-prohibitions": "[]",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-							"data-uid": "src/components/documents/TemplatesManager.tsx:89:17",
+							"data-uid": "src/components/documents/TemplatesManager.tsx:119:17",
+							"data-prohibitions": "[]",
+							colSpan: 3,
+							className: "text-center py-8 text-muted-foreground",
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								"data-uid": "src/components/documents/TemplatesManager.tsx:120:19",
+								"data-prohibitions": "[]",
+								className: "flex justify-center items-center gap-2",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+									"data-uid": "src/components/documents/TemplatesManager.tsx:121:21",
+									"data-prohibitions": "[editContent]",
+									className: "w-4 h-4 animate-spin"
+								}), " Carregando modelos..."]
+							})
+						})
+					}) : templates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableRow, {
+						"data-uid": "src/components/documents/TemplatesManager.tsx:126:15",
+						"data-prohibitions": "[]",
+						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
+							"data-uid": "src/components/documents/TemplatesManager.tsx:127:17",
 							"data-prohibitions": "[]",
 							colSpan: 3,
 							className: "text-center py-8 text-muted-foreground",
 							children: "Nenhum modelo cadastrado."
 						})
 					}) : templates.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-						"data-uid": "src/components/documents/TemplatesManager.tsx:95:17",
+						"data-uid": "src/components/documents/TemplatesManager.tsx:133:17",
 						"data-prohibitions": "[editContent]",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:96:19",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:134:19",
 								"data-prohibitions": "[editContent]",
 								className: "font-medium capitalize",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:97:21",
+									"data-uid": "src/components/documents/TemplatesManager.tsx:135:21",
 									"data-prohibitions": "[editContent]",
 									className: `px-2 py-1 rounded text-xs ${t.type === "receita" ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"}`,
 									children: t.type
 								})
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:107:19",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:145:19",
 								"data-prohibitions": "[editContent]",
 								className: "text-foreground",
-								children: t.title
+								children: t.name
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:108:19",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:146:19",
 								"data-prohibitions": "[]",
 								className: "text-right",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:109:21",
+									"data-uid": "src/components/documents/TemplatesManager.tsx:147:21",
 									"data-prohibitions": "[]",
 									className: "flex justify-end gap-2",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:110:23",
+										"data-uid": "src/components/documents/TemplatesManager.tsx:148:23",
 										"data-prohibitions": "[]",
 										variant: "ghost",
 										size: "icon",
 										onClick: () => openEdit(t),
 										className: "h-8 w-8 text-muted-foreground hover:text-primary",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-											"data-uid": "src/components/documents/TemplatesManager.tsx:116:25",
+											"data-uid": "src/components/documents/TemplatesManager.tsx:154:25",
 											"data-prohibitions": "[editContent]",
 											className: "w-4 h-4"
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:118:23",
+										"data-uid": "src/components/documents/TemplatesManager.tsx:156:23",
 										"data-prohibitions": "[]",
 										variant: "ghost",
 										size: "icon",
-										onClick: () => removeTemplate(t.id),
+										onClick: () => handleDelete(t.id),
 										className: "h-8 w-8 text-muted-foreground hover:text-destructive",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-											"data-uid": "src/components/documents/TemplatesManager.tsx:124:25",
+											"data-uid": "src/components/documents/TemplatesManager.tsx:162:25",
 											"data-prohibitions": "[editContent]",
 											className: "w-4 h-4"
 										})
@@ -52652,131 +52737,163 @@ function TemplatesManager() {
 					}, t.id))
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-				"data-uid": "src/components/documents/TemplatesManager.tsx:134:9",
+				"data-uid": "src/components/documents/TemplatesManager.tsx:172:9",
 				"data-prohibitions": "[editContent]",
 				open: isOpen,
 				onOpenChange: setIsOpen,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-					"data-uid": "src/components/documents/TemplatesManager.tsx:135:11",
+					"data-uid": "src/components/documents/TemplatesManager.tsx:173:11",
 					"data-prohibitions": "[editContent]",
 					className: "sm:max-w-2xl",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-							"data-uid": "src/components/documents/TemplatesManager.tsx:136:13",
+							"data-uid": "src/components/documents/TemplatesManager.tsx:174:13",
 							"data-prohibitions": "[editContent]",
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:137:15",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:175:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-xl font-serif text-primary flex items-center gap-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:138:17",
+									"data-uid": "src/components/documents/TemplatesManager.tsx:176:17",
 									"data-prohibitions": "[editContent]",
 									className: "w-5 h-5"
 								}), editingId ? "Editar Modelo" : "Novo Modelo"]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/documents/TemplatesManager.tsx:142:13",
-							"data-prohibitions": "[]",
+							"data-uid": "src/components/documents/TemplatesManager.tsx:180:13",
+							"data-prohibitions": "[editContent]",
 							className: "space-y-4 py-4",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:143:15",
-								"data-prohibitions": "[]",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:181:15",
+								"data-prohibitions": "[editContent]",
 								className: "grid grid-cols-2 gap-4",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:144:17",
-									"data-prohibitions": "[]",
+									"data-uid": "src/components/documents/TemplatesManager.tsx:182:17",
+									"data-prohibitions": "[editContent]",
 									className: "space-y-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:145:19",
-										"data-prohibitions": "[]",
-										children: "Tipo de Documento"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:146:19",
-										"data-prohibitions": "[]",
-										value: form.type,
-										onValueChange: (v) => setForm({
-											...form,
-											type: v
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:183:19",
+											"data-prohibitions": "[]",
+											children: "Tipo de Documento"
 										}),
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-											"data-uid": "src/components/documents/TemplatesManager.tsx:150:21",
+										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:184:19",
 											"data-prohibitions": "[]",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-												"data-uid": "src/components/documents/TemplatesManager.tsx:151:23",
-												"data-prohibitions": "[editContent]"
-											})
-										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-											"data-uid": "src/components/documents/TemplatesManager.tsx:153:21",
-											"data-prohibitions": "[]",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/documents/TemplatesManager.tsx:154:23",
+											value: form.type,
+											onValueChange: (v) => setForm({
+												...form,
+												type: v
+											}),
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
+												"data-uid": "src/components/documents/TemplatesManager.tsx:188:21",
 												"data-prohibitions": "[]",
-												value: "receita",
-												children: "Receituário"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-												"data-uid": "src/components/documents/TemplatesManager.tsx:155:23",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
+													"data-uid": "src/components/documents/TemplatesManager.tsx:189:23",
+													"data-prohibitions": "[editContent]"
+												})
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
+												"data-uid": "src/components/documents/TemplatesManager.tsx:191:21",
 												"data-prohibitions": "[]",
-												value: "laudo",
-												children: "Laudo Médico"
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+													"data-uid": "src/components/documents/TemplatesManager.tsx:192:23",
+													"data-prohibitions": "[]",
+													value: "receita",
+													children: "Receituário"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+													"data-uid": "src/components/documents/TemplatesManager.tsx:193:23",
+													"data-prohibitions": "[]",
+													value: "laudo",
+													children: "Laudo Médico"
+												})]
 											})]
-										})]
-									})]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:159:17",
-									"data-prohibitions": "[]",
-									className: "space-y-2",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:160:19",
-										"data-prohibitions": "[]",
-										children: "Título Interno"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-										"data-uid": "src/components/documents/TemplatesManager.tsx:161:19",
-										"data-prohibitions": "[editContent]",
-										placeholder: "Ex: Pós Ultraformer",
-										value: form.title || "",
-										onChange: (e) => setForm({
-											...form,
-											title: e.target.value
+										}),
+										fieldErrors.type && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:196:40",
+											"data-prohibitions": "[editContent]",
+											className: "text-sm text-red-500",
+											children: fieldErrors.type
 										})
-									})]
+									]
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									"data-uid": "src/components/documents/TemplatesManager.tsx:198:17",
+									"data-prohibitions": "[editContent]",
+									className: "space-y-2",
+									children: [
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:199:19",
+											"data-prohibitions": "[]",
+											children: "Título Interno"
+										}),
+										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:200:19",
+											"data-prohibitions": "[editContent]",
+											placeholder: "Ex: Pós Ultraformer",
+											value: form.name || "",
+											onChange: (e) => setForm({
+												...form,
+												name: e.target.value
+											})
+										}),
+										fieldErrors.name && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+											"data-uid": "src/components/documents/TemplatesManager.tsx:205:40",
+											"data-prohibitions": "[editContent]",
+											className: "text-sm text-red-500",
+											children: fieldErrors.name
+										})
+									]
 								})]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:168:15",
-								"data-prohibitions": "[]",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:208:15",
+								"data-prohibitions": "[editContent]",
 								className: "space-y-2",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:169:17",
-									"data-prohibitions": "[]",
-									children: "Conteúdo do Modelo"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-									"data-uid": "src/components/documents/TemplatesManager.tsx:170:17",
-									"data-prohibitions": "[editContent]",
-									className: "min-h-[250px] font-serif text-[15px] leading-loose p-4 resize-y",
-									placeholder: "Digite o texto padrão...",
-									value: form.content || "",
-									onChange: (e) => setForm({
-										...form,
-										content: e.target.value
+								children: [
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
+										"data-uid": "src/components/documents/TemplatesManager.tsx:209:17",
+										"data-prohibitions": "[]",
+										children: "Conteúdo do Modelo"
+									}),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
+										"data-uid": "src/components/documents/TemplatesManager.tsx:210:17",
+										"data-prohibitions": "[editContent]",
+										className: "min-h-[250px] font-serif text-[15px] leading-loose p-4 resize-y",
+										placeholder: "Digite o texto padrão...",
+										value: form.content || "",
+										onChange: (e) => setForm({
+											...form,
+											content: e.target.value
+										})
+									}),
+									fieldErrors.content && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+										"data-uid": "src/components/documents/TemplatesManager.tsx:217:19",
+										"data-prohibitions": "[editContent]",
+										className: "text-sm text-red-500",
+										children: fieldErrors.content
 									})
-								})]
+								]
 							})]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogFooter, {
-							"data-uid": "src/components/documents/TemplatesManager.tsx:178:13",
-							"data-prohibitions": "[]",
+							"data-uid": "src/components/documents/TemplatesManager.tsx:221:13",
+							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:179:15",
+								"data-uid": "src/components/documents/TemplatesManager.tsx:222:15",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								onClick: () => setIsOpen(false),
+								disabled: isSaving,
 								children: "Cancelar"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/documents/TemplatesManager.tsx:182:15",
-								"data-prohibitions": "[]",
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+								"data-uid": "src/components/documents/TemplatesManager.tsx:225:15",
+								"data-prohibitions": "[editContent]",
 								onClick: handleSave,
-								disabled: !form.title || !form.content,
-								children: "Salvar Modelo"
+								disabled: !form.name || !form.content || isSaving,
+								children: [isSaving ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+									"data-uid": "src/components/documents/TemplatesManager.tsx:226:29",
+									"data-prohibitions": "[editContent]",
+									className: "w-4 h-4 mr-2 animate-spin"
+								}) : null, "Salvar Modelo"]
 							})]
 						})
 					]
@@ -52788,64 +52905,89 @@ function TemplatesManager() {
 //#endregion
 //#region src/components/documents/LayoutConfigForm.tsx
 function LayoutConfigForm() {
-	const { layout, updateLayout } = useDocumentStore();
+	const { layout, updateLayout, isLoading } = useDocumentStore();
 	const [form, setForm] = (0, import_react.useState)(layout);
+	const [isSaving, setIsSaving] = (0, import_react.useState)(false);
 	const { toast } = useToast();
-	const handleSave = () => {
-		updateLayout(form);
-		toast({ title: "Configurações de layout salvas com sucesso!" });
+	(0, import_react.useEffect)(() => {
+		setForm(layout);
+	}, [layout]);
+	const handleSave = async () => {
+		setIsSaving(true);
+		try {
+			await updateLayout(form);
+			toast({ title: "Configurações de layout salvas com sucesso!" });
+		} catch (err) {
+			toast({
+				title: "Erro ao salvar configurações",
+				description: err.message,
+				variant: "destructive"
+			});
+		} finally {
+			setIsSaving(false);
+		}
 	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/documents/LayoutConfigForm.tsx:22:5",
+	if (isLoading) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		"data-uid": "src/components/documents/LayoutConfigForm.tsx:39:7",
 		"data-prohibitions": "[]",
+		className: "flex justify-center items-center py-12 text-muted-foreground",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:40:9",
+			"data-prohibitions": "[editContent]",
+			className: "w-6 h-6 animate-spin mr-2"
+		}), " Carregando layout..."]
+	});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+		"data-uid": "src/components/documents/LayoutConfigForm.tsx:46:5",
+		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle bg-white max-w-4xl",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/documents/LayoutConfigForm.tsx:23:7",
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:47:7",
 			"data-prohibitions": "[]",
 			className: "pb-6",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-				"data-uid": "src/components/documents/LayoutConfigForm.tsx:24:9",
+				"data-uid": "src/components/documents/LayoutConfigForm.tsx:48:9",
 				"data-prohibitions": "[]",
 				className: "text-xl font-serif text-primary flex items-center gap-2",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LayoutTemplate, {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:25:11",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:49:11",
 					"data-prohibitions": "[editContent]",
 					className: "w-5 h-5 text-primary/80"
 				}), "Configuração de Cabeçalho e Rodapé"]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-				"data-uid": "src/components/documents/LayoutConfigForm.tsx:28:9",
+				"data-uid": "src/components/documents/LayoutConfigForm.tsx:52:9",
 				"data-prohibitions": "[]",
 				children: "Defina as informações profissionais e de contato que aparecerão impressas em todos os documentos."
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/documents/LayoutConfigForm.tsx:33:7",
-			"data-prohibitions": "[]",
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:57:7",
+			"data-prohibitions": "[editContent]",
 			className: "space-y-8",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:34:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:58:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:35:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:59:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Identificação Profissional"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:38:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:62:11",
 						"data-prohibitions": "[]",
 						className: "grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-5 rounded-xl border border-border/50",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:39:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:63:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:40:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:64:15",
 									"data-prohibitions": "[]",
 									children: "Nome do Profissional (Assinatura e Cabeçalho)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:41:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:65:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proName,
 									onChange: (e) => setForm({
@@ -52855,15 +52997,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:46:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:70:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:47:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:71:15",
 									"data-prohibitions": "[]",
 									children: "Especialidade"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:48:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:72:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proSpecialty,
 									onChange: (e) => setForm({
@@ -52873,15 +53015,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:53:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:77:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:54:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:78:15",
 									"data-prohibitions": "[]",
 									children: "Registro (Ex: CRM-SP 123456)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:55:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:79:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proRegistry,
 									onChange: (e) => setForm({
@@ -52891,15 +53033,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:60:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:84:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:61:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:85:15",
 									"data-prohibitions": "[]",
 									children: "Nome da Clínica (Interno)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:62:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:86:15",
 									"data-prohibitions": "[editContent]",
 									value: form.clinicName,
 									onChange: (e) => setForm({
@@ -52912,29 +53054,29 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:70:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:94:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:71:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:95:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Contato e Endereço"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:74:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:98:11",
 						"data-prohibitions": "[]",
 						className: "grid grid-cols-1 gap-4 bg-muted/20 p-5 rounded-xl border border-border/50",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:75:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:99:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:76:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:100:15",
 									"data-prohibitions": "[]",
 									children: "Endereço - Linha 1"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:77:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:101:15",
 									"data-prohibitions": "[editContent]",
 									value: form.addressLine1,
 									onChange: (e) => setForm({
@@ -52944,15 +53086,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:82:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:106:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:83:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:107:15",
 									"data-prohibitions": "[]",
 									children: "Endereço - Linha 2 (Cidade/CEP)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:84:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:108:15",
 									"data-prohibitions": "[editContent]",
 									value: form.addressLine2,
 									onChange: (e) => setForm({
@@ -52962,15 +53104,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:89:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:113:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:90:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:114:15",
 									"data-prohibitions": "[]",
 									children: "Telefone / E-mail"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:91:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:115:15",
 									"data-prohibitions": "[editContent]",
 									value: form.contact,
 									onChange: (e) => setForm({
@@ -52983,24 +53125,24 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:99:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:123:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:100:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:124:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Rodapé"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:101:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:125:11",
 						"data-prohibitions": "[]",
 						className: "space-y-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:102:13",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:126:13",
 							"data-prohibitions": "[]",
 							children: "Termo de Isenção / Assinatura Digital"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:103:13",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:127:13",
 							"data-prohibitions": "[editContent]",
 							className: "resize-none h-24",
 							value: form.disclaimer,
@@ -53012,16 +53154,21 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:111:9",
-					"data-prohibitions": "[]",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:135:9",
+					"data-prohibitions": "[editContent]",
 					className: "flex justify-end pt-4 border-t border-border/50",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:112:11",
-						"data-prohibitions": "[]",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:136:11",
+						"data-prohibitions": "[editContent]",
 						onClick: handleSave,
+						disabled: isSaving,
 						className: "shadow-sm",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:113:13",
+						children: [isSaving ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:138:15",
+							"data-prohibitions": "[editContent]",
+							className: "w-4 h-4 mr-2 animate-spin"
+						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:140:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), "Salvar Alterações"]
@@ -55212,4 +55359,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Cfete2O0.js.map
+//# sourceMappingURL=index-JAF6AsUG.js.map

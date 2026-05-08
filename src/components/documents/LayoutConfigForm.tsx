@@ -1,21 +1,45 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Save, LayoutTemplate } from 'lucide-react'
+import { Save, LayoutTemplate, Loader2 } from 'lucide-react'
 import useDocumentStore from '@/stores/useDocumentStore'
 import { useToast } from '@/hooks/use-toast'
 
 export default function LayoutConfigForm() {
-  const { layout, updateLayout } = useDocumentStore()
+  const { layout, updateLayout, isLoading } = useDocumentStore()
   const [form, setForm] = useState(layout)
+  const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
 
-  const handleSave = () => {
-    updateLayout(form)
-    toast({ title: 'Configurações de layout salvas com sucesso!' })
+  useEffect(() => {
+    setForm(layout)
+  }, [layout])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      await updateLayout(form)
+      toast({ title: 'Configurações de layout salvas com sucesso!' })
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao salvar configurações',
+        description: err.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12 text-muted-foreground">
+        <Loader2 className="w-6 h-6 animate-spin mr-2" /> Carregando layout...
+      </div>
+    )
   }
 
   return (
@@ -109,8 +133,12 @@ export default function LayoutConfigForm() {
         </div>
 
         <div className="flex justify-end pt-4 border-t border-border/50">
-          <Button onClick={handleSave} className="shadow-sm">
-            <Save className="w-4 h-4 mr-2" />
+          <Button onClick={handleSave} disabled={isSaving} className="shadow-sm">
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
             Salvar Alterações
           </Button>
         </div>

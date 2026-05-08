@@ -94,7 +94,7 @@ export default function DocumentGenerator() {
                   <SelectContent>
                     {typeTemplates.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
-                        {t.title}
+                        {t.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

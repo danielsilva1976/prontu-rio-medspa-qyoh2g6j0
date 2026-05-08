@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Edit2, Trash2, FileText } from 'lucide-react'
+import { Plus, Edit2, Trash2, FileText, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,36 +28,66 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import useDocumentStore, { DocTemplate } from '@/stores/useDocumentStore'
+import { useToast } from '@/hooks/use-toast'
+import { extractFieldErrors } from '@/lib/pocketbase/errors'
 
 export default function TemplatesManager() {
-  const { templates, addTemplate, updateTemplate, removeTemplate } = useDocumentStore()
+  const { templates, addTemplate, updateTemplate, removeTemplate, isLoading } = useDocumentStore()
+  const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<DocTemplate>>({
     type: 'receita',
-    title: '',
+    name: '',
     content: '',
   })
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [isSaving, setIsSaving] = useState(false)
 
   const openNew = () => {
     setEditingId(null)
-    setForm({ type: 'receita', title: '', content: '' })
+    setForm({ type: 'receita', name: '', content: '' })
+    setFieldErrors({})
     setIsOpen(true)
   }
 
   const openEdit = (t: DocTemplate) => {
     setEditingId(t.id)
     setForm(t)
+    setFieldErrors({})
     setIsOpen(true)
   }
 
-  const handleSave = () => {
-    if (editingId) {
-      updateTemplate(editingId, form)
-    } else {
-      addTemplate(form as Omit<DocTemplate, 'id'>)
+  const handleSave = async () => {
+    setFieldErrors({})
+    setIsSaving(true)
+    try {
+      if (editingId) {
+        await updateTemplate(editingId, form)
+      } else {
+        await addTemplate(form as Omit<DocTemplate, 'id'>)
+      }
+      setIsOpen(false)
+      toast({ title: 'Modelo salvo com sucesso!' })
+    } catch (err: any) {
+      const errs = extractFieldErrors(err)
+      if (Object.keys(errs).length > 0) {
+        setFieldErrors(errs)
+      } else {
+        toast({ title: 'Erro ao salvar modelo', description: err.message, variant: 'destructive' })
+      }
+    } finally {
+      setIsSaving(false)
     }
-    setIsOpen(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await removeTemplate(id)
+      toast({ title: 'Modelo removido com sucesso' })
+    } catch (err: any) {
+      toast({ title: 'Erro ao remover modelo', description: err.message, variant: 'destructive' })
+    }
   }
 
   return (
@@ -84,7 +114,15 @@ export default function TemplatesManager() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {templates.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                  <div className="flex justify-center items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Carregando modelos...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : templates.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                   Nenhum modelo cadastrado.
@@ -104,7 +142,7 @@ export default function TemplatesManager() {
                       {t.type}
                     </span>
                   </TableCell>
-                  <TableCell className="text-foreground">{t.title}</TableCell>
+                  <TableCell className="text-foreground">{t.name}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -118,7 +156,7 @@ export default function TemplatesManager() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeTemplate(t.id)}
+                        onClick={() => handleDelete(t.id)}
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -155,14 +193,16 @@ export default function TemplatesManager() {
                       <SelectItem value="laudo">Laudo Médico</SelectItem>
                     </SelectContent>
                   </Select>
+                  {fieldErrors.type && <p className="text-sm text-red-500">{fieldErrors.type}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Título Interno</Label>
                   <Input
                     placeholder="Ex: Pós Ultraformer"
-                    value={form.title || ''}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    value={form.name || ''}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
+                  {fieldErrors.name && <p className="text-sm text-red-500">{fieldErrors.name}</p>}
                 </div>
               </div>
               <div className="space-y-2">
@@ -173,13 +213,17 @@ export default function TemplatesManager() {
                   value={form.content || ''}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
                 />
+                {fieldErrors.content && (
+                  <p className="text-sm text-red-500">{fieldErrors.content}</p>
+                )}
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+              <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSaving}>
                 Cancelar
               </Button>
-              <Button onClick={handleSave} disabled={!form.title || !form.content}>
+              <Button onClick={handleSave} disabled={!form.name || !form.content || isSaving}>
+                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                 Salvar Modelo
               </Button>
             </DialogFooter>
