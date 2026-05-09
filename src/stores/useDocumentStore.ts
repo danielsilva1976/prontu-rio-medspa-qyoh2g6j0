@@ -151,11 +151,15 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
         .collection('app_settings')
         .getFirstListItem('key="document_layout_config"')
       await pb.collection('app_settings').update(record.id, { value: JSON.stringify(newLayout) })
-    } catch (err) {
-      await pb.collection('app_settings').create({
-        key: 'document_layout_config',
-        value: JSON.stringify(newLayout),
-      })
+    } catch (err: any) {
+      if (err.status === 404) {
+        await pb.collection('app_settings').create({
+          key: 'document_layout_config',
+          value: JSON.stringify(newLayout),
+        })
+      } else {
+        throw err
+      }
     }
   }
 

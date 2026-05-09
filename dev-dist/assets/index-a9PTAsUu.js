@@ -26707,10 +26707,11 @@ var DocumentProvider = ({ children }) => {
 			const record = await pb.collection("app_settings").getFirstListItem("key=\"document_layout_config\"");
 			await pb.collection("app_settings").update(record.id, { value: JSON.stringify(newLayout) });
 		} catch (err) {
-			await pb.collection("app_settings").create({
+			if (err.status === 404) await pb.collection("app_settings").create({
 				key: "document_layout_config",
 				value: JSON.stringify(newLayout)
 			});
+			else throw err;
 		}
 	};
 	const issueDocument = (doc) => {
@@ -31426,6 +31427,10 @@ PaginationEllipsis.displayName = "PaginationEllipsis";
 * ALWAYS use this hook instead of subscribing inline.
 * Uses the per-listener UnsubscribeFunc so multiple components
 * can safely subscribe to the same collection without conflicts.
+*
+* Generic over the record type: pass your collection's interface as
+* `useRealtime<MyRecord>(...)` to get a typed subscription payload
+* instead of `unknown`.
 */
 function useRealtime(collectionName, callback, enabled = true) {
 	const callbackRef = (0, import_react.useRef)(callback);
@@ -31439,7 +31444,7 @@ function useRealtime(collectionName, callback, enabled = true) {
 		}).then((fn) => {
 			if (cancelled) fn().catch(() => {});
 			else unsubscribeFn = fn;
-		});
+		}).catch(() => {});
 		return () => {
 			cancelled = true;
 			if (unsubscribeFn) unsubscribeFn().catch(() => {});
@@ -38623,7 +38628,7 @@ function extractFieldErrors(error) {
 	const data = error.response?.data;
 	if (!data || typeof data !== "object") return {};
 	const errors = {};
-	for (const [field, detail] of Object.entries(data)) if (detail && typeof detail === "object" && "message" in detail) errors[field] = detail.message;
+	for (const [field, detail] of Object.entries(data)) if (detail && typeof detail === "object" && "message" in detail && typeof detail.message === "string") errors[field] = detail.message;
 	return errors;
 }
 function getErrorMessage(error) {
@@ -52920,7 +52925,7 @@ function LayoutConfigForm() {
 		} catch (err) {
 			toast({
 				title: "Erro ao salvar configurações",
-				description: err.message,
+				description: getErrorMessage(err),
 				variant: "destructive"
 			});
 		} finally {
@@ -52928,66 +52933,66 @@ function LayoutConfigForm() {
 		}
 	};
 	if (isLoading) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/documents/LayoutConfigForm.tsx:39:7",
+		"data-uid": "src/components/documents/LayoutConfigForm.tsx:40:7",
 		"data-prohibitions": "[]",
 		className: "flex justify-center items-center py-12 text-muted-foreground",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-			"data-uid": "src/components/documents/LayoutConfigForm.tsx:40:9",
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:41:9",
 			"data-prohibitions": "[editContent]",
 			className: "w-6 h-6 animate-spin mr-2"
 		}), " Carregando layout..."]
 	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/documents/LayoutConfigForm.tsx:46:5",
+		"data-uid": "src/components/documents/LayoutConfigForm.tsx:47:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle bg-white max-w-4xl",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/documents/LayoutConfigForm.tsx:47:7",
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:48:7",
 			"data-prohibitions": "[]",
 			className: "pb-6",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-				"data-uid": "src/components/documents/LayoutConfigForm.tsx:48:9",
+				"data-uid": "src/components/documents/LayoutConfigForm.tsx:49:9",
 				"data-prohibitions": "[]",
 				className: "text-xl font-serif text-primary flex items-center gap-2",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LayoutTemplate, {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:49:11",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:50:11",
 					"data-prohibitions": "[editContent]",
 					className: "w-5 h-5 text-primary/80"
 				}), "Configuração de Cabeçalho e Rodapé"]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-				"data-uid": "src/components/documents/LayoutConfigForm.tsx:52:9",
+				"data-uid": "src/components/documents/LayoutConfigForm.tsx:53:9",
 				"data-prohibitions": "[]",
 				children: "Defina as informações profissionais e de contato que aparecerão impressas em todos os documentos."
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-			"data-uid": "src/components/documents/LayoutConfigForm.tsx:57:7",
+			"data-uid": "src/components/documents/LayoutConfigForm.tsx:58:7",
 			"data-prohibitions": "[editContent]",
 			className: "space-y-8",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:58:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:59:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:59:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:60:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Identificação Profissional"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:62:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:63:11",
 						"data-prohibitions": "[]",
 						className: "grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-5 rounded-xl border border-border/50",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:63:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:64:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:64:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:65:15",
 									"data-prohibitions": "[]",
 									children: "Nome do Profissional (Assinatura e Cabeçalho)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:65:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:66:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proName,
 									onChange: (e) => setForm({
@@ -52997,15 +53002,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:70:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:71:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:71:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:72:15",
 									"data-prohibitions": "[]",
 									children: "Especialidade"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:72:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:73:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proSpecialty,
 									onChange: (e) => setForm({
@@ -53015,15 +53020,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:77:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:78:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:78:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:79:15",
 									"data-prohibitions": "[]",
 									children: "Registro (Ex: CRM-SP 123456)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:79:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:80:15",
 									"data-prohibitions": "[editContent]",
 									value: form.proRegistry,
 									onChange: (e) => setForm({
@@ -53033,15 +53038,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:84:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:85:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:85:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:86:15",
 									"data-prohibitions": "[]",
 									children: "Nome da Clínica (Interno)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:86:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:87:15",
 									"data-prohibitions": "[editContent]",
 									value: form.clinicName,
 									onChange: (e) => setForm({
@@ -53054,29 +53059,29 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:94:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:95:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:95:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:96:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Contato e Endereço"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:98:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:99:11",
 						"data-prohibitions": "[]",
 						className: "grid grid-cols-1 gap-4 bg-muted/20 p-5 rounded-xl border border-border/50",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:99:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:100:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:100:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:101:15",
 									"data-prohibitions": "[]",
 									children: "Endereço - Linha 1"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:101:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:102:15",
 									"data-prohibitions": "[editContent]",
 									value: form.addressLine1,
 									onChange: (e) => setForm({
@@ -53086,15 +53091,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:106:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:107:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:107:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:108:15",
 									"data-prohibitions": "[]",
 									children: "Endereço - Linha 2 (Cidade/CEP)"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:108:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:109:15",
 									"data-prohibitions": "[editContent]",
 									value: form.addressLine2,
 									onChange: (e) => setForm({
@@ -53104,15 +53109,15 @@ function LayoutConfigForm() {
 								})]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/LayoutConfigForm.tsx:113:13",
+								"data-uid": "src/components/documents/LayoutConfigForm.tsx:114:13",
 								"data-prohibitions": "[]",
 								className: "space-y-2",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:114:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:115:15",
 									"data-prohibitions": "[]",
 									children: "Telefone / E-mail"
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-									"data-uid": "src/components/documents/LayoutConfigForm.tsx:115:15",
+									"data-uid": "src/components/documents/LayoutConfigForm.tsx:116:15",
 									"data-prohibitions": "[editContent]",
 									value: form.contact,
 									onChange: (e) => setForm({
@@ -53125,24 +53130,24 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:123:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:124:9",
 					"data-prohibitions": "[]",
 					className: "space-y-4",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:124:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:125:11",
 						"data-prohibitions": "[]",
 						className: "font-medium text-sm text-primary uppercase tracking-wider",
 						children: "Rodapé"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:125:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:126:11",
 						"data-prohibitions": "[]",
 						className: "space-y-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:126:13",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:127:13",
 							"data-prohibitions": "[]",
 							children: "Termo de Isenção / Assinatura Digital"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:127:13",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:128:13",
 							"data-prohibitions": "[editContent]",
 							className: "resize-none h-24",
 							value: form.disclaimer,
@@ -53154,21 +53159,21 @@ function LayoutConfigForm() {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/components/documents/LayoutConfigForm.tsx:135:9",
+					"data-uid": "src/components/documents/LayoutConfigForm.tsx:136:9",
 					"data-prohibitions": "[editContent]",
 					className: "flex justify-end pt-4 border-t border-border/50",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-						"data-uid": "src/components/documents/LayoutConfigForm.tsx:136:11",
+						"data-uid": "src/components/documents/LayoutConfigForm.tsx:137:11",
 						"data-prohibitions": "[editContent]",
 						onClick: handleSave,
 						disabled: isSaving,
 						className: "shadow-sm",
 						children: [isSaving ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:138:15",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:139:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2 animate-spin"
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Save, {
-							"data-uid": "src/components/documents/LayoutConfigForm.tsx:140:15",
+							"data-uid": "src/components/documents/LayoutConfigForm.tsx:141:15",
 							"data-prohibitions": "[editContent]",
 							className: "w-4 h-4 mr-2"
 						}), "Salvar Alterações"]
@@ -55359,4 +55364,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-JAF6AsUG.js.map
+//# sourceMappingURL=index-a9PTAsUu.js.map

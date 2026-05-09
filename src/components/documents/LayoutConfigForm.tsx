@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Save, LayoutTemplate, Loader2 } from 'lucide-react'
 import useDocumentStore from '@/stores/useDocumentStore'
 import { useToast } from '@/hooks/use-toast'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 
 export default function LayoutConfigForm() {
   const { layout, updateLayout, isLoading } = useDocumentStore()
@@ -26,7 +27,7 @@ export default function LayoutConfigForm() {
     } catch (err: any) {
       toast({
         title: 'Erro ao salvar configurações',
-        description: err.message,
+        description: getErrorMessage(err),
         variant: 'destructive',
       })
     } finally {
