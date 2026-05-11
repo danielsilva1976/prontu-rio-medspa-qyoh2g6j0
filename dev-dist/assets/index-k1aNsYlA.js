@@ -45012,7 +45012,7 @@ function DocumentsTab({ type, isSigned, patientId }) {
 		const tmpl = templates.find((t) => t.id === val);
 		if (tmpl) {
 			setContent(tmpl.content);
-			if (!title) setTitle(tmpl.title);
+			if (!title) setTitle(tmpl.name);
 		} else setContent("");
 	};
 	const handlePreview = (doc) => {
@@ -45161,25 +45161,31 @@ function DocumentsTab({ type, isSigned, patientId }) {
 									"data-prohibitions": "[]",
 									value: "none",
 									children: "Novo Documento em Branco"
-								}), availableTemplates.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+								}), availableTemplates.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
 									"data-uid": "src/components/consultation/DocumentsTab.tsx:197:21",
+									"data-prohibitions": "[]",
+									value: "empty",
+									disabled: true,
+									children: "Nenhum modelo encontrado"
+								}) : availableTemplates.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:202:23",
 									"data-prohibitions": "[editContent]",
 									value: t.id,
-									children: t.title
+									children: t.name
 								}, t.id))]
 							})]
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:204:13",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:210:13",
 						"data-prohibitions": "[]",
 						className: "space-y-2",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:205:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:211:15",
 							"data-prohibitions": "[]",
 							className: "text-foreground/80",
 							children: "Título / Referência"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:206:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:212:15",
 							"data-prohibitions": "[editContent]",
 							disabled: isSigned,
 							placeholder: type === "receita" ? "Ex: Receita Rotina Noturna" : "Ex: Laudo Pós-Procedimento",
@@ -45190,20 +45196,20 @@ function DocumentsTab({ type, isSigned, patientId }) {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:218:11",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:224:11",
 					"data-prohibitions": "[]",
 					className: "space-y-2",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:219:13",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:225:13",
 						"data-prohibitions": "[]",
 						className: "text-foreground/80 flex justify-between items-end",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:220:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:226:15",
 							"data-prohibitions": "[]",
 							children: "Conteúdo do Documento"
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:222:13",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:228:13",
 						"data-prohibitions": "[editContent]",
 						disabled: isSigned,
 						placeholder: "Digite o conteúdo aqui...",
@@ -45213,70 +45219,70 @@ function DocumentsTab({ type, isSigned, patientId }) {
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:231:11",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:237:11",
 					"data-prohibitions": "[]",
 					className: "flex justify-end gap-3 pt-6 border-t border-border/50",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:232:13",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:238:13",
 						"data-prohibitions": "[]",
 						variant: "outline",
 						onClick: () => setIsCreating(false),
 						children: "Cancelar"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:235:13",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:241:13",
 						"data-prohibitions": "[]",
 						open: isSignDialogOpen,
 						onOpenChange: setIsSignDialogOpen,
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:236:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:242:15",
 							"data-prohibitions": "[]",
 							asChild: true,
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:237:17",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:243:17",
 								"data-prohibitions": "[]",
 								disabled: !content.trim(),
 								className: "bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:241:19",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:247:19",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4"
 								}), "Emitir e Assinar"]
 							})
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:245:15",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:251:15",
 							"data-prohibitions": "[]",
 							className: "sm:max-w-md rounded-xl",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogHeader, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:246:17",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:252:17",
 								"data-prohibitions": "[]",
 								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:247:19",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:253:19",
 									"data-prohibitions": "[]",
 									className: "font-serif text-xl text-primary",
 									children: "Assinatura Digital"
 								})
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:251:17",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:257:17",
 								"data-prohibitions": "[]",
 								className: "space-y-6 py-4",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:252:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:258:19",
 										"data-prohibitions": "[]",
 										className: "text-sm text-muted-foreground leading-relaxed",
 										children: "Insira seu PIN para aplicar sua assinatura digital e salvar o documento oficial no histórico do paciente."
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:256:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:262:19",
 										"data-prohibitions": "[]",
 										className: "space-y-3 bg-muted/20 p-4 rounded-lg border border-border",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:257:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:263:21",
 											"data-prohibitions": "[]",
 											className: "text-center block text-foreground/80",
 											children: "PIN de Assinatura"
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:260:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:266:21",
 											"data-prohibitions": "[editContent]",
 											type: "password",
 											placeholder: "••••",
@@ -45285,7 +45291,7 @@ function DocumentsTab({ type, isSigned, patientId }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:267:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:273:19",
 										"data-prohibitions": "[]",
 										onClick: handleConfirmAndSign,
 										className: "w-full bg-primary hover:bg-primary/90 h-11 text-base",
@@ -45300,34 +45306,34 @@ function DocumentsTab({ type, isSigned, patientId }) {
 		})]
 	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/consultation/DocumentsTab.tsx:283:5",
+		"data-uid": "src/components/consultation/DocumentsTab.tsx:289:5",
 		"data-prohibitions": "[editContent]",
 		className: "space-y-6 animate-slide-up",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:284:7",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:290:7",
 				"data-prohibitions": "[editContent]",
 				className: "border-none shadow-subtle rounded-xl overflow-hidden",
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:285:9",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:291:9",
 						"data-prohibitions": "[editContent]",
 						className: "h-1 w-full bg-gradient-to-r from-primary/20 to-primary"
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:286:9",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:292:9",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-col sm:flex-row sm:items-center justify-between pb-6 gap-4",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:287:11",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:293:11",
 							"data-prohibitions": "[editContent]",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardTitle, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:288:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:294:13",
 								"data-prohibitions": "[editContent]",
 								className: "text-xl font-serif text-primary flex items-center gap-2",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:289:15",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:295:15",
 										"data-prohibitions": "[editContent]",
 										className: "w-5 h-5 text-primary"
 									}),
@@ -45335,45 +45341,45 @@ function DocumentsTab({ type, isSigned, patientId }) {
 									titleText
 								]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:291:13",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:297:13",
 								"data-prohibitions": "[editContent]",
 								className: "mt-1",
 								children: type === "receita" ? "Visualize ou emita novas prescrições para este paciente." : "Visualize ou emita novos laudos para este paciente."
 							})]
 						}), !isSigned ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:298:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:304:13",
 							"data-prohibitions": "[editContent]",
 							onClick: () => setIsCreating(true),
 							className: "shadow-sm",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:299:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:305:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-4 h-4 mr-2"
 							}), addButtonText]
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:303:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:309:13",
 							"data-prohibitions": "[]",
 							className: "bg-amber-50 text-amber-800 px-3 py-1.5 rounded-lg border border-amber-200 text-xs font-medium flex items-center gap-1.5 self-start sm:self-auto",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:304:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:310:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-3.5 h-3.5"
 							}), "Edição Bloqueada"]
 						})]
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:309:9",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:315:9",
 						"data-prohibitions": "[editContent]",
 						children: patientDocs.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:311:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:317:13",
 							"data-prohibitions": "[editContent]",
 							className: "text-center py-12 bg-muted/10 rounded-xl border border-dashed border-border",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:312:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:318:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-10 h-10 text-muted-foreground/30 mx-auto mb-3"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:313:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:319:15",
 								"data-prohibitions": "[editContent]",
 								className: "text-muted-foreground text-sm",
 								children: [
@@ -45383,44 +45389,44 @@ function DocumentsTab({ type, isSigned, patientId }) {
 								]
 							})]
 						}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:319:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:325:13",
 							"data-prohibitions": "[editContent]",
 							className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
 							children: patientDocs.map((doc) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:321:17",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:327:17",
 								"data-prohibitions": "[editContent]",
 								className: "p-5 rounded-xl border border-border/80 bg-white hover:border-primary/50 hover:shadow-md transition-all group relative overflow-hidden flex flex-col h-full",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:325:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:331:19",
 										"data-prohibitions": "[]",
 										className: "absolute top-0 left-0 w-1 h-full bg-success/80"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:326:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:332:19",
 										"data-prohibitions": "[editContent]",
 										className: "flex justify-between items-start mb-4 gap-2",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:327:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:333:21",
 											"data-prohibitions": "[editContent]",
 											className: "min-w-0",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:328:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:334:23",
 												"data-prohibitions": "[editContent]",
 												className: "font-semibold text-base text-foreground group-hover:text-primary mb-1 truncate",
 												children: doc.title
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:331:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:337:23",
 												"data-prohibitions": "[editContent]",
 												className: "text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-md",
 												children: doc.date
 											})]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:335:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:341:21",
 											"data-prohibitions": "[]",
 											className: "flex items-center gap-1.5",
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:336:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:342:23",
 												"data-prohibitions": "[]",
 												variant: "ghost",
 												size: "icon",
@@ -45430,41 +45436,41 @@ function DocumentsTab({ type, isSigned, patientId }) {
 													setDocToDelete(doc);
 												},
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-													"data-uid": "src/components/consultation/DocumentsTab.tsx:345:25",
+													"data-uid": "src/components/consultation/DocumentsTab.tsx:351:25",
 													"data-prohibitions": "[editContent]",
 													className: "h-4 w-4"
 												})
 											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CircleCheck, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:347:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:353:23",
 												"data-prohibitions": "[editContent]",
 												className: "h-5 w-5 text-success shrink-0 -mt-1"
 											})]
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:350:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:356:19",
 										"data-prohibitions": "[editContent]",
 										className: "flex-1 text-sm text-muted-foreground line-clamp-3 font-serif mb-4 opacity-80",
 										children: doc.content
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/consultation/DocumentsTab.tsx:353:19",
+										"data-uid": "src/components/consultation/DocumentsTab.tsx:359:19",
 										"data-prohibitions": "[]",
 										className: "flex gap-2 pt-4 border-t border-border/40 mt-auto",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:354:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:360:21",
 											"data-prohibitions": "[]",
 											variant: "outline",
 											size: "sm",
 											className: "w-full text-xs hover:bg-primary/5 hover:text-primary border-border/50",
 											onClick: () => handlePreview(doc),
 											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:360:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:366:23",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5 mr-1.5"
 											}), "Visualizar"]
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/consultation/DocumentsTab.tsx:363:21",
+											"data-uid": "src/components/consultation/DocumentsTab.tsx:369:21",
 											"data-prohibitions": "[]",
 											variant: "ghost",
 											size: "sm",
@@ -45475,7 +45481,7 @@ function DocumentsTab({ type, isSigned, patientId }) {
 												setTimeout(() => window.print(), 500);
 											},
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, {
-												"data-uid": "src/components/consultation/DocumentsTab.tsx:373:23",
+												"data-uid": "src/components/consultation/DocumentsTab.tsx:379:23",
 												"data-prohibitions": "[editContent]",
 												className: "h-3.5 w-3.5"
 											})
@@ -45488,59 +45494,59 @@ function DocumentsTab({ type, isSigned, patientId }) {
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Dialog, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:383:7",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:389:7",
 				"data-prohibitions": "[]",
 				open: previewOpen,
 				onOpenChange: setPreviewOpen,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:384:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:390:9",
 					"data-prohibitions": "[]",
 					className: "max-w-4xl h-[90vh] p-0 overflow-hidden bg-gray-100/95 flex flex-col border-none shadow-elevation backdrop-blur-sm sm:rounded-xl",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:385:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:391:11",
 						"data-prohibitions": "[]",
 						className: "p-4 px-6 bg-white border-b border-border/50 flex flex-row items-center justify-between shadow-sm sticky top-0 z-10 shrink-0",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogTitle, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:386:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:392:13",
 							"data-prohibitions": "[]",
 							className: "text-primary font-serif text-xl flex items-center gap-2",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:387:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:393:15",
 								"data-prohibitions": "[editContent]",
 								className: "w-5 h-5"
 							}), "Pré-visualização do Documento"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:390:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:396:13",
 							"data-prohibitions": "[]",
 							className: "flex gap-3",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:391:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:397:15",
 								"data-prohibitions": "[]",
 								variant: "outline",
 								size: "sm",
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:392:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:398:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2"
 								}), " Baixar PDF"]
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/consultation/DocumentsTab.tsx:394:15",
+								"data-uid": "src/components/consultation/DocumentsTab.tsx:400:15",
 								"data-prohibitions": "[]",
 								size: "sm",
 								onClick: () => setTimeout(() => window.print(), 500),
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, {
-									"data-uid": "src/components/consultation/DocumentsTab.tsx:395:17",
+									"data-uid": "src/components/consultation/DocumentsTab.tsx:401:17",
 									"data-prohibitions": "[editContent]",
 									className: "h-4 w-4 mr-2"
 								}), " Imprimir"]
 							})]
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ScrollArea, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:400:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:406:11",
 						"data-prohibitions": "[]",
 						className: "flex-1 p-8 flex justify-center w-full",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DocumentA4, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:401:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:407:13",
 							"data-prohibitions": "[editContent]",
 							type: typeLabel,
 							patientName,
@@ -45554,22 +45560,22 @@ function DocumentsTab({ type, isSigned, patientId }) {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialog, {
-				"data-uid": "src/components/consultation/DocumentsTab.tsx:414:7",
+				"data-uid": "src/components/consultation/DocumentsTab.tsx:420:7",
 				"data-prohibitions": "[editContent]",
 				open: !!docToDelete,
 				onOpenChange: (open) => !open && setDocToDelete(null),
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogContent, {
-					"data-uid": "src/components/consultation/DocumentsTab.tsx:415:9",
+					"data-uid": "src/components/consultation/DocumentsTab.tsx:421:9",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogHeader, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:416:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:422:11",
 						"data-prohibitions": "[editContent]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogTitle, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:417:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:423:13",
 							"data-prohibitions": "[editContent]",
 							children: ["Excluir ", type === "receita" ? "Receita" : "Laudo"]
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogDescription, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:418:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:424:13",
 							"data-prohibitions": "[editContent]",
 							children: [
 								"Tem certeza que deseja excluir est",
@@ -45578,14 +45584,14 @@ function DocumentsTab({ type, isSigned, patientId }) {
 							]
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AlertDialogFooter, {
-						"data-uid": "src/components/consultation/DocumentsTab.tsx:423:11",
+						"data-uid": "src/components/consultation/DocumentsTab.tsx:429:11",
 						"data-prohibitions": "[]",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogCancel, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:424:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:430:13",
 							"data-prohibitions": "[]",
 							children: "Cancelar"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AlertDialogAction, {
-							"data-uid": "src/components/consultation/DocumentsTab.tsx:425:13",
+							"data-uid": "src/components/consultation/DocumentsTab.tsx:431:13",
 							"data-prohibitions": "[]",
 							onClick: handleDeleteConfirm,
 							className: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
@@ -55118,4 +55124,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-CspJ8oUr.js.map
+//# sourceMappingURL=index-k1aNsYlA.js.map

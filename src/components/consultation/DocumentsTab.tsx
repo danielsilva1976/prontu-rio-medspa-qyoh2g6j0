@@ -82,7 +82,7 @@ export default function DocumentsTab({
     const tmpl = templates.find((t) => t.id === val)
     if (tmpl) {
       setContent(tmpl.content)
-      if (!title) setTitle(tmpl.title)
+      if (!title) setTitle(tmpl.name)
     } else {
       setContent('')
     }
@@ -193,11 +193,17 @@ export default function DocumentsTab({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Novo Documento em Branco</SelectItem>
-                  {availableTemplates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.title}
+                  {availableTemplates.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      Nenhum modelo encontrado
                     </SelectItem>
-                  ))}
+                  ) : (
+                    availableTemplates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
