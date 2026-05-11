@@ -1,7 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import useUserStore from '@/stores/useUserStore'
-import DocumentGenerator from '@/components/documents/DocumentGenerator'
 import TemplatesManager from '@/components/documents/TemplatesManager'
 import LayoutConfigForm from '@/components/documents/LayoutConfigForm'
 
@@ -24,11 +23,8 @@ export default function Documents() {
         </div>
       </div>
 
-      <Tabs defaultValue="gerador" className="flex-1 flex flex-col min-h-0 print:block w-full">
+      <Tabs defaultValue="modelos" className="flex-1 flex flex-col min-h-0 print:block w-full">
         <TabsList className="w-fit mb-4 print:hidden bg-muted/50">
-          <TabsTrigger value="gerador" className="data-[state=active]:bg-white">
-            Emissão Rápida
-          </TabsTrigger>
           <TabsTrigger value="modelos" className="data-[state=active]:bg-white">
             Modelos Salvos
           </TabsTrigger>
@@ -37,12 +33,6 @@ export default function Documents() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value="gerador"
-          className="flex-1 min-h-0 print:block m-0 h-full focus-visible:outline-none"
-        >
-          <DocumentGenerator />
-        </TabsContent>
         <TabsContent
           value="modelos"
           className="flex-1 m-0 overflow-y-auto focus-visible:outline-none"

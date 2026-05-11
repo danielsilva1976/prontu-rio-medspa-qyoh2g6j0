@@ -52299,232 +52299,6 @@ function Consultation() {
 	});
 }
 //#endregion
-//#region src/components/documents/DocumentGenerator.tsx
-function DocumentGenerator() {
-	const { toast } = useToast();
-	const { layout, templates } = useDocumentStore();
-	const [docType, setDocType] = (0, import_react.useState)("receita");
-	const [patientName, setPatientName] = (0, import_react.useState)("Isabella Rodrigues");
-	const [content, setContent] = (0, import_react.useState)("");
-	const currentDate = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR", {
-		day: "2-digit",
-		month: "long",
-		year: "numeric"
-	});
-	const typeTemplates = templates.filter((t) => t.type === docType);
-	const handlePrint = () => {
-		toast({ title: "Preparando impressão..." });
-		setTimeout(() => window.print(), 500);
-	};
-	const handleTemplateSelect = (val) => {
-		const tmpl = templates.find((t) => t.id === val);
-		if (tmpl) setContent(tmpl.content);
-	};
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/documents/DocumentGenerator.tsx:46:5",
-		"data-prohibitions": "[editContent]",
-		className: "flex-1 grid lg:grid-cols-[1fr_1.2fr] gap-8 min-h-0 print:block print:w-full h-full",
-		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-			"data-uid": "src/components/documents/DocumentGenerator.tsx:47:7",
-			"data-prohibitions": "[editContent]",
-			className: "flex flex-col gap-6 overflow-y-auto pr-2 pb-8 print:hidden",
-			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Tabs, {
-				"data-uid": "src/components/documents/DocumentGenerator.tsx:48:9",
-				"data-prohibitions": "[]",
-				value: docType,
-				onValueChange: (v) => setDocType(v),
-				className: "w-full",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-					"data-uid": "src/components/documents/DocumentGenerator.tsx:53:11",
-					"data-prohibitions": "[]",
-					className: "grid w-full grid-cols-2 bg-muted/50 p-1 rounded-xl",
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-						"data-uid": "src/components/documents/DocumentGenerator.tsx:54:13",
-						"data-prohibitions": "[]",
-						value: "receita",
-						className: "rounded-lg",
-						children: "Receituário"
-					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-						"data-uid": "src/components/documents/DocumentGenerator.tsx:57:13",
-						"data-prohibitions": "[]",
-						value: "laudo",
-						className: "rounded-lg",
-						children: "Laudo Médico"
-					})]
-				})
-			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-				"data-uid": "src/components/documents/DocumentGenerator.tsx:63:9",
-				"data-prohibitions": "[editContent]",
-				className: "border-none shadow-subtle flex-1 bg-white relative overflow-hidden",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-					"data-uid": "src/components/documents/DocumentGenerator.tsx:64:11",
-					"data-prohibitions": "[]",
-					className: "absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/40 to-primary"
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardContent, {
-					"data-uid": "src/components/documents/DocumentGenerator.tsx:65:11",
-					"data-prohibitions": "[editContent]",
-					className: "p-6 pt-8 space-y-6 h-full flex flex-col",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/documents/DocumentGenerator.tsx:66:13",
-							"data-prohibitions": "[]",
-							className: "space-y-2 shrink-0",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:67:15",
-								"data-prohibitions": "[]",
-								className: "text-foreground/80",
-								children: "Vincular Paciente (Busca Belle Software)"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:68:15",
-								"data-prohibitions": "[]",
-								value: patientName,
-								onValueChange: setPatientName,
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:69:17",
-									"data-prohibitions": "[]",
-									className: "bg-muted/20 border-border rounded-xl",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-										"data-uid": "src/components/documents/DocumentGenerator.tsx:70:19",
-										"data-prohibitions": "[editContent]",
-										placeholder: "Selecione o paciente..."
-									})
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:72:17",
-									"data-prohibitions": "[]",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/documents/DocumentGenerator.tsx:73:19",
-											"data-prohibitions": "[]",
-											value: "Isabella Rodrigues",
-											children: "Isabella Rodrigues"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/documents/DocumentGenerator.tsx:74:19",
-											"data-prohibitions": "[]",
-											value: "Carolina Mendes Costa",
-											children: "Carolina Mendes Costa"
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/documents/DocumentGenerator.tsx:75:19",
-											"data-prohibitions": "[]",
-											value: "Juliana Carvalho",
-											children: "Juliana Carvalho"
-										})
-									]
-								})]
-							})]
-						}),
-						docType === "laudo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/documents/DocumentGenerator.tsx:81:15",
-							"data-prohibitions": "[]",
-							className: "space-y-2 shrink-0",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:82:17",
-								"data-prohibitions": "[]",
-								className: "text-foreground/80",
-								children: "Título do Laudo"
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:83:17",
-								"data-prohibitions": "[editContent]",
-								placeholder: "Ex: Laudo de Procedimento Estético",
-								className: "rounded-xl"
-							})]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/documents/DocumentGenerator.tsx:87:13",
-							"data-prohibitions": "[editContent]",
-							className: "space-y-2 flex-1 flex flex-col",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:88:15",
-								"data-prohibitions": "[editContent]",
-								className: "flex justify-between items-end mb-1",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Label$1, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:89:17",
-									"data-prohibitions": "[]",
-									className: "text-foreground/80",
-									children: "Conteúdo do Documento"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:90:17",
-									"data-prohibitions": "[editContent]",
-									onValueChange: handleTemplateSelect,
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-										"data-uid": "src/components/documents/DocumentGenerator.tsx:91:19",
-										"data-prohibitions": "[]",
-										className: "h-8 w-[200px] text-xs bg-primary/5 text-primary border-primary/20",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-											"data-uid": "src/components/documents/DocumentGenerator.tsx:92:21",
-											"data-prohibitions": "[editContent]",
-											placeholder: "Carregar modelo salvo..."
-										})
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-										"data-uid": "src/components/documents/DocumentGenerator.tsx:94:19",
-										"data-prohibitions": "[editContent]",
-										children: typeTemplates.map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-											"data-uid": "src/components/documents/DocumentGenerator.tsx:96:23",
-											"data-prohibitions": "[editContent]",
-											value: t.id,
-											children: t.name
-										}, t.id))
-									})]
-								})]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:103:15",
-								"data-prohibitions": "[editContent]",
-								value: content,
-								onChange: (e) => setContent(e.target.value),
-								className: "flex-1 min-h-[300px] resize-none bg-muted/10 border-border rounded-xl p-5 text-[15px] leading-relaxed font-serif",
-								placeholder: "Digite o conteúdo aqui..."
-							})]
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/documents/DocumentGenerator.tsx:110:13",
-							"data-prohibitions": "[]",
-							className: "flex justify-end gap-3 pt-4",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:111:15",
-								"data-prohibitions": "[]",
-								variant: "outline",
-								onClick: handlePrint,
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:112:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-4 h-4 mr-2"
-								}), " Imprimir"]
-							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-								"data-uid": "src/components/documents/DocumentGenerator.tsx:114:15",
-								"data-prohibitions": "[]",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, {
-									"data-uid": "src/components/documents/DocumentGenerator.tsx:115:17",
-									"data-prohibitions": "[editContent]",
-									className: "w-4 h-4 mr-2"
-								}), " Baixar PDF"]
-							})]
-						})
-					]
-				})]
-			})]
-		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			"data-uid": "src/components/documents/DocumentGenerator.tsx:122:7",
-			"data-prohibitions": "[]",
-			className: "hidden lg:flex items-start justify-center bg-muted/20 rounded-2xl border border-border/50 overflow-y-auto p-8 relative print:block print:p-0 print:border-none print:bg-transparent print:h-auto print:overflow-visible",
-			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/documents/DocumentGenerator.tsx:123:9",
-				"data-prohibitions": "[]",
-				className: "transform xl:scale-[0.85] 2xl:scale-95 origin-top print:scale-100 flex justify-center w-full",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DocumentA4, {
-					"data-uid": "src/components/documents/DocumentGenerator.tsx:124:11",
-					"data-prohibitions": "[editContent]",
-					type: docType === "receita" ? "Receituário Médico" : "Laudo Médico",
-					patientName,
-					date: currentDate,
-					content,
-					config: layout
-				})
-			})
-		})]
-	});
-}
-//#endregion
 //#region src/components/documents/TemplatesManager.tsx
 function TemplatesManager() {
 	const { templates, addTemplate, updateTemplate, removeTemplate, isLoading } = useDocumentStore();
@@ -53188,100 +52962,80 @@ function LayoutConfigForm() {
 function Documents() {
 	const { currentUser } = useUserStore();
 	if (currentUser.role !== "Médico") return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Navigate, {
-		"data-uid": "src/pages/Documents.tsx:13:12",
+		"data-uid": "src/pages/Documents.tsx:12:12",
 		"data-prohibitions": "[editContent]",
 		to: "/",
 		replace: true
 	});
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/pages/Documents.tsx:17:5",
+		"data-uid": "src/pages/Documents.tsx:16:5",
 		"data-prohibitions": "[]",
 		className: "space-y-6 animate-slide-up h-[calc(100vh-8rem)] flex flex-col p-6 lg:p-8 print:p-0 print:h-auto print:block",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-			"data-uid": "src/pages/Documents.tsx:18:7",
+			"data-uid": "src/pages/Documents.tsx:17:7",
 			"data-prohibitions": "[]",
 			className: "flex items-center justify-between shrink-0 print:hidden",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/pages/Documents.tsx:19:9",
+				"data-uid": "src/pages/Documents.tsx:18:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", {
-					"data-uid": "src/pages/Documents.tsx:20:11",
+					"data-uid": "src/pages/Documents.tsx:19:11",
 					"data-prohibitions": "[]",
 					className: "text-3xl font-serif text-primary tracking-tight",
 					children: "Documentos Legais"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					"data-uid": "src/pages/Documents.tsx:21:11",
+					"data-uid": "src/pages/Documents.tsx:20:11",
 					"data-prohibitions": "[]",
 					className: "text-muted-foreground mt-1",
 					children: "Gere documentos e configure os padrões visuais da clínica"
 				})]
 			})
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Tabs, {
-			"data-uid": "src/pages/Documents.tsx:27:7",
+			"data-uid": "src/pages/Documents.tsx:26:7",
 			"data-prohibitions": "[]",
-			defaultValue: "gerador",
+			defaultValue: "modelos",
 			className: "flex-1 flex flex-col min-h-0 print:block w-full",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TabsList, {
-					"data-uid": "src/pages/Documents.tsx:28:9",
+					"data-uid": "src/pages/Documents.tsx:27:9",
 					"data-prohibitions": "[]",
 					className: "w-fit mb-4 print:hidden bg-muted/50",
-					children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-							"data-uid": "src/pages/Documents.tsx:29:11",
-							"data-prohibitions": "[]",
-							value: "gerador",
-							className: "data-[state=active]:bg-white",
-							children: "Emissão Rápida"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-							"data-uid": "src/pages/Documents.tsx:32:11",
-							"data-prohibitions": "[]",
-							value: "modelos",
-							className: "data-[state=active]:bg-white",
-							children: "Modelos Salvos"
-						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
-							"data-uid": "src/pages/Documents.tsx:35:11",
-							"data-prohibitions": "[]",
-							value: "config",
-							className: "data-[state=active]:bg-white",
-							children: "Layout e Impressão"
-						})
-					]
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
+						"data-uid": "src/pages/Documents.tsx:28:11",
+						"data-prohibitions": "[]",
+						value: "modelos",
+						className: "data-[state=active]:bg-white",
+						children: "Modelos Salvos"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsTrigger, {
+						"data-uid": "src/pages/Documents.tsx:31:11",
+						"data-prohibitions": "[]",
+						value: "config",
+						className: "data-[state=active]:bg-white",
+						children: "Layout e Impressão"
+					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-					"data-uid": "src/pages/Documents.tsx:40:9",
-					"data-prohibitions": "[]",
-					value: "gerador",
-					className: "flex-1 min-h-0 print:block m-0 h-full focus-visible:outline-none",
-					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DocumentGenerator, {
-						"data-uid": "src/pages/Documents.tsx:44:11",
-						"data-prohibitions": "[editContent]"
-					})
-				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-					"data-uid": "src/pages/Documents.tsx:46:9",
+					"data-uid": "src/pages/Documents.tsx:36:9",
 					"data-prohibitions": "[]",
 					value: "modelos",
 					className: "flex-1 m-0 overflow-y-auto focus-visible:outline-none",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-						"data-uid": "src/pages/Documents.tsx:50:11",
+						"data-uid": "src/pages/Documents.tsx:40:11",
 						"data-prohibitions": "[]",
 						className: "max-w-5xl",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TemplatesManager, {
-							"data-uid": "src/pages/Documents.tsx:51:13",
+							"data-uid": "src/pages/Documents.tsx:41:13",
 							"data-prohibitions": "[editContent]"
 						})
 					})
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TabsContent, {
-					"data-uid": "src/pages/Documents.tsx:54:9",
+					"data-uid": "src/pages/Documents.tsx:44:9",
 					"data-prohibitions": "[]",
 					value: "config",
 					className: "flex-1 m-0 overflow-y-auto focus-visible:outline-none",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LayoutConfigForm, {
-						"data-uid": "src/pages/Documents.tsx:58:11",
+						"data-uid": "src/pages/Documents.tsx:48:11",
 						"data-prohibitions": "[editContent]"
 					})
 				})
@@ -55364,4 +55118,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-a9PTAsUu.js.map
+//# sourceMappingURL=index-CspJ8oUr.js.map
