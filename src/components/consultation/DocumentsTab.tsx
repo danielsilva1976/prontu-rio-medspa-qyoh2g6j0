@@ -8,6 +8,7 @@ import {
   ShieldAlert,
   ArrowLeft,
   Trash2,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,7 +58,8 @@ export default function DocumentsTab({
 }) {
   const { addLog } = useAuditStore()
   const documentStore = useDocumentStore()
-  const { templates, layout, issuedDocs, issueDocument, removeIssuedDocument } = documentStore
+  const { templates, layout, issuedDocs, issueDocument, removeIssuedDocument, isLoading } =
+    documentStore
   const { patients } = usePatientStore()
   const { toast } = useToast()
 
@@ -73,6 +75,7 @@ export default function DocumentsTab({
   const [previewOpen, setPreviewOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<IssuedDocument | null>(null)
   const [isSignDialogOpen, setIsSignDialogOpen] = useState(false)
+  const [isSigning, setIsSigning] = useState(false)
 
   const availableTemplates = templates.filter((t) => t.type === type)
   const patientDocs = issuedDocs.filter((d) => d.patientId === patientId && d.type === type)
@@ -97,7 +100,15 @@ export default function DocumentsTab({
     if (!docToDelete) return
 
     try {
-      await pb.collection('medical_records').delete(docToDelete.id)
+      await removeIssuedDocument(docToDelete.id)
+      addLog(`Documento excluído (${type})`, patientId)
+      toast({
+        title: 'Excluído com sucesso',
+        description:
+          type === 'receita'
+            ? 'A receita foi removida permanentemente.'
+            : 'O laudo foi removido permanentemente.',
+      })
     } catch (e: any) {
       if (e.status === 403) {
         toast({
@@ -105,53 +116,48 @@ export default function DocumentsTab({
           description: 'Você não tem permissão para excluir este registro.',
           variant: 'destructive',
         })
-        setDocToDelete(null)
-        return
-      }
-      if (e.status && e.status !== 404) {
+      } else {
         console.error('Erro ao excluir do PocketBase:', e)
         toast({
           title: 'Erro de comunicação',
           description: 'Ocorreu um erro ao excluir o registro no servidor.',
           variant: 'destructive',
         })
-        setDocToDelete(null)
-        return
       }
+    } finally {
+      setDocToDelete(null)
     }
-
-    removeIssuedDocument(docToDelete.id)
-
-    addLog(`Documento excluído (${type})`, patientId)
-    toast({
-      title: 'Excluído com sucesso',
-      description:
-        type === 'receita'
-          ? 'A receita foi removida permanentemente.'
-          : 'O laudo foi removido permanentemente.',
-    })
-
-    setDocToDelete(null)
   }
 
-  const handleConfirmAndSign = () => {
-    const newDoc = issueDocument({
-      patientId,
-      type,
-      title: title || (type === 'receita' ? 'Nova Receita' : 'Novo Laudo'),
-      content,
-      status: 'Assinado',
-    })
-    addLog(`Documento gerado e assinado (${type})`, patientId)
-    setIsSignDialogOpen(false)
-    setIsCreating(false)
-    setTitle('')
-    setContent('')
-    setSelectedTemplateId('none')
+  const handleConfirmAndSign = async () => {
+    setIsSigning(true)
+    try {
+      const newDoc = await issueDocument({
+        patientId,
+        type,
+        title: title || (type === 'receita' ? 'Nova Receita' : 'Novo Laudo'),
+        content,
+        status: 'Assinado',
+      })
+      addLog(`Documento gerado e assinado (${type})`, patientId)
+      setIsSignDialogOpen(false)
+      setIsCreating(false)
+      setTitle('')
+      setContent('')
+      setSelectedTemplateId('none')
 
-    // Automatically trigger preview for the newly issued document
-    setSelectedDoc(newDoc)
-    setPreviewOpen(true)
+      // Automatically trigger preview for the newly issued document
+      setSelectedDoc(newDoc)
+      setPreviewOpen(true)
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao salvar documento',
+        description: 'Não foi possível salvar o documento no servidor.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSigning(false)
+    }
   }
 
   const titleText = type === 'receita' ? 'Receitas' : 'Laudos'
@@ -272,9 +278,10 @@ export default function DocumentsTab({
                   </div>
                   <Button
                     onClick={handleConfirmAndSign}
+                    disabled={isSigning}
                     className="w-full bg-primary hover:bg-primary/90 h-11 text-base"
                   >
-                    Confirmar e Assinar
+                    {isSigning ? 'Assinando...' : 'Confirmar e Assinar'}
                   </Button>
                 </div>
               </DialogContent>
@@ -313,7 +320,11 @@ export default function DocumentsTab({
           )}
         </CardHeader>
         <CardContent>
-          {patientDocs.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12 text-muted-foreground">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" /> Carregando documentos...
+            </div>
+          ) : patientDocs.length === 0 ? (
             <div className="text-center py-12 bg-muted/10 rounded-xl border border-dashed border-border">
               <FileText className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground text-sm">

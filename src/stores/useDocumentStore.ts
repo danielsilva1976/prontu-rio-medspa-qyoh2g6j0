@@ -38,8 +38,8 @@ type DocumentState = {
   updateTemplate: (id: string, t: Partial<DocTemplate>) => Promise<void>
   removeTemplate: (id: string) => Promise<void>
   updateLayout: (l: Partial<LayoutConfig>) => Promise<void>
-  issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => IssuedDocument
-  removeIssuedDocument: (id: string) => void
+  issueDocument: (doc: Omit<IssuedDocument, 'id' | 'date'>) => Promise<IssuedDocument>
+  removeIssuedDocument: (id: string) => Promise<void>
 }
 
 const defaultLayout: LayoutConfig = {
@@ -54,18 +54,7 @@ const defaultLayout: LayoutConfig = {
     'Documento assinado digitalmente conforme MP nº 2.200-2/2001, que institui a Infraestrutura de Chaves Públicas Brasileira - ICP-Brasil.',
 }
 
-const defaultIssuedDocs: IssuedDocument[] = [
-  {
-    id: 'doc-1',
-    patientId: 'p-001',
-    type: 'receita',
-    title: 'Receituário Skincare Routine',
-    date: '17/03/2026',
-    status: 'Assinado',
-    content:
-      'Uso Tópico:\n\n1. Ácido Retinóico 0.025% creme - 30g\n   Aplicar uma fina camada no rosto à noite, 3x na semana.\n\n2. Vitamina C 15% sérum - 30ml\n   Aplicar no rosto pela manhã, antes do protetor solar.\n\n3. Protetor Solar FPS 50+ toque seco\n   Aplicar generosamente pela manhã e reaplicar a cada 3 horas.',
-  },
-]
+const defaultIssuedDocs: IssuedDocument[] = []
 
 const DocumentContext = createContext<DocumentState>({} as DocumentState)
 
@@ -82,12 +71,13 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
         if (!pb.authStore.isValid) return
         setIsLoading(true)
 
-        const [templatesRecords, layoutRecord] = await Promise.allSettled([
+        const [templatesRecords, layoutRecord, docsRecords] = await Promise.allSettled([
           pb.collection('doc_templates').getFullList({ sort: '-created' }),
           pb
             .collection('app_settings')
             .getFirstListItem('key="document_layout_config"')
             .catch(() => null),
+          pb.collection('medical_records').getFullList({ sort: '-created' }),
         ])
 
         if (!active) return
@@ -105,6 +95,26 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
 
         if (layoutRecord.status === 'fulfilled' && layoutRecord.value && layoutRecord.value.value) {
           setLayout(JSON.parse(layoutRecord.value.value))
+        }
+
+        if (docsRecords.status === 'fulfilled') {
+          const docs = docsRecords.value
+            .filter(
+              (r) =>
+                r.content &&
+                typeof r.content === 'object' &&
+                (r.content.type === 'receita' || r.content.type === 'laudo'),
+            )
+            .map((r) => ({
+              id: r.id,
+              patientId: r.patient,
+              type: r.content.type,
+              title: r.content.title,
+              date: new Date(r.appointment_date || r.created).toLocaleDateString('pt-BR'),
+              content: r.content.content,
+              status: r.content.status || 'Assinado',
+            }))
+          setIssuedDocs(docs)
         }
       } catch (err) {
         console.error('Failed to load documents data', err)
@@ -163,17 +173,33 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const issueDocument = (doc: Omit<IssuedDocument, 'id' | 'date'>) => {
+  const issueDocument = async (doc: Omit<IssuedDocument, 'id' | 'date'>) => {
+    const payload = {
+      patient: doc.patientId,
+      content: {
+        type: doc.type,
+        title: doc.title,
+        content: doc.content,
+        status: doc.status,
+      },
+      professional_name: layout.proName || '',
+      professional_registration: layout.proRegistry || '',
+      appointment_date: new Date().toISOString(),
+    }
+
+    const record = await pb.collection('medical_records').create(payload)
+
     const newDoc: IssuedDocument = {
       ...doc,
-      id: `doc-${Date.now()}`,
-      date: new Date().toLocaleDateString('pt-BR'),
+      id: record.id,
+      date: new Date(record.appointment_date || record.created).toLocaleDateString('pt-BR'),
     }
     setIssuedDocs((prev) => [newDoc, ...prev])
     return newDoc
   }
 
-  const removeIssuedDocument = (id: string) => {
+  const removeIssuedDocument = async (id: string) => {
+    await pb.collection('medical_records').delete(id)
     setIssuedDocs((prev) => prev.filter((d) => d.id !== id))
   }
 
