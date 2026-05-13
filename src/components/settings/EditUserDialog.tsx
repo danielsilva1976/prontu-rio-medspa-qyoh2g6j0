@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import useUserStore, { User, UserRole } from '@/stores/useUserStore'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { getInitials } from '@/lib/utils'
 
 const formSchema = z.object({
@@ -113,41 +113,19 @@ export function EditUserDialog({ user }: { user: User }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <FormField
-              control={form.control}
-              name="avatar"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Foto de Perfil</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={field.value} className="object-cover" />
-                        <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
-                          {getInitials(form.watch('name'))}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            const reader = new FileReader()
-                            reader.onloadend = () => {
-                              field.onChange(reader.result as string)
-                            }
-                            reader.readAsDataURL(file)
-                          }
-                        }}
-                        className="cursor-pointer flex-1"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex items-center gap-4 pb-2">
+              <Avatar className="h-9 w-9 border border-border">
+                <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">
+                  {getInitials(form.watch('name'))}
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">Foto de Perfil</p>
+                <p className="text-sm text-muted-foreground">
+                  A imagem de perfil utiliza as iniciais do profissional.
+                </p>
+              </div>
+            </div>
             <FormField
               control={form.control}
               name="name"
