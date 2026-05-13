@@ -9,9 +9,10 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Trash2, Shield, User, ShieldAlert } from 'lucide-react'
 import useUserStore from '@/stores/useUserStore'
+import { getInitials } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { AddUserDialog } from './AddUserDialog'
 import { EditUserDialog } from './EditUserDialog'
@@ -66,9 +67,8 @@ export function UserManagement({ title, description }: UserManagementProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 border border-border">
-                        <AvatarImage src={user.avatar} className="object-cover" />
                         <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">
-                          {user.name.substring(0, 2).toUpperCase()}
+                          {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium text-foreground">{user.name}</span>
