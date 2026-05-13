@@ -174,6 +174,7 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const issueDocument = async (doc: Omit<IssuedDocument, 'id' | 'date'>) => {
+    const now = new Date()
     const payload = {
       patient: doc.patientId,
       content: {
@@ -184,7 +185,8 @@ export const DocumentProvider = ({ children }: { children: ReactNode }) => {
       },
       professional_name: layout.proName || '',
       professional_registration: layout.proRegistry || '',
-      appointment_date: new Date().toISOString(),
+      appointment_date: now.toISOString(),
+      horario: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     }
 
     const record = await pb.collection('medical_records').create(payload)

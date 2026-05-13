@@ -74,7 +74,6 @@ export default function DocumentsTab({
 
   const [previewOpen, setPreviewOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<IssuedDocument | null>(null)
-  const [isSignDialogOpen, setIsSignDialogOpen] = useState(false)
   const [isSigning, setIsSigning] = useState(false)
 
   const availableTemplates = templates.filter((t) => t.type === type)
@@ -140,11 +139,15 @@ export default function DocumentsTab({
         status: 'Assinado',
       })
       addLog(`Documento gerado e assinado (${type})`, patientId)
-      setIsSignDialogOpen(false)
       setIsCreating(false)
       setTitle('')
       setContent('')
       setSelectedTemplateId('none')
+
+      toast({
+        title: 'Documento emitido',
+        description: 'O documento foi salvo e assinado com sucesso.',
+      })
 
       // Automatically trigger preview for the newly issued document
       setSelectedDoc(newDoc)
@@ -244,48 +247,18 @@ export default function DocumentsTab({
             <Button variant="outline" onClick={() => setIsCreating(false)}>
               Cancelar
             </Button>
-            <Dialog open={isSignDialogOpen} onOpenChange={setIsSignDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  disabled={!content.trim()}
-                  className="bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  Emitir e Assinar
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md rounded-xl">
-                <DialogHeader>
-                  <DialogTitle className="font-serif text-xl text-primary">
-                    Assinatura Digital
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Insira seu PIN para aplicar sua assinatura digital e salvar o documento oficial
-                    no histórico do paciente.
-                  </p>
-                  <div className="space-y-3 bg-muted/20 p-4 rounded-lg border border-border">
-                    <Label className="text-center block text-foreground/80">
-                      PIN de Assinatura
-                    </Label>
-                    <Input
-                      type="password"
-                      placeholder="••••"
-                      className="text-center text-2xl tracking-[1em] h-12 bg-white"
-                      maxLength={4}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleConfirmAndSign}
-                    disabled={isSigning}
-                    className="w-full bg-primary hover:bg-primary/90 h-11 text-base"
-                  >
-                    {isSigning ? 'Assinando...' : 'Confirmar e Assinar'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              disabled={!content.trim() || isSigning}
+              onClick={handleConfirmAndSign}
+              className="bg-primary hover:bg-primary/90 gap-2 rounded-lg shadow-sm"
+            >
+              {isSigning ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              {isSigning ? 'Emitindo...' : 'Emitir e Assinar'}
+            </Button>
           </div>
         </CardContent>
       </Card>
