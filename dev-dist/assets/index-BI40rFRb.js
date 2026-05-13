@@ -53679,136 +53679,166 @@ function EditUserDialog({ user }) {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
-		"data-uid": "src/components/settings/EditUserDialog.tsx:95:5",
+		"data-uid": "src/components/settings/EditUserDialog.tsx:96:5",
 		"data-prohibitions": "[]",
 		open,
 		onOpenChange: setOpen,
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
-			"data-uid": "src/components/settings/EditUserDialog.tsx:96:7",
+			"data-uid": "src/components/settings/EditUserDialog.tsx:97:7",
 			"data-prohibitions": "[]",
 			asChild: true,
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-				"data-uid": "src/components/settings/EditUserDialog.tsx:97:9",
+				"data-uid": "src/components/settings/EditUserDialog.tsx:98:9",
 				"data-prohibitions": "[]",
 				variant: "ghost",
 				size: "icon",
 				className: "h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10",
 				title: "Editar Usuário",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Pen, {
-					"data-uid": "src/components/settings/EditUserDialog.tsx:103:11",
+					"data-uid": "src/components/settings/EditUserDialog.tsx:104:11",
 					"data-prohibitions": "[editContent]",
 					className: "w-4 h-4"
 				})
 			})
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
-			"data-uid": "src/components/settings/EditUserDialog.tsx:106:7",
+			"data-uid": "src/components/settings/EditUserDialog.tsx:107:7",
 			"data-prohibitions": "[]",
 			className: "sm:max-w-[425px]",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
-				"data-uid": "src/components/settings/EditUserDialog.tsx:107:9",
+				"data-uid": "src/components/settings/EditUserDialog.tsx:108:9",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
-					"data-uid": "src/components/settings/EditUserDialog.tsx:108:11",
+					"data-uid": "src/components/settings/EditUserDialog.tsx:109:11",
 					"data-prohibitions": "[]",
 					className: "font-serif text-xl text-primary",
 					children: "Editar Usuário"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogDescription, {
-					"data-uid": "src/components/settings/EditUserDialog.tsx:109:11",
+					"data-uid": "src/components/settings/EditUserDialog.tsx:110:11",
 					"data-prohibitions": "[]",
 					children: "Atualize as informações e a foto de perfil do membro da equipe."
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Form, {
-				"data-uid": "src/components/settings/EditUserDialog.tsx:113:9",
+				"data-uid": "src/components/settings/EditUserDialog.tsx:114:9",
 				"data-prohibitions": "[]",
 				...form,
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
-					"data-uid": "src/components/settings/EditUserDialog.tsx:114:11",
+					"data-uid": "src/components/settings/EditUserDialog.tsx:115:11",
 					"data-prohibitions": "[]",
 					onSubmit: form.handleSubmit(onSubmit),
 					className: "space-y-4 pt-4",
 					children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-							"data-uid": "src/components/settings/EditUserDialog.tsx:115:13",
+							"data-uid": "src/components/settings/EditUserDialog.tsx:116:13",
 							"data-prohibitions": "[editContent]",
 							control: form.control,
 							name: "avatar",
 							render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:119:17",
-								"data-prohibitions": "[]",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:120:17",
+								"data-prohibitions": "[editContent]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:120:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:121:19",
 										"data-prohibitions": "[]",
 										children: "Foto de Perfil"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:121:19",
-										"data-prohibitions": "[]",
-										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ImageUpload, {
-											"data-uid": "src/components/settings/EditUserDialog.tsx:122:21",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:122:19",
+										"data-prohibitions": "[editContent]",
+										children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+											"data-uid": "src/components/settings/EditUserDialog.tsx:123:21",
 											"data-prohibitions": "[editContent]",
-											value: field.value,
-											onChange: field.onChange,
-											nameInitials: form.watch("name") || "?"
+											className: "flex items-center gap-4",
+											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Avatar, {
+												"data-uid": "src/components/settings/EditUserDialog.tsx:124:23",
+												"data-prohibitions": "[editContent]",
+												className: "h-16 w-16",
+												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarImage, {
+													"data-uid": "src/components/settings/EditUserDialog.tsx:125:25",
+													"data-prohibitions": "[editContent]",
+													src: field.value,
+													className: "object-cover"
+												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
+													"data-uid": "src/components/settings/EditUserDialog.tsx:126:25",
+													"data-prohibitions": "[editContent]",
+													className: "bg-primary/10 text-primary font-medium text-lg",
+													children: getInitials(form.watch("name"))
+												})]
+											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+												"data-uid": "src/components/settings/EditUserDialog.tsx:130:23",
+												"data-prohibitions": "[editContent]",
+												type: "file",
+												accept: "image/*",
+												onChange: (e) => {
+													const file = e.target.files?.[0];
+													if (file) {
+														const reader = new FileReader();
+														reader.onloadend = () => {
+															field.onChange(reader.result);
+														};
+														reader.readAsDataURL(file);
+													}
+												},
+												className: "cursor-pointer flex-1"
+											})]
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:128:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:147:19",
 										"data-prohibitions": "[editContent]"
 									})
 								]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-							"data-uid": "src/components/settings/EditUserDialog.tsx:132:13",
+							"data-uid": "src/components/settings/EditUserDialog.tsx:151:13",
 							"data-prohibitions": "[editContent]",
 							control: form.control,
 							name: "name",
 							render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:136:17",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:155:17",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:137:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:156:19",
 										"data-prohibitions": "[]",
 										children: "Nome Completo"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:138:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:157:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/EditUserDialog.tsx:139:21",
+											"data-uid": "src/components/settings/EditUserDialog.tsx:158:21",
 											"data-prohibitions": "[editContent]",
 											placeholder: "Ex: Dra. Juliana",
 											...field
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:141:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:160:19",
 										"data-prohibitions": "[editContent]"
 									})
 								]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-							"data-uid": "src/components/settings/EditUserDialog.tsx:145:13",
+							"data-uid": "src/components/settings/EditUserDialog.tsx:164:13",
 							"data-prohibitions": "[editContent]",
 							control: form.control,
 							name: "email",
 							render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:149:17",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:168:17",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:150:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:169:19",
 										"data-prohibitions": "[]",
 										children: "E-mail"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:151:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:170:19",
 										"data-prohibitions": "[]",
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-											"data-uid": "src/components/settings/EditUserDialog.tsx:152:21",
+											"data-uid": "src/components/settings/EditUserDialog.tsx:171:21",
 											"data-prohibitions": "[editContent]",
 											type: "email",
 											placeholder: "email@clinica.com",
@@ -53816,61 +53846,61 @@ function EditUserDialog({ user }) {
 										})
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:154:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:173:19",
 										"data-prohibitions": "[editContent]"
 									})
 								]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormField, {
-							"data-uid": "src/components/settings/EditUserDialog.tsx:158:13",
+							"data-uid": "src/components/settings/EditUserDialog.tsx:177:13",
 							"data-prohibitions": "[editContent]",
 							control: form.control,
 							name: "role",
 							render: ({ field }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(FormItem, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:162:17",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:181:17",
 								"data-prohibitions": "[]",
 								children: [
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormLabel, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:163:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:182:19",
 										"data-prohibitions": "[]",
 										children: "Nível de Acesso"
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:164:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:183:19",
 										"data-prohibitions": "[]",
 										onValueChange: field.onChange,
 										defaultValue: field.value,
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormControl, {
-											"data-uid": "src/components/settings/EditUserDialog.tsx:165:21",
+											"data-uid": "src/components/settings/EditUserDialog.tsx:184:21",
 											"data-prohibitions": "[]",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-												"data-uid": "src/components/settings/EditUserDialog.tsx:166:23",
+												"data-uid": "src/components/settings/EditUserDialog.tsx:185:23",
 												"data-prohibitions": "[]",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {
-													"data-uid": "src/components/settings/EditUserDialog.tsx:167:25",
+													"data-uid": "src/components/settings/EditUserDialog.tsx:186:25",
 													"data-prohibitions": "[editContent]",
 													placeholder: "Selecione o nível de acesso"
 												})
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(SelectContent, {
-											"data-uid": "src/components/settings/EditUserDialog.tsx:170:21",
+											"data-uid": "src/components/settings/EditUserDialog.tsx:189:21",
 											"data-prohibitions": "[]",
 											children: [
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/settings/EditUserDialog.tsx:171:23",
+													"data-uid": "src/components/settings/EditUserDialog.tsx:190:23",
 													"data-prohibitions": "[]",
 													value: "Médico",
 													children: "Médico (Acesso Total)"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/settings/EditUserDialog.tsx:172:23",
+													"data-uid": "src/components/settings/EditUserDialog.tsx:191:23",
 													"data-prohibitions": "[]",
 													value: "Estético",
 													children: "Estético (Acesso Parcial)"
 												}),
 												/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectItem, {
-													"data-uid": "src/components/settings/EditUserDialog.tsx:173:23",
+													"data-uid": "src/components/settings/EditUserDialog.tsx:192:23",
 													"data-prohibitions": "[]",
 													value: "Secretária",
 													children: "Secretária (Acesso Restrito)"
@@ -53879,25 +53909,25 @@ function EditUserDialog({ user }) {
 										})]
 									}),
 									/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FormMessage, {
-										"data-uid": "src/components/settings/EditUserDialog.tsx:176:19",
+										"data-uid": "src/components/settings/EditUserDialog.tsx:195:19",
 										"data-prohibitions": "[editContent]"
 									})
 								]
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/settings/EditUserDialog.tsx:180:13",
+							"data-uid": "src/components/settings/EditUserDialog.tsx:199:13",
 							"data-prohibitions": "[]",
 							className: "flex justify-end gap-3 pt-4",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:181:15",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:200:15",
 								"data-prohibitions": "[]",
 								type: "button",
 								variant: "outline",
 								onClick: () => setOpen(false),
 								children: "Cancelar"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								"data-uid": "src/components/settings/EditUserDialog.tsx:184:15",
+								"data-uid": "src/components/settings/EditUserDialog.tsx:203:15",
 								"data-prohibitions": "[]",
 								type: "submit",
 								children: "Salvar Alterações"
@@ -55312,4 +55342,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-jy3Osttk.js.map
+//# sourceMappingURL=index-BI40rFRb.js.map

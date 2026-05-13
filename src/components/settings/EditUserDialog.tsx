@@ -30,7 +30,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import useUserStore, { User, UserRole } from '@/stores/useUserStore'
-import { ImageUpload } from '@/components/ui/image-upload'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getInitials } from '@/lib/utils'
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -119,11 +120,29 @@ export function EditUserDialog({ user }: { user: User }) {
                 <FormItem>
                   <FormLabel>Foto de Perfil</FormLabel>
                   <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      nameInitials={form.watch('name') || '?'}
-                    />
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={field.value} className="object-cover" />
+                        <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                          {getInitials(form.watch('name'))}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onloadend = () => {
+                              field.onChange(reader.result as string)
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                        className="cursor-pointer flex-1"
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
