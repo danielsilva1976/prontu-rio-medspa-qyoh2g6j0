@@ -19096,13 +19096,6 @@ var ArrowUpRight = createLucideIcon("arrow-up-right", [["path", {
 	d: "M7 17 17 7",
 	key: "1vkiza"
 }]]);
-var Bell = createLucideIcon("bell", [["path", {
-	d: "M10.268 21a2 2 0 0 0 3.464 0",
-	key: "vwvbt9"
-}], ["path", {
-	d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
-	key: "11g9vi"
-}]]);
 var Briefcase = createLucideIcon("briefcase", [["path", {
 	d: "M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16",
 	key: "jecpp"
@@ -30772,7 +30765,7 @@ function Layout() {
 	const { activeConsultations } = useConsultationStore();
 	const navigate = useNavigate();
 	if (!isAuthenticated) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Navigate, {
-		"data-uid": "src/components/Layout.tsx:56:12",
+		"data-uid": "src/components/Layout.tsx:55:12",
 		"data-prohibitions": "[editContent]",
 		to: "/login",
 		replace: true
@@ -30810,11 +30803,11 @@ function Layout() {
 		}
 	].filter((item) => item.show);
 	const LogoHeader = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-		"data-uid": "src/components/Layout.tsx:94:5",
+		"data-uid": "src/components/Layout.tsx:93:5",
 		"data-prohibitions": "[]",
 		className: "flex h-28 shrink-0 items-center justify-center px-6 mb-2 mt-4 border-b border-border/50 pb-6",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
-			"data-uid": "src/components/Layout.tsx:95:7",
+			"data-uid": "src/components/Layout.tsx:94:7",
 			"data-prohibitions": "[editContent]",
 			src: marca_principal_page_0001_2e968_default,
 			alt: "Clínica MEDSPA",
@@ -30822,25 +30815,25 @@ function Layout() {
 		})
 	});
 	const GlobalSidebarContent = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LogoHeader, {
-		"data-uid": "src/components/Layout.tsx:105:7",
+		"data-uid": "src/components/Layout.tsx:104:7",
 		"data-prohibitions": "[editContent]"
 	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-		"data-uid": "src/components/Layout.tsx:106:7",
+		"data-uid": "src/components/Layout.tsx:105:7",
 		"data-prohibitions": "[editContent]",
 		className: "flex flex-1 flex-col overflow-y-auto",
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", {
-			"data-uid": "src/components/Layout.tsx:107:9",
+			"data-uid": "src/components/Layout.tsx:106:9",
 			"data-prohibitions": "[editContent]",
 			className: "flex-1 space-y-1 px-3 py-4",
 			children: filteredNav.map((item) => {
 				const isActive = location.pathname === item.href || item.href !== "/" && location.pathname.startsWith(item.href) || item.href === "/pacientes" && location.pathname.startsWith("/prontuario");
 				return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link$1, {
-					"data-uid": "src/components/Layout.tsx:114:15",
+					"data-uid": "src/components/Layout.tsx:113:15",
 					"data-prohibitions": "[editContent]",
 					to: item.href,
 					className: cn$1(isActive ? "bg-primary/10 text-primary border-primary font-semibold" : "text-muted-foreground hover:bg-muted hover:text-foreground border-transparent font-medium", "group flex items-center px-4 py-3 text-sm rounded-lg border-l-4 transition-all duration-200"),
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(item.icon, {
-						"data-uid": "src/components/Layout.tsx:124:17",
+						"data-uid": "src/components/Layout.tsx:123:17",
 						"data-prohibitions": "[editContent]",
 						className: cn$1(isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground", "mr-3 h-5 w-5 flex-shrink-0 transition-colors"),
 						"aria-hidden": "true"
@@ -30855,56 +30848,56 @@ function Layout() {
 			if (disabled) e.preventDefault();
 		};
 		return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Link$1, {
-			"data-uid": "src/components/Layout.tsx:150:7",
+			"data-uid": "src/components/Layout.tsx:149:7",
 			"data-prohibitions": "[editContent]",
 			to: disabled ? "#" : `/prontuario/${patientId}?tab=${id}`,
 			replace: true,
 			onClick: handleClick,
 			className: cn$1("w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors", isActive ? "bg-primary/10 text-primary" : disabled ? "text-muted-foreground/40 cursor-not-allowed" : "text-muted-foreground hover:bg-muted hover:text-foreground", className),
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, {
-				"data-uid": "src/components/Layout.tsx:164:9",
+				"data-uid": "src/components/Layout.tsx:163:9",
 				"data-prohibitions": "[editContent]",
 				className: "w-4 h-4"
 			}), label]
 		});
 	};
 	const ClinicalSidebarContent = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LogoHeader, {
-		"data-uid": "src/components/Layout.tsx:172:7",
+		"data-uid": "src/components/Layout.tsx:171:7",
 		"data-prohibitions": "[editContent]"
 	}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/Layout.tsx:173:7",
+		"data-uid": "src/components/Layout.tsx:172:7",
 		"data-prohibitions": "[editContent]",
 		className: "flex flex-1 flex-col overflow-y-auto px-3 py-4 space-y-6",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/Layout.tsx:174:9",
+				"data-uid": "src/components/Layout.tsx:173:9",
 				"data-prohibitions": "[editContent]",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					"data-uid": "src/components/Layout.tsx:175:11",
+					"data-uid": "src/components/Layout.tsx:174:11",
 					"data-prohibitions": "[editContent]",
 					variant: "outline",
 					disabled: isStarted,
 					className: cn$1("w-full justify-start shadow-sm bg-white transition-all text-muted-foreground hover:text-foreground", isStarted && "opacity-50 cursor-not-allowed hover:text-muted-foreground pointer-events-none"),
 					onClick: () => navigate("/pacientes"),
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ArrowLeft, {
-						"data-uid": "src/components/Layout.tsx:185:13",
+						"data-uid": "src/components/Layout.tsx:184:13",
 						"data-prohibitions": "[editContent]",
 						className: "w-4 h-4 mr-2"
 					}), "Voltar para Pacientes"]
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/Layout.tsx:190:9",
+				"data-uid": "src/components/Layout.tsx:189:9",
 				"data-prohibitions": "[]",
 				className: "space-y-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-					"data-uid": "src/components/Layout.tsx:191:11",
+					"data-uid": "src/components/Layout.tsx:190:11",
 					"data-prohibitions": "[editContent]",
 					id: "historico",
 					label: "Histórico",
 					icon: History
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-					"data-uid": "src/components/Layout.tsx:192:11",
+					"data-uid": "src/components/Layout.tsx:191:11",
 					"data-prohibitions": "[editContent]",
 					id: "planejamento",
 					label: "Planejamento",
@@ -30912,39 +30905,39 @@ function Layout() {
 				})]
 			}),
 			showNovoAtendimento && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Accordion, {
-				"data-uid": "src/components/Layout.tsx:196:11",
+				"data-uid": "src/components/Layout.tsx:195:11",
 				"data-prohibitions": "[editContent]",
 				type: "multiple",
 				defaultValue: ["novo-atendimento"],
 				className: "w-full",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(AccordionItem, {
-					"data-uid": "src/components/Layout.tsx:197:13",
+					"data-uid": "src/components/Layout.tsx:196:13",
 					"data-prohibitions": "[editContent]",
 					value: "novo-atendimento",
 					className: "border-none",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionTrigger, {
-						"data-uid": "src/components/Layout.tsx:198:15",
+						"data-uid": "src/components/Layout.tsx:197:15",
 						"data-prohibitions": "[editContent]",
 						className: cn$1("px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider hover:no-underline hover:bg-muted/50 rounded-md transition-colors data-[state=open]:bg-transparent", isStarted && "animate-gold-pulse"),
 						children: "Novo Atendimento"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AccordionContent, {
-						"data-uid": "src/components/Layout.tsx:206:15",
+						"data-uid": "src/components/Layout.tsx:205:15",
 						"data-prohibitions": "[editContent]",
 						className: "pt-2 pb-0",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/Layout.tsx:207:17",
+							"data-uid": "src/components/Layout.tsx:206:17",
 							"data-prohibitions": "[editContent]",
 							className: "space-y-1",
 							children: [
 								showAnamneseExame && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-									"data-uid": "src/components/Layout.tsx:210:23",
+									"data-uid": "src/components/Layout.tsx:209:23",
 									"data-prohibitions": "[editContent]",
 									id: "anamnese",
 									label: "Anamnese",
 									icon: FileText,
 									disabled: !isStarted
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-									"data-uid": "src/components/Layout.tsx:216:23",
+									"data-uid": "src/components/Layout.tsx:215:23",
 									"data-prohibitions": "[editContent]",
 									id: "exame",
 									label: "Exame Físico",
@@ -30952,7 +30945,7 @@ function Layout() {
 									disabled: !isStarted
 								})] }),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-									"data-uid": "src/components/Layout.tsx:224:19",
+									"data-uid": "src/components/Layout.tsx:223:19",
 									"data-prohibitions": "[editContent]",
 									id: "procedimentos",
 									label: "Procedimentos",
@@ -30960,7 +30953,7 @@ function Layout() {
 									disabled: !isStarted
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-									"data-uid": "src/components/Layout.tsx:230:19",
+									"data-uid": "src/components/Layout.tsx:229:19",
 									"data-prohibitions": "[editContent]",
 									id: "evolucao",
 									label: "Evolução",
@@ -30973,40 +30966,40 @@ function Layout() {
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/Layout.tsx:242:9",
+				"data-uid": "src/components/Layout.tsx:241:9",
 				"data-prohibitions": "[editContent]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", {
-					"data-uid": "src/components/Layout.tsx:243:11",
+					"data-uid": "src/components/Layout.tsx:242:11",
 					"data-prohibitions": "[]",
 					className: "px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2",
 					children: "Documentos e Auditoria"
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-					"data-uid": "src/components/Layout.tsx:246:11",
+					"data-uid": "src/components/Layout.tsx:245:11",
 					"data-prohibitions": "[editContent]",
 					className: "space-y-1",
 					children: [
 						showDocs && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-							"data-uid": "src/components/Layout.tsx:249:17",
+							"data-uid": "src/components/Layout.tsx:248:17",
 							"data-prohibitions": "[editContent]",
 							id: "receitas",
 							label: "Receitas",
 							icon: FileText
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-							"data-uid": "src/components/Layout.tsx:250:17",
+							"data-uid": "src/components/Layout.tsx:249:17",
 							"data-prohibitions": "[editContent]",
 							id: "laudos",
 							label: "Laudos",
 							icon: FileText
 						})] }),
 						showAudit && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-							"data-uid": "src/components/Layout.tsx:253:27",
+							"data-uid": "src/components/Layout.tsx:252:27",
 							"data-prohibitions": "[editContent]",
 							id: "auditoria",
 							label: "Auditoria",
 							icon: ShieldCheck
 						}),
 						showDocs && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ClinicalTabLink, {
-							"data-uid": "src/components/Layout.tsx:255:15",
+							"data-uid": "src/components/Layout.tsx:254:15",
 							"data-prohibitions": "[editContent]",
 							id: "inclusao",
 							label: "Inclusão de Prontuário",
@@ -31019,112 +31012,100 @@ function Layout() {
 	})] });
 	const SidebarContent = isClinical ? ClinicalSidebarContent : GlobalSidebarContent;
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-		"data-uid": "src/components/Layout.tsx:266:5",
+		"data-uid": "src/components/Layout.tsx:265:5",
 		"data-prohibitions": "[editContent]",
 		className: "flex min-h-screen bg-muted/30",
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Sheet, {
-				"data-uid": "src/components/Layout.tsx:268:7",
+				"data-uid": "src/components/Layout.tsx:267:7",
 				"data-prohibitions": "[]",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SheetTrigger, {
-					"data-uid": "src/components/Layout.tsx:269:9",
+					"data-uid": "src/components/Layout.tsx:268:9",
 					"data-prohibitions": "[]",
 					asChild: true,
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-						"data-uid": "src/components/Layout.tsx:270:11",
+						"data-uid": "src/components/Layout.tsx:269:11",
 						"data-prohibitions": "[]",
 						variant: "ghost",
 						size: "icon",
 						className: "md:hidden absolute top-3 left-4 z-40",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Menu$1, {
-							"data-uid": "src/components/Layout.tsx:271:13",
+							"data-uid": "src/components/Layout.tsx:270:13",
 							"data-prohibitions": "[editContent]",
 							className: "h-6 w-6"
 						})
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SheetContent, {
-					"data-uid": "src/components/Layout.tsx:274:9",
+					"data-uid": "src/components/Layout.tsx:273:9",
 					"data-prohibitions": "[]",
 					side: "left",
 					className: "w-56 p-0 bg-sidebar",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SidebarContent, {
-						"data-uid": "src/components/Layout.tsx:275:11",
+						"data-uid": "src/components/Layout.tsx:274:11",
 						"data-prohibitions": "[editContent]"
 					})
 				})]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/Layout.tsx:280:7",
+				"data-uid": "src/components/Layout.tsx:279:7",
 				"data-prohibitions": "[]",
 				className: "hidden md:flex md:w-56 md:flex-col md:fixed md:inset-y-0 bg-sidebar border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SidebarContent, {
-					"data-uid": "src/components/Layout.tsx:281:9",
+					"data-uid": "src/components/Layout.tsx:280:9",
 					"data-prohibitions": "[editContent]"
 				})
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/Layout.tsx:285:7",
+				"data-uid": "src/components/Layout.tsx:284:7",
 				"data-prohibitions": "[editContent]",
 				className: "md:pl-56 flex flex-col flex-1 min-w-0",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
-					"data-uid": "src/components/Layout.tsx:286:9",
+					"data-uid": "src/components/Layout.tsx:285:9",
 					"data-prohibitions": "[editContent]",
 					className: "sticky top-0 z-20 flex h-16 flex-shrink-0 items-center gap-x-4 border-b border-border bg-background/95 backdrop-blur px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						"data-uid": "src/components/Layout.tsx:287:11",
+						"data-uid": "src/components/Layout.tsx:286:11",
 						"data-prohibitions": "[editContent]",
 						className: "flex flex-1 gap-x-4 self-stretch lg:gap-x-6",
 						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-							"data-uid": "src/components/Layout.tsx:288:13",
+							"data-uid": "src/components/Layout.tsx:287:13",
 							"data-prohibitions": "[editContent]",
 							className: "flex flex-1"
 						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/Layout.tsx:289:13",
+							"data-uid": "src/components/Layout.tsx:288:13",
 							"data-prohibitions": "[editContent]",
 							className: "flex items-center gap-x-4 lg:gap-x-6",
 							children: [
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-									"data-uid": "src/components/Layout.tsx:290:15",
-									"data-prohibitions": "[]",
-									variant: "ghost",
-									size: "icon",
-									className: "text-muted-foreground hover:text-primary transition-colors",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										"data-uid": "src/components/Layout.tsx:295:17",
-										"data-prohibitions": "[]",
-										className: "sr-only",
-										children: "Notificações"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bell, {
-										"data-uid": "src/components/Layout.tsx:296:17",
-										"data-prohibitions": "[editContent]",
-										className: "h-5 w-5",
-										"aria-hidden": "true"
-									})]
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									"data-uid": "src/components/Layout.tsx:289:15",
+									"data-prohibitions": "[editContent]",
+									className: "text-sm font-medium text-muted-foreground",
+									children: currentUser.name
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									"data-uid": "src/components/Layout.tsx:299:15",
+									"data-uid": "src/components/Layout.tsx:291:15",
 									"data-prohibitions": "[editContent]",
 									className: "hidden lg:block lg:h-6 lg:w-px lg:bg-border",
 									"aria-hidden": "true"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenu, {
-									"data-uid": "src/components/Layout.tsx:301:15",
+									"data-uid": "src/components/Layout.tsx:293:15",
 									"data-prohibitions": "[editContent]",
 									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuTrigger, {
-										"data-uid": "src/components/Layout.tsx:302:17",
+										"data-uid": "src/components/Layout.tsx:294:17",
 										"data-prohibitions": "[editContent]",
 										asChild: true,
 										children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/Layout.tsx:303:19",
+											"data-uid": "src/components/Layout.tsx:295:19",
 											"data-prohibitions": "[editContent]",
 											variant: "ghost",
 											className: "relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Avatar, {
-												"data-uid": "src/components/Layout.tsx:307:21",
+												"data-uid": "src/components/Layout.tsx:299:21",
 												"data-prohibitions": "[editContent]",
 												className: "h-9 w-9 border border-primary/20 shadow-sm",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-													"data-uid": "src/components/Layout.tsx:308:23",
+													"data-uid": "src/components/Layout.tsx:300:23",
 													"data-prohibitions": "[editContent]",
 													className: "bg-primary/10 text-primary font-medium",
 													children: getInitials(currentUser.name)
@@ -31132,27 +31113,27 @@ function Layout() {
 											})
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-										"data-uid": "src/components/Layout.tsx:314:17",
+										"data-uid": "src/components/Layout.tsx:306:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-64",
 										align: "end",
 										forceMount: true,
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuLabel, {
-												"data-uid": "src/components/Layout.tsx:315:19",
+												"data-uid": "src/components/Layout.tsx:307:19",
 												"data-prohibitions": "[editContent]",
 												className: "font-normal p-3 bg-muted/30",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													"data-uid": "src/components/Layout.tsx:316:21",
+													"data-uid": "src/components/Layout.tsx:308:21",
 													"data-prohibitions": "[editContent]",
 													className: "flex flex-col space-y-1.5",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/components/Layout.tsx:317:23",
+														"data-uid": "src/components/Layout.tsx:309:23",
 														"data-prohibitions": "[editContent]",
 														className: "text-sm font-semibold leading-none text-primary",
 														children: currentUser.name
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-														"data-uid": "src/components/Layout.tsx:320:23",
+														"data-uid": "src/components/Layout.tsx:312:23",
 														"data-prohibitions": "[editContent]",
 														className: "text-xs leading-none text-muted-foreground",
 														children: [
@@ -31164,11 +31145,11 @@ function Layout() {
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuSeparator, {
-												"data-uid": "src/components/Layout.tsx:325:19",
+												"data-uid": "src/components/Layout.tsx:317:19",
 												"data-prohibitions": "[editContent]"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-												"data-uid": "src/components/Layout.tsx:327:19",
+												"data-uid": "src/components/Layout.tsx:319:19",
 												"data-prohibitions": "[]",
 												onClick: logout,
 												className: "text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10",
@@ -31181,11 +31162,11 @@ function Layout() {
 						})]
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", {
-					"data-uid": "src/components/Layout.tsx:339:9",
+					"data-uid": "src/components/Layout.tsx:331:9",
 					"data-prohibitions": "[]",
 					className: "flex-1 pb-8",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {
-						"data-uid": "src/components/Layout.tsx:340:11",
+						"data-uid": "src/components/Layout.tsx:332:11",
 						"data-prohibitions": "[editContent]"
 					})
 				})]
@@ -55108,4 +55089,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-bYHuyuYB.js.map
+//# sourceMappingURL=index-D1INloLZ.js.map

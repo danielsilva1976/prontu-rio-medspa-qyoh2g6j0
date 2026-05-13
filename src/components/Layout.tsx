@@ -11,7 +11,6 @@ import {
   Users,
   Settings,
   FileText,
-  Bell,
   Menu,
   ArrowLeft,
   History,
@@ -287,14 +286,7 @@ export default function Layout() {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <span className="sr-only">Notificações</span>
-                <Bell className="h-5 w-5" aria-hidden="true" />
-              </Button>
+              <span className="text-sm font-medium text-muted-foreground">{currentUser.name}</span>
 
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-border" aria-hidden="true" />
 
