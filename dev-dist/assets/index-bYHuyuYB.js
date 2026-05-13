@@ -31119,45 +31119,40 @@ function Layout() {
 											"data-prohibitions": "[editContent]",
 											variant: "ghost",
 											className: "relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Avatar, {
+											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Avatar, {
 												"data-uid": "src/components/Layout.tsx:307:21",
 												"data-prohibitions": "[editContent]",
 												className: "h-9 w-9 border border-primary/20 shadow-sm",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarImage, {
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
 													"data-uid": "src/components/Layout.tsx:308:23",
 													"data-prohibitions": "[editContent]",
-													src: currentUser.avatar,
-													alt: currentUser.name
-												}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-													"data-uid": "src/components/Layout.tsx:309:23",
-													"data-prohibitions": "[editContent]",
 													className: "bg-primary/10 text-primary font-medium",
-													children: currentUser.name.substring(0, 2).toUpperCase()
-												})]
+													children: getInitials(currentUser.name)
+												})
 											})
 										})
 									}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DropdownMenuContent, {
-										"data-uid": "src/components/Layout.tsx:315:17",
+										"data-uid": "src/components/Layout.tsx:314:17",
 										"data-prohibitions": "[editContent]",
 										className: "w-64",
 										align: "end",
 										forceMount: true,
 										children: [
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuLabel, {
-												"data-uid": "src/components/Layout.tsx:316:19",
+												"data-uid": "src/components/Layout.tsx:315:19",
 												"data-prohibitions": "[editContent]",
 												className: "font-normal p-3 bg-muted/30",
 												children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-													"data-uid": "src/components/Layout.tsx:317:21",
+													"data-uid": "src/components/Layout.tsx:316:21",
 													"data-prohibitions": "[editContent]",
 													className: "flex flex-col space-y-1.5",
 													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-														"data-uid": "src/components/Layout.tsx:318:23",
+														"data-uid": "src/components/Layout.tsx:317:23",
 														"data-prohibitions": "[editContent]",
 														className: "text-sm font-semibold leading-none text-primary",
 														children: currentUser.name
 													}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-														"data-uid": "src/components/Layout.tsx:321:23",
+														"data-uid": "src/components/Layout.tsx:320:23",
 														"data-prohibitions": "[editContent]",
 														className: "text-xs leading-none text-muted-foreground",
 														children: [
@@ -31169,11 +31164,11 @@ function Layout() {
 												})
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuSeparator, {
-												"data-uid": "src/components/Layout.tsx:326:19",
+												"data-uid": "src/components/Layout.tsx:325:19",
 												"data-prohibitions": "[editContent]"
 											}),
 											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DropdownMenuItem, {
-												"data-uid": "src/components/Layout.tsx:328:19",
+												"data-uid": "src/components/Layout.tsx:327:19",
 												"data-prohibitions": "[]",
 												onClick: logout,
 												className: "text-destructive cursor-pointer focus:text-destructive focus:bg-destructive/10",
@@ -31186,11 +31181,11 @@ function Layout() {
 						})]
 					})
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", {
-					"data-uid": "src/components/Layout.tsx:340:9",
+					"data-uid": "src/components/Layout.tsx:339:9",
 					"data-prohibitions": "[]",
 					className: "flex-1 pb-8",
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {
-						"data-uid": "src/components/Layout.tsx:341:11",
+						"data-uid": "src/components/Layout.tsx:340:11",
 						"data-prohibitions": "[editContent]"
 					})
 				})]
@@ -55113,4 +55108,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-bE4kLBhJ.js.map
+//# sourceMappingURL=index-bYHuyuYB.js.map

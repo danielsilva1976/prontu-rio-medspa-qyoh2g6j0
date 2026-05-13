@@ -39,7 +39,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 import logoMarca from '@/assets/marca-principal_page-0001-2e968.jpg'
 import useUserStore from '@/stores/useUserStore'
 import useConsultationStore from '@/stores/useConsultationStore'
@@ -305,9 +305,8 @@ export default function Layout() {
                     className="relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all"
                   >
                     <Avatar className="h-9 w-9 border border-primary/20 shadow-sm">
-                      <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
                       <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                        {currentUser.name.substring(0, 2).toUpperCase()}
+                        {getInitials(currentUser.name)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
