@@ -114,6 +114,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const formData = new FormData()
     if (data.name) formData.append('name', data.name)
     if (data.email) formData.append('email', data.email)
+    if (data.password) {
+      formData.append('password', data.password)
+      formData.append('passwordConfirm', data.password)
+    }
     if (data.role) {
       const pbRole =
         data.role === 'Médico' ? 'admin' : data.role === 'Estético' ? 'aesthetic' : 'secretary'
