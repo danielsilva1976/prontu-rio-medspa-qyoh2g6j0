@@ -113,18 +113,12 @@ export function EditUserDialog({ user }: { user: User }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <div className="flex items-center gap-4 pb-2">
-              <Avatar className="h-9 w-9 border border-border">
-                <AvatarFallback className="bg-primary/5 text-primary text-sm font-medium">
+            <div className="flex justify-center pb-4">
+              <Avatar className="h-16 w-16 border border-border">
+                <AvatarFallback className="bg-primary/5 text-primary text-xl font-medium">
                   {getInitials(form.watch('name'))}
                 </AvatarFallback>
               </Avatar>
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">Foto de Perfil</p>
-                <p className="text-sm text-muted-foreground">
-                  A imagem de perfil utiliza as iniciais do profissional.
-                </p>
-              </div>
             </div>
             <FormField
               control={form.control}
