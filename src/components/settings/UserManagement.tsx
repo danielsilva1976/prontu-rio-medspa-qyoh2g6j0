@@ -10,12 +10,13 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Trash2, Shield, User, ShieldAlert } from 'lucide-react'
+import { Trash2, Shield, User, ShieldAlert, FileSignature } from 'lucide-react'
 import useUserStore from '@/stores/useUserStore'
 import { getInitials } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { AddUserDialog } from './AddUserDialog'
 import { EditUserDialog } from './EditUserDialog'
+import { UserSignatureDialog } from './UserSignatureDialog'
 
 interface UserManagementProps {
   title: string
@@ -100,6 +101,9 @@ export function UserManagement({ title, description }: UserManagementProps) {
                   {isAdmin && (
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        {(user.role === 'Médico' || user.role === 'Estético') && (
+                          <UserSignatureDialog user={user} />
+                        )}
                         <EditUserDialog user={user} />
                         {user.email !== 'daniel.nefro@gmail.com' && user.id !== currentUser.id && (
                           <Button

@@ -19343,6 +19343,20 @@ var CloudDownload = createLucideIcon("cloud-download", [
 		key: "ui1hmy"
 	}]
 ]);
+var CloudUpload = createLucideIcon("cloud-upload", [
+	["path", {
+		d: "M12 13v8",
+		key: "1l5pq0"
+	}],
+	["path", {
+		d: "M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242",
+		key: "1pljnt"
+	}],
+	["path", {
+		d: "m8 17 4-4 4 4",
+		key: "1quai1"
+	}]
+]);
 var Cpu = createLucideIcon("cpu", [
 	["path", {
 		d: "M12 20v2",
@@ -26303,7 +26317,8 @@ var UserProvider = ({ children }) => {
 			email: record.email,
 			role: mapPbRole(record.role),
 			status: "Ativo",
-			avatar: record.avatar ? pb.files.getURL(record, record.avatar) : `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${record.id}`
+			avatar: record.avatar ? pb.files.getURL(record, record.avatar) : `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${record.id}`,
+			signature: record.signature ? pb.files.getURL(record, record.signature) : void 0
 		};
 	};
 	const [users, setUsers] = (0, import_react.useState)([]);
@@ -26359,6 +26374,13 @@ var UserProvider = ({ children }) => {
 		if (data.avatar && data.avatar.startsWith("data:")) {
 			const blob = await (await fetch(data.avatar)).blob();
 			formData.append("avatar", blob, "avatar.png");
+		}
+		if (data.signature) {
+			if (data.signature instanceof File) formData.append("signature", data.signature);
+			else if (typeof data.signature === "string" && data.signature.startsWith("data:")) {
+				const blob = await (await fetch(data.signature)).blob();
+				formData.append("signature", blob, "signature.png");
+			}
 		}
 		await pb.collection("users").update(id, formData);
 		await fetchUsers();
@@ -53888,6 +53910,199 @@ function EditUserDialog({ user }) {
 	});
 }
 //#endregion
+//#region src/components/settings/UserSignatureDialog.tsx
+function UserSignatureDialog({ user }) {
+	const [open, setOpen] = (0, import_react.useState)(false);
+	const [preview, setPreview] = (0, import_react.useState)(user.signature || null);
+	const [file, setFile] = (0, import_react.useState)(null);
+	const [loading, setLoading] = (0, import_react.useState)(false);
+	const fileInputRef = (0, import_react.useRef)(null);
+	const { updateUser } = useUserStore();
+	const { toast } = useToast();
+	const handleFileChange = (e) => {
+		const selectedFile = e.target.files?.[0];
+		if (!selectedFile) return;
+		if (!["image/jpeg", "image/png"].includes(selectedFile.type)) {
+			toast({
+				title: "Formato inválido",
+				description: "Por favor, selecione uma imagem JPG ou PNG.",
+				variant: "destructive"
+			});
+			return;
+		}
+		if (selectedFile.size > 5 * 1024 * 1024) {
+			toast({
+				title: "Arquivo muito grande",
+				description: "A imagem deve ter no máximo 5MB.",
+				variant: "destructive"
+			});
+			return;
+		}
+		setFile(selectedFile);
+		const reader = new FileReader();
+		reader.onload = (ev) => setPreview(ev.target?.result);
+		reader.readAsDataURL(selectedFile);
+	};
+	const handleSave = async () => {
+		if (!file && !preview) return;
+		try {
+			setLoading(true);
+			await updateUser(user.id, { signature: file });
+			toast({
+				title: "Assinatura salva",
+				description: "A assinatura digital foi atualizada com sucesso."
+			});
+			setOpen(false);
+		} catch (error) {
+			toast({
+				title: "Erro ao salvar",
+				description: error.message || "Ocorreu um erro ao enviar a assinatura.",
+				variant: "destructive"
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Dialog, {
+		"data-uid": "src/components/settings/UserSignatureDialog.tsx:75:5",
+		"data-prohibitions": "[editContent]",
+		open,
+		onOpenChange: (val) => {
+			setOpen(val);
+			if (!val) {
+				setPreview(user.signature || null);
+				setFile(null);
+			}
+		},
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTrigger, {
+			"data-uid": "src/components/settings/UserSignatureDialog.tsx:85:7",
+			"data-prohibitions": "[]",
+			asChild: true,
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+				"data-uid": "src/components/settings/UserSignatureDialog.tsx:86:9",
+				"data-prohibitions": "[]",
+				variant: "ghost",
+				size: "icon",
+				className: "h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10",
+				title: "Gerenciar Assinatura",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FilePenLine, {
+					"data-uid": "src/components/settings/UserSignatureDialog.tsx:92:11",
+					"data-prohibitions": "[editContent]",
+					className: "w-4 h-4"
+				})
+			})
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogContent, {
+			"data-uid": "src/components/settings/UserSignatureDialog.tsx:95:7",
+			"data-prohibitions": "[editContent]",
+			className: "sm:max-w-[425px]",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogHeader, {
+					"data-uid": "src/components/settings/UserSignatureDialog.tsx:96:9",
+					"data-prohibitions": "[editContent]",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(DialogTitle, {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:97:11",
+						"data-prohibitions": "[]",
+						className: "font-serif text-xl text-primary",
+						children: "Assinatura Digital"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(DialogDescription, {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:98:11",
+						"data-prohibitions": "[editContent]",
+						children: [
+							"Faça upload da assinatura de ",
+							user.name,
+							" (JPG ou PNG, máx 5MB)."
+						]
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/components/settings/UserSignatureDialog.tsx:102:9",
+					"data-prohibitions": "[editContent]",
+					className: "flex flex-col items-center justify-center space-y-4 py-4",
+					children: [preview ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:104:13",
+						"data-prohibitions": "[]",
+						className: "relative w-full max-w-[300px] border rounded-lg p-2 bg-muted/10 flex justify-center items-center",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+							"data-uid": "src/components/settings/UserSignatureDialog.tsx:105:15",
+							"data-prohibitions": "[editContent]",
+							src: preview,
+							alt: "Preview da assinatura",
+							className: "max-h-[150px] object-contain"
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+							"data-uid": "src/components/settings/UserSignatureDialog.tsx:110:15",
+							"data-prohibitions": "[]",
+							variant: "destructive",
+							size: "icon",
+							className: "absolute -top-2 -right-2 h-6 w-6 rounded-full",
+							onClick: () => {
+								setPreview(null);
+								setFile(null);
+								if (fileInputRef.current) fileInputRef.current.value = "";
+							},
+							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X$1, {
+								"data-uid": "src/components/settings/UserSignatureDialog.tsx:120:17",
+								"data-prohibitions": "[editContent]",
+								className: "h-3 w-3"
+							})
+						})]
+					}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:124:13",
+						"data-prohibitions": "[]",
+						onClick: () => fileInputRef.current?.click(),
+						className: "w-full max-w-[300px] h-[150px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-muted/30 transition-colors text-muted-foreground hover:text-primary",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CloudUpload, {
+								"data-uid": "src/components/settings/UserSignatureDialog.tsx:128:15",
+								"data-prohibitions": "[editContent]",
+								className: "w-8 h-8 mb-2"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"data-uid": "src/components/settings/UserSignatureDialog.tsx:129:15",
+								"data-prohibitions": "[]",
+								className: "text-sm font-medium",
+								children: "Clique para fazer upload"
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								"data-uid": "src/components/settings/UserSignatureDialog.tsx:130:15",
+								"data-prohibitions": "[]",
+								className: "text-xs text-muted-foreground mt-1",
+								children: "JPG ou PNG"
+							})
+						]
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:133:11",
+						"data-prohibitions": "[editContent]",
+						type: "file",
+						ref: fileInputRef,
+						className: "hidden",
+						accept: "image/jpeg, image/png",
+						onChange: handleFileChange
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					"data-uid": "src/components/settings/UserSignatureDialog.tsx:141:9",
+					"data-prohibitions": "[]",
+					className: "flex justify-end gap-3",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:142:11",
+						"data-prohibitions": "[]",
+						variant: "outline",
+						onClick: () => setOpen(false),
+						disabled: loading,
+						children: "Cancelar"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+						"data-uid": "src/components/settings/UserSignatureDialog.tsx:145:11",
+						"data-prohibitions": "[]",
+						onClick: handleSave,
+						disabled: loading || !file && !preview,
+						children: "Salvar Assinatura"
+					})]
+				})
+			]
+		})]
+	});
+}
+//#endregion
 //#region src/components/settings/UserManagement.tsx
 function UserManagement({ title, description }) {
 	const { users, currentUser, removeUser } = useUserStore();
@@ -53909,73 +54124,73 @@ function UserManagement({ title, description }) {
 		}
 	};
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
-		"data-uid": "src/components/settings/UserManagement.tsx:44:5",
+		"data-uid": "src/components/settings/UserManagement.tsx:45:5",
 		"data-prohibitions": "[editContent]",
 		className: "border-none shadow-subtle animate-fade-in-up",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(CardHeader, {
-			"data-uid": "src/components/settings/UserManagement.tsx:45:7",
+			"data-uid": "src/components/settings/UserManagement.tsx:46:7",
 			"data-prohibitions": "[editContent]",
 			className: "flex flex-col sm:flex-row sm:items-start justify-between pb-6 gap-4",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				"data-uid": "src/components/settings/UserManagement.tsx:46:9",
+				"data-uid": "src/components/settings/UserManagement.tsx:47:9",
 				"data-prohibitions": "[editContent]",
 				className: "space-y-1",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardTitle, {
-					"data-uid": "src/components/settings/UserManagement.tsx:47:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:48:11",
 					"data-prohibitions": "[editContent]",
 					className: "text-xl text-primary font-serif",
 					children: title
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardDescription, {
-					"data-uid": "src/components/settings/UserManagement.tsx:48:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:49:11",
 					"data-prohibitions": "[editContent]",
 					children: description
 				})]
 			}), isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AddUserDialog, {
-				"data-uid": "src/components/settings/UserManagement.tsx:50:21",
+				"data-uid": "src/components/settings/UserManagement.tsx:51:21",
 				"data-prohibitions": "[editContent]"
 			})]
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CardContent, {
-			"data-uid": "src/components/settings/UserManagement.tsx:52:7",
+			"data-uid": "src/components/settings/UserManagement.tsx:53:7",
 			"data-prohibitions": "[editContent]",
 			children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/settings/UserManagement.tsx:53:9",
+				"data-uid": "src/components/settings/UserManagement.tsx:54:9",
 				"data-prohibitions": "[editContent]",
 				className: "border rounded-xl bg-white overflow-hidden shadow-sm",
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Table, {
-					"data-uid": "src/components/settings/UserManagement.tsx:54:11",
+					"data-uid": "src/components/settings/UserManagement.tsx:55:11",
 					"data-prohibitions": "[editContent]",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHeader, {
-						"data-uid": "src/components/settings/UserManagement.tsx:55:13",
+						"data-uid": "src/components/settings/UserManagement.tsx:56:13",
 						"data-prohibitions": "[editContent]",
 						className: "bg-muted/30",
 						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/UserManagement.tsx:56:15",
+							"data-uid": "src/components/settings/UserManagement.tsx:57:15",
 							"data-prohibitions": "[editContent]",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:57:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:58:17",
 									"data-prohibitions": "[]",
 									children: "Profissional"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:58:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:59:17",
 									"data-prohibitions": "[]",
 									className: "hidden md:table-cell",
 									children: "Email"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:59:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:60:17",
 									"data-prohibitions": "[]",
 									children: "Nível de Acesso"
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:60:17",
+									"data-uid": "src/components/settings/UserManagement.tsx:61:17",
 									"data-prohibitions": "[]",
 									className: "hidden sm:table-cell",
 									children: "Status"
 								}),
 								isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableHead, {
-									"data-uid": "src/components/settings/UserManagement.tsx:61:29",
+									"data-uid": "src/components/settings/UserManagement.tsx:62:29",
 									"data-prohibitions": "[]",
 									className: "text-right",
 									children: "Ações"
@@ -53983,32 +54198,32 @@ function UserManagement({ title, description }) {
 							]
 						})
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableBody, {
-						"data-uid": "src/components/settings/UserManagement.tsx:64:13",
+						"data-uid": "src/components/settings/UserManagement.tsx:65:13",
 						"data-prohibitions": "[editContent]",
 						children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(TableRow, {
-							"data-uid": "src/components/settings/UserManagement.tsx:66:17",
+							"data-uid": "src/components/settings/UserManagement.tsx:67:17",
 							"data-prohibitions": "[editContent]",
 							className: "group transition-colors hover:bg-muted/10",
 							children: [
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:67:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:68:19",
 									"data-prohibitions": "[editContent]",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/UserManagement.tsx:68:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:69:21",
 										"data-prohibitions": "[editContent]",
 										className: "flex items-center gap-3",
 										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Avatar, {
-											"data-uid": "src/components/settings/UserManagement.tsx:69:23",
+											"data-uid": "src/components/settings/UserManagement.tsx:70:23",
 											"data-prohibitions": "[editContent]",
 											className: "h-9 w-9 border border-border",
 											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AvatarFallback, {
-												"data-uid": "src/components/settings/UserManagement.tsx:70:25",
+												"data-uid": "src/components/settings/UserManagement.tsx:71:25",
 												"data-prohibitions": "[editContent]",
 												className: "bg-primary/5 text-primary text-sm font-medium",
 												children: getInitials(user.name)
 											})
 										}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-											"data-uid": "src/components/settings/UserManagement.tsx:74:23",
+											"data-uid": "src/components/settings/UserManagement.tsx:75:23",
 											"data-prohibitions": "[editContent]",
 											className: "font-medium text-foreground",
 											children: user.name
@@ -54016,32 +54231,32 @@ function UserManagement({ title, description }) {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:77:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:78:19",
 									"data-prohibitions": "[editContent]",
 									className: "text-muted-foreground hidden md:table-cell",
 									children: user.email
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:80:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:81:19",
 									"data-prohibitions": "[editContent]",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Badge, {
-										"data-uid": "src/components/settings/UserManagement.tsx:81:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:82:21",
 										"data-prohibitions": "[editContent]",
 										variant: "secondary",
 										className: "bg-primary/5 text-primary border-none",
 										children: [
 											user.role === "Médico" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShieldAlert, {
-												"data-uid": "src/components/settings/UserManagement.tsx:82:50",
+												"data-uid": "src/components/settings/UserManagement.tsx:83:50",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
 											user.role === "Estético" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Shield, {
-												"data-uid": "src/components/settings/UserManagement.tsx:83:52",
+												"data-uid": "src/components/settings/UserManagement.tsx:84:52",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
 											user.role === "Secretária" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(User, {
-												"data-uid": "src/components/settings/UserManagement.tsx:84:54",
+												"data-uid": "src/components/settings/UserManagement.tsx:85:54",
 												"data-prohibitions": "[editContent]",
 												className: "w-3 h-3 mr-1"
 											}),
@@ -54050,11 +54265,11 @@ function UserManagement({ title, description }) {
 									})
 								}),
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:88:19",
+									"data-uid": "src/components/settings/UserManagement.tsx:89:19",
 									"data-prohibitions": "[editContent]",
 									className: "hidden sm:table-cell",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Badge, {
-										"data-uid": "src/components/settings/UserManagement.tsx:89:21",
+										"data-uid": "src/components/settings/UserManagement.tsx:90:21",
 										"data-prohibitions": "[editContent]",
 										variant: "outline",
 										className: user.status === "Ativo" ? "text-success border-success/30" : "text-muted-foreground",
@@ -54062,31 +54277,39 @@ function UserManagement({ title, description }) {
 									})
 								}),
 								isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TableCell, {
-									"data-uid": "src/components/settings/UserManagement.tsx:101:21",
+									"data-uid": "src/components/settings/UserManagement.tsx:102:21",
 									"data-prohibitions": "[editContent]",
 									className: "text-right",
 									children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-										"data-uid": "src/components/settings/UserManagement.tsx:102:23",
+										"data-uid": "src/components/settings/UserManagement.tsx:103:23",
 										"data-prohibitions": "[editContent]",
 										className: "flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity",
-										children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EditUserDialog, {
-											"data-uid": "src/components/settings/UserManagement.tsx:103:25",
-											"data-prohibitions": "[editContent]",
-											user
-										}), user.email !== "daniel.nefro@gmail.com" && user.id !== currentUser.id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-											"data-uid": "src/components/settings/UserManagement.tsx:105:27",
-											"data-prohibitions": "[]",
-											variant: "ghost",
-											size: "icon",
-											onClick: () => handleRemove(user.id),
-											className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-											title: "Remover Usuário",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
-												"data-uid": "src/components/settings/UserManagement.tsx:112:29",
+										children: [
+											(user.role === "Médico" || user.role === "Estético") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserSignatureDialog, {
+												"data-uid": "src/components/settings/UserManagement.tsx:105:27",
 												"data-prohibitions": "[editContent]",
-												className: "w-4 h-4"
+												user
+											}),
+											/* @__PURE__ */ (0, import_jsx_runtime.jsx)(EditUserDialog, {
+												"data-uid": "src/components/settings/UserManagement.tsx:107:25",
+												"data-prohibitions": "[editContent]",
+												user
+											}),
+											user.email !== "daniel.nefro@gmail.com" && user.id !== currentUser.id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+												"data-uid": "src/components/settings/UserManagement.tsx:109:27",
+												"data-prohibitions": "[]",
+												variant: "ghost",
+												size: "icon",
+												onClick: () => handleRemove(user.id),
+												className: "h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+												title: "Remover Usuário",
+												children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
+													"data-uid": "src/components/settings/UserManagement.tsx:116:29",
+													"data-prohibitions": "[editContent]",
+													className: "w-4 h-4"
+												})
 											})
-										})]
+										]
 									})
 								})
 							]
@@ -55089,4 +55312,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-D1INloLZ.js.map
+//# sourceMappingURL=index-jy3Osttk.js.map

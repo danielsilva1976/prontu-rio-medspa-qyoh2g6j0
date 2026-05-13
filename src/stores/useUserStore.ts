@@ -11,6 +11,7 @@ export type User = {
   role: UserRole
   status: UserStatus
   avatar?: string
+  signature?: string
 }
 
 type UserState = {
@@ -45,6 +46,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       avatar: record.avatar
         ? pb.files.getURL(record, record.avatar)
         : `https://img.usecurling.com/ppl/thumbnail?gender=female&seed=${record.id}`,
+      signature: record.signature ? pb.files.getURL(record, record.signature) : undefined,
     }
   }
 
@@ -122,6 +124,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const res = await fetch(data.avatar)
       const blob = await res.blob()
       formData.append('avatar', blob, 'avatar.png')
+    }
+
+    if (data.signature) {
+      if (data.signature instanceof File) {
+        formData.append('signature', data.signature)
+      } else if (typeof data.signature === 'string' && data.signature.startsWith('data:')) {
+        const res = await fetch(data.signature)
+        const blob = await res.blob()
+        formData.append('signature', blob, 'signature.png')
+      }
     }
 
     await pb.collection('users').update(id, formData)
