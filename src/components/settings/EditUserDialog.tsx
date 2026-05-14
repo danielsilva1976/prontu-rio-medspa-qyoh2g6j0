@@ -95,6 +95,7 @@ export function EditUserDialog({ user }: { user: User }) {
       }
       if (values.password) {
         updateData.password = values.password
+        updateData.confirmPassword = values.confirmPassword
       }
 
       await updateUser(user.id, updateData)
@@ -128,31 +129,33 @@ export function EditUserDialog({ user }: { user: User }) {
         <DialogHeader>
           <DialogTitle className="font-serif text-xl text-primary">Editar Usuário</DialogTitle>
           <DialogDescription>
-            Atualize as informações e a foto de perfil do membro da equipe.
+            Atualize as informações e credenciais do membro da equipe.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <div className="flex justify-center pb-4">
-              <Avatar className="h-16 w-16 border border-border">
+            <div className="flex items-center gap-4 pb-2">
+              <Avatar className="h-16 w-16 border border-border shrink-0">
                 <AvatarFallback className="bg-primary/5 text-primary text-xl font-medium">
                   {getInitials(form.watch('name'))}
                 </AvatarFallback>
               </Avatar>
+              <div className="flex-1">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Dra. Juliana" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Dra. Juliana" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="email"

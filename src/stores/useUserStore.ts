@@ -116,7 +116,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (data.email) formData.append('email', data.email)
     if (data.password) {
       formData.append('password', data.password)
-      formData.append('passwordConfirm', data.password)
+      formData.append('passwordConfirm', data.confirmPassword || data.password)
     }
     if (data.role) {
       const pbRole =
