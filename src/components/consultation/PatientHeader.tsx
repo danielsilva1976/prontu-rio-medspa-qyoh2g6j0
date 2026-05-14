@@ -1,4 +1,4 @@
-import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone } from 'lucide-react'
+import { Clock, MapPin, Briefcase, CreditCard, Edit2, Phone, Mail, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -64,8 +64,20 @@ export default function PatientHeader({ patient, id, isStarted, onToggleConsulta
               <span className="flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5 text-primary/70" /> {displayPatient.phone}
               </span>
+              <span className="flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                <span className="truncate max-w-[150px] sm:max-w-none">
+                  {displayPatient.email || '-'}
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Heart className="h-3.5 w-3.5 text-primary/70 shrink-0" />
+                <span className="truncate max-w-[120px] sm:max-w-none">
+                  {displayPatient.estado_civil || '-'}
+                </span>
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex mt-1">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/70" />
               <span className="truncate">{displayPatient.endereco}</span>
             </div>

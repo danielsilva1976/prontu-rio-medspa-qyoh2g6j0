@@ -1278,6 +1278,12 @@ video {
 .max-w-\[--skeleton-width\] {
   max-width: var(--skeleton-width);
 }
+.max-w-\[120px\] {
+  max-width: 120px;
+}
+.max-w-\[150px\] {
+  max-width: 150px;
+}
 .max-w-\[1600px\] {
   max-width: 1600px;
 }
@@ -3870,6 +3876,10 @@ video {
 
   .sm\:max-w-md {
     max-width: 28rem;
+  }
+
+  .sm\:max-w-none {
+    max-width: none;
   }
 
   .sm\:max-w-sm {

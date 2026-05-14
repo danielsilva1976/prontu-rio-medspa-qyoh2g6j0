@@ -19535,6 +19535,10 @@ var FileText = createLucideIcon("file-text", [
 		key: "z1uh3a"
 	}]
 ]);
+var Heart = createLucideIcon("heart", [["path", {
+	d: "M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5",
+	key: "mvr1a0"
+}]]);
 var History = createLucideIcon("history", [
 	["path", {
 		d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
@@ -19606,6 +19610,17 @@ var Link = createLucideIcon("link", [["path", {
 var LoaderCircle = createLucideIcon("loader-circle", [["path", {
 	d: "M21 12a9 9 0 1 1-6.219-8.56",
 	key: "13zald"
+}]]);
+var Mail = createLucideIcon("mail", [["path", {
+	d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7",
+	key: "132q7q"
+}], ["rect", {
+	x: "2",
+	y: "4",
+	width: "20",
+	height: "16",
+	rx: "2",
+	key: "izxlao"
 }]]);
 var MapPin = createLucideIcon("map-pin", [["path", {
 	d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",
@@ -39353,19 +39368,49 @@ function PatientHeader({ patient, id, isStarted, onToggleConsultation }) {
 										" ",
 										displayPatient.phone
 									]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									"data-uid": "src/components/consultation/PatientHeader.tsx:67:15",
+									"data-prohibitions": "[editContent]",
+									className: "flex items-center gap-1.5",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:68:17",
+										"data-prohibitions": "[editContent]",
+										className: "h-3.5 w-3.5 text-primary/70 shrink-0"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:69:17",
+										"data-prohibitions": "[editContent]",
+										className: "truncate max-w-[150px] sm:max-w-none",
+										children: displayPatient.email || "-"
+									})]
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+									"data-uid": "src/components/consultation/PatientHeader.tsx:73:15",
+									"data-prohibitions": "[editContent]",
+									className: "flex items-center gap-1.5",
+									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:74:17",
+										"data-prohibitions": "[editContent]",
+										className: "h-3.5 w-3.5 text-primary/70 shrink-0"
+									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+										"data-uid": "src/components/consultation/PatientHeader.tsx:75:17",
+										"data-prohibitions": "[editContent]",
+										className: "truncate max-w-[120px] sm:max-w-none",
+										children: displayPatient.estado_civil || "-"
+									})]
 								})
 							]
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-							"data-uid": "src/components/consultation/PatientHeader.tsx:68:13",
+							"data-uid": "src/components/consultation/PatientHeader.tsx:80:13",
 							"data-prohibitions": "[editContent]",
-							className: "flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex",
+							className: "flex items-center gap-1.5 text-sm text-muted-foreground hidden sm:flex mt-1",
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MapPin, {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:69:15",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:81:15",
 								"data-prohibitions": "[editContent]",
 								className: "h-3.5 w-3.5 shrink-0 text-primary/70"
 							}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-								"data-uid": "src/components/consultation/PatientHeader.tsx:70:15",
+								"data-uid": "src/components/consultation/PatientHeader.tsx:82:15",
 								"data-prohibitions": "[editContent]",
 								className: "truncate",
 								children: displayPatient.endereco
@@ -39374,11 +39419,11 @@ function PatientHeader({ patient, id, isStarted, onToggleConsultation }) {
 					]
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				"data-uid": "src/components/consultation/PatientHeader.tsx:74:9",
+				"data-uid": "src/components/consultation/PatientHeader.tsx:86:9",
 				"data-prohibitions": "[editContent]",
 				className: "flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto mt-4 md:mt-0",
 				children: (currentUser.role === "Médico" || currentUser.role === "Estético") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-					"data-uid": "src/components/consultation/PatientHeader.tsx:76:13",
+					"data-uid": "src/components/consultation/PatientHeader.tsx:88:13",
 					"data-prohibitions": "[editContent]",
 					onClick: onToggleConsultation,
 					variant: isStarted ? "destructive" : "default",
@@ -55385,4 +55430,4 @@ var App = () => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, {
 }));
 //#endregion
 
-//# sourceMappingURL=index-Bp9mdFI0.js.map
+//# sourceMappingURL=index-axowqf9n.js.map
